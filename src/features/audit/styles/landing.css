@@ -1,160 +1,82 @@
-/* Landing /audit — 3 cartes (UX-01).
- * Surfaces UX-00b : cartes élevées (premium-card) au niveau carte, sous-blocs
- * plats pour les sous-infos. Aucune carte imbriquée, aucune ombre sur surface
- * plate, aucune couleur locale (tokens uniquement). */
+/* Cockpit /audit — UX-01.
+ * Cartes élevées = points d'entrée cliquables (vrai <button>, motif « stretched
+ * button »). Sous-tuiles plates UX-00b (aucune ombre). Tokens uniquement. */
 
-/* ── Haut de page (court) ──────────────────────────────────────────────────── */
+/* ── Layout pleine largeur : colonne gauche + zone principale ──────────────── */
 
-.audit-landing__header {
-  margin-bottom: var(--space-4);
+.audit-landing.premium-page {
+  max-width: 1460px;
+  padding-top: 16px;
 }
 
-.audit-landing__eyebrow {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--accent-signature);
+.audit-landing__layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.audit-landing__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.audit-landing__main {
+  min-width: 0;
+}
+
+.audit-landing__header {
+  margin-bottom: var(--space-5);
 }
 
 .audit-landing__title {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
-.audit-landing__lead {
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+/* ── Colonne gauche : bloc gestion des versions (à venir) ──────────────────── */
+
+.audit-aside-card {
+  padding: var(--space-4);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
 }
 
-/* ── Bande de statut (non interactive, jamais des inputs) ──────────────────── */
-
-.audit-landing__statusband {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4) 0;
-  margin-bottom: var(--space-5);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.audit-landing__status-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-  flex: 1 1 auto;
-  padding: 0 var(--space-5);
-}
-
-.audit-landing__status-item + .audit-landing__status-item {
-  border-left: 1px solid var(--border-subtle);
-}
-
-.audit-landing__status-item--next {
-  flex: 1.4 1 auto;
-}
-
-.audit-landing__status-label {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.audit-landing__status-value {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.audit-landing__status-next {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--accent-signature);
-}
-
-/* Jauge de complétude (dérivée du view model). */
-.audit-landing__gauge {
+.audit-aside-card__head {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.audit-landing__gauge-track {
-  width: 84px;
-  height: 5px;
-  border-radius: var(--radius-full);
-  background: var(--surface-muted);
-  overflow: hidden;
-}
-
-.audit-landing__gauge-fill {
-  display: block;
-  height: 100%;
-  min-width: 2px;
-  border-radius: var(--radius-full);
-  background: var(--accent-signature);
-}
-
-.audit-landing__gauge-value {
-  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
 }
 
-/* ── Badges de statut : glyphe + label, fond teinté, jamais bordure d'input ── */
+.audit-aside-card__icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+}
 
-.audit-landing__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex-shrink: 0;
-  padding: 3px var(--space-2);
-  border-radius: var(--radius-full);
+.audit-aside-card__note {
+  margin: var(--space-2) 0 0;
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  line-height: var(--line-height-base);
+  color: var(--text-muted);
 }
 
-.audit-landing__badge--progress {
-  color: var(--state-info);
-  background: color-mix(in srgb, var(--state-info) 12%, var(--surface-card));
-}
-
-.audit-landing__badge--done {
-  color: var(--state-success);
-  background: color-mix(in srgb, var(--state-success) 14%, var(--surface-card));
-}
-
-.audit-landing__badge--todo {
-  color: var(--text-secondary);
-  background: var(--surface-muted);
-}
-
-.audit-landing__badge--locked {
-  color: var(--text-secondary);
-  background: var(--surface-muted);
-}
-
-/* ── Grille : Synthèse dominante + colonne latérale ────────────────────────── */
+/* ── Grille des cartes : Synthèse dominante + colonne secondaire ───────────── */
 
 .audit-landing__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: var(--space-5);
-  align-items: start;
+  align-items: stretch;
 }
 
 .audit-landing__side {
@@ -164,134 +86,280 @@
   min-width: 0;
 }
 
-.audit-landing__card {
+/* ── Carte (surface élevée, contraste franc) ───────────────────────────────── */
+
+.audit-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
-.audit-landing__card--hero {
-  border-left: 3px solid var(--accent-signature);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--accent-signature) 6%, transparent),
-    transparent 24%
-  );
+.audit-card--hero {
+  border-top: 3px solid var(--accent-signature);
 }
 
-.audit-landing__card--locked {
-  background: var(--surface-muted);
+.audit-card--locked {
+  background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-card));
+  box-shadow: none;
 }
 
-.audit-landing__card-head {
+.audit-card--action {
+  cursor: pointer;
+}
+
+.audit-card--action:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-signature) 50%, var(--border-default));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+}
+
+.audit-card--action:focus-within {
+  border-color: var(--accent-signature);
+  box-shadow: var(--focus-ring);
+}
+
+/* ── En-tête de carte : icône + titre sur la même ligne ────────────────────── */
+
+.audit-card__head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
-.audit-landing__card-eyebrow {
-  margin: 0 0 2px;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.audit-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-signature) 12%, var(--surface-card));
+  color: var(--accent-signature);
+}
+
+.audit-card__icon--locked {
+  background: color-mix(in srgb, var(--text-muted) 12%, var(--surface-card));
   color: var(--text-muted);
 }
 
-.audit-landing__card-title {
+.audit-card__icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.audit-card__title {
   margin: 0;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
-/* ── Checklist de collecte (carte Synthèse) ────────────────────────────────── */
+/* ── Tuiles de la carte Synthèse (micro-fiches) ────────────────────────────── */
 
-.audit-landing__checklist {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.audit-landing__check {
+.audit-card__tiles {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  column-gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--border-subtle);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--space-3);
+  flex: 1 1 auto;
 }
 
-.audit-landing__check:first-child {
-  border-top: 0;
-}
-
-.audit-landing__check-glyph {
-  color: var(--text-muted);
-  font-weight: var(--font-weight-bold);
-}
-
-.audit-landing__check.is-done .audit-landing__check-glyph {
-  color: var(--state-success);
-}
-
-.audit-landing__check-label {
-  min-width: 0;
-  color: var(--text-primary);
-  font-weight: var(--font-weight-medium);
-}
-
-.audit-landing__check-req {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.audit-landing__check-req--requis {
-  color: var(--state-warning);
-}
-
-.audit-landing__check-value {
-  color: var(--text-primary);
-  font-weight: var(--font-weight-semibold);
-  text-align: right;
-}
-
-.audit-landing__check-action {
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  font: inherit;
-  font-weight: var(--font-weight-semibold);
-  color: var(--accent-signature);
-}
-
-.audit-landing__check-action:hover {
-  text-decoration: underline;
-}
-
-/* ── Objectifs ─────────────────────────────────────────────────────────────── */
-
-.audit-landing__objectifs {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
+.audit-tile {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-page) 55%, var(--surface-card));
 }
 
-.audit-landing__objectif {
+.audit-tile__head {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.audit-landing__objectif-rank {
+.audit-tile__icon {
+  display: inline-flex;
+  color: var(--accent-signature);
+}
+
+.audit-tile__icon-svg {
+  width: 15px;
+  height: 15px;
+}
+
+.audit-tile__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.audit-tile__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.audit-tile__empty {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.audit-tile--soon {
+  border-style: dashed;
+}
+
+.audit-tile__soon {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.audit-tile__soon-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── État civil ────────────────────────────────────────────────────────────── */
+
+.audit-etatcivil {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+}
+
+.audit-etatcivil__name {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.audit-etatcivil__age {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-regular);
+}
+
+.audit-etatcivil__line {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Schéma de filiation ───────────────────────────────────────────────────── */
+
+.audit-filiation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  margin: auto 0;
+}
+
+.audit-filiation__couple {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.audit-filiation__bond {
+  width: 14px;
+  height: 1.5px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+
+.audit-filiation__trunk {
+  width: 1.5px;
+  height: 12px;
+  background: var(--border-strong);
+}
+
+.audit-filiation__enfants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: center;
+}
+
+.audit-filiation__node {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--surface-card);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.audit-filiation__node--principal {
+  border-color: color-mix(in srgb, var(--accent-signature) 45%, var(--border-default));
+  background: color-mix(in srgb, var(--accent-signature) 16%, var(--surface-card));
+  color: var(--accent-signature);
+}
+
+.audit-filiation__node--conjoint {
+  background: color-mix(in srgb, var(--accent-signature) 8%, var(--surface-card));
+  color: var(--text-primary);
+}
+
+.audit-filiation__node--enfant {
+  background: color-mix(in srgb, var(--surface-page) 60%, var(--surface-card));
+  color: var(--text-secondary);
+}
+
+.audit-filiation__empty {
+  margin: auto 0;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ── Objectifs ─────────────────────────────────────────────────────────────── */
+
+.audit-objectifs {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.audit-objectifs__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.audit-objectifs__rank {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -306,44 +374,87 @@
   font-variant-numeric: tabular-nums;
 }
 
-.audit-landing__objectif-label {
+.audit-objectifs__label {
   min-width: 0;
-  color: var(--text-primary);
+  overflow: hidden;
   font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.audit-landing__objectif-notes {
+.audit-objectifs__note {
   margin: var(--space-3) 0 0;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-.audit-landing__empty {
+/* ── Flèche d'action premium ───────────────────────────────────────────────── */
+
+.audit-card__foot {
   display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.audit-card__go {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) 0;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--surface-card);
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
-.audit-landing__empty-glyph {
-  color: var(--text-muted);
-  font-weight: var(--font-weight-bold);
+/* La zone de clic du bouton couvre toute la carte. */
+.audit-card__go::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 
-/* ── Pilotage stratégique : placeholder verrouillé, visuel sobre ───────────── */
+.audit-card__go:focus-visible {
+  outline: none;
+}
 
-.audit-landing__skeleton {
+.audit-card__go-arrow {
+  width: 18px;
+  height: 18px;
+  transition: transform 160ms ease;
+}
+
+.audit-card--action:hover .audit-card__go {
+  background: var(--accent-signature);
+  color: var(--surface-card);
+  border-color: var(--accent-signature);
+}
+
+.audit-card--action:hover .audit-card__go-arrow {
+  transform: translateX(2px);
+}
+
+/* ── Stratégie verrouillée : skeleton abstrait + cadenas ───────────────────── */
+
+.audit-card__skeleton {
   position: relative;
-  height: 88px;
-  margin: var(--space-1) 0 var(--space-3);
+  height: 84px;
+  margin: var(--space-2) 0 var(--space-4);
   border-radius: var(--radius-md);
   background: var(--surface-card);
   overflow: hidden;
 }
 
-.audit-landing__skeleton-bars {
+.audit-card__skeleton-bars {
   display: flex;
   align-items: flex-end;
   gap: var(--space-2);
@@ -351,69 +462,56 @@
   height: 100%;
   padding: var(--space-3) var(--space-4);
   filter: blur(2px);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
-.audit-landing__skeleton-bars span {
+.audit-card__skeleton-bars span {
   flex: 1;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: var(--viz-sequential-3);
 }
 
-.audit-landing__skeleton-bars span:nth-child(1) {
+.audit-card__skeleton-bars span:nth-child(1) {
   height: 38%;
 }
-.audit-landing__skeleton-bars span:nth-child(2) {
-  height: 72%;
+.audit-card__skeleton-bars span:nth-child(2) {
+  height: 70%;
 }
-.audit-landing__skeleton-bars span:nth-child(3) {
-  height: 52%;
+.audit-card__skeleton-bars span:nth-child(3) {
+  height: 50%;
 }
-.audit-landing__skeleton-bars span:nth-child(4) {
-  height: 88%;
+.audit-card__skeleton-bars span:nth-child(4) {
+  height: 86%;
 }
-.audit-landing__skeleton-bars span:nth-child(5) {
-  height: 62%;
+.audit-card__skeleton-bars span:nth-child(5) {
+  height: 60%;
 }
 
-.audit-landing__skeleton-lock {
+.audit-card__skeleton-lock {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  opacity: 0.65;
+  color: var(--text-muted);
 }
 
-.audit-landing__headline {
+.audit-card__skeleton-lock-svg {
+  width: 24px;
+  height: 24px;
+}
+
+.audit-card__sub {
   margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.audit-landing__note {
-  margin: var(--space-1) 0 0;
   font-size: var(--font-size-sm);
-  line-height: var(--line-height-base);
   color: var(--text-secondary);
 }
 
-.audit-landing__caption {
+.audit-card__caption {
   margin: var(--space-2) 0 0;
   font-size: var(--font-size-xs);
   letter-spacing: 0.02em;
   color: var(--text-muted);
-}
-
-/* ── Actions ───────────────────────────────────────────────────────────────── */
-
-.audit-landing__actions {
-  margin-top: auto;
-  padding-top: var(--space-4);
-  display: flex;
-  gap: var(--space-2);
 }
 
 /* ── Retour vers la synthèse depuis le wizard ──────────────────────────────── */
@@ -436,17 +534,23 @@
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 
-@media (max-width: 900px) {
-  .audit-landing__grid {
+@media (max-width: 1180px) {
+  .audit-landing__layout {
     grid-template-columns: 1fr;
   }
 
-  .audit-landing__status-item {
-    flex-basis: 45%;
-    padding: 0 var(--space-3);
+  .audit-landing__rail {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .audit-landing__status-item + .audit-landing__status-item {
-    border-left: 0;
+  .audit-landing__rail > * {
+    flex: 1 1 220px;
+  }
+}
+
+@media (max-width: 960px) {
+  .audit-landing__grid {
+    grid-template-columns: 1fr;
   }
 }

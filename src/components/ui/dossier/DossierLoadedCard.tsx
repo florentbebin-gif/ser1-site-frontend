@@ -35,7 +35,7 @@ export function DossierLoadedCard({
       </span>
       <span className="dossier-context-card__divider" />
       <span className="dossier-context-card__hint" data-testid={disclaimerTestId}>
-        Session locale — sauvegardez le dossier pour le conserver.
+        Sauvegardez le dossier pour le conserver.
       </span>
     </section>
   );

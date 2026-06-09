@@ -1,22 +1,37 @@
 /**
- * AuditLanding — entrée /audit en 3 cartes (UX-01).
+ * AuditLanding — cockpit /audit (UX-01).
  *
- * Point d'entrée premium qui répond en 3 secondes : où en est la collecte F1,
- * quelle est la prochaine action, quels blocs sont prêts / à compléter / à venir.
- * Composant présentiel pur : consomme un `AuditLandingViewModel`, délègue la
- * navigation via callbacks. Aucune donnée inventée, aucun radar, aucun score,
- * aucune valeur par défaut présentée comme une certitude.
+ * Cockpit pleine largeur : colonne gauche (encart « Dossier de travail » + gestion
+ * des versions « à venir ») et zone principale en 3 cartes. Les cartes Synthèse
+ * dossier et Objectifs SONT les actions (toute la surface est cliquable via un vrai
+ * <button>, focus visible, aria-label). La Synthèse restitue l'état civil réel et la
+ * filiation issus de F1 ; les blocs masses successorales (F3) et organigramme société
+ * (F5) restent des placeholders honnêtes « à venir ». La carte Stratégie est un
+ * placeholder verrouillé non interactif. Aucune donnée inventée, aucun radar, aucun
+ * score, aucune valeur par défaut présentée comme certitude.
  */
 
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
+
+import { DossierLoadedCard } from '@/components/ui/dossier/DossierLoadedCard';
+import {
+  IconArrowRight,
+  IconBuilding,
+  IconClipboardCheck,
+  IconFolder,
+  IconLock,
+  IconNetwork,
+  IconPieChart,
+  IconUsers,
+} from '@/icons/ui';
 
 import type {
-  AuditLandingBadge as AuditLandingBadgeModel,
-  AuditLandingChecklistItem,
   AuditLandingDestination,
-  AuditLandingTone,
+  AuditLandingObjectifsCard,
+  AuditLandingSyntheseCard,
   AuditLandingViewModel,
 } from './auditLandingViewModel';
+import { FoyerFiliation } from './components/FoyerFiliation';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
@@ -27,218 +42,249 @@ interface AuditLandingProps {
   onOpenAudit: (destination: AuditLandingDestination) => void;
 }
 
-const TONE_GLYPHS: Record<AuditLandingTone, string> = {
-  progress: '◐',
-  done: '✓',
-  todo: '○',
-  locked: '🔒',
-};
-
 export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
-  const { summary, synthese, objectifs, pilotage } = viewModel;
+  const { hasDossier, synthese, objectifs, pilotage } = viewModel;
 
   return (
     <div className="audit-landing premium-page">
-      <header className="audit-landing__header">
-        <p className="audit-landing__eyebrow">Cockpit patrimonial</p>
-        <h1 className="audit-landing__title">Audit patrimonial</h1>
-        <p className="audit-landing__lead">
-          Préparez le dossier avant d’activer les simulations patrimoniales.
-        </p>
-      </header>
+      <div className="audit-landing__layout">
+        <aside className="audit-landing__rail" aria-label="Contexte de travail">
+          <DossierLoadedCard
+            testId="dossier-loaded-card"
+            filenameTestId="dossier-loaded-filename"
+            disclaimerTestId="dossier-loaded-disclaimer"
+          />
+          {hasDossier && <DossierVersionsPlaceholder />}
+        </aside>
 
-      {/* Bande de statut non interactive : lecture du dossier en un coup d'œil. */}
-      <div className="audit-landing__statusband" role="group" aria-label="État de la collecte">
-        <div className="audit-landing__status-item">
-          <span className="audit-landing__status-label">Collecte</span>
-          <Badge badge={summary.collecte} />
-        </div>
-        <div className="audit-landing__status-item">
-          <span className="audit-landing__status-label">Données clés</span>
-          <span className="audit-landing__gauge">
-            <span className="audit-landing__gauge-track" aria-hidden="true">
-              <span
-                className="audit-landing__gauge-fill"
-                style={{ width: `${Math.round(summary.ratio * 100)}%` }}
-              />
-            </span>
-            <span className="audit-landing__gauge-value">
-              {summary.keyDataDone} / {summary.keyDataTotal}
-            </span>
-          </span>
-        </div>
-        <div className="audit-landing__status-item">
-          <span className="audit-landing__status-label">Restant</span>
-          <span className="audit-landing__status-value">
-            {summary.requisRemaining} requis · {summary.recommandeRemaining} recommandé
-          </span>
-        </div>
-        <div className="audit-landing__status-item">
-          <span className="audit-landing__status-label">Stratégie</span>
-          <Badge badge={summary.strategy} />
-        </div>
-        <div className="audit-landing__status-item audit-landing__status-item--next">
-          <span className="audit-landing__status-label">Prochaine action</span>
-          <span className="audit-landing__status-next">{summary.nextAction.label}</span>
-        </div>
-      </div>
+        <main className="audit-landing__main">
+          <header className="audit-landing__header">
+            <h1 className="audit-landing__title">Dossier patrimonial</h1>
+          </header>
 
-      <div className="audit-landing__grid">
-        {/* Carte 1 — Synthèse dossier (dominante) */}
-        <section
-          className="audit-landing__card audit-landing__card--hero premium-card"
-          aria-labelledby="audit-landing-synthese"
-        >
-          <div className="audit-landing__card-head">
-            <div>
-              <p className="audit-landing__card-eyebrow">Collecte du foyer</p>
-              <h2 className="audit-landing__card-title" id="audit-landing-synthese">
-                Synthèse dossier
-              </h2>
-            </div>
-            <Badge badge={synthese.badge} />
-          </div>
+          <div className="audit-landing__grid">
+            <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
 
-          <ul className="audit-landing__checklist">
-            {synthese.checklist.map((checkItem) => (
-              <ChecklistRow key={checkItem.id} item={checkItem} onOpenAudit={onOpenAudit} />
-            ))}
-          </ul>
+            <div className="audit-landing__side">
+              <ObjectifsCard card={objectifs} onOpenAudit={onOpenAudit} />
 
-          <div className="audit-landing__actions">
-            <button
-              type="button"
-              className="premium-btn premium-btn-primary"
-              onClick={() => onOpenAudit(synthese.primaryAction.destination)}
-            >
-              {synthese.primaryAction.label}
-            </button>
-          </div>
-        </section>
-
-        <div className="audit-landing__side">
-          {/* Carte 2 — Objectifs */}
-          <section
-            className="audit-landing__card premium-card"
-            aria-labelledby="audit-landing-objectifs"
-          >
-            <div className="audit-landing__card-head">
-              <h2 className="audit-landing__card-title" id="audit-landing-objectifs">
-                Objectifs
-              </h2>
-              <Badge badge={objectifs.badge} />
-            </div>
-
-            {objectifs.objectifs.length > 0 ? (
-              <>
-                <ol className="audit-landing__objectifs">
-                  {objectifs.objectifs.map((objectif) => (
-                    <li key={objectif.id} className="audit-landing__objectif">
-                      <span className="audit-landing__objectif-rank">{objectif.priority}</span>
-                      <span className="audit-landing__objectif-label">{objectif.label}</span>
-                    </li>
-                  ))}
-                </ol>
-                {objectifs.notes.length > 0 && (
-                  <p className="audit-landing__objectif-notes">{objectifs.notes.join(' · ')}</p>
-                )}
-              </>
-            ) : (
-              <div className="audit-landing__empty">
-                <span className="audit-landing__empty-glyph" aria-hidden="true">
-                  ○
-                </span>
-                {objectifs.emptyLabel}
-              </div>
-            )}
-
-            <div className="audit-landing__actions">
-              <button
-                type="button"
-                className="premium-btn"
-                onClick={() => onOpenAudit(objectifs.action.destination)}
+              {/* Carte Stratégie : placeholder verrouillé, non interactif. */}
+              <section
+                className="audit-card audit-card--locked"
+                aria-labelledby="audit-card-strategie"
               >
-                {objectifs.action.label}
-              </button>
+                <CardHead icon={<IconLock className="audit-card__icon-svg" />} variant="locked">
+                  <h2 className="audit-card__title" id="audit-card-strategie">
+                    {pilotage.title}
+                  </h2>
+                </CardHead>
+                <div className="audit-card__skeleton" aria-hidden="true">
+                  <div className="audit-card__skeleton-bars">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <span className="audit-card__skeleton-lock">
+                    <IconLock className="audit-card__skeleton-lock-svg" />
+                  </span>
+                </div>
+                <p className="audit-card__sub">{pilotage.description}</p>
+                <p className="audit-card__caption">{pilotage.caption}</p>
+              </section>
             </div>
-          </section>
-
-          {/* Carte 3 — Pilotage stratégique (placeholder verrouillé, peu textuel) */}
-          <section
-            className="audit-landing__card audit-landing__card--locked premium-card"
-            aria-labelledby="audit-landing-pilotage"
-          >
-            <div className="audit-landing__card-head">
-              <h2 className="audit-landing__card-title" id="audit-landing-pilotage">
-                Pilotage stratégique
-              </h2>
-              <Badge badge={pilotage.badge} />
-            </div>
-
-            <div className="audit-landing__skeleton" aria-hidden="true">
-              <div className="audit-landing__skeleton-bars">
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
-              <span className="audit-landing__skeleton-lock">{TONE_GLYPHS.locked}</span>
-            </div>
-
-            <p className="audit-landing__headline">{pilotage.headline}</p>
-            <p className="audit-landing__note">{pilotage.description}</p>
-            <p className="audit-landing__caption">{pilotage.caption}</p>
-          </section>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );
 }
 
-interface ChecklistRowProps {
-  item: AuditLandingChecklistItem;
+interface SyntheseCardProps {
+  card: AuditLandingSyntheseCard;
   onOpenAudit: (destination: AuditLandingDestination) => void;
 }
 
-function ChecklistRow({ item, onOpenAudit }: ChecklistRowProps): ReactElement {
+function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
+  const { etatCivil, filiation } = card;
   return (
-    <li className={`audit-landing__check${item.done ? ' is-done' : ''}`}>
-      <span className="audit-landing__check-glyph" aria-hidden="true">
-        {item.done ? '✓' : '○'}
-      </span>
-      <span className="audit-landing__check-label">{item.label}</span>
-      <span className={`audit-landing__check-req audit-landing__check-req--${item.requirement}`}>
-        {item.requirementLabel}
-      </span>
-      {item.done ? (
-        <span className="audit-landing__check-value">{item.value}</span>
-      ) : (
-        item.action && (
-          <button
-            type="button"
-            className="audit-landing__check-action"
-            onClick={() => onOpenAudit(item.action!.destination)}
-          >
-            {item.action.label}
-          </button>
-        )
-      )}
-    </li>
+    <section
+      className="audit-card audit-card--hero audit-card--action"
+      aria-labelledby="audit-card-synthese"
+    >
+      <CardHead icon={<IconFolder className="audit-card__icon-svg" />}>
+        <h2 className="audit-card__title" id="audit-card-synthese">
+          Synthèse dossier
+        </h2>
+      </CardHead>
+
+      <div className="audit-card__tiles">
+        <Tile icon={<IconUsers className="audit-tile__icon-svg" />} label="État civil">
+          {etatCivil.principalName ? (
+            <div className="audit-etatcivil">
+              <p className="audit-etatcivil__name">
+                {etatCivil.principalName}
+                {etatCivil.principalAge != null && (
+                  <span className="audit-etatcivil__age"> · {etatCivil.principalAge} ans</span>
+                )}
+              </p>
+              {etatCivil.situationLabel && (
+                <p className="audit-etatcivil__line">{etatCivil.situationLabel}</p>
+              )}
+              {etatCivil.conjointName && (
+                <p className="audit-etatcivil__line">Conjoint&nbsp;: {etatCivil.conjointName}</p>
+              )}
+              {etatCivil.enfantsPrenoms.length > 0 && (
+                <p className="audit-etatcivil__line">
+                  Enfants&nbsp;: {etatCivil.enfantsPrenoms.join(', ')}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="audit-tile__empty">Foyer à renseigner</p>
+          )}
+        </Tile>
+
+        <Tile icon={<IconNetwork className="audit-tile__icon-svg" />} label="Filiation">
+          <FoyerFiliation filiation={filiation} />
+        </Tile>
+
+        <SoonTile
+          icon={<IconPieChart className="audit-tile__icon-svg" />}
+          label="Masses successorales"
+        />
+        <SoonTile
+          icon={<IconBuilding className="audit-tile__icon-svg" />}
+          label="Organigramme société"
+        />
+      </div>
+
+      <CardGo ariaLabel={card.ariaLabel} onClick={() => onOpenAudit(card.action.destination)} />
+    </section>
   );
 }
 
-interface BadgeProps {
-  badge: AuditLandingBadgeModel;
+interface ObjectifsCardProps {
+  card: AuditLandingObjectifsCard;
+  onOpenAudit: (destination: AuditLandingDestination) => void;
 }
 
-export function Badge({ badge }: BadgeProps): ReactElement {
+function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement {
   return (
-    <span className={`audit-landing__badge audit-landing__badge--${badge.tone}`}>
-      <span className="audit-landing__badge-glyph" aria-hidden="true">
-        {TONE_GLYPHS[badge.tone]}
+    <section className="audit-card audit-card--action" aria-labelledby="audit-card-objectifs">
+      <CardHead icon={<IconClipboardCheck className="audit-card__icon-svg" />}>
+        <h2 className="audit-card__title" id="audit-card-objectifs">
+          Objectifs
+        </h2>
+      </CardHead>
+
+      {card.objectifs.length > 0 ? (
+        <>
+          <ol className="audit-objectifs">
+            {card.objectifs.slice(0, 4).map((objectif) => (
+              <li key={objectif.id} className="audit-objectifs__item">
+                <span className="audit-objectifs__rank">{objectif.priority}</span>
+                <span className="audit-objectifs__label">{objectif.label}</span>
+              </li>
+            ))}
+          </ol>
+          {card.note && <p className="audit-objectifs__note">{card.note}</p>}
+        </>
+      ) : (
+        <p className="audit-tile__empty">{card.emptyLabel}</p>
+      )}
+
+      <CardGo ariaLabel={card.ariaLabel} onClick={() => onOpenAudit(card.action.destination)} />
+    </section>
+  );
+}
+
+interface CardHeadProps {
+  icon: ReactNode;
+  variant?: 'locked';
+  children: ReactNode;
+}
+
+function CardHead({ icon, variant, children }: CardHeadProps): ReactElement {
+  return (
+    <div className="audit-card__head">
+      <span
+        className={`audit-card__icon${variant === 'locked' ? ' audit-card__icon--locked' : ''}`}
+      >
+        {icon}
       </span>
-      <span className="audit-landing__badge-label">{badge.label}</span>
-    </span>
+      {children}
+    </div>
+  );
+}
+
+interface TileProps {
+  icon: ReactNode;
+  label: string;
+  children: ReactNode;
+}
+
+function Tile({ icon, label, children }: TileProps): ReactElement {
+  return (
+    <div className="audit-tile">
+      <div className="audit-tile__head">
+        <span className="audit-tile__icon">{icon}</span>
+        <span className="audit-tile__label">{label}</span>
+      </div>
+      <div className="audit-tile__body">{children}</div>
+    </div>
+  );
+}
+
+interface SoonTileProps {
+  icon: ReactNode;
+  label: string;
+}
+
+/** Tuile « à venir » honnête : la donnée dépend d'une fondation non livrée (F3/F5). */
+function SoonTile({ icon, label }: SoonTileProps): ReactElement {
+  return (
+    <div className="audit-tile audit-tile--soon">
+      <div className="audit-tile__head">
+        <span className="audit-tile__icon">{icon}</span>
+        <span className="audit-tile__label">{label}</span>
+      </div>
+      <div className="audit-tile__soon">
+        <IconLock className="audit-tile__soon-icon" />
+        <span>à venir</span>
+      </div>
+    </div>
+  );
+}
+
+interface CardGoProps {
+  ariaLabel: string;
+  onClick: () => void;
+}
+
+/** Flèche d'action premium : vrai <button> dont la zone de clic couvre la carte. */
+function CardGo({ ariaLabel, onClick }: CardGoProps): ReactElement {
+  return (
+    <div className="audit-card__foot">
+      <button type="button" className="audit-card__go" aria-label={ariaLabel} onClick={onClick}>
+        <IconArrowRight className="audit-card__go-arrow" />
+      </button>
+    </div>
+  );
+}
+
+/** Gestion des versions / sauvegardes du dossier — placeholder honnête (F6). */
+function DossierVersionsPlaceholder(): ReactElement {
+  return (
+    <section className="audit-aside-card">
+      <div className="audit-aside-card__head">
+        <IconLock className="audit-aside-card__icon" />
+        <span className="audit-aside-card__title">Versions &amp; sauvegardes</span>
+      </div>
+      <p className="audit-aside-card__note">
+        Historique, simulations et restauration du dossier — à venir.
+      </p>
+    </section>
   );
 }

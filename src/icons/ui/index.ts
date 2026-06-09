@@ -30,6 +30,7 @@ export { IconGift } from './IconGift';
 export { IconGauge } from './IconGauge';
 export { IconInfo } from './IconInfo';
 export { IconLayers } from './IconLayers';
+export { IconLock } from './IconLock';
 export { IconNetwork } from './IconNetwork';
 export { IconPencil } from './IconPencil';
 export { IconPieChart } from './IconPieChart';

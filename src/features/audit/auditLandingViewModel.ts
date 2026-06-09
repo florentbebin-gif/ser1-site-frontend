@@ -2,69 +2,52 @@
  * View model de la landing /audit (UX-01).
  *
  * Lecture pure du dossier patrimonial F1 : aucun React, aucun calcul métier,
- * aucune donnée inventée. Ton « collecte premium » plutôt que défensif : on
- * valorise ce qui est réuni et l'action suivante, sans présenter une valeur par
- * défaut comme une certitude (un dossier vierge n'affirme pas « célibataire »,
- * « aucun enfant »). Le pilotage stratégique reste verrouillé, sans jargon
- * interne (pas de « F6 », « fondation », « module »), sans radar ni score.
+ * aucune donnée inventée. On restitue la donnée réelle quand elle existe (état
+ * civil, filiation) sans jamais présenter une valeur par défaut comme certitude.
+ * Les blocs qui dépendent de fondations non livrées (masses successorales = F3,
+ * organigramme société = F5, gestion des versions = F6) restent des placeholders
+ * honnêtes « à venir », sans jargon interne, sans radar ni score.
  */
 
 import type {
+  DossierMembre,
   DossierPatrimonial,
-  DossierRegimeMatrimonialCode,
   DossierSituationFamilialeStatut,
 } from '@/domain/dossier';
 
 /** Destination de navigation proposée (mappée vers une étape wizard). */
 export type AuditLandingDestination = 'dossier' | 'objectifs';
 
-/** Avancement de collecte d'une carte. */
-export type AuditLandingState = 'vide' | 'partiel' | 'complet';
-
-/** Niveau d'exigence d'une donnée clé. */
-export type AuditLandingRequirement = 'requis' | 'recommande';
-
-/** Tonalité d'un badge de statut (glyphe + label, jamais la couleur seule). */
-export type AuditLandingTone = 'progress' | 'done' | 'todo' | 'locked';
-
-export interface AuditLandingBadge {
-  label: string;
-  tone: AuditLandingTone;
-}
-
 export interface AuditLandingAction {
-  label: string;
   destination: AuditLandingDestination;
 }
 
-export interface AuditLandingChecklistItem {
-  id: string;
-  label: string;
-  requirement: AuditLandingRequirement;
-  requirementLabel: string;
-  done: boolean;
-  /** Valeur réelle quand `done`, jamais une valeur par défaut non confirmée. */
-  value?: string;
-  /** Action courte quand la donnée manque (`Saisir`, `Ajouter`, `Préciser`). */
-  action?: AuditLandingAction;
+export interface AuditLandingEtatCivil {
+  principalName: string | null;
+  principalAge: number | null;
+  situationLabel: string | null;
+  conjointName: string | null;
+  enfantsPrenoms: string[];
 }
 
-export interface AuditLandingSummary {
-  collecte: AuditLandingBadge;
-  keyDataDone: number;
-  keyDataTotal: number;
-  /** 0–1, pour la jauge (dérivé du view model F1, jamais codé en dur). */
-  ratio: number;
-  requisRemaining: number;
-  recommandeRemaining: number;
-  strategy: AuditLandingBadge;
-  nextAction: AuditLandingAction;
+export interface AuditLandingFiliationNode {
+  id: string;
+  label: string;
+}
+
+export interface AuditLandingFiliation {
+  principal: AuditLandingFiliationNode | null;
+  conjoint: AuditLandingFiliationNode | null;
+  enfants: AuditLandingFiliationNode[];
+  hasData: boolean;
 }
 
 export interface AuditLandingSyntheseCard {
-  badge: AuditLandingBadge;
-  checklist: AuditLandingChecklistItem[];
-  primaryAction: AuditLandingAction;
+  hasData: boolean;
+  etatCivil: AuditLandingEtatCivil;
+  filiation: AuditLandingFiliation;
+  action: AuditLandingAction;
+  ariaLabel: string;
 }
 
 export interface AuditLandingObjectifItem {
@@ -74,27 +57,28 @@ export interface AuditLandingObjectifItem {
 }
 
 export interface AuditLandingObjectifsCard {
-  badge: AuditLandingBadge;
-  state: AuditLandingState;
-  emptyLabel: string;
   objectifs: AuditLandingObjectifItem[];
-  /** Notes qualitatives courtes (contraintes / opérations), jamais des « 0 ». */
-  notes: string[];
+  emptyLabel: string;
+  note?: string;
   action: AuditLandingAction;
+  ariaLabel: string;
 }
 
 export interface AuditLandingPilotageCard {
-  badge: AuditLandingBadge;
-  headline: string;
+  title: string;
   description: string;
   caption: string;
 }
 
 export interface AuditLandingViewModel {
-  summary: AuditLandingSummary;
+  hasDossier: boolean;
   synthese: AuditLandingSyntheseCard;
   objectifs: AuditLandingObjectifsCard;
   pilotage: AuditLandingPilotageCard;
+}
+
+interface BuildOptions {
+  now?: Date;
 }
 
 const SITUATION_FAMILIALE_LABELS: Record<DossierSituationFamilialeStatut, string> = {
@@ -106,66 +90,101 @@ const SITUATION_FAMILIALE_LABELS: Record<DossierSituationFamilialeStatut, string
   veuf: 'Veuf/Veuve',
 };
 
-const REGIME_MATRIMONIAL_LABELS: Record<DossierRegimeMatrimonialCode, string> = {
-  communaute_legale: 'Communauté réduite aux acquêts',
-  communaute_universelle: 'Communauté universelle',
-  separation_biens: 'Séparation de biens',
-  participation_acquets: 'Participation aux acquêts',
-  communaute_meubles_acquets: 'Communauté de meubles et acquêts',
-  separation_biens_societe_acquets: 'Séparation de biens avec société d’acquêts',
-};
-
-const REQUIREMENT_LABELS: Record<AuditLandingRequirement, string> = {
-  requis: 'Requis',
-  recommande: 'Recommandé',
-};
-
 const COUPLE_STATUTS: ReadonlySet<DossierSituationFamilialeStatut> = new Set([
   'marie',
   'pacse',
   'concubinage',
 ]);
 
-export function buildAuditLandingViewModel(dossier: DossierPatrimonial): AuditLandingViewModel {
-  const checklist = buildFoyerChecklist(dossier);
-  const objectifsCard = buildObjectifsCard(dossier);
-  const objectifsDone = objectifsCard.objectifs.length > 0;
-
-  // Données clés = checklist foyer + objectifs (compté dans la bande, affiché en carte).
-  const keyDataTotal = checklist.length + 1;
-  const keyDataDone = checklist.filter((item) => item.done).length + (objectifsDone ? 1 : 0);
-  const requisRemaining = countRemaining(checklist, 'requis') + (objectifsDone ? 0 : 1); // objectifs = requis
-  const recommandeRemaining = countRemaining(checklist, 'recommande');
-
-  const syntheseComplete = requisRemaining === 0 && recommandeRemaining === 0;
-  const collecte: AuditLandingBadge = syntheseComplete
-    ? { label: 'Données clés réunies', tone: 'done' }
-    : { label: 'Collecte en cours', tone: 'progress' };
-  const nextAction = buildNextAction(dossier, objectifsDone);
+export function buildAuditLandingViewModel(
+  dossier: DossierPatrimonial,
+  options: BuildOptions = {},
+): AuditLandingViewModel {
+  const now = options.now ?? new Date();
+  const engaged = isFamilyEngaged(dossier);
 
   return {
-    summary: {
-      collecte,
-      keyDataDone,
-      keyDataTotal,
-      ratio: keyDataTotal > 0 ? keyDataDone / keyDataTotal : 0,
-      requisRemaining,
-      recommandeRemaining,
-      strategy: { label: 'Stratégie verrouillée', tone: 'locked' },
-      nextAction,
-    },
-    synthese: {
-      badge: collecte,
-      checklist,
-      primaryAction: nextAction,
-    },
-    objectifs: objectifsCard,
+    hasDossier: engaged,
+    synthese: buildSyntheseCard(dossier, now, engaged),
+    objectifs: buildObjectifsCard(dossier),
     pilotage: buildPilotageCard(),
   };
 }
 
+function buildSyntheseCard(
+  dossier: DossierPatrimonial,
+  now: Date,
+  engaged: boolean,
+): AuditLandingSyntheseCard {
+  const principal = findMembre(dossier, dossier.foyer.membrePrincipalId);
+  const conjoint = findMembre(dossier, dossier.foyer.conjointId);
+  const enfants = dossier.membres.filter((membre) => membre.role === 'enfant');
+  const isCouple = COUPLE_STATUTS.has(dossier.situationFamiliale.statut);
+
+  const etatCivil: AuditLandingEtatCivil = {
+    principalName: fullName(principal),
+    principalAge: computeAge(principal?.dateNaissance, now),
+    situationLabel: engaged ? SITUATION_FAMILIALE_LABELS[dossier.situationFamiliale.statut] : null,
+    conjointName: isCouple ? fullName(conjoint) : null,
+    enfantsPrenoms: enfants.map((enfant) => enfant.prenom.trim()).filter(Boolean),
+  };
+
+  const filiation: AuditLandingFiliation = {
+    principal: principal ? toNode(principal, 'Membre principal') : null,
+    conjoint: isCouple && conjoint ? toNode(conjoint, 'Conjoint') : null,
+    enfants: enfants
+      .map((enfant, index) => toNode(enfant, `Enfant ${index + 1}`))
+      .filter((node): node is AuditLandingFiliationNode => node !== null),
+    hasData: Boolean(principal) || enfants.length > 0,
+  };
+
+  return {
+    hasData: engaged,
+    etatCivil,
+    filiation,
+    action: { destination: 'dossier' },
+    ariaLabel: engaged
+      ? 'Synthèse dossier — ouvrir et compléter le foyer'
+      : 'Synthèse dossier — initialiser le dossier du foyer',
+  };
+}
+
+function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsCard {
+  const objectifs = [...dossier.objectifs]
+    .sort((a, b) => a.priority - b.priority)
+    .map((objectif) => ({ id: objectif.id, label: objectif.label, priority: objectif.priority }));
+  const hasContraintes = dossier.contraintes.length > 0;
+  const hasOperations = dossier.operationsPrevues.length > 0;
+
+  const note =
+    objectifs.length === 0
+      ? undefined
+      : hasContraintes || hasOperations
+        ? 'Contraintes et opérations renseignées'
+        : 'Contraintes à préciser';
+
+  return {
+    objectifs,
+    emptyLabel: 'Aucun objectif consigné',
+    note,
+    action: { destination: 'objectifs' },
+    ariaLabel:
+      objectifs.length === 0
+        ? 'Objectifs — définir les objectifs du client'
+        : 'Objectifs — compléter les objectifs du client',
+  };
+}
+
+function buildPilotageCard(): AuditLandingPilotageCard {
+  return {
+    title: 'Stratégie',
+    description: 'Disponible après structuration du dossier.',
+    caption: 'Scénarios · pistes à vérifier · activation future',
+  };
+}
+
 function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
-  const principal = findPrincipal(dossier);
+  const principal = findMembre(dossier, dossier.foyer.membrePrincipalId);
   const principalHasData = Boolean(
     principal?.prenom.trim() || principal?.nom?.trim() || principal?.dateNaissance?.trim(),
   );
@@ -181,180 +200,28 @@ function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
   );
 }
 
-function buildFoyerChecklist(dossier: DossierPatrimonial): AuditLandingChecklistItem[] {
-  const items: AuditLandingChecklistItem[] = [];
-  const principal = findPrincipal(dossier);
-  const principalDone = Boolean(
-    principal?.prenom.trim() && principal.nom?.trim() && principal.dateNaissance?.trim(),
-  );
-  items.push(
-    item('membre-principal', 'Membre principal', 'requis', principalDone, {
-      value: principalDone && principal ? formatMembreName(principal) : undefined,
-      actionLabel: 'Saisir',
-      destination: 'dossier',
-    }),
-  );
-
-  const familyEngaged = isFamilyEngaged(dossier);
-  items.push(
-    item('situation-familiale', 'Situation familiale', 'recommande', familyEngaged, {
-      value: familyEngaged
-        ? SITUATION_FAMILIALE_LABELS[dossier.situationFamiliale.statut]
-        : undefined,
-      actionLabel: 'Préciser',
-      destination: 'dossier',
-    }),
-  );
-
-  if (COUPLE_STATUTS.has(dossier.situationFamiliale.statut)) {
-    const conjoint = dossier.membres.find((membre) => membre.id === dossier.foyer.conjointId);
-    const conjointDone = Boolean(conjoint?.prenom.trim());
-    items.push(
-      item('conjoint', 'Conjoint / partenaire', 'recommande', conjointDone, {
-        value: conjointDone && conjoint ? formatMembreName(conjoint) : undefined,
-        actionLabel: 'Saisir',
-        destination: 'dossier',
-      }),
-    );
-    const regime = dossier.regimeMatrimonial;
-    items.push(
-      item('regime-matrimonial', 'Régime matrimonial', 'recommande', Boolean(regime), {
-        value: regime ? REGIME_MATRIMONIAL_LABELS[regime.regime] : undefined,
-        actionLabel: 'Préciser',
-        destination: 'dossier',
-      }),
-    );
-  }
-
-  const enfantsDone = dossier.situationFamiliale.nombreEnfants > 0;
-  items.push(
-    item('enfants', 'Enfants', 'recommande', enfantsDone, {
-      value: enfantsDone
-        ? formatCount(dossier.situationFamiliale.nombreEnfants, 'enfant', 'enfants')
-        : undefined,
-      actionLabel: 'Ajouter',
-      destination: 'dossier',
-    }),
-  );
-
-  const donationsDone = dossier.donationsSynthetiques.length > 0;
-  items.push(
-    item('donations', 'Donations antérieures', 'recommande', donationsDone, {
-      value: donationsDone
-        ? formatCount(dossier.donationsSynthetiques.length, 'donation', 'donations')
-        : undefined,
-      actionLabel: 'Ajouter',
-      destination: 'dossier',
-    }),
-  );
-
-  return items;
+function findMembre(dossier: DossierPatrimonial, id: string | null): DossierMembre | undefined {
+  if (!id) return undefined;
+  return dossier.membres.find((membre) => membre.id === id);
 }
 
-function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsCard {
-  const objectifs = [...dossier.objectifs]
-    .sort((a, b) => a.priority - b.priority)
-    .map((objectif) => ({ id: objectif.id, label: objectif.label, priority: objectif.priority }));
-  const hasContraintes = dossier.contraintes.length > 0;
-  const hasOperations = dossier.operationsPrevues.length > 0;
-
-  const state: AuditLandingState =
-    objectifs.length === 0 ? 'vide' : hasContraintes || hasOperations ? 'complet' : 'partiel';
-
-  const notes: string[] = [];
-  if (objectifs.length > 0) {
-    notes.push(
-      hasContraintes
-        ? formatCount(dossier.contraintes.length, 'contrainte', 'contraintes')
-        : 'Contraintes à préciser',
-    );
-    notes.push(
-      hasOperations
-        ? formatCount(dossier.operationsPrevues.length, 'opération prévue', 'opérations prévues')
-        : 'Aucune opération prévue',
-    );
-  }
-
-  return {
-    badge:
-      state === 'vide'
-        ? { label: 'À renseigner', tone: 'todo' }
-        : state === 'complet'
-          ? { label: 'Complet', tone: 'done' }
-          : { label: 'En cours', tone: 'progress' },
-    state,
-    emptyLabel: 'Aucun objectif consigné',
-    objectifs,
-    notes,
-    action:
-      objectifs.length > 0
-        ? { label: 'Compléter les objectifs', destination: 'objectifs' }
-        : { label: 'Ajouter des objectifs', destination: 'objectifs' },
-  };
+function fullName(membre: DossierMembre | undefined): string | null {
+  if (!membre) return null;
+  const name = [membre.prenom.trim(), membre.nom?.trim()].filter(Boolean).join(' ');
+  return name || null;
 }
 
-function buildPilotageCard(): AuditLandingPilotageCard {
-  return {
-    badge: { label: 'Verrouillé', tone: 'locked' },
-    headline: 'Stratégie verrouillée',
-    description:
-      'Les projections stratégiques seront disponibles après finalisation des données de base du dossier.',
-    caption: 'Comparaison de scénarios · pistes à vérifier · activation future',
-  };
+function toNode(membre: DossierMembre, fallback: string): AuditLandingFiliationNode {
+  const label = membre.prenom.trim() || membre.nom?.trim() || fallback;
+  return { id: membre.id, label };
 }
 
-function buildNextAction(dossier: DossierPatrimonial, objectifsDone: boolean): AuditLandingAction {
-  const principal = findPrincipal(dossier);
-  const principalDone = Boolean(
-    principal?.prenom.trim() && principal.nom?.trim() && principal.dateNaissance?.trim(),
-  );
-  if (!principalDone) return { label: 'Saisir le membre principal', destination: 'dossier' };
-  if (!objectifsDone) return { label: 'Ajouter des objectifs', destination: 'objectifs' };
-  if (!isFamilyEngaged(dossier)) {
-    return { label: 'Préciser la situation familiale', destination: 'dossier' };
-  }
-  return { label: 'Reprendre l’audit', destination: 'dossier' };
-}
-
-function countRemaining(
-  items: AuditLandingChecklistItem[],
-  requirement: AuditLandingRequirement,
-): number {
-  return items.filter((item) => item.requirement === requirement && !item.done).length;
-}
-
-function findPrincipal(dossier: DossierPatrimonial) {
-  return dossier.membres.find((membre) => membre.id === dossier.foyer.membrePrincipalId);
-}
-
-interface ItemOptions {
-  value?: string;
-  actionLabel: string;
-  destination: AuditLandingDestination;
-}
-
-function item(
-  id: string,
-  label: string,
-  requirement: AuditLandingRequirement,
-  done: boolean,
-  options: ItemOptions,
-): AuditLandingChecklistItem {
-  return {
-    id,
-    label,
-    requirement,
-    requirementLabel: REQUIREMENT_LABELS[requirement],
-    done,
-    value: done ? options.value : undefined,
-    action: done ? undefined : { label: options.actionLabel, destination: options.destination },
-  };
-}
-
-function formatMembreName(membre: { prenom: string; nom?: string }): string {
-  return [membre.prenom.trim(), membre.nom?.trim()].filter(Boolean).join(' ');
-}
-
-function formatCount(count: number, singular: string, plural: string): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+function computeAge(dateNaissance: string | undefined, now: Date): number | null {
+  if (!dateNaissance?.trim()) return null;
+  const birth = new Date(dateNaissance);
+  if (Number.isNaN(birth.getTime())) return null;
+  let age = now.getFullYear() - birth.getFullYear();
+  const monthDelta = now.getMonth() - birth.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && now.getDate() < birth.getDate())) age -= 1;
+  return age >= 0 && age < 130 ? age : null;
 }
