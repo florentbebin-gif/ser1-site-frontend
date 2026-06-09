@@ -53,10 +53,12 @@ describe('buildAuditLandingViewModel', () => {
       fullName: 'Jean Martin',
       age: 46,
       profession: 'Médecin',
+      avatarKind: 'homme',
     });
     expect(vm.synthese.situationLabel).toBe('Célibataire');
     expect(vm.synthese.partsFiscales).toBe(1);
     expect(vm.synthese.tmiLabel).toBe('à venir');
+    expect(vm.synthese.etatCivilCompletion.label).toMatch(/^Données état civil renseignées/);
   });
 
   it('restitue le couple, les enfants âgés et les parts fiscales dérivées de F1', () => {
@@ -83,8 +85,10 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.synthese.conjoint).toMatchObject({
       fullName: 'Marie Martin',
       profession: 'Architecte',
+      avatarKind: 'femme',
     });
     expect(vm.synthese.enfants.map((enfant) => enfant.prenom)).toEqual(['Léa', 'Tom']);
+    expect(vm.synthese.enfants.map((enfant) => enfant.avatarKind)).toEqual(['fille', 'garcon']);
     expect(vm.synthese.enfants[0]?.age).toBe(16);
     // Marié + 2 enfants à charge → 2 + 0,5 + 0,5 = 3 parts.
     expect(vm.synthese.partsFiscales).toBe(3);
@@ -131,5 +135,7 @@ describe('buildAuditLandingViewModel', () => {
     expect(text).not.toMatch(/\bF6\b/);
     expect(text).not.toMatch(/fondation/i);
     expect(text).not.toMatch(/patrimoine net/i);
+    expect(text).not.toMatch(/TMI\s+\d/i);
+    expect(text).not.toMatch(/\bmock\b|fake|dummy/i);
   });
 });

@@ -47,19 +47,18 @@ function section(name: string): HTMLElement {
 }
 
 describe('AuditLanding', () => {
-  it('affiche un header minimal et conserve l’encart dossier', () => {
+  it('affiche la landing sans titre local et conserve l’encart dossier', () => {
     renderLanding();
 
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Dossier patrimonial' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
     expect(screen.queryByText(/Préparez le dossier/)).toBeNull();
     expect(screen.getByTestId('dossier-loaded-card')).toBeInTheDocument();
   });
 
   it('restitue un état civil patrimonial réel (nom, âge, profession, parts)', () => {
     renderLanding(withFoyer);
-    const synthese = within(section('Synthèse dossier'));
+    const syntheseSection = section('Synthèse dossier');
+    const synthese = within(syntheseSection);
 
     expect(synthese.getByText(/Jean Martin/)).toBeInTheDocument();
     expect(synthese.getByText(/46 ans/)).toBeInTheDocument();
@@ -67,6 +66,10 @@ describe('AuditLanding', () => {
     expect(synthese.getByText('Marié(e)')).toBeInTheDocument();
     expect(synthese.getByText(/Marie Martin/)).toBeInTheDocument();
     expect(synthese.getByText(/parts/)).toBeInTheDocument();
+    expect(synthese.getByLabelText(/Données état civil renseignées/)).toBeInTheDocument();
+    expect(synthese.getByText('à venir')).toBeInTheDocument();
+    expect(syntheseSection.textContent ?? '').not.toMatch(/TMI\s+\d/i);
+    expect(syntheseSection.textContent ?? '').not.toMatch(/TMI[^%]*%/i);
   });
 
   it('rend un schéma de filiation', () => {
@@ -76,23 +79,31 @@ describe('AuditLanding', () => {
     expect(synthese.getByRole('img', { name: 'Schéma de filiation du foyer' })).toBeInTheDocument();
   });
 
-  it('présente les masses successorales « à venir » et masque l’organigramme société', () => {
+  it('présente les aperçus visuels à venir masses successorales et organigramme société', () => {
     renderLanding(withFoyer);
-    const synthese = within(section('Synthèse dossier'));
 
-    expect(synthese.getByText('Masses successorales')).toBeInTheDocument();
-    expect(synthese.getAllByText('à venir').length).toBeGreaterThan(0);
-    // Pas d'organigramme société tant qu'aucune société n'est saisie (F5).
-    expect(screen.queryByText('Organigramme société')).toBeNull();
+    const masses = section('Masses successorales');
+    const societe = section('Organigramme société');
+
+    expect(masses).toBeInTheDocument();
+    expect(societe).toBeInTheDocument();
+    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(2);
+    expect(
+      within(masses).getByText('Calcul disponible après structuration du patrimoine.'),
+    ).toBeInTheDocument();
+    expect(within(societe).getByText('Structure société à renseigner.')).toBeInTheDocument();
+    expect(within(masses).queryByRole('button')).toBeNull();
+    expect(within(societe).queryByRole('button')).toBeNull();
   });
 
-  it('porte l’action par les cartes cliquables (flèche, pas de gros bouton)', () => {
+  it('porte l’action par les libellés en en-tête des cartes', () => {
     const { container, onOpenAudit } = renderLanding();
 
-    screen.getByRole('button', { name: /^Synthèse dossier/ }).click();
+    screen.getByRole('button', { name: /^Voir l'audit complet/ }).click();
     expect(onOpenAudit).toHaveBeenLastCalledWith('dossier');
-    screen.getByRole('button', { name: /^Objectifs/ }).click();
+    screen.getByRole('button', { name: /^Définir les objectifs client/ }).click();
     expect(onOpenAudit).toHaveBeenLastCalledWith('objectifs');
+    expect(container.querySelector('.audit-card__go')).toBeNull();
     expect(container.querySelectorAll('.premium-btn')).toHaveLength(0);
   });
 
@@ -103,6 +114,8 @@ describe('AuditLanding', () => {
     expect(
       within(strategie).getByText('Disponible après structuration du dossier.'),
     ).toBeInTheDocument();
+    expect(within(strategie).getByText('Verrouillé')).toBeInTheDocument();
+    expect(within(strategie).queryByText('Configurer')).toBeNull();
     expect(within(strategie).queryByRole('button')).toBeNull();
   });
 
@@ -121,7 +134,11 @@ describe('AuditLanding', () => {
         onOpenAudit={vi.fn()}
       />,
     );
-    expect(screen.getByText('Versions & sauvegardes')).toBeInTheDocument();
+    const versions = screen.getByRole('heading', { level: 2, name: 'Versions & sauvegardes' });
+    expect(versions.closest('.dossier-rail__panel')).toBeInTheDocument();
+    expect(versions.closest('.dossier-context-card')).toBeNull();
+    expect(screen.getByText('Cloud')).toBeInTheDocument();
+    expect(screen.getByText('Local')).toBeInTheDocument();
   });
 
   it('n’affiche aucun score, /100 ni patrimoine net fabriqué', () => {
@@ -132,5 +149,6 @@ describe('AuditLanding', () => {
     expect(screen.queryByText(/\/\s*100/)).toBeNull();
     expect(text).not.toMatch(/patrimoine net/i);
     expect(text).not.toMatch(/\bF6\b/);
+    expect(text).not.toMatch(/\bmock\b|fake|dummy/i);
   });
 });
