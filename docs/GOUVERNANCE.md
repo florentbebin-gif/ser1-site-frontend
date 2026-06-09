@@ -87,7 +87,7 @@ Principes : épuré, lisible, respirant.
 
 - La Home garde la hiérarchie : `PAR OÙ COMMENCER`, deux actions d'entrée, respiration visuelle, puis `SIMULATEURS`.
 - Le scan documentaire IA n'est pas un simulateur. Il prépare un dossier d'audit ; il doit donc être placé dans le bloc d'entrée, avant le séparateur et avant la section `SIMULATEURS`.
-- Le rail gauche Home reste léger : `Dossier chargé` et `Mode utilisateur` uniquement. Il ne remplace pas `DossierRail`, réservé à `/audit`, `/strategy` et `/sim/*`.
+- Le rail gauche Home reste léger : `Dossier de travail` et `Mode utilisateur` uniquement. Il ne remplace pas `DossierRail`, réservé à `/strategy` et `/sim/*` ; `/audit` UX-01 possède une colonne cockpit dédiée.
 - La section `SIMULATEURS` consomme la registry métier `src/domain/simulators/` : elle ne maintient pas de grille locale concurrente.
 - Au chargement, les deux espaces `Foyer & patrimoine privé` et `Société & dirigeant` sont fermés : aucun onglet, aucune carte simulateur individuelle et aucun panneau détail ne sont visibles.
 - Chaque espace fermé affiche **une accroche unique** (pas de puces d'objectifs surchargées) ; cliquer l'en-tête ouvre l'espace sur l'onglet `Comprendre` par défaut. Le panneau détail simulateur apparait uniquement après clic explicite sur une carte simulateur visible, jamais au premier écran.
@@ -982,10 +982,11 @@ Un menu vertical gauche persistant est interdit par défaut sur `/sim/*` : il aj
 rail de lecture et alourdit les pages. Une exception doit être prouvée par un besoin métier
 documenté en PR.
 
-Exception V2-03 : `DossierRail` est le seul rail gauche autorisé. Il est injecté une seule fois par
-`AppLayout` sur `/audit`, `/strategy` et `/sim/*` pour afficher la position dans le parcours dossier
-et la version de travail. Ce rail ne contient jamais les actions de sauvegarde, chargement, reset,
-export ou mode, qui restent portées par la topbar ou les surfaces existantes.
+Exception V2-03 : `DossierRail` est le seul rail gauche partagé autorisé. Il est injecté une seule fois
+par `AppLayout` sur `/strategy` et `/sim/*` pour afficher la position dans le parcours dossier et la
+version de travail. UX-01 fait exception sur `/audit` avec une colonne cockpit dédiée, sans rail
+partagé complet. Ce rail ne contient jamais les actions de sauvegarde, chargement, reset, export ou
+mode, qui restent portées par la topbar ou les surfaces existantes.
 
 Style V2-03b — fil de parcours discret : `DossierRail` est un **repère**, jamais un concurrent du
 contenu. Rendu attendu : panneau **sans cadre ni ombre** (fond transparent), parcours en **fil
@@ -996,13 +997,14 @@ pleine `--action-primary` + label `--text-primary`/600), étapes précédentes/s
 de mode » (`src/pages/settings/designSystem/RailPreview.tsx`).
 
 Précision V2-04 : la Home et les parcours ont des responsabilités séparées. La Home affiche
-`Dossier chargé` et `Mode utilisateur`, car elle pilote le mode global. `AppLayout` regroupe
-uniquement `Dossier chargé` et le `DossierRail` dans une seule colonne gauche `.dossier-rail-column`
-sur `/audit`, `/strategy` et `/sim/*`. Cette colonne est **flottante** (`position: fixed`) sur grand
-écran afin que le contenu du simulateur reste **centré** dans la fenêtre, et non décalé vers la
-droite. En dessous de `1640px`, là où la colonne flottante chevaucherait le contenu centré (largeur
+`Dossier de travail` et `Mode utilisateur`, car elle pilote le mode global. `AppLayout` regroupe
+uniquement `Dossier de travail` et le `DossierRail` dans une seule colonne gauche
+`.dossier-rail-column` sur `/strategy` et `/sim/*`. Cette colonne est **flottante** (`position: fixed`)
+sur grand écran afin que le contenu du simulateur reste **centré** dans la fenêtre, et non décalé vers
+la droite. En dessous de `1640px`, là où la colonne flottante chevaucherait le contenu centré (largeur
 max `1200px`), elle se replie au-dessus du contenu, centrée, mais le rail complet reste visible sur
-desktop. Le parcours se réduit à la pastille `Version ...` uniquement sur mobile. Le sélecteur de
+desktop. `/audit` UX-01 porte sa propre colonne gauche cockpit et le rail complet `/audit` reste prévu
+pour UX-02. Le parcours se réduit à la pastille `Version ...` uniquement sur mobile. Le sélecteur de
 mode n'est pas rendu dans cette colonne parcours : les simulateurs conservent leur toggle local
 lorsqu'il existe.
 

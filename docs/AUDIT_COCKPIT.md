@@ -14,9 +14,9 @@ page par page. **UX-00b a verrouillé** les fondations design system de ce contr
 découplage `--state-warning` / `--accent-signature`, taxonomie des surfaces, drawer XL canonique —
 avec leur preuve runtime dans `/settings/design-system` et les checks `css-colors` / `modal-canon` /
 `sim-cards` étendus, sans coder les pages métier `/audit`. **UX-01 a livré** l'entrée `/audit` en
-trois cartes — Synthèse dossier (complétude F1, données connues et manques), Pilotage stratégique
-(placeholder honnête `à venir`, dépendant de F6) et Objectifs — branchée en lecture sur le dossier
-F1, sans radar réel, score, patrimoine net ni scénario activable.
+landing cockpit : Dossier patrimonial (complétude F1, données connues et manques), Objectifs,
+Stratégie verrouillée et aperçus prospectifs clairement `à venir`, branchés en lecture réelle sur le
+dossier F1 seulement, sans radar réel, score, patrimoine net ni scénario activable.
 
 Date de cadrage : 2026-06-07.
 
@@ -405,27 +405,37 @@ Règles générales :
 
 ### Landing /audit - 3 cartes
 
-| Champ                                                 | Contrat                                                                                                                            |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Page / section rail                                   | Entrée `/audit` avec trois cartes : Synthèse dossier, Pilotage stratégique placeholder honnête, Objectifs.                         |
-| Objectif CGP                                          | Voir rapidement le niveau de complétude F1, les objectifs connus et les zones stratégiques encore non calculables.                 |
-| Dépendances fondations                                | `F1` + `UX-00b`. Livrable après `UX-00b`; les données stratégiques restent `à venir` tant que F6 manque.                           |
-| Source de vérité                                      | `DossierPatrimonial` F1, complétude F1, objectifs, contraintes et opérations prévues disponibles.                                  |
-| View model attendu                                    | `auditLandingViewModel` ou équivalent : état dossier, état objectifs, placeholder stratégie sans radar réel.                       |
-| Données lues                                          | Foyer, situation familiale, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues, complétude F1. |
-| Données éditables                                     | Aucune édition directe sur la landing ; édition via pages/drawers dédiés.                                                          |
-| Écriture dossier                                      | Aucune écriture depuis les cartes, hors navigation vers un drawer ou une page d'édition F1.                                        |
-| Drawers                                               | Aucun drawer obligatoire ; liens possibles vers drawers F1 existants après UX-03.                                                  |
-| SourceRefs / preuves                                  | Badges de provenance F1 si disponibles ; sinon état `source inconnue` sans confiance numérique.                                    |
-| États vide / partiel / complet / à vérifier / à venir | `vide`, `partiel`, `complet F1`, `données stratégiques à venir`.                                                                   |
-| CTA primaires                                         | Ouvrir/compléter le dossier F1 ; reprendre l'audit.                                                                                |
-| CTA secondaires                                       | Voir objectifs ; voir manques ; afficher ce qui reste à livrer.                                                                    |
-| Simulateurs à auditer / réutiliser                    | Aucun branchement simulateur. Lire seulement les patterns de cartes de synthèse des simulateurs actifs si utiles.                  |
-| Patterns UI à reprendre                               | Cartes élevées sans carte imbriquée, micro-tuiles plates, badges d'état non portés par la couleur seule.                           |
-| Interdits spécifiques                                 | Pas de radar réel, pas de faux patrimoine net, pas de score, pas de scénario activable, pas de mock métier trompeur.               |
-| Tests attendus                                        | Smoke auth `/audit`, rendu états `vide`/`partiel`/`complet`, absence de faux radar réel.                                           |
-| Hors-scope                                            | StrategyRadar, activation scénario, moteur F6, org-chart, patrimoine F3.                                                           |
-| PR cible d'implémentation                             | `UX-01`.                                                                                                                           |
+| Champ                                                 | Contrat                                                                                                                                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page / section rail                                   | Entrée `/audit` avec trois surfaces principales : Dossier patrimonial, Objectifs, Stratégie verrouillée, plus aperçus prospectifs non actifs.                                                      |
+| Objectif CGP                                          | Voir rapidement le niveau de complétude F1, les objectifs connus et les zones stratégiques encore non calculables.                                                                                 |
+| Dépendances fondations                                | `F1` + `UX-00b`. Livrable après `UX-00b`; les données stratégiques restent `à venir` tant que F6 manque.                                                                                           |
+| Source de vérité                                      | `DossierPatrimonial` F1, complétude F1, objectifs, contraintes et opérations prévues disponibles.                                                                                                  |
+| View model attendu                                    | `auditLandingViewModel` ou équivalent : état dossier, objectifs, TMI `à venir`, stratégie verrouillée, aucun radar réel.                                                                           |
+| Données lues                                          | Foyer, situation familiale, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues, complétude F1.                                                                 |
+| Données éditables                                     | Aucune édition directe sur la landing ; édition via pages/drawers dédiés.                                                                                                                          |
+| Écriture dossier                                      | Aucune écriture depuis les cartes, hors navigation vers un drawer ou une page d'édition F1.                                                                                                        |
+| Drawers                                               | Aucun drawer obligatoire ; liens possibles vers drawers F1 existants après UX-03.                                                                                                                  |
+| SourceRefs / preuves                                  | Badges de provenance F1 si disponibles ; sinon état `source inconnue` sans confiance numérique.                                                                                                    |
+| États vide / partiel / complet / à vérifier / à venir | `vide`, `partiel`, `complet F1`, TMI `à venir`, masses/société/versioning `à venir`, stratégie verrouillée.                                                                                        |
+| CTA primaires                                         | Ouvrir/compléter le dossier F1 ; reprendre l'audit.                                                                                                                                                |
+| CTA secondaires                                       | Voir objectifs ; voir manques ; afficher ce qui reste à livrer.                                                                                                                                    |
+| Simulateurs à auditer / réutiliser                    | Aucun branchement simulateur. Lire seulement les patterns de cartes de synthèse des simulateurs actifs si utiles.                                                                                  |
+| Patterns UI à reprendre                               | Cartes élevées sans carte imbriquée, micro-tuiles plates, badges d'état non portés par la couleur seule.                                                                                           |
+| Interdits spécifiques                                 | Pas de radar réel, pas de faux patrimoine net, pas de score, pas de scénario activable, pas de mock métier trompeur.                                                                               |
+| Tests attendus                                        | Smoke auth `/audit`, rendu états `vide`/`partiel`/`complet`, absence de faux radar réel.                                                                                                           |
+| Hors-scope                                            | Branchement réel StrategyRadar, activation scénario, moteur F6, org-chart F5 et patrimoine F3. Les aperçus peuvent rester visibles s'ils sont `à venir`, non sources de vérité et non interactifs. |
+| PR cible d'implémentation                             | `UX-01`.                                                                                                                                                                                           |
+
+Jalons prospectifs conservés par UX-01 :
+
+| Élément visible                         | Fichier / preuve UX-01                                                                               | Contrat d'honnêteté                                                           | PR cible / jalon |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------- |
+| TMI                                     | `src/features/audit/auditLandingViewModel.ts` expose seulement `tmiLabel: 'à venir'`                 | Ne pas afficher de taux réel tant que la fiscalité IR/TMI n'est pas raccordée | UX-06a           |
+| Masses successorales / patrimoine       | `src/features/audit/AuditLanding.tsx` rend un aperçu verrouillé `Masses successorales`               | Pas de droits, patrimoine net, IFI ou calcul successoral affiché en UX-01     | F3 puis UX-05    |
+| Organigramme société                    | `src/features/audit/AuditLanding.tsx` rend un aperçu `Organigramme société`                          | Nœuds génériques uniquement ; aucun lien de détention réel avant F5           | F5 puis UX-04    |
+| Versions & sauvegardes                  | `src/features/audit/AuditLanding.tsx` rend `Versions & sauvegardes` avec sauvegarde distante à venir | Pas de restauration/version active/scénario activable avant le versioning F6  | F6 puis UX-07    |
+| Stratégie, recommandations et scénarios | `src/features/audit/AuditLanding.tsx` rend `Stratégie` avec libellé `Verrouillé`                     | Non cliquable, pas de radar réel, pas de score, pas de scénario activable     | F6 puis UX-07    |
 
 ### Rail dynamique /audit
 

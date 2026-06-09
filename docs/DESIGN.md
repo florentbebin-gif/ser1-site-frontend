@@ -108,7 +108,7 @@ ou layouts non cadres ; les cards servent aux items repetes, outils cadres et mo
 
 La Home est une surface d'orientation, pas un catalogue. Le premier écran canonique affiche :
 
-- un rail gauche léger avec `Dossier chargé` et `Mode utilisateur` ;
+- un rail gauche léger avec `Dossier de travail` et `Mode utilisateur` ;
 - `PAR OÙ COMMENCER` au-dessus de deux cartes : `Nouvelle stratégie` dominante et `Scan documentaire` secondaire ;
 - un séparateur discret, puis `SIMULATEURS` et le sous-texte `Sélectionnez votre objectif, SER1 vous guide pas à pas.` ;
 - deux espaces fermés par défaut : `Foyer & patrimoine privé` et `Société & dirigeant`, chacun avec trois chips d'objectif.

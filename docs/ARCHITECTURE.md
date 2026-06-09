@@ -282,7 +282,8 @@ Get-ChildItem src -Recurse -Directory |
 - `src/App.tsx` : rendu JSX des routes via `APP_ROUTES.map()`. Résolution topbar via `getRouteMetadata(pathname)`.
 - React Router 7 reste utilisé en mode déclaratif (`BrowserRouter`, `<Routes>`, `<Route>`), avec imports depuis `react-router`.
 - `src/components/layout/AppLayout.tsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés)
-  et point d'injection unique du `DossierRail` sur `/audit`, `/strategy` et `/sim/*`.
+  et point d'injection unique du `DossierRail` sur `/strategy` et `/sim/*`. UX-01 laisse `/audit`
+  monter sa colonne cockpit dédiée.
 
 #### Routes Map (actuel)
 
@@ -291,26 +292,26 @@ Source (preuves) :
 - Définitions des routes : `src/routes/appRoutes.ts` (APP_ROUTES)
 - Rendu `<Routes>` : `src/App.tsx` (`APP_ROUTES.map(...)`)
 
-| Route                     | Accès        | Composant (runtime)     | Fichier / provenance                                                                                                                                                                                                              |
-| ------------------------- | ------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/login`                  | public       | `Login`                 | `src/pages/Login.tsx` (import direct)                                                                                                                                                                                             |
-| `/forgot-password`        | public       | `ForgotPassword`        | `src/pages/ForgotPassword.tsx` (import direct)                                                                                                                                                                                    |
-| `/set-password`           | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
-| `/reset-password`         | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                       |
-| `/`                       | privé        | `Home`                  | `src/pages/Home.tsx` via l'API publique `src/features/home`                                                                                                                                                                       |
-| `/audit`                  | privé + lazy | `AuditWizard`           | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) — workflow actif hors `/sim/*`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
-| `/strategy`               | privé + lazy | `StrategyPage`          | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`                         |
-| `/sim/placement`          | privé + lazy | `Placement`             | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`)                                                                                                                                        |
-| `/sim/credit`             | privé + lazy | `Credit`                | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`)                                                                                                                                                     |
-| `/sim/succession`         | privé + lazy | `SuccessionSimulator`   | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`)                                                                                                                                |
-| `/sim/per`                | privé + lazy | `PerHome`               | `src/features/per/PerHome.tsx`                                                                                                                                                                                                    |
-| `/sim/per/potentiel`      | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx`                                                                                                                                                                 |
-| `/sim/per/transfert`      | privé + lazy | `PerTransfertSimulator` | `src/features/per/transfert/PerTransfertSimulator.tsx` (réexporté par `src/features/per/transfert/index.ts`, puis `src/features/per/index.ts`)                                                                                    |
-| `/sim/epargne-salariale`  | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy)                                                                                                                                                                                      |
-| `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy)                                                                                                                                                                |
-| `/sim/prevoyance`         | privé + lazy | `PrevoyancePage`        | `src/features/prevoyance/PrevoyancePage.tsx` (V1 UI/UX sans moteur `src/engine`, règles RO lues via Settings/Supabase)                                                                                                            |
-| `/sim/ir`                 | privé + lazy | `Ir`                    | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`)                                                                                                                                                             |
-| `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                              |
+| Route                     | Accès        | Composant (runtime)     | Fichier / provenance                                                                                                                                                                                                                                             |
+| ------------------------- | ------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/login`                  | public       | `Login`                 | `src/pages/Login.tsx` (import direct)                                                                                                                                                                                                                            |
+| `/forgot-password`        | public       | `ForgotPassword`        | `src/pages/ForgotPassword.tsx` (import direct)                                                                                                                                                                                                                   |
+| `/set-password`           | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                                                      |
+| `/reset-password`         | public       | `SetPassword`           | `src/pages/SetPassword.tsx` (import direct)                                                                                                                                                                                                                      |
+| `/`                       | privé        | `Home`                  | `src/pages/Home.tsx` via l'API publique `src/features/home`                                                                                                                                                                                                      |
+| `/audit`                  | privé + lazy | `AuditPage`             | `src/features/audit/AuditPage.tsx` (exporté via `src/features/audit/index.ts`) — landing cockpit UX-01 puis bascule interne vers `AuditWizard`, avec draft de session, `ExportMenu` partagé et export PPTX isolé dans `src/features/audit/export/exportAudit.ts` |
+| `/strategy`               | privé + lazy | `StrategyPage`          | `src/pages/StrategyPage.tsx` (lazy) — workflow actif dépendant d'un draft d'audit, avec `SimFieldShell` pour la saisie produit et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`                                                        |
+| `/sim/placement`          | privé + lazy | `Placement`             | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`)                                                                                                                                                                       |
+| `/sim/credit`             | privé + lazy | `Credit`                | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`)                                                                                                                                                                                    |
+| `/sim/succession`         | privé + lazy | `SuccessionSimulator`   | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`)                                                                                                                                                               |
+| `/sim/per`                | privé + lazy | `PerHome`               | `src/features/per/PerHome.tsx`                                                                                                                                                                                                                                   |
+| `/sim/per/potentiel`      | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx`                                                                                                                                                                                                |
+| `/sim/per/transfert`      | privé + lazy | `PerTransfertSimulator` | `src/features/per/transfert/PerTransfertSimulator.tsx` (réexporté par `src/features/per/transfert/index.ts`, puis `src/features/per/index.ts`)                                                                                                                   |
+| `/sim/epargne-salariale`  | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy)                                                                                                                                                                                                                     |
+| `/sim/tresorerie-societe` | privé + lazy | `TresorerieSocietePage` | `src/features/tresorerie-societe/TresorerieSocietePage.tsx` (lazy)                                                                                                                                                                                               |
+| `/sim/prevoyance`         | privé + lazy | `PrevoyancePage`        | `src/features/prevoyance/PrevoyancePage.tsx` (V1 UI/UX sans moteur `src/engine`, règles RO lues via Settings/Supabase)                                                                                                                                           |
+| `/sim/ir`                 | privé + lazy | `Ir`                    | `src/features/ir/IrPage.tsx` (exporté via `src/features/ir/index.ts`)                                                                                                                                                                                            |
+| `/settings/*`             | privé + lazy | `SettingsShell`         | `src/pages/SettingsShell.tsx` (lazy)                                                                                                                                                                                                                             |
 
 Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit, pas aux simulateurs. La route cible sera une surface privée hors `/sim/*`, par exemple `/audit/documents` ou une étape interne de `/audit`, avec accès depuis la Home dans le bloc `PAR OÙ COMMENCER`. Ne pas créer `/sim/ia` ni ajouter le scan dans la grille des simulateurs.
 
@@ -323,13 +324,14 @@ Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit,
   la registry simulateurs ;
 - il utilise `src/routes/dossierRailRouteContext.ts` pour relier la route courante aux contrats
   `SIM_ROUTE_CONTRACTS` sans créer de seconde source de routes ;
-- il affiche le rail complet sur desktop pour `/audit` et `/strategy`, le rail compact sur desktop
-  pour `/sim/*`, et seulement une pastille courte sur mobile ;
+- il affiche le rail complet sur desktop pour `/strategy`, le rail compact sur desktop pour `/sim/*`,
+  et seulement une pastille courte sur mobile ;
 - il ne duplique pas les actions globales de topbar : sauvegarde, chargement, reset, export et mode
   restent dans leurs composants existants.
-- `AppLayout` ajoute la carte `Dossier chargé` au-dessus du rail sur `/audit`, `/strategy` et
-  `/sim/*`, sans rendre le sélecteur `Mode utilisateur`. Ce dernier reste réservé à la Home ; les
-  simulateurs gardent leurs toggles locaux lorsqu'ils existent.
+- `AppLayout` ajoute la carte `Dossier de travail` au-dessus du rail sur `/strategy` et `/sim/*`,
+  sans rendre le sélecteur `Mode utilisateur`. Ce dernier reste réservé à la Home ; les simulateurs
+  gardent leurs toggles locaux lorsqu'ils existent. `/audit` UX-01 possède sa propre colonne gauche
+  avec `Dossier de travail` et les sauvegardes/versioning `à venir`.
 
 `DossierVersion`, `StrategyActivation` et `SourceRef` existent comme contrats de domaine purs dans
 `src/domain/dossier/types.ts`. La version affichée par le rail reste une version de travail.
