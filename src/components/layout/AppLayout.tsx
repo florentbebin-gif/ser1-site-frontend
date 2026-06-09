@@ -194,6 +194,7 @@ export function AppLayout({
               testId="dossier-loaded-card"
               filenameTestId="dossier-loaded-filename"
               disclaimerTestId="dossier-loaded-disclaimer"
+              variant="rail"
             />
             <DossierRail
               viewModel={dossierRailViewModel}

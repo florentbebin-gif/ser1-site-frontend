@@ -148,7 +148,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     path: '/audit',
     component: AuditPage,
     lazy: true,
-    contextLabel: 'Audit',
+    contextLabel: 'Dossier patrimonial',
     topbar: { ...SIM_TOPBAR, resetKey: 'audit' },
   },
   {

@@ -19,6 +19,12 @@ export interface AuditLandingAction {
 }
 
 export type AuditLandingMemberRole = 'principal' | 'conjoint' | 'enfant';
+export type AuditLandingAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
+
+export interface AuditLandingCompletionHint {
+  ratio: number;
+  label: string;
+}
 
 export interface AuditLandingMember {
   id: string;
@@ -28,6 +34,7 @@ export interface AuditLandingMember {
   profession: string | null;
   role: AuditLandingMemberRole;
   estCommun: boolean;
+  avatarKind: AuditLandingAvatarKind;
 }
 
 export interface AuditLandingSyntheseCard {
@@ -41,6 +48,7 @@ export interface AuditLandingSyntheseCard {
   /** La TMI dépend des revenus, absents de F1. */
   tmiLabel: string;
   filiationHasData: boolean;
+  etatCivilCompletion: AuditLandingCompletionHint;
   action: AuditLandingAction;
   ariaLabel: string;
 }
@@ -124,16 +132,25 @@ function buildSyntheseCard(
   const enfants = enfantsRaw.map((enfant) => toMember(enfant, 'enfant', now));
 
   const partsFiscales = engaged ? computeParts(statut, enfants.length) : null;
+  const situationLabel = engaged ? SITUATION_FAMILIALE_LABELS[statut] : null;
 
   return {
     hasData: engaged,
     principal,
     conjoint,
     enfants,
-    situationLabel: engaged ? SITUATION_FAMILIALE_LABELS[statut] : null,
+    situationLabel,
     partsFiscales,
     tmiLabel: 'à venir',
     filiationHasData: Boolean(principal) || enfants.length > 0,
+    etatCivilCompletion: buildEtatCivilCompletion({
+      principal,
+      conjoint,
+      enfants,
+      situationLabel,
+      partsFiscales,
+      isCouple,
+    }),
     action: { destination: 'dossier' },
     ariaLabel: engaged
       ? 'Synthèse dossier — ouvrir et compléter le foyer'
@@ -171,7 +188,7 @@ function buildPilotageCard(): AuditLandingPilotageCard {
   return {
     title: 'Stratégie',
     description: 'Disponible après structuration du dossier.',
-    caption: 'Scénarios · pistes à vérifier · activation future',
+    caption: 'Scénarios et pistes activés après structuration.',
   };
 }
 
@@ -220,7 +237,79 @@ function toMember(
     profession: membre.profession?.trim() || null,
     role,
     estCommun: membre.estCommun ?? true,
+    avatarKind: inferAvatarKind(role, prenom || nom),
   };
+}
+
+function buildEtatCivilCompletion({
+  principal,
+  conjoint,
+  enfants,
+  situationLabel,
+  partsFiscales,
+  isCouple,
+}: {
+  principal: AuditLandingMember | null;
+  conjoint: AuditLandingMember | null;
+  enfants: AuditLandingMember[];
+  situationLabel: string | null;
+  partsFiscales: number | null;
+  isCouple: boolean;
+}): AuditLandingCompletionHint {
+  const checks = [
+    Boolean(principal?.fullName.trim()),
+    principal?.age != null,
+    Boolean(situationLabel),
+    !isCouple || Boolean(conjoint),
+    enfants.every((enfant) => enfant.prenom.trim().length > 0),
+    partsFiscales != null,
+  ];
+  const completed = checks.filter(Boolean).length;
+  const ratio = checks.length === 0 ? 0 : completed / checks.length;
+
+  return {
+    ratio,
+    label: `Données état civil renseignées : ${completed}/${checks.length}`,
+  };
+}
+
+function inferAvatarKind(role: AuditLandingMemberRole, label: string): AuditLandingAvatarKind {
+  if (role === 'principal') return 'homme';
+  if (role === 'conjoint') return 'femme';
+
+  const normalized = label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  const feminineFirstNames = new Set([
+    'alice',
+    'camille',
+    'chloe',
+    'claire',
+    'emma',
+    'jade',
+    'julie',
+    'lea',
+    'louise',
+    'marie',
+    'sophie',
+  ]);
+  const masculineFirstNames = new Set([
+    'gabriel',
+    'hugo',
+    'louis',
+    'marc',
+    'noah',
+    'paul',
+    'pierre',
+    'thomas',
+    'tom',
+  ]);
+
+  if (feminineFirstNames.has(normalized)) return 'fille';
+  if (masculineFirstNames.has(normalized)) return 'garcon';
+  return normalized.endsWith('a') || normalized.endsWith('e') ? 'fille' : 'garcon';
 }
 
 function computeAge(dateNaissance: string | undefined, now: Date): number | null {

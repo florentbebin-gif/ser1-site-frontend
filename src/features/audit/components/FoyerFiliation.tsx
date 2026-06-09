@@ -2,14 +2,19 @@
  * FoyerFiliation — schéma de filiation premium dérivé du dossier F1.
  *
  * SVG autonome (connecteurs en courbes de Bézier, pastilles de largeur égale,
- * micro-avatars à initiale). Lecture seule : seuls les membres réellement
+ * avatars PNG importés). Lecture seule : seuls les membres réellement
  * présents dans le dossier sont rendus. La distinction fine des enfants d'une
  * première union sera reprise plus tard (voir roadmap famille).
  */
 
 import type { ReactElement } from 'react';
 
-import type { AuditLandingMember } from '../auditLandingViewModel';
+import avatarFemmeUrl from '@/assets/audit/avatars/avatar-femme.png';
+import avatarFilleUrl from '@/assets/audit/avatars/avatar-fille.png';
+import avatarGarconUrl from '@/assets/audit/avatars/avatar-garcon.png';
+import avatarHommeUrl from '@/assets/audit/avatars/avatar-homme.png';
+
+import type { AuditLandingAvatarKind, AuditLandingMember } from '../auditLandingViewModel';
 
 interface FoyerFiliationProps {
   principal: AuditLandingMember | null;
@@ -18,21 +23,27 @@ interface FoyerFiliationProps {
   hasData: boolean;
 }
 
-const PILL_HEIGHT = 30;
-const AVATAR_R = 9;
+const PILL_HEIGHT = 42;
+const AVATAR_R = 12;
 const Y_PARENTS = 12;
-const Y_CHILDREN = 92;
+const Y_CHILDREN = 108;
 const BOND_GAP = 20;
 const CHILD_GAP = 12;
 const MARGIN = 8;
+const AVATAR_URLS: Record<AuditLandingAvatarKind, string> = {
+  homme: avatarHommeUrl,
+  femme: avatarFemmeUrl,
+  garcon: avatarGarconUrl,
+  fille: avatarFilleUrl,
+};
 
 type NodeVariant = 'parent' | 'enfant';
 
 interface LaidOutNode {
   x: number;
   label: string;
-  initial: string;
   variant: NodeVariant;
+  avatarKind: AuditLandingAvatarKind;
 }
 
 export function FoyerFiliation({
@@ -49,7 +60,7 @@ export function FoyerFiliation({
     Boolean(member),
   );
   const labels = [...parents, ...enfants].map((member) => member.prenom);
-  const pillWidth = clamp(78, Math.max(...labels.map((label) => label.length)) * 7.2 + 34, 150);
+  const pillWidth = clamp(66, Math.max(...labels.map((label) => label.length)) * 6.2 + 30, 86);
 
   const parentsWidth =
     parents.length === 2 ? pillWidth * 2 + BOND_GAP : parents.length === 1 ? pillWidth : 0;
@@ -66,8 +77,8 @@ export function FoyerFiliation({
     parentNodes.push({
       x: parentsStart + index * (pillWidth + BOND_GAP),
       label: member.prenom,
-      initial: initialOf(member.prenom),
       variant: 'parent',
+      avatarKind: member.avatarKind,
     });
   });
 
@@ -77,8 +88,8 @@ export function FoyerFiliation({
     childNodes.push({
       x: childrenStart + index * (pillWidth + CHILD_GAP),
       label: member.prenom,
-      initial: initialOf(member.prenom),
       variant: 'enfant',
+      avatarKind: member.avatarKind,
     });
   });
 
@@ -132,10 +143,12 @@ interface FiliationPillProps {
 }
 
 function FiliationPill({ node, y, width }: FiliationPillProps): ReactElement {
-  const avatarCx = node.x + 6 + AVATAR_R;
-  const avatarCy = y + PILL_HEIGHT / 2;
+  const avatarCx = node.x + width / 2;
+  const avatarCy = y + AVATAR_R + 4;
   return (
-    <g className={`audit-fil__node audit-fil__node--${node.variant}`}>
+    <g
+      className={`audit-fil__node audit-fil__node--${node.variant} audit-fil__node--${node.avatarKind}`}
+    >
       <rect
         x={round(node.x)}
         y={y}
@@ -143,21 +156,13 @@ function FiliationPill({ node, y, width }: FiliationPillProps): ReactElement {
         height={PILL_HEIGHT}
         rx={PILL_HEIGHT / 2}
       />
-      <circle className="audit-fil__avatar" cx={round(avatarCx)} cy={avatarCy} r={AVATAR_R} />
-      <text
-        className="audit-fil__initial"
-        x={round(avatarCx)}
-        y={avatarCy}
-        dominantBaseline="central"
-        textAnchor="middle"
-      >
-        {node.initial}
-      </text>
+      <FiliationAvatar kind={node.avatarKind} cx={avatarCx} cy={avatarCy} />
       <text
         className="audit-fil__name"
-        x={round(avatarCx + AVATAR_R + 6)}
-        y={avatarCy}
+        x={round(node.x + width / 2)}
+        y={y + PILL_HEIGHT - 9}
         dominantBaseline="central"
+        textAnchor="middle"
       >
         {node.label}
       </text>
@@ -165,8 +170,30 @@ function FiliationPill({ node, y, width }: FiliationPillProps): ReactElement {
   );
 }
 
-function initialOf(label: string): string {
-  return label.trim().charAt(0).toUpperCase() || '—';
+interface FiliationAvatarProps {
+  kind: AuditLandingAvatarKind;
+  cx: number;
+  cy: number;
+}
+
+function FiliationAvatar({ kind, cx, cy }: FiliationAvatarProps): ReactElement {
+  return (
+    <g
+      className={`audit-fil__avatar audit-fil__avatar--${kind}`}
+      transform={`translate(${round(cx)} ${cy})`}
+    >
+      <circle className="audit-fil__avatar-frame" cx="0" cy="0" r={AVATAR_R} />
+      <image
+        className="audit-fil__avatar-image"
+        href={AVATAR_URLS[kind]}
+        x={-AVATAR_R}
+        y={-AVATAR_R}
+        width={AVATAR_R * 2}
+        height={AVATAR_R * 2}
+        preserveAspectRatio="xMidYMid slice"
+      />
+    </g>
+  );
 }
 
 function clamp(min: number, value: number, max: number): number {
