@@ -23,6 +23,8 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'income-tax-decote-current',
       'quotient-familial-plafond-current',
       'income-tax-dom-abatement-current',
+      'abat10-salaries-current',
+      'abat10-pensions-current',
       'cehr-current',
       'cdhr-current',
       'pfu-ir-current',
