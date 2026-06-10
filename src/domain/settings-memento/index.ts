@@ -1,5 +1,16 @@
 export { MEMENTO_CHAPTERS } from './chapters';
 export { MEMENTO_ENTRIES } from './entries';
+export {
+  ROADMAP_ONLY_SIMULATOR_IDS,
+  SIMULATOR_MEMENTO_COVERAGE,
+  getCoverageForSimulator,
+  listCoverageForChapter,
+  validateSimulatorMementoCoverage,
+  type RoadmapOnlySimulatorId,
+  type SimulatorCoverageEntry,
+  type SimulatorCoverageTarget,
+  type SimulatorCoverageValidationResult,
+} from './simulatorCoverage';
 export { validateMementoTaxonomy } from './validators';
 export {
   MEMENTO_COVERAGE_SOURCE_VALUES,

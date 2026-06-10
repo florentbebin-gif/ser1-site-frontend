@@ -258,6 +258,13 @@ Garde-fous :
 
 - `validateMementoTaxonomy` valide unicité, préfixes de clés, statuts, liens vers
   `settings-registry`, `settings-references`, `legal-references` et `SIMULATOR_REGISTRY`.
+- `SIMULATOR_MEMENTO_COVERAGE` rattache chaque `SimulatorDefinition` à un chapitre mémento sans
+  recopier routes, labels runtime ou lifecycle. Les sous-types listés dans `docs/ROADMAP.md`
+  pointent leur parent registry, et les cinq exceptions ROADMAP-only restent explicites tant
+  qu'elles ne sont pas dans `SIMULATOR_REGISTRY`.
+- `validateSimulatorMementoCoverage` bloque les simulateurs registry absents ou dupliqués, les
+  sous-types non déclarés par leur parent, les collisions ROADMAP-only et tout lifecycle
+  `planned`, `placeholder` ou `internalOnly` marqué `couvert` côté mémento.
 - Les tests `src/domain/settings-memento/__tests__/settingsMemento.test.ts` verrouillent les 14
   chapitres canoniques et refusent taux, montants, plafonds, seuils, assiettes, abattements,
   barèmes chiffrés ou formules de calcul dans les textes du mémento.
