@@ -203,6 +203,21 @@ describe('settings-memento simulatorCoverage', () => {
         },
       ),
     );
+    const coverageWithCoveredRoadmapOnly = validateSimulatorMementoCoverage(
+      withReplacement(
+        (entry) => entry.target.kind === 'roadmap-only' && entry.target.roadmapId === 'obo',
+        {
+          target: {
+            kind: 'roadmap-only',
+            roadmapId: 'obo',
+            roadmapLabel: 'OBO',
+          },
+          chapterId: 'societe',
+          sectionLabel: 'OBO',
+          expectedStatus: 'couvert',
+        },
+      ),
+    );
     const coverageWithoutChapter = validateSimulatorMementoCoverage(
       SIMULATOR_MEMENTO_COVERAGE.filter((entry) => entry.chapterId !== 'civil'),
     );
@@ -219,6 +234,9 @@ describe('settings-memento simulatorCoverage', () => {
     );
     expect(coverageWithCoveredPlanned.errors).toContain(
       'filiation: lifecycle planned ne peut pas avoir expectedStatus couvert.',
+    );
+    expect(coverageWithCoveredRoadmapOnly.errors).toContain(
+      'obo: roadmap-only ne peut pas avoir expectedStatus couvert avant son entrée dans la registry simulateurs.',
     );
     expect(coverageWithoutChapter.errors).toContain(
       'Chapitre mémento sans couverture simulateur : civil.',
