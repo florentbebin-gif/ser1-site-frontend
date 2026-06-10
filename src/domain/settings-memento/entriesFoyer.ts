@@ -10,11 +10,12 @@ export const MEMENTO_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Simulateur filiation planifié ; le dossier central porte la composition familiale sans moteur dédié.',
+    priority: 'critique',
     ownerPagePath: null,
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-civil-757'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['filiation'],
   },
   {
@@ -26,11 +27,12 @@ export const MEMENTO_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Simulateur budget planifié ; aucune source officielle requise car le thème ne porte pas de règle fiscale.',
+    priority: 'structurant',
     ownerPagePath: null,
     registryKeys: [],
     claimKeys: [],
     refIds: [],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['budget'],
   },
   {
@@ -42,11 +44,12 @@ export const MEMENTO_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Simulateur régime matrimonial planifié ; les règles civiles guident déjà le moteur succession via la page DMTG.',
+    priority: 'critique',
     ownerPagePath: '/settings/dmtg-succession',
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-civil-265', 'code-civil-1515', 'code-civil-1516', 'code-civil-1094-1'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['regime-matrimonial'],
   },
   {
@@ -58,11 +61,12 @@ export const MEMENTO_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Simulateur donations antérieures planifié ; le rappel fiscal et ses paramètres restent portés par la page DMTG.',
+    priority: 'critique',
     ownerPagePath: '/settings/dmtg-succession',
     registryKeys: [],
     claimKeys: [],
     refIds: ['cgi-784', 'code-civil-843'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['donations-anterieures'],
   },
   {
@@ -74,11 +78,12 @@ export const MEMENTO_FOYER_ENTRIES = [
     status: 'a_verifier',
     statusReason:
       'Étape interne du dossier sans moteur autonome ; périmètre et sources à confirmer avant toute couverture.',
+    priority: 'critique',
     ownerPagePath: null,
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-civil-578'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['actif-passif'],
   },
 ] as const satisfies readonly MementoEntry[];

@@ -1,6 +1,6 @@
 # Macro-roadmap settings — Mémento patrimonial & social SER1
 
-Roadmap structurante du chantier mémento (38 PR). Pointée depuis `docs/ROADMAP.md` § « Mémento settings — roadmap dédiée ».
+Roadmap structurante du chantier mémento (38 PR métier + PR6b de stabilisation). Pointée depuis `docs/ROADMAP.md` § « Mémento settings — roadmap dédiée ».
 
 ## Statut d'avancement
 
@@ -14,21 +14,23 @@ Dernière mise à jour : 2026-06-10.
 | PR 4 — Coverage adapter et audit mémento         | `coverage.ts`, `check:memento-coverage` branché dans `check:static`                                 | **Livrée** (PR #588, commit `744dffb0`) |
 | PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif | **Livrée** (PR #590)                    |
 | PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                        | **Livrée** (PR #591)                    |
-| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Prochaine étape**                     |
+| PR6b — UX mémento et gouvernance sources         | Séparation vue métier/audit, priorités, intentions, sources externes génériques                     | **Livrée**                              |
+| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Prochaine PR métier**                 |
 | PR 8 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
 
 Rappels non négociables (détail en section B) :
 
 - `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul ni une page d'édition unique.
 - Les pages settings existantes restent propriétaires des écritures ; les moteurs restent propriétaires des calculs.
-- Laplace sert uniquement de grille de couverture ; l'Excel charges sociales et le PDF retraite sont des matériaux candidats, jamais des sources officielles.
+- La vue métier du mémento est séparée de l'audit coverage technique ; les priorités et intentions orientent la lecture CGP sans remplacer les statuts.
+- Les supports professionnels externes non versionnés peuvent seulement servir d'aide temporaire de cadrage ; ils ne sont jamais cités, référencés, copiés, versionnés, affichés ni utilisés comme sources SER1.
 - La taxonomie mémento ne porte aucun taux, barème, seuil, assiette ni formule.
 
 ## A. Diagnostic de la roadmap précédente
 
-La version précédente en 35 PR corrigeait correctement la première version trop découpée : elle gardait `/settings/memento` comme hub, préservait les routes historiques, séparait les propriétaires d'écriture et traitait l'Excel charges sociales comme matériau candidat. Elle couvrait aussi la fiscalité, les charges sociales, la retraite, la prévoyance, les placements, la transmission et le lexique.
+La version précédente en 35 PR corrigeait correctement la première version trop découpée : elle gardait `/settings/memento` comme hub, préservait les routes historiques, séparait les propriétaires d'écriture et traitait les supports de cadrage non versionnés comme des aides temporaires. Elle couvrait aussi la fiscalité, les charges sociales, la retraite, la prévoyance, les placements, la transmission et le lexique.
 
-Le manque principal est plus structurant : le mémento ne doit pas seulement refléter les thèmes Laplace, l'Excel et le PDF retraite. Il doit aussi devenir la grille de couverture des simulateurs et sous-types prévus par `docs/ROADMAP.md` et par `src/domain/simulators`. Cela inclut les entrées `planned`, `placeholder`, `internalOnly`, les sous-types non autonomes et les éléments ROADMAP-only comme OBO, prévoyance dirigeant, fiscalité société interne ou succession/liquidité société.
+Le manque principal est plus structurant : le mémento ne doit pas refléter des supports externes non versionnés. Il doit devenir la grille de couverture des simulateurs et sous-types prévus par `docs/ROADMAP.md` et par `src/domain/simulators`. Cela inclut les entrées `planned`, `placeholder`, `internalOnly`, les sous-types non autonomes et les éléments ROADMAP-only comme OBO, prévoyance dirigeant, fiscalité société interne ou succession/liquidité société.
 
 Le bloc société/comptabilité était insuffisant : une PR générique "Société, IS et fiscalité dirigeant" ne couvre pas le périmètre F5 de `docs/ROADMAP.md`. La roadmap canonique demande explicitement organigramme, bilans/liasses comme sources dossier, projection comptable, réserves, résultat distribuable, CCA, capitaux propres, primes, emprunts, immobilisations, immobilier détenu, valorisation titres, holding, apport-cession, cession, OBO, Dutreil et transmission entreprise.
 
@@ -45,8 +47,11 @@ Preuves repo utilisées :
 
 ## B. Décisions corrigées
 
-- Source de couverture métier Laplace : https://laplace-groupe.com/documents/pdf/451/laplace_memento.pdf.
+- Les supports professionnels externes non versionnés éventuellement consultés pendant le cadrage servent uniquement d'aide temporaire d'inspiration ou de vérification de couverture. Ils ne sont jamais cités, référencés comme source, copiés, reproduits, versionnés, utilisés comme oracle de test, utilisés pour trancher une règle, affichés dans l'UI ou mentionnés comme source SER1.
 - `/settings/memento` reste un hub dédié. Il ne remplace pas immédiatement la redirection actuelle de `/settings`.
+- `/settings/memento` sépare la vue métier CGP de l'audit coverage technique.
+- Les priorités métier (`critique`, `structurant`, `utile`, `complementaire`) qualifient l'importance d'une entrée sans remplacer son statut de couverture.
+- Les intentions métier projettent les chapitres existants vers les parcours utilisateur ; elles ne créent pas une taxonomie concurrente.
 - Les anciennes pages settings restent propriétaires des écritures, validations, hooks, caches et sources.
 - `/settings/comptables-societes` devient la page propriétaire des règles société, comptables, IS, valorisation, épargne salariale, apport-cession et PV mobilières.
 - `/settings/prelevements` reste propriétaire des prélèvements sociaux, charges sociales dirigeant, cotisations retraite, PASS/PMSS et assimilé salarié.
@@ -58,13 +63,13 @@ Preuves repo utilisées :
 - Un simulateur `planned` ne devient jamais actif, routé ou cliquable parce qu'il apparaît dans le mémento.
 - La taxonomie mémento ne contient pas de taux, barèmes, seuils, assiettes ou formules.
 - Les statuts mémento attendus incluent `couvert`, `partiel`, `planned`, `absent`, `a_verifier` et `blocked_missing_official_source`.
-- Les sources Laplace/PDF retraite/Excel structurent la couverture ; les calculs nécessitent des sources officielles.
+- Les sources opposables et versionnées restent les sources officielles ou institutionnelles adaptées ; les calculs nécessitent toujours ces sources.
 
 ### Règle d'arbitrage documentaire
 
-En cas de doute sur la couverture métier d'un thème patrimonial, fiscal, social, retraite, prévoyance, société ou transmission, le mémento Laplace peut être utilisé comme checklist de couverture.
+En cas de doute sur la couverture métier d'un thème patrimonial, fiscal, social, retraite, prévoyance, société ou transmission, un support professionnel externe non versionné peut seulement servir d'aide temporaire de cadrage hors repo.
 
-En revanche, le mémento Laplace ne tranche jamais :
+Ces supports ne tranchent jamais :
 
 - une valeur ;
 - un taux ;
@@ -72,13 +77,14 @@ En revanche, le mémento Laplace ne tranche jamais :
 - une formule ;
 - une condition d'éligibilité ;
 - une règle de calcul ;
-- une doctrine juridique opposable.
+- une doctrine juridique opposable ;
+- un résultat de test.
 
 Pour toute règle consommée par SER1, la source officielle prévaut : CGI, BOFiP, Code civil, Code de commerce, Code de la sécurité sociale, BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO, CNAVPL, MSA, caisses professionnelles, Legifrance ou source institutionnelle adaptée.
 
-Si Laplace mentionne une thématique mais qu'aucune source officielle n'est trouvée, l'entrée mémento doit rester en `a_verifier` ou `blocked_missing_official_source`.
+Si une thématique est identifiée sans source officielle qualifiée, l'entrée mémento doit rester en `a_verifier` ou `blocked_missing_official_source`.
 
-Si Laplace est en contradiction avec une source officielle, la source officielle prévaut.
+Si un support de cadrage externe contredit une source officielle, la source officielle prévaut.
 
 ## C. Nouvelle structure par parties
 
@@ -116,11 +122,11 @@ Critères de sortie : chaque simulateur foyer/société de la matrice cible poin
 
 ### Partie 3 — Charges sociales et dirigeant
 
-Objectif : couvrir les charges sociales Excel, les régimes et le dirigeant sans transformer OCR ou Excel en source officielle.
+Objectif : couvrir les charges sociales, les régimes et le dirigeant sans transformer un support de cadrage ou un artefact d'import en source officielle.
 
 Contenu métier : salarié standard, SSI, CARMF, caisses libérales, CIPAV, MSA, assimilé salarié, rémunération dirigeant, TNS.
 
-Contenu technique : modèle social, pipeline Excel/OCR, statuts de validation, tests candidats/goldens.
+Contenu technique : modèle social, pipeline d'import ou OCR futur, statuts de validation, tests candidats/goldens.
 
 Nombre cible : 12 PR.
 
@@ -174,7 +180,7 @@ Commits recommandés :
 
 - modèle domaine `settings-memento`;
 - statuts `couvert`, `partiel`, `planned`, `absent`, `a_verifier`, `blocked_missing_official_source`;
-- règles source de couverture vs source officielle;
+- règles support de cadrage vs source officielle;
 - documentation gouvernance;
 - tests anti-valeurs dans la taxonomie.
 
@@ -186,7 +192,7 @@ Fichiers probables : `src/domain/settings-memento/*`, `docs/ARCHITECTURE.md`, `d
 
 Données / settings concernés : `settings-registry`, `settings-references`, `legal-references` en lecture.
 
-Références à rattacher : sources officielles non obligatoires à ce stade ; Laplace/Excel/PDF retraite comme couverture uniquement.
+Références à rattacher : sources officielles non obligatoires à ce stade ; supports professionnels externes non versionnés seulement comme aide temporaire de cadrage hors repo.
 
 Tests / checks attendus : `check:settings-registry`, `check:legal-references`, `check:fiscal-hardcode`, `npm run check`.
 

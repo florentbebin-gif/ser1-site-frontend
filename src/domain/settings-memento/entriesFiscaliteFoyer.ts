@@ -10,6 +10,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'couvert',
     statusReason:
       'Paramètres administrés et sourcés via les claims settings-references de la page Impôts ; simulateur IR actif.',
+    priority: 'critique',
     ownerPagePath: '/settings/impots',
     registryKeys: [
       'impots.ir.bareme',
@@ -40,7 +41,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'boi-ir-liq-20-30-10',
       'boi-ir-chr',
     ],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['ir'],
   },
   {
@@ -52,11 +53,12 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'partiel',
     statusReason:
       'Seuls les montants saisis manuellement dans le simulateur IR sont reflétés ; aucun paramètre dédié n’est centralisé dans le registry settings.',
+    priority: 'utile',
     ownerPagePath: '/settings/impots',
     registryKeys: [],
     claimKeys: [],
     refIds: ['boi-ir-rici', 'boi-ir-rici-200'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: [],
   },
   {
@@ -68,6 +70,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'partiel',
     statusReason:
       'Barème courant administré et sourcé ; millésimes encore planifiés côté registry et simulateur IFI non livré.',
+    priority: 'structurant',
     ownerPagePath: '/settings/impots',
     registryKeys: ['impots.ifi.bareme', 'impots.ifi.millesimes'],
     claimKeys: ['ifi-current'],
@@ -77,7 +80,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'boi-pat-ifi-40-10',
       'base-source-art-973-cgi-ifi-abattement-residence-principale',
     ],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['ifi'],
   },
   {
@@ -89,6 +92,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Moteur revenus fonciers planifié ; le paramètre micro-foncier reste planned dans le registry settings.',
+    priority: 'structurant',
     ownerPagePath: '/settings/impots',
     registryKeys: ['immobilier.revenus-fonciers.micro-foncier'],
     claimKeys: [],
@@ -96,7 +100,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'base-source-art-28-cgi-revenus-fonciers',
       'base-source-bofip-rfpi-interets-et-frais-d-emprunt',
     ],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['revenus-fonciers'],
   },
   {
@@ -108,11 +112,12 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Moteur location meublée planifié ; les régimes restent planned dans le registry settings.',
+    priority: 'structurant',
     ownerPagePath: '/settings/impots',
     registryKeys: ['immobilier.lmnp-lmp.regimes'],
     claimKeys: [],
     refIds: ['boi-bic-champ-40', 'base-source-urssaf-lmp-cotisations-sociales'],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['lmnp-lmp'],
   },
   {
@@ -124,6 +129,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     status: 'planned',
     statusReason:
       'Moteur plus-values immobilières planifié ; le paramètre de durée de détention reste planned dans le registry settings.',
+    priority: 'structurant',
     ownerPagePath: '/settings/impots',
     registryKeys: ['immobilier.pv-immobilieres.abattements-duree'],
     claimKeys: [],
@@ -132,7 +138,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'boi-rfpi-pvi-10',
       'boi-rfpi-pvi-20',
     ],
-    coverageSources: ['laplace'],
+    coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['plus-values-immobilieres'],
   },
 ] as const satisfies readonly MementoEntry[];

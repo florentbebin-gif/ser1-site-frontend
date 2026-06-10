@@ -35,6 +35,7 @@ interface MementoChapterSectionProps {
   chapter: MementoChapter;
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
+  viewMode: 'metier' | 'audit';
   defaultOpen?: boolean;
 }
 
@@ -172,6 +173,7 @@ export default function MementoChapterSection({
   chapter,
   entries,
   coverage,
+  viewMode,
   defaultOpen = false,
 }: MementoChapterSectionProps): ReactElement {
   const rowCount = entries.length + coverage.length;
@@ -187,7 +189,9 @@ export default function MementoChapterSection({
       <div className="settings-memento-section">
         {entries.length > 0 && (
           <div className="settings-memento-section__group">
-            <p className="settings-memento-section__label">Entrées métier</p>
+            <p className="settings-memento-section__label">
+              {viewMode === 'metier' ? 'Vue métier' : 'Entrées métier'}
+            </p>
             <div className="settings-memento-section__rows">
               {entries.map((entry) => (
                 <MementoEntryRow key={entry.key} entry={entry} />
@@ -198,7 +202,9 @@ export default function MementoChapterSection({
 
         {coverage.length > 0 && (
           <div className="settings-memento-section__group">
-            <p className="settings-memento-section__label">Couverture simulateurs</p>
+            <p className="settings-memento-section__label">
+              {viewMode === 'audit' ? 'Audit coverage' : 'Couverture simulateurs'}
+            </p>
             <div className="settings-memento-section__rows">
               {coverage.map((entry) => (
                 <MementoCoverageRow key={coverageTargetId(entry)} entry={entry} />

@@ -4,16 +4,21 @@ import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
 import { SIMULATOR_DEFINITIONS } from '@/domain/simulators/registry';
 
 import {
+  MEMENTO_BUSINESS_PRIORITY_VALUES,
   MEMENTO_COVERAGE_SOURCE_VALUES,
   MEMENTO_STATUS_VALUES,
+  MEMENTO_USER_INTENT_VALUES,
   type MementoChapter,
+  type MementoChapterId,
   type MementoEntry,
   type MementoTaxonomyValidationResult,
 } from './types';
 
 interface MementoValidationCatalogs {
   coverageSources: ReadonlySet<string>;
+  intents: ReadonlySet<string>;
   legalReferenceIds: ReadonlySet<string>;
+  priorities: ReadonlySet<string>;
   registryKeys: ReadonlySet<string>;
   settingReferenceClaimKeys: ReadonlySet<string>;
   simulatorIds: ReadonlySet<string>;
@@ -22,7 +27,9 @@ interface MementoValidationCatalogs {
 
 const DEFAULT_CATALOGS: MementoValidationCatalogs = {
   coverageSources: new Set<string>(MEMENTO_COVERAGE_SOURCE_VALUES),
+  intents: new Set<string>(MEMENTO_USER_INTENT_VALUES),
   legalReferenceIds: new Set<string>(LEGAL_REFERENCES.map((reference) => reference.id)),
+  priorities: new Set<string>(MEMENTO_BUSINESS_PRIORITY_VALUES),
   registryKeys: SETTINGS_REGISTRY_KEYS,
   settingReferenceClaimKeys: new Set<string>(
     SETTINGS_REFERENCE_CHAIN.map((binding) => binding.claimKey),
@@ -180,6 +187,16 @@ function validateEntrySources(
   }
 }
 
+function validatePriority(
+  entry: MementoEntry,
+  catalogs: MementoValidationCatalogs,
+  errors: string[],
+): void {
+  if (!catalogs.priorities.has(entry.priority)) {
+    errors.push(`${entry.key}: priorité métier inconnue (${entry.priority}).`);
+  }
+}
+
 function validateStatus(
   entry: MementoEntry,
   catalogs: MementoValidationCatalogs,
@@ -218,6 +235,7 @@ function validateEntry(
   validateTextField(entry, 'label', errors);
   validateTextField(entry, 'description', errors);
   validateTextField(entry, 'statusReason', errors);
+  validatePriority(entry, catalogs, errors);
   validateStatus(entry, catalogs, errors);
   validateEntrySources(entry, catalogs, errors);
 }
@@ -229,13 +247,70 @@ export function validateMementoTaxonomy(
 ): MementoTaxonomyValidationResult {
   const errors: string[] = [];
   const mergedCatalogs = mergeCatalogs(catalogs);
-  const chapterIds = new Set<string>(chapters.map((chapter) => chapter.id));
+  const chapterIds = new Set<MementoChapterId>(chapters.map((chapter) => chapter.id));
 
   validateUniqueChapterIds(chapters, errors);
   validateEntryKeys(entries, chapterIds, errors);
 
   for (const entry of entries) {
     validateEntry(entry, mergedCatalogs, errors);
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+  };
+}
+
+interface MementoIntentValidationInput {
+  id: string;
+  label: string;
+  chapterIds: readonly string[];
+}
+
+export function validateMementoIntents(
+  chapters: readonly MementoChapter[],
+  intents: readonly MementoIntentValidationInput[],
+  catalogs?: Partial<Pick<MementoValidationCatalogs, 'intents'>>,
+): MementoTaxonomyValidationResult {
+  const errors: string[] = [];
+  const mergedCatalogs = mergeCatalogs(catalogs);
+  const chapterIds = new Set<MementoChapterId>(chapters.map((chapter) => chapter.id));
+  const coveredChapterIds = new Set<MementoChapterId>();
+  const seenIntentIds = new Set<string>();
+  const duplicateIntentIds = new Set<string>();
+
+  for (const intent of intents) {
+    if (seenIntentIds.has(intent.id)) duplicateIntentIds.add(intent.id);
+    seenIntentIds.add(intent.id);
+
+    if (!mergedCatalogs.intents.has(intent.id)) {
+      errors.push(`${intent.id}: intention métier inconnue.`);
+    }
+
+    validateTextValue(intent.id, 'label', intent.label, errors);
+
+    for (const chapterId of intent.chapterIds) {
+      const typedChapterId = chapterId as MementoChapterId;
+
+      if (!chapterIds.has(typedChapterId)) {
+        errors.push(`${intent.id}: chapitre mémento inconnu (${chapterId}).`);
+        continue;
+      }
+
+      coveredChapterIds.add(typedChapterId);
+    }
+  }
+
+  if (duplicateIntentIds.size > 0) {
+    errors.push(`Intentions métier dupliquées : ${[...duplicateIntentIds].join(', ')}`);
+  }
+
+  const missingChapterIds = [...chapterIds].filter(
+    (chapterId) => !coveredChapterIds.has(chapterId),
+  );
+  if (missingChapterIds.length > 0) {
+    errors.push(`Chapitres mémento sans intention métier : ${missingChapterIds.join(', ')}.`);
   }
 
   return {

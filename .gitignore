@@ -63,10 +63,9 @@ docs/veille-base-contrat.md
 .vercel
 .env*.local
 
-# Extractions locales (Mémento PDF -> JSON), scripts locaux non versionnés
+# Extractions locales issues de supports externes non versionnés
 extraction/
 scripts/_local/
 
-# Mémento Laplace local (contenu externe sous droits, ne jamais committer)
-/Mémento 2026.pdf
-/Memento 2026.pdf
+# Supports professionnels externes locaux (contenu sous droits, ne jamais committer)
+/*.pdf

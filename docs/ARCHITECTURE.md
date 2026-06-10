@@ -234,30 +234,44 @@ Les statuts canoniques sont :
 | `a_verifier`                      | Sujet à qualifier avant usage métier ou affichage plus engageant.                          |
 | `blocked_missing_official_source` | Sujet bloqué tant qu'une source officielle nommée n'a pas été qualifiée.                   |
 
-Les `coverageSources` (`laplace`, `excel-charges-sociales`, `pdf-retraite`) décrivent seulement une
-couverture documentaire candidate. Elles ne comptent jamais comme source officielle : une entrée
-`couvert` doit pointer un `refId` canonique ou un claim `settings-references`.
+Les priorités métier (`critique`, `structurant`, `utile`, `complementaire`) qualifient
+l'importance CGP d'une entrée sans remplacer son statut de couverture. Les intentions métier
+projettent les chapitres existants vers des parcours utilisateur ; elles ne créent pas de seconde
+taxonomie.
+
+La page `/settings/memento` expose deux lectures distinctes de la même source TypeScript :
+
+- vue métier : entrées mémento, intentions, priorités, statut, page propriétaire, simulateurs liés
+  et disponibilité des références officielles ;
+- audit coverage : lignes `SIMULATOR_MEMENTO_COVERAGE`, routes propriétaires, lifecycles, statuts
+  techniques et notes utiles aux checks.
+
+Les `coverageSources` (`cadrage-externe`) décrivent seulement une aide de cadrage non officielle et
+non versionnée. Elles ne comptent jamais comme source officielle : une entrée `couvert` doit pointer
+un `refId` canonique ou un claim `settings-references`.
 
 Gouvernance des sources de couverture :
 
-- Laplace est une checklist de couverture métier. Il aide à repérer un thème patrimonial, fiscal,
-  social, retraite, prévoyance, société ou transmission à ne pas oublier ; il ne tranche jamais un
-  taux, un barème, un seuil, une assiette, une formule ou une source normative.
-- Excel charges sociales, OCR, PDF retraite et autres documents candidats servent uniquement à
-  qualifier le périmètre. Ils ne deviennent pas une source officielle et ne peuvent pas justifier un
-  statut `couvert`.
+- Les supports professionnels externes non versionnés éventuellement consultés pendant le cadrage
+  peuvent seulement servir d'aide temporaire d'inspiration ou de vérification de couverture hors
+  repo.
+- Ils ne sont jamais cités, référencés comme source, copiés, reproduits, versionnés, utilisés comme
+  oracle de test, utilisés pour trancher un taux, un seuil, une formule, une condition ou une
+  doctrine, affichés dans l'UI ou mentionnés comme source SER1.
 - Pour toute règle consommée ou exposée par SER1, la source officielle prioritaire doit être un
   `refId` ou un claim rattaché à une source adaptée : CGI, BOFiP, Code civil, Code de commerce, Code
   de la sécurité sociale (CSS), BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO,
   CNAVPL, MSA, caisses professionnelles, Legifrance ou autre source institutionnelle pertinente.
-- Si Laplace ou une couverture candidate mentionne une thématique mais qu'aucune source officielle
-  n'est qualifiée, l'entrée reste `a_verifier` ou `blocked_missing_official_source`. En cas de
-  contradiction, la source officielle prévaut.
+- Si une thématique est identifiée sans source officielle qualifiée, l'entrée reste `a_verifier` ou
+  `blocked_missing_official_source`. En cas de contradiction avec un support de cadrage externe, la
+  source officielle prévaut.
 
 Garde-fous :
 
 - `validateMementoTaxonomy` valide unicité, préfixes de clés, statuts, liens vers
   `settings-registry`, `settings-references`, `legal-references` et `SIMULATOR_REGISTRY`.
+- `validateMementoIntents` valide les intentions connues, les chapitres rattachés et la couverture
+  de tous les chapitres par au moins une intention.
 - `SIMULATOR_MEMENTO_COVERAGE` rattache chaque `SimulatorDefinition` à un chapitre mémento sans
   recopier routes, labels runtime ou lifecycle. Les sous-types listés dans `docs/ROADMAP.md`
   pointent leur parent registry, et les cinq exceptions ROADMAP-only restent explicites tant

@@ -5,10 +5,15 @@ import type { SettingRegistryKey } from '@/domain/settings-registry';
 import type { SimulatorId } from '@/domain/simulators/registry';
 
 import {
+  MEMENTO_BUSINESS_PRIORITY_VALUES,
   MEMENTO_CHAPTERS,
+  MEMENTO_COVERAGE_SOURCE_VALUES,
   MEMENTO_ENTRIES,
   MEMENTO_STATUS_VALUES,
+  MEMENTO_USER_INTENTS,
+  MEMENTO_USER_INTENT_VALUES,
   getCoverageForSimulator,
+  validateMementoIntents,
   validateMementoTaxonomy,
 } from '../index';
 import type { MementoEntry } from '../types';
@@ -20,11 +25,12 @@ const validEntry = (overrides: Partial<MementoEntry> = {}): MementoEntry => ({
   description: 'Doctrine et rattachement des règles IR aux settings propriétaires.',
   status: 'couvert',
   statusReason: 'Sources officielles connues via le chaînage settings existant.',
+  priority: 'critique',
   ownerPagePath: '/settings/impots',
   registryKeys: ['impots.ir.bareme'],
   claimKeys: ['income-tax-scale-current'],
   refIds: [],
-  coverageSources: ['laplace'],
+  coverageSources: ['cadrage-externe'],
   relatedSimulatorIds: ['ir'],
   ...overrides,
 });
@@ -39,6 +45,27 @@ describe('settings-memento', () => {
       'a_verifier',
       'blocked_missing_official_source',
     ]);
+  });
+
+  it('déclare les priorités, intentions et sources de cadrage canoniques', () => {
+    expect(MEMENTO_BUSINESS_PRIORITY_VALUES).toEqual([
+      'critique',
+      'structurant',
+      'utile',
+      'complementaire',
+    ]);
+    expect(MEMENTO_USER_INTENT_VALUES).toEqual([
+      'verifier-fiscalite',
+      'preparer-transmission',
+      'proteger-famille',
+      'piloter-dirigeant',
+      'preparer-retraite',
+      'structurer-societe',
+      'investir-immobilier',
+      'optimiser-placements',
+      'comprendre-couverture',
+    ]);
+    expect(MEMENTO_COVERAGE_SOURCE_VALUES).toEqual(['cadrage-externe']);
   });
 
   it('verrouille les 14 chapitres canoniques', () => {
@@ -66,6 +93,26 @@ describe('settings-memento', () => {
     expect(MEMENTO_ENTRIES.length).toBeGreaterThan(0);
     expect(result.errors).toEqual([]);
     expect(result.ok).toBe(true);
+  });
+
+  it('valide les intentions métier réelles et leur couverture des chapitres', () => {
+    const result = validateMementoIntents(MEMENTO_CHAPTERS, MEMENTO_USER_INTENTS);
+
+    expect(result.errors).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('garde les nouveaux champs hors valeurs fiscales, sociales ou comptables', () => {
+    const governanceText = [
+      ...MEMENTO_BUSINESS_PRIORITY_VALUES,
+      ...MEMENTO_USER_INTENT_VALUES,
+      ...MEMENTO_USER_INTENTS.map((intent) => intent.label),
+      ...MEMENTO_COVERAGE_SOURCE_VALUES,
+    ].join(' ');
+
+    expect(governanceText).not.toMatch(
+      /\b\d+(?:[,.]\d+)?\s*(?:%|€|EUR|euros?)?|\b(?:plafond|seuil|assiette|abattement|taux|bar[eè]me)\b/iu,
+    );
   });
 
   it('valide une entrée couverte quand elle pointe une source officielle ou un claim settings', () => {
@@ -159,13 +206,42 @@ describe('settings-memento', () => {
       validEntry({
         refIds: [],
         claimKeys: [],
-        coverageSources: ['excel-charges-sociales'],
+        coverageSources: ['cadrage-externe'],
       }),
     ]);
 
     expect(result.errors).toContain(
       'fiscalite-foyer.ir: le statut couvert exige au moins un refId ou un claim settings ; les coverageSources ne suffisent pas.',
     );
+  });
+
+  it('refuse une priorité inconnue', () => {
+    const result = validateMementoTaxonomy(MEMENTO_CHAPTERS, [
+      validEntry({
+        priority: 'urgente' as MementoEntry['priority'],
+      }),
+    ]);
+
+    expect(result.errors).toContain('fiscalite-foyer.ir: priorité métier inconnue (urgente).');
+    expect(result.ok).toBe(false);
+  });
+
+  it('refuse une intention inconnue ou un chapitre d’intention inconnu', () => {
+    const result = validateMementoIntents(MEMENTO_CHAPTERS, [
+      {
+        id: 'intention-inconnue',
+        label: 'Intention inconnue',
+        chapterIds: ['chapitre-inconnu'],
+      },
+    ]);
+
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        'intention-inconnue: intention métier inconnue.',
+        'intention-inconnue: chapitre mémento inconnu (chapitre-inconnu).',
+      ]),
+    );
+    expect(result.ok).toBe(false);
   });
 
   it('verrouille blocked_missing_official_source comme statut sans source et motivé', () => {
@@ -199,6 +275,7 @@ describe('settings-memento', () => {
         registryKeys: ['impots.ir.inconnue' as unknown as SettingRegistryKey],
         claimKeys: ['claim-inconnu'],
         refIds: ['ref-inconnue' as LegalReferenceId],
+        coverageSources: ['source-inconnue' as MementoEntry['coverageSources'][number]],
         relatedSimulatorIds: ['simulateur-inconnu'],
       }),
     ]);
@@ -208,6 +285,7 @@ describe('settings-memento', () => {
         'fiscalite-foyer.ir: registryKey inconnue (impots.ir.inconnue).',
         'fiscalite-foyer.ir: claimKey settings-references inconnue (claim-inconnu).',
         'fiscalite-foyer.ir: refId juridique inconnu (ref-inconnue).',
+        'fiscalite-foyer.ir: coverageSource inconnue (source-inconnue).',
         'fiscalite-foyer.ir: relatedSimulatorId inconnu (simulateur-inconnu).',
       ]),
     );

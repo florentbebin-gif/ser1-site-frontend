@@ -12,7 +12,7 @@ import {
 import { NO_CABINET_FILTER, type CabinetFilterId } from '../utils/adminUsersDirectory';
 
 const CABINETS = [
-  { id: 'cabinet-laplace', name: 'Laplace', themes: { name: 'Thème Laplace' } },
+  { id: 'cabinet-alpha', name: 'Alpha', themes: { name: 'Thème Alpha' } },
   { id: 'cabinet-mako', name: 'MAKO', themes: null },
 ];
 
@@ -21,7 +21,7 @@ const USERS = [
     id: 'user-1',
     email: 'client@example.com',
     role: 'user',
-    cabinet_id: 'cabinet-laplace',
+    cabinet_id: 'cabinet-alpha',
     created_at: '2026-01-01T00:00:00.000Z',
     last_sign_in_at: '2026-01-02T00:00:00.000Z',
     total_reports: 0,
@@ -187,7 +187,7 @@ describe('SettingsComptesSections', () => {
     );
 
     expect(screen.getByText('client@example.com')).toBeInTheDocument();
-    expect(screen.queryByText('Thème Laplace')).not.toBeInTheDocument();
+    expect(screen.queryByText('Thème Alpha')).not.toBeInTheDocument();
     expect(screen.queryByText('Thème SER1')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Afficher la section Cabinets (2)' }));
@@ -195,7 +195,7 @@ describe('SettingsComptesSections', () => {
       screen.getByRole('button', { name: 'Afficher la section Thèmes globaux (1)' }),
     );
 
-    expect(screen.getByText('Thème Laplace')).toBeInTheDocument();
+    expect(screen.getByText('Thème Alpha')).toBeInTheDocument();
     expect(screen.getByText('Thème SER1')).toBeInTheDocument();
   });
 
