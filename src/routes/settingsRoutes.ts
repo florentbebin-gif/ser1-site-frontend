@@ -12,6 +12,7 @@
 import { lazy, type ComponentType } from 'react';
 
 const SettingsGeneral = lazy(() => import('../pages/settings/SettingsGeneral'));
+const SettingsMemento = lazy(() => import('../pages/settings/SettingsMemento'));
 const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
 const SettingsComptablesSocietes = lazy(
   () => import('../pages/settings/SettingsComptablesSocietes'),
@@ -40,6 +41,13 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     path: '',
     urlPath: '/settings',
     component: SettingsGeneral,
+  },
+  {
+    key: 'memento',
+    label: 'Mémento',
+    path: 'memento',
+    urlPath: '/settings/memento',
+    component: SettingsMemento,
   },
   {
     key: 'impots',
@@ -109,6 +117,7 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
 ];
 
 export function getActiveSettingsKey(pathname: string): string {
+  if (pathname.startsWith('/settings/memento')) return 'memento';
   if (pathname.startsWith('/settings/impots')) return 'impots';
   if (pathname.startsWith('/settings/comptables-societes')) return 'comptablesSocietes';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';

@@ -32,6 +32,7 @@ test.describe('Settings', () => {
     // Note: The specific tabs visible depend on user role, but "Généraux" (label="Généraux") should always be there.
     // The key in SETTINGS_ROUTES is 'general', label is 'Généraux'.
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Mémento' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Impôts' })).toBeVisible();
 
     // Check if the content area loads (active component)
@@ -57,5 +58,15 @@ test.describe('Settings', () => {
     await page.getByRole('button', { name: 'Généraux' }).click();
     await expect(page).toHaveURL(/.*\/settings/);
     await expect(page.getByRole('button', { name: 'Généraux' })).toHaveClass(/is-active/);
+  });
+
+  test('navigation vers le mémento settings', async ({ page }) => {
+    await page.goto(ROUTES.settings);
+
+    await page.getByRole('button', { name: 'Mémento' }).click();
+
+    await expect(page).toHaveURL(/.*\/settings\/memento/);
+    await expect(page.getByRole('button', { name: 'Mémento' })).toHaveClass(/is-active/);
+    await expect(page.getByRole('heading', { name: 'Mémento patrimonial & social' })).toBeVisible();
   });
 });
