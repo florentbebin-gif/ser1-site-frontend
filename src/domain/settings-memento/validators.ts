@@ -49,6 +49,10 @@ const TEXT_RULES = [
     pattern: /\bseuils?\b[^.\n;]{0,80}\b\d{3,}(?:[\s_]\d{3})*\b/iu,
   },
   {
+    label: 'une valeur associée à assiette',
+    pattern: /\bassiettes?\b[^.\n;]{0,80}\b\d{3,}(?:[\s_]\d{3})*\b/iu,
+  },
+  {
     label: 'une valeur associée à abattement',
     pattern: /\babattements?\b[^.\n;]{0,80}\b\d{3,}(?:[\s_]\d{3})*\b/iu,
   },
@@ -59,6 +63,10 @@ const TEXT_RULES = [
   {
     label: 'une valeur associée à barème',
     pattern: /\bbar[eè]mes?\b[^.\n;]{0,80}\b\d{3,}(?:[\s_]\d{3})*\b/iu,
+  },
+  {
+    label: 'une formule de calcul',
+    pattern: /\b(?:formule|calcul)\b[^.\n;]{0,80}(?:=|\+|\*|\/|×|\s-\s)/iu,
   },
 ] as const;
 

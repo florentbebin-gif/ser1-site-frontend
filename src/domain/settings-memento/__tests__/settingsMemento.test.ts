@@ -89,6 +89,16 @@ describe('settings-memento', () => {
         chapterId: 'transmission',
         description: 'Le plafond 100000 doit rester dans les settings, pas ici.',
       }),
+      validEntry({
+        key: 'societe.assiette-chiffree',
+        chapterId: 'societe',
+        description: 'Une assiette 100000 ne doit pas vivre dans la taxonomie mémento.',
+      }),
+      validEntry({
+        key: 'societe.formule-calcul',
+        chapterId: 'societe',
+        description: 'Formule : net = brut - charges.',
+      }),
     ];
 
     const result = validateMementoTaxonomy(MEMENTO_CHAPTERS, invalidEntries);
@@ -100,6 +110,10 @@ describe('settings-memento', () => {
         expect.stringContaining(
           'transmission.plafond-chiffre: description contient une valeur associée à plafond',
         ),
+        expect.stringContaining(
+          'societe.assiette-chiffree: description contient une valeur associée à assiette',
+        ),
+        expect.stringContaining('societe.formule-calcul: description contient une formule'),
       ]),
     );
     expect(result.ok).toBe(false);

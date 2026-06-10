@@ -238,13 +238,29 @@ Les `coverageSources` (`laplace`, `excel-charges-sociales`, `pdf-retraite`) déc
 couverture documentaire candidate. Elles ne comptent jamais comme source officielle : une entrée
 `couvert` doit pointer un `refId` canonique ou un claim `settings-references`.
 
+Gouvernance des sources de couverture :
+
+- Laplace est une checklist de couverture métier. Il aide à repérer un thème patrimonial, fiscal,
+  social, retraite, prévoyance, société ou transmission à ne pas oublier ; il ne tranche jamais un
+  taux, un barème, un seuil, une assiette, une formule ou une source normative.
+- Excel charges sociales, OCR, PDF retraite et autres documents candidats servent uniquement à
+  qualifier le périmètre. Ils ne deviennent pas une source officielle et ne peuvent pas justifier un
+  statut `couvert`.
+- Pour toute règle consommée ou exposée par SER1, la source officielle prioritaire doit être un
+  `refId` ou un claim rattaché à une source adaptée : CGI, BOFiP, Code civil, Code de commerce, Code
+  de la sécurité sociale (CSS), BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO,
+  CNAVPL, MSA, caisses professionnelles, Legifrance ou autre source institutionnelle pertinente.
+- Si Laplace ou une couverture candidate mentionne une thématique mais qu'aucune source officielle
+  n'est qualifiée, l'entrée reste `a_verifier` ou `blocked_missing_official_source`. En cas de
+  contradiction, la source officielle prévaut.
+
 Garde-fous :
 
 - `validateMementoTaxonomy` valide unicité, préfixes de clés, statuts, liens vers
   `settings-registry`, `settings-references`, `legal-references` et `SIMULATOR_REGISTRY`.
 - Les tests `src/domain/settings-memento/__tests__/settingsMemento.test.ts` verrouillent les 14
-  chapitres canoniques et refusent taux, montants, plafonds, seuils, abattements ou barèmes chiffrés
-  dans les textes du mémento.
+  chapitres canoniques et refusent taux, montants, plafonds, seuils, assiettes, abattements,
+  barèmes chiffrés ou formules de calcul dans les textes du mémento.
 - `npm run check:fiscal-hardcode` scanne aussi `src/domain/settings-memento/`.
 
 ### Règle "god file"
