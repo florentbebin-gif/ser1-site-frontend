@@ -1474,7 +1474,8 @@ Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre
 - PR 2 Mapping simulateurs — livrée (PR #586) ;
 - PR 3 Hub `/settings/memento` — livrée (PR #587) ;
 - PR 4 Coverage adapter + `check:memento-coverage` — livrée (PR #588) ;
-- PR 5 Contenu métier socle foyer — prochaine étape.
+- PR 5 Contenu métier socle foyer — livrée (PR #590) ;
+- PR 6 Fiscalité foyer — prochaine étape.
 
 Rappels : `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul
 ni une page d'édition unique ; les pages settings existantes restent propriétaires des écritures

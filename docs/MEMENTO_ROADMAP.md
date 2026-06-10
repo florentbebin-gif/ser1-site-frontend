@@ -12,8 +12,9 @@ Dernière mise à jour : 2026-06-10.
 | PR 2 — Correspondance simulateurs → mémento      | `simulatorCoverage*` : 33 simulateurs registry + sous-types + ROADMAP-only                          | **Livrée** (PR #586, commit `92cd5be6`) |
 | PR 3 — Route `/settings/memento` et hub UI V1    | Route, page hub lecture seule, e2e                                                                  | **Livrée** (PR #587, commit `a8117ffb`) |
 | PR 4 — Coverage adapter et audit mémento         | `coverage.ts`, `check:memento-coverage` branché dans `check:static`                                 | **Livrée** (PR #588, commit `744dffb0`) |
-| PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif | **Prochaine étape**                     |
-| PR 6 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
+| PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif | **Livrée** (PR #590)                    |
+| PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                        | **Prochaine étape**                     |
+| PR 7 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
 
 Rappels non négociables (détail en section B) :
 
@@ -1520,8 +1521,8 @@ Check-list avant implémentation :
 - définir un contrat de PR avec hors-scope clair;
 - prévoir `check:e2e-auth-pages-coverage`, `test:e2e:auth-pages`, `check:settings-references`, `check:settings-registry`, `check:fiscal-hardcode`, `npm run check`.
 
-Prompt recommandé pour le prochain LLM exécutant (PR 1 à PR 4 livrées) :
+Prompt recommandé pour le prochain LLM exécutant (PR 1 à PR 5 livrées) :
 
 ```text
-Implémente uniquement la PR 5 de docs/MEMENTO_ROADMAP.md : socle foyer (filiation, régime matrimonial, donations antérieures, budget, actif-passif). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec statuts planned ou a_verifier, pages propriétaires existantes et références officielles déjà déclarées dans legal-references quand elles existent. Aucun hardcode fiscal/social/comptable ; les simulateurs planned restent non cliquables. Lance check:memento-coverage, check:legal-references, check:settings-references puis npm run check avant commit.
+Implémente uniquement la PR 6 de docs/MEMENTO_ROADMAP.md : fiscalité foyer (IR, IFI, niches fiscales, revenus fonciers, LMNP/LMP, PV immobilières). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec /settings/impots comme page propriétaire, lecture via la chaîne fiscale seulement, claims settings-references et références CGI/BOFiP existantes quand elles existent. Les thèmes non prêts restent planned ou blocked_missing_official_source. Aucun hardcode fiscal/social/comptable. Lance check:fiscal-hardcode, check:raw-fiscal-usage, check:memento-coverage, check:settings-references puis npm run check avant commit.
 ```
