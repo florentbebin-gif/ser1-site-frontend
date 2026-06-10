@@ -15,8 +15,9 @@ Dernière mise à jour : 2026-06-10.
 | PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif | **Livrée** (PR #590)                    |
 | PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                        | **Livrée** (PR #591)                    |
 | PR6b — UX mémento et gouvernance sources         | Séparation vue métier/audit, priorités, intentions, sources externes génériques                     | **Livrée**                              |
-| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Prochaine PR métier**                 |
-| PR 8 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
+| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Livrée**                              |
+| PR 8 — Placements et Base-Contrat                | Allocation, assurance-vie/capitalisation, PEA/CTO, SCPI                                             | **Prochaine PR métier**                 |
+| PR 9 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
 
 Rappels non négociables (détail en section B) :
 
@@ -1528,8 +1529,8 @@ Check-list avant implémentation :
 - définir un contrat de PR avec hors-scope clair;
 - prévoir `check:e2e-auth-pages-coverage`, `test:e2e:auth-pages`, `check:settings-references`, `check:settings-registry`, `check:fiscal-hardcode`, `npm run check`.
 
-Prompt recommandé pour le prochain LLM exécutant (PR 1 à PR 6 livrées) :
+Prompt recommandé pour le prochain LLM exécutant (PR 1 à PR 7 livrées) :
 
 ```text
-Implémente uniquement la PR 7 de docs/MEMENTO_ROADMAP.md : transmission (DMTG succession, assurance-vie décès, donation/démembrement, pacte Dutreil, variantes société en couverture). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec /settings/dmtg-succession comme page propriétaire, claims settings-references et références CGI/BOFiP/Code civil existantes. Dutreil va au chapitre transmission-entreprise ; les variantes société ROADMAP-only restent sans relatedSimulatorIds. Le mémento ne déclenche aucune écriture DMTG ; les thèmes non prêts restent planned. Aucun hardcode fiscal/social/comptable. Lance check:memento-coverage, check:fiscal-hardcode, check:settings-references puis npm run check avant commit.
+Implémente uniquement la PR 8 de docs/MEMENTO_ROADMAP.md : placements, Base-Contrat et sous-types enveloppes (allocation, assurance-vie/capitalisation, PEA/CTO, SCPI). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec /settings/base-contrat comme page propriétaire quand le rattachement vient du catalogue, et /settings/impots ou /settings/dmtg-succession seulement si la section PR8 le justifie. Les raccords Base-Contrat doivent réutiliser les claimKeys et références existants, sans créer de référentiel artificiel, sans retoucher SCPI hors PR8 et sans activer de simulateur planned. Aucun hardcode fiscal/social/comptable. Lance check:memento-coverage, check:fiscal-hardcode, check:raw-fiscal-usage, check:settings-references, check:settings-registry, check:legal-references puis npm run check avant commit.
 ```

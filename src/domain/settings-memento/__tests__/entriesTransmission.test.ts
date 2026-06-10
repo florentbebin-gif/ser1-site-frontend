@@ -1,0 +1,88 @@
+import { describe, expect, it } from 'vitest';
+
+import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
+import type { SimulatorId } from '@/domain/simulators/registry';
+
+import { MEMENTO_ENTRIES, getCoverageForSimulator } from '../index';
+
+describe('settings-memento — transmission', () => {
+  const entryByKey = new Map(MEMENTO_ENTRIES.map((entry) => [entry.key, entry]));
+  const TRANSMISSION_KEYS = [
+    'transmission.succession-dmtg',
+    'transmission.assurance-vie-deces',
+    'transmission.donation-demembrement',
+    'transmission-entreprise.pacte-dutreil',
+    'transmission-entreprise.donation-titres',
+    'transmission-entreprise.liquidite-societe',
+  ] as const;
+
+  it('déclare les six entrées transmission avec leurs statuts attendus', () => {
+    expect(entryByKey.get('transmission.succession-dmtg')?.status).toBe('couvert');
+    expect(entryByKey.get('transmission.assurance-vie-deces')?.status).toBe('couvert');
+    expect(entryByKey.get('transmission.donation-demembrement')?.status).toBe('planned');
+    expect(entryByKey.get('transmission-entreprise.pacte-dutreil')?.status).toBe('planned');
+    expect(entryByKey.get('transmission-entreprise.donation-titres')?.status).toBe('planned');
+    expect(entryByKey.get('transmission-entreprise.liquidite-societe')?.status).toBe('planned');
+  });
+
+  it('rattache toutes les entrées transmission à la page propriétaire DMTG', () => {
+    for (const key of TRANSMISSION_KEYS) {
+      const entry = entryByKey.get(key);
+
+      expect(entry).toBeDefined();
+      expect(entry!.ownerPagePath).toBe('/settings/dmtg-succession');
+    }
+  });
+
+  it('justifie les entrées couvertes par des claims DMTG et le simulateur succession actif', () => {
+    for (const key of [
+      'transmission.succession-dmtg',
+      'transmission.assurance-vie-deces',
+    ] as const) {
+      const entry = entryByKey.get(key);
+
+      expect(entry).toBeDefined();
+      expect(entry!.claimKeys.length).toBeGreaterThan(0);
+      expect(entry!.registryKeys.length).toBeGreaterThan(0);
+      expect(entry!.relatedSimulatorIds).toEqual(['succession']);
+    }
+  });
+
+  it('garde les claims alignés sur la page propriétaire de chaque entrée transmission', () => {
+    for (const key of TRANSMISSION_KEYS) {
+      const entry = entryByKey.get(key);
+
+      expect(entry).toBeDefined();
+      for (const claimKey of entry!.claimKeys) {
+        const binding = SETTINGS_REFERENCE_CHAIN.find(
+          (candidate) => candidate.claimKey === claimKey,
+        );
+
+        expect(binding?.pagePath).toBe(entry!.ownerPagePath);
+      }
+    }
+  });
+
+  it('garde les variantes société ROADMAP-only sans relatedSimulatorIds', () => {
+    for (const key of [
+      'transmission-entreprise.donation-titres',
+      'transmission-entreprise.liquidite-societe',
+    ] as const) {
+      const entry = entryByKey.get(key);
+
+      expect(entry).toBeDefined();
+      expect(entry!.relatedSimulatorIds).toEqual([]);
+    }
+  });
+
+  it('aligne chaque entrée transmission sur le chapitre couvert par son simulateur', () => {
+    for (const key of TRANSMISSION_KEYS) {
+      const entry = entryByKey.get(key);
+
+      for (const simulatorId of entry!.relatedSimulatorIds) {
+        const coverage = getCoverageForSimulator(simulatorId as SimulatorId);
+        expect(coverage.chapterId).toBe(entry!.chapterId);
+      }
+    }
+  });
+});
