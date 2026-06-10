@@ -127,6 +127,7 @@ const SCAN_DIRS = [
   'src/engine',
   'src/domain/base-contrat/rules',
   'src/domain/settings-registry',
+  'src/domain/settings-memento',
   'src/features',
   'src/hooks',
   'src/pages/settings',

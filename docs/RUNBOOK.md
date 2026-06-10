@@ -83,7 +83,7 @@ Règles enforced :
 
 Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
-**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
+**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/domain/settings-registry/`, `src/domain/settings-memento/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
 
 | Exemple          | Label                                                                                   |
 | ---------------- | --------------------------------------------------------------------------------------- |
@@ -95,6 +95,14 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 | PASS historiques | valeurs annuelles PASS à maintenir uniquement dans les settings et fallbacks documentés |
 
 **Seul fichier autorisé** à contenir ces valeurs : `src/constants/settingsDefaults.ts`.
+
+**Cas `settings-memento`** : le mémento peut citer Laplace, l'Excel charges sociales ou le PDF
+retraite comme sources de couverture, mais ces documents restent des checklists candidates. Pour
+passer une entrée à `couvert`, rattacher au moins un `refId` ou un claim `settings-references` à une
+source officielle adaptée : CGI, BOFiP, Code civil, Code de commerce, Code de la sécurité sociale
+(CSS), BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO, CNAVPL, MSA, caisses
+professionnelles, Legifrance ou source institutionnelle pertinente. Sans source officielle qualifiée,
+utiliser `a_verifier` ou `blocked_missing_official_source`.
 
 **Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
 
