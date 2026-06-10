@@ -58,10 +58,10 @@ describe('settings-memento', () => {
     ]);
   });
 
-  it('valide la taxonomie vide de PR1', () => {
+  it('valide la taxonomie réelle du mémento', () => {
     const result = validateMementoTaxonomy(MEMENTO_CHAPTERS, MEMENTO_ENTRIES);
 
-    expect(MEMENTO_ENTRIES).toEqual([]);
+    expect(MEMENTO_ENTRIES.length).toBeGreaterThan(0);
     expect(result.errors).toEqual([]);
     expect(result.ok).toBe(true);
   });

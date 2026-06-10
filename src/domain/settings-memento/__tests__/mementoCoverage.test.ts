@@ -43,7 +43,7 @@ describe('settings-memento coverage audit', () => {
   it('valide l’audit transverse actuel du mémento', () => {
     const result = validateMementoCoverage({ knownSettingsUrlPaths });
 
-    expect(MEMENTO_ENTRIES).toEqual([]);
+    expect(MEMENTO_ENTRIES.length).toBeGreaterThan(0);
     expect(result.errors).toEqual([]);
     expect(result.ok).toBe(true);
   });
