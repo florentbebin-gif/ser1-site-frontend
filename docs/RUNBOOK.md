@@ -97,13 +97,26 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
 **Seul fichier autorisé** à contenir ces valeurs : `src/constants/settingsDefaults.ts`.
 
-**Cas `settings-memento`** : le mémento peut citer Laplace, l'Excel charges sociales ou le PDF
-retraite comme sources de couverture, mais ces documents restent des checklists candidates. Pour
-passer une entrée à `couvert`, rattacher au moins un `refId` ou un claim `settings-references` à une
-source officielle adaptée : CGI, BOFiP, Code civil, Code de commerce, Code de la sécurité sociale
-(CSS), BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO, CNAVPL, MSA, caisses
+**Cas `settings-memento`** : le mémento ne cite jamais de support professionnel externe protégé. Les
+supports professionnels externes non versionnés éventuellement consultés pendant le cadrage servent
+seulement d'aide temporaire hors repo ; ils ne sont jamais cités, référencés, copiés, versionnés,
+utilisés comme oracle de test, affichés dans l'UI ni utilisés pour trancher une règle. Pour passer une
+entrée à `couvert`, rattacher au moins un `refId` ou un claim `settings-references` à une source
+officielle adaptée : CGI, BOFiP, Code civil, Code de commerce, Code de la sécurité sociale (CSS),
+BOSS, URSSAF, Service-public, Assurance retraite, AGIRC-ARRCO, CNAVPL, MSA, caisses
 professionnelles, Legifrance ou source institutionnelle pertinente. Sans source officielle qualifiée,
 utiliser `a_verifier` ou `blocked_missing_official_source`.
+
+Pour ajouter une entrée mémento :
+
+1. Ajouter l'entrée dans `src/domain/settings-memento/entries*.ts` avec `chapterId`, `key`, statut,
+   `priority`, page propriétaire, simulateurs liés et références officielles disponibles.
+2. Utiliser `coverageSources: ['cadrage-externe']` uniquement comme marqueur générique de cadrage
+   non officiel ; ne jamais distinguer le nom, l'URL ou le type d'un support externe protégé.
+3. Vérifier que le chapitre est couvert par une intention dans `src/domain/settings-memento/intents.ts`
+   sans créer de taxonomie concurrente.
+4. Rattacher les règles opposables via `refIds` ou `claimKeys`; sinon conserver un statut attentiste.
+5. Lancer `npm run check:memento-coverage`, puis `npm run check` avant commit.
 
 **Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
 

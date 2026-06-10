@@ -1468,7 +1468,7 @@ Interdits :
 ### Mémento settings — roadmap dédiée
 
 Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre :
-`docs/MEMENTO_ROADMAP.md` (38 PR, parties 1 à 5). Statut :
+`docs/MEMENTO_ROADMAP.md` (38 PR métier + PR6b de stabilisation, parties 1 à 5). Statut :
 
 - PR 1 Taxonomie mémento — livrée (PR #585) ;
 - PR 2 Mapping simulateurs — livrée (PR #586) ;
@@ -1476,12 +1476,13 @@ Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre
 - PR 4 Coverage adapter + `check:memento-coverage` — livrée (PR #588) ;
 - PR 5 Contenu métier socle foyer — livrée (PR #590) ;
 - PR 6 Fiscalité foyer — livrée (PR #591) ;
-- PR 7 Transmission — prochaine étape.
+- PR6b UX mémento et gouvernance sources — livrée ;
+- PR 7 Transmission — prochaine PR métier.
 
 Rappels : `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul
-ni une page d'édition unique ; les pages settings existantes restent propriétaires des écritures
-et les moteurs restent propriétaires des calculs. Le détail PR par PR vit uniquement dans
-`docs/MEMENTO_ROADMAP.md`.
+ni une page d'édition unique ; la vue métier est séparée de l'audit coverage, les pages settings
+existantes restent propriétaires des écritures et les moteurs restent propriétaires des calculs.
+Le détail PR par PR vit uniquement dans `docs/MEMENTO_ROADMAP.md`.
 
 ## Ordre ferme de construction des moteurs
 
