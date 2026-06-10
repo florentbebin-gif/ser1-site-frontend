@@ -1477,7 +1477,8 @@ Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre
 - PR 5 Contenu métier socle foyer — livrée (PR #590) ;
 - PR 6 Fiscalité foyer — livrée (PR #591) ;
 - PR6b UX mémento et gouvernance sources — livrée ;
-- PR 7 Transmission — prochaine PR métier.
+- PR 7 Transmission — livrée ;
+- PR 8 Placements et Base-Contrat — prochaine PR métier.
 
 Rappels : `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul
 ni une page d'édition unique ; la vue métier est séparée de l'audit coverage, les pages settings
