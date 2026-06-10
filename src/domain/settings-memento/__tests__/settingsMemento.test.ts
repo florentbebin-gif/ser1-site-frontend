@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { LegalReferenceId } from '@/domain/legal-references';
 import type { SettingRegistryKey } from '@/domain/settings-registry';
+import type { SimulatorId } from '@/domain/simulators/registry';
 
 import {
   MEMENTO_CHAPTERS,
   MEMENTO_ENTRIES,
   MEMENTO_STATUS_VALUES,
+  getCoverageForSimulator,
   validateMementoTaxonomy,
 } from '../index';
 import type { MementoEntry } from '../types';
@@ -209,5 +211,47 @@ describe('settings-memento', () => {
         'fiscalite-foyer.ir: relatedSimulatorId inconnu (simulateur-inconnu).',
       ]),
     );
+  });
+});
+
+describe('settings-memento — socle foyer', () => {
+  const entryByKey = new Map(MEMENTO_ENTRIES.map((entry) => [entry.key, entry]));
+  const FOYER_KEYS = [
+    'foyer.filiation',
+    'foyer.budget',
+    'civil.regime-matrimonial',
+    'transmission.donations-anterieures',
+    'patrimoine.actif-passif',
+  ] as const;
+
+  it('déclare les cinq entrées socle foyer avec leurs statuts attendus', () => {
+    expect(entryByKey.get('foyer.filiation')?.status).toBe('planned');
+    expect(entryByKey.get('foyer.budget')?.status).toBe('planned');
+    expect(entryByKey.get('civil.regime-matrimonial')?.status).toBe('planned');
+    expect(entryByKey.get('transmission.donations-anterieures')?.status).toBe('planned');
+    expect(entryByKey.get('patrimoine.actif-passif')?.status).toBe('a_verifier');
+  });
+
+  it('donne à chaque entrée socle foyer une page propriétaire ou un statut attentiste', () => {
+    for (const key of FOYER_KEYS) {
+      const entry = entryByKey.get(key);
+
+      expect(entry).toBeDefined();
+      expect(
+        entry!.ownerPagePath !== null || ['planned', 'a_verifier'].includes(entry!.status),
+      ).toBe(true);
+    }
+  });
+
+  it('aligne chaque entrée socle foyer sur le chapitre couvert par son simulateur', () => {
+    for (const key of FOYER_KEYS) {
+      const entry = entryByKey.get(key);
+
+      expect(entry!.relatedSimulatorIds.length).toBeGreaterThan(0);
+      for (const simulatorId of entry!.relatedSimulatorIds) {
+        const coverage = getCoverageForSimulator(simulatorId as SimulatorId);
+        expect(coverage.chapterId).toBe(entry!.chapterId);
+      }
+    }
   });
 });

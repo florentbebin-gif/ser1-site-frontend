@@ -88,6 +88,19 @@ describe('SettingsMemento', () => {
     expect(screen.getByTestId('memento-coverage-epargne-salariale')).toBeInTheDocument();
   });
 
+  it('affiche les entrées métier du socle foyer sans lien actif', () => {
+    render(<SettingsMemento />);
+
+    const row = screen
+      .getByText('Régime matrimonial et protection du conjoint')
+      .closest('article') as HTMLElement;
+
+    expect(row).not.toBeNull();
+    expect(within(row).queryAllByRole('link')).toHaveLength(0);
+    expect(within(row).queryAllByRole('button')).toHaveLength(0);
+    expect(within(row).getByText('/settings/dmtg-succession')).toBeInTheDocument();
+  });
+
   it('ne rend pas de liens sur les lignes planned, internalOnly ou placeholder', () => {
     render(<SettingsMemento />);
 
