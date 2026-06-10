@@ -148,38 +148,6 @@ function validateOwnerPagePaths(input: ResolvedMementoCoverageInput, errors: str
   return [...unknownOwnerPagePaths].sort();
 }
 
-function validateEntryCatalogReferences(
-  input: ResolvedMementoCoverageInput,
-  simulatorById: ReadonlyMap<string, MementoCoverageSimulatorDefinition>,
-  errors: string[],
-): void {
-  for (const entry of input.entries) {
-    for (const registryKey of entry.registryKeys) {
-      if (!input.registryKeys.has(registryKey)) {
-        errors.push(`${entry.key}: registryKey inconnue (${registryKey}).`);
-      }
-    }
-
-    for (const claimKey of entry.claimKeys) {
-      if (!input.settingReferenceClaimKeys.has(claimKey)) {
-        errors.push(`${entry.key}: claimKey settings-references inconnue (${claimKey}).`);
-      }
-    }
-
-    for (const refId of entry.refIds) {
-      if (!input.legalReferenceIds.has(refId)) {
-        errors.push(`${entry.key}: refId juridique inconnu (${refId}).`);
-      }
-    }
-
-    for (const simulatorId of entry.relatedSimulatorIds) {
-      if (!simulatorById.has(simulatorId)) {
-        errors.push(`${entry.key}: relatedSimulatorId inconnu (${simulatorId}).`);
-      }
-    }
-  }
-}
-
 function validateSourceSensitiveStatuses(
   entries: readonly MementoEntry[],
   simulatorById: ReadonlyMap<string, MementoCoverageSimulatorDefinition>,
@@ -227,25 +195,28 @@ function validateEntryLifecycleCoherence(
 function validateChapterReferences(
   input: ResolvedMementoCoverageInput,
   errors: string[],
-): string[] {
-  const referencedChapterIds = new Set<string>();
+): { referencedChapterIds: string[]; unreferencedChapterIds: string[] } {
+  const referenced = new Set<string>();
 
   for (const entry of input.entries) {
-    referencedChapterIds.add(entry.chapterId);
+    referenced.add(entry.chapterId);
   }
   for (const coverageEntry of input.coverage) {
-    referencedChapterIds.add(coverageEntry.chapterId);
+    referenced.add(coverageEntry.chapterId);
   }
 
-  const unreferencedChapterIds = input.chapters
-    .map((chapter) => chapter.id)
-    .filter((chapterId) => !referencedChapterIds.has(chapterId));
+  const referencedChapterIds: string[] = [];
+  const unreferencedChapterIds: string[] = [];
+  for (const chapter of input.chapters) {
+    if (referenced.has(chapter.id)) referencedChapterIds.push(chapter.id);
+    else unreferencedChapterIds.push(chapter.id);
+  }
 
   for (const chapterId of unreferencedChapterIds) {
     errors.push(`Chapitre mémento sans entrée ni couverture simulateur : ${chapterId}.`);
   }
 
-  return unreferencedChapterIds;
+  return { referencedChapterIds, unreferencedChapterIds };
 }
 
 function validateCanonicalSocietyRoute(
@@ -276,21 +247,6 @@ function validateCanonicalSocietyRoute(
   }
 }
 
-function listReferencedChapterIds(input: ResolvedMementoCoverageInput): string[] {
-  const referencedChapterIds = new Set<string>();
-
-  for (const entry of input.entries) {
-    referencedChapterIds.add(entry.chapterId);
-  }
-  for (const coverageEntry of input.coverage) {
-    referencedChapterIds.add(coverageEntry.chapterId);
-  }
-
-  return input.chapters
-    .map((chapter) => chapter.id)
-    .filter((chapterId) => referencedChapterIds.has(chapterId));
-}
-
 function countOwnerPagePaths(entries: readonly MementoEntry[]): number {
   const ownerPagePaths = entries.flatMap((entry) =>
     entry.ownerPagePath === null ? [] : [entry.ownerPagePath],
@@ -308,10 +264,12 @@ export function buildMementoCoverageReport(input: MementoCoverageInput): Memento
 
   appendNestedValidationErrors(resolvedInput, errors);
   const unknownOwnerPagePaths = validateOwnerPagePaths(resolvedInput, errors);
-  validateEntryCatalogReferences(resolvedInput, simulatorById, errors);
   validateSourceSensitiveStatuses(resolvedInput.entries, simulatorById, errors);
   validateEntryLifecycleCoherence(resolvedInput.entries, simulatorById, errors);
-  const unreferencedChapterIds = validateChapterReferences(resolvedInput, errors);
+  const { referencedChapterIds, unreferencedChapterIds } = validateChapterReferences(
+    resolvedInput,
+    errors,
+  );
   validateCanonicalSocietyRoute(resolvedInput, errors);
 
   return {
@@ -325,7 +283,7 @@ export function buildMementoCoverageReport(input: MementoCoverageInput): Memento
       knownSettingsUrlPaths: resolvedInput.knownSettingsUrlPaths.length,
       ownerPagePaths: countOwnerPagePaths(resolvedInput.entries),
     },
-    referencedChapterIds: listReferencedChapterIds(resolvedInput),
+    referencedChapterIds,
     unreferencedChapterIds,
     settingsRoutes: {
       hasCanonicalSocietyPath: resolvedInput.knownSettingsUrlPaths.includes(
