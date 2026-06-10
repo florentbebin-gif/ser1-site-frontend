@@ -83,7 +83,7 @@ Règles enforced :
 
 Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
-**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
+**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/`, `src/domain/base-contrat/rules/`, `src/domain/settings-registry/`, `src/domain/settings-memento/`, `src/features/`, `src/hooks/` et `src/pages/settings/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
 
 | Exemple          | Label                                                                                   |
 | ---------------- | --------------------------------------------------------------------------------------- |

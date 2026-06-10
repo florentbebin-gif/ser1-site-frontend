@@ -215,6 +215,38 @@ Garde-fous :
 - Un nouveau paramètre fiscal/métier doit mettre à jour ensemble : defaults/cache/hook si une valeur
   existe, `settings-references`, `settings-registry`, tests et page settings propriétaire.
 
+### Mémento patrimonial & social — `src/domain/settings-memento/`
+
+Le mémento patrimonial & social vit dans `src/domain/settings-memento/`. Il sert de grille de
+couverture métier en lecture seule entre doctrine, pages Settings propriétaires, simulateurs,
+chaînage Settings et références officielles. Il ne porte aucune valeur fiscale, sociale ou
+comptable révisable, ne crée aucune écriture et ne remplace ni `settings-registry`, ni
+`settings-references`, ni les moteurs.
+
+Les statuts canoniques sont :
+
+| Statut                            | Sens architecture                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| `couvert`                         | Couverture disponible avec au moins un `refId` officiel ou un claim `settings-references`. |
+| `partiel`                         | Couverture utile mais incomplète, avec limites explicites dans `statusReason`.             |
+| `planned`                         | Sujet prévu, non prêt et non cliquable comme une feature active.                           |
+| `absent`                          | Sujet identifié mais sans propriétaire exploitable à ce stade.                             |
+| `a_verifier`                      | Sujet à qualifier avant usage métier ou affichage plus engageant.                          |
+| `blocked_missing_official_source` | Sujet bloqué tant qu'une source officielle nommée n'a pas été qualifiée.                   |
+
+Les `coverageSources` (`laplace`, `excel-charges-sociales`, `pdf-retraite`) décrivent seulement une
+couverture documentaire candidate. Elles ne comptent jamais comme source officielle : une entrée
+`couvert` doit pointer un `refId` canonique ou un claim `settings-references`.
+
+Garde-fous :
+
+- `validateMementoTaxonomy` valide unicité, préfixes de clés, statuts, liens vers
+  `settings-registry`, `settings-references`, `legal-references` et `SIMULATOR_REGISTRY`.
+- Les tests `src/domain/settings-memento/__tests__/settingsMemento.test.ts` verrouillent les 14
+  chapitres canoniques et refusent taux, montants, plafonds, seuils, abattements ou barèmes chiffrés
+  dans les textes du mémento.
+- `npm run check:fiscal-hardcode` scanne aussi `src/domain/settings-memento/`.
+
 ### Règle "god file"
 
 Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
@@ -884,6 +916,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Valeurs par défaut des 3 singletons fiscaux | `src/constants/settingsDefaults.ts`                                                         |
 | Référentiel juridique canonique             | `src/domain/legal-references/`                                                              |
 | Chaînage références Settings                | `src/domain/settings-references/chain.json`                                                 |
+| Mémento patrimonial & social                | `src/domain/settings-memento/`                                                              |
 | Shell settings (nav + rendu)                | `src/pages/SettingsShell.tsx`                                                               |
 | Pages settings                              | `src/pages/settings/`                                                                       |
 | Cache + fetch Supabase                      | `src/utils/cache/fiscalSettingsCache.ts`                                                    |
