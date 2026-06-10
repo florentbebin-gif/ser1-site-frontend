@@ -1,4 +1,13 @@
 export { MEMENTO_CHAPTERS } from './chapters';
+export {
+  buildMementoCoverageReport,
+  validateMementoCoverage,
+  type MementoCoverageInput,
+  type MementoCoverageReport,
+  type MementoCoverageSimulatorDefinition,
+  type MementoCoverageStringCatalog,
+  type MementoCoverageValidationResult,
+} from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
 export {
   ROADMAP_ONLY_SIMULATOR_IDS,

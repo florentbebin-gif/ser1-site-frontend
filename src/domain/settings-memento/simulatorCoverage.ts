@@ -172,6 +172,12 @@ function validateRoadmapTarget(
   if (!roadmapOnlyIds.has(entry.target.roadmapId)) {
     errors.push(`${entry.target.roadmapId}: roadmap-only non déclaré.`);
   }
+
+  if (entry.expectedStatus === 'couvert') {
+    errors.push(
+      `${entry.target.roadmapId}: roadmap-only ne peut pas avoir expectedStatus couvert avant son entrée dans la registry simulateurs.`,
+    );
+  }
 }
 
 function validateEntry(
