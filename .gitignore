@@ -66,3 +66,7 @@ docs/veille-base-contrat.md
 # Extractions locales (Mémento PDF -> JSON), scripts locaux non versionnés
 extraction/
 scripts/_local/
+
+# Mémento Laplace local (contenu externe sous droits, ne jamais committer)
+/Mémento 2026.pdf
+/Memento 2026.pdf
