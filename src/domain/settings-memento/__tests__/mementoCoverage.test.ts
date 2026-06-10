@@ -22,11 +22,12 @@ const validEntry = (overrides: Partial<MementoEntry> = {}): MementoEntry => ({
   description: 'Doctrine et rattachement des règles IR aux settings propriétaires.',
   status: 'couvert',
   statusReason: 'Sources officielles connues via le chaînage settings existant.',
+  priority: 'critique',
   ownerPagePath: '/settings/impots',
   registryKeys: ['impots.ir.bareme'],
   claimKeys: ['income-tax-scale-current'],
   refIds: [],
-  coverageSources: ['laplace'],
+  coverageSources: ['cadrage-externe'],
   relatedSimulatorIds: ['ir'],
   ...overrides,
 });

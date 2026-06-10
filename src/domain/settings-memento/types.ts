@@ -12,13 +12,32 @@ export const MEMENTO_STATUS_VALUES = [
 
 export type MementoStatus = (typeof MEMENTO_STATUS_VALUES)[number];
 
-export const MEMENTO_COVERAGE_SOURCE_VALUES = [
-  'laplace',
-  'excel-charges-sociales',
-  'pdf-retraite',
-] as const;
+export const MEMENTO_COVERAGE_SOURCE_VALUES = ['cadrage-externe'] as const;
 
 export type MementoCoverageSource = (typeof MEMENTO_COVERAGE_SOURCE_VALUES)[number];
+
+export const MEMENTO_BUSINESS_PRIORITY_VALUES = [
+  'critique',
+  'structurant',
+  'utile',
+  'complementaire',
+] as const;
+
+export type MementoBusinessPriority = (typeof MEMENTO_BUSINESS_PRIORITY_VALUES)[number];
+
+export const MEMENTO_USER_INTENT_VALUES = [
+  'verifier-fiscalite',
+  'preparer-transmission',
+  'proteger-famille',
+  'piloter-dirigeant',
+  'preparer-retraite',
+  'structurer-societe',
+  'investir-immobilier',
+  'optimiser-placements',
+  'comprendre-couverture',
+] as const;
+
+export type MementoUserIntent = (typeof MEMENTO_USER_INTENT_VALUES)[number];
 
 export type MementoChapterId =
   | 'foyer'
@@ -49,6 +68,7 @@ export interface MementoEntry {
   description: string;
   status: MementoStatus;
   statusReason: string;
+  priority: MementoBusinessPriority;
   ownerPagePath: SettingsOwnerPagePath | null;
   registryKeys: readonly SettingRegistryKey[];
   claimKeys: readonly string[];

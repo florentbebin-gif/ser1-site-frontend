@@ -9,6 +9,7 @@ export {
   type MementoCoverageValidationResult,
 } from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
+export { MEMENTO_USER_INTENTS, chaptersForIntent, type MementoIntentDefinition } from './intents';
 export {
   ROADMAP_ONLY_SIMULATOR_IDS,
   SIMULATOR_MEMENTO_COVERAGE,
@@ -20,14 +21,18 @@ export {
   type SimulatorCoverageTarget,
   type SimulatorCoverageValidationResult,
 } from './simulatorCoverage';
-export { validateMementoTaxonomy } from './validators';
+export { validateMementoIntents, validateMementoTaxonomy } from './validators';
 export {
+  MEMENTO_BUSINESS_PRIORITY_VALUES,
   MEMENTO_COVERAGE_SOURCE_VALUES,
   MEMENTO_STATUS_VALUES,
+  MEMENTO_USER_INTENT_VALUES,
+  type MementoBusinessPriority,
   type MementoChapter,
   type MementoChapterId,
   type MementoCoverageSource,
   type MementoEntry,
   type MementoStatus,
   type MementoTaxonomyValidationResult,
+  type MementoUserIntent,
 } from './types';
