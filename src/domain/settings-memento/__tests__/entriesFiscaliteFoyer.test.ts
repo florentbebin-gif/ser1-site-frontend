@@ -31,7 +31,7 @@ describe('settings-memento — fiscalité foyer', () => {
 
     expect(entry!.claimKeys).toEqual([]);
     expect(entry!.refIds).toEqual([]);
-    expect(entry!.relatedSimulatorIds).toEqual([]);
+    expect(entry!.relatedSimulatorIds).toEqual(['ifi']);
   });
 
   it('rattache chaque entrée fiscalité foyer à la page propriétaire Impôts', () => {

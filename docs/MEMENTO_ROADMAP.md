@@ -4,7 +4,7 @@ Roadmap structurante du chantier mémento (38 PR métier + PR6b de stabilisation
 
 ## Statut d'avancement
 
-Dernière mise à jour : 2026-06-11.
+Dernière mise à jour : 2026-06-12.
 
 | PR                                               | Périmètre                                                                                                                                                                                    | Statut                                  |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -608,31 +608,30 @@ Rollback : retirer bloc restructuration.
 
 ### PR 13 — International prudent
 
-Objectif : créer un chapitre international visible mais non calculatoire.
+Objectif : couvrir prudemment les situations internationales dans les chapitres existants, sans créer de chapitre international autonome ni promettre de calcul.
 
-Pourquoi c'est une PR : risque juridique large, sources à vérifier.
+Pourquoi c'est une PR : risque juridique large, sources à vérifier avant toute règle opérationnelle.
 
 Commits recommandés :
 
-- résidence fiscale;
-- conventions;
-- retenues;
-- exit tax;
+- fiscalité foyer des non-résidents;
+- transmission internationale;
+- conventions fiscales;
 - statuts prudents.
 
-Périmètre inclus : couverture doctrinale et sources.
+Périmètre inclus : entrées non-résidents rattachées à Fiscalité foyer et Transmission, avec statuts `a_verifier`.
 
 Périmètre exclu : moteur international automatisé.
 
-Fichiers probables : mémento, `legal-references`.
+Fichiers probables : mémento.
 
 Données / settings concernés : aucun setting dynamique initial.
 
-Références à rattacher : CGI, BOFiP, conventions fiscales, impots.gouv, Legifrance.
+Références à rattacher : aucune source affichée tant que les règles de territorialité, retenues et conventions ne sont pas qualifiées.
 
 Tests / checks attendus : `check:legal-references`, coverage.
 
-Critères d'acceptation : aucun calcul international promis.
+Critères d'acceptation : aucun calcul international promis, aucune valeur ni règle de territorialité affichée comme opérationnelle.
 
 Risques : surinterprétation fiscale.
 
@@ -640,7 +639,7 @@ Garde-fous : `a_verifier` par défaut.
 
 Dépendances : PR 4.
 
-Rollback : retirer chapitre international.
+Rollback : retirer les entrées internationales des chapitres existants.
 
 ### PR 14 — Alignement société/settings/simulateurs
 

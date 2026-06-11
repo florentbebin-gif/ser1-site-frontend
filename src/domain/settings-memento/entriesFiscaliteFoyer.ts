@@ -99,6 +99,6 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     claimKeys: [],
     refIds: [],
     coverageSources: ['cadrage-externe'],
-    relatedSimulatorIds: [],
+    relatedSimulatorIds: ['ifi'],
   },
 ] as const satisfies readonly MementoEntry[];
