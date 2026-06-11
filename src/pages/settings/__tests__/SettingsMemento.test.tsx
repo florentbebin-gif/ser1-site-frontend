@@ -115,12 +115,13 @@ describe('SettingsMemento', () => {
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('affiche les entrées métier du socle foyer sans lien actif', () => {
+  it('affiche les entrées métier planifiées du socle foyer sans lien actif', () => {
     render(<SettingsMemento />);
 
     const row = screen
-      .getByText('Régime matrimonial et protection du conjoint')
-      .closest('article') as HTMLElement;
+      .getAllByText('Donations antérieures')
+      .map((node) => node.closest('article'))
+      .find((article): article is HTMLElement => article !== null) as HTMLElement;
 
     expect(row).not.toBeNull();
     expect(within(row).queryAllByRole('link')).toHaveLength(0);
