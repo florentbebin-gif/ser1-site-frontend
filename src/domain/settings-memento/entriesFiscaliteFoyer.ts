@@ -69,7 +69,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
       'Imposition de la fortune immobilière : barème administré par la page Impôts, biens imposables et dettes lus par les analyses patrimoniales.',
     status: 'partiel',
     statusReason:
-      'Barème courant administré et sourcé ; millésimes encore planifiés côté registry et simulateur IFI non livré.',
+      'Barème courant administré et sourcé ; millésimes encore planifiés côté registry, simulateur IFI non livré et valorisation du démembrement fondée par le barème usufruit commun.',
     priority: 'structurant',
     ownerPagePath: '/settings/impots',
     registryKeys: ['impots.ifi.bareme', 'impots.ifi.millesimes'],
@@ -77,10 +77,28 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     refIds: [
       'cgi-964',
       'cgi-977',
+      'cgi-669',
       'boi-pat-ifi-40-10',
       'base-source-art-973-cgi-ifi-abattement-residence-principale',
     ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['ifi'],
+  },
+  {
+    chapterId: 'fiscalite-foyer',
+    key: 'fiscalite-foyer.non-residents',
+    label: 'Fiscalité des non-résidents',
+    description:
+      'Imposition des revenus de source française et de la fortune immobilière des non-résidents, sous réserve des conventions fiscales.',
+    status: 'a_verifier',
+    statusReason:
+      'Aucun claim ni référence repo sur ce périmètre ; taux minimum, retenues à la source et lecture IFI des non-résidents doivent être qualifiés sur une source officielle avant tout affichage opérationnel.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/impots',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: [],
   },
 ] as const satisfies readonly MementoEntry[];

@@ -11,18 +11,37 @@ describe('settings-memento — transmission', () => {
     'transmission.succession-dmtg',
     'transmission.assurance-vie-deces',
     'transmission.donation-demembrement',
+    'transmission.liberalites',
+    'transmission.transmission-internationale',
     'transmission-entreprise.pacte-dutreil',
     'transmission-entreprise.donation-titres',
     'transmission-entreprise.liquidite-societe',
   ] as const;
 
-  it('déclare les six entrées transmission avec leurs statuts attendus', () => {
+  it('déclare les huit entrées transmission avec leurs statuts attendus', () => {
     expect(entryByKey.get('transmission.succession-dmtg')?.status).toBe('couvert');
     expect(entryByKey.get('transmission.assurance-vie-deces')?.status).toBe('couvert');
     expect(entryByKey.get('transmission.donation-demembrement')?.status).toBe('planned');
+    expect(entryByKey.get('transmission.liberalites')?.status).toBe('partiel');
+    expect(entryByKey.get('transmission.transmission-internationale')?.status).toBe('a_verifier');
     expect(entryByKey.get('transmission-entreprise.pacte-dutreil')?.status).toBe('planned');
     expect(entryByKey.get('transmission-entreprise.donation-titres')?.status).toBe('planned');
     expect(entryByKey.get('transmission-entreprise.liquidite-societe')?.status).toBe('planned');
+  });
+
+  it('garde la transmission internationale en attente de qualification sans source affichée', () => {
+    const entry = entryByKey.get('transmission.transmission-internationale');
+
+    expect(entry!.claimKeys).toEqual([]);
+    expect(entry!.refIds).toEqual([]);
+  });
+
+  it('trace l’absence du barème de donation entre époux sur l’entrée donation et démembrement', () => {
+    const entry = entryByKey.get('transmission.donation-demembrement');
+
+    expect(entry!.claimKeys).toContain('dmtg-conjoint-pacs-exoneration-cgi-796-0-bis');
+    expect(entry!.refIds).toContain('cgi-796-0-bis');
+    expect(entry!.statusReason).toContain('donation entre époux');
   });
 
   it('rattache toutes les entrées transmission à la page propriétaire DMTG', () => {

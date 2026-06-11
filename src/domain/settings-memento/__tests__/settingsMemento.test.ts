@@ -305,7 +305,7 @@ describe('settings-memento — socle foyer', () => {
   it('déclare les cinq entrées socle foyer avec leurs statuts attendus', () => {
     expect(entryByKey.get('foyer.filiation')?.status).toBe('planned');
     expect(entryByKey.get('foyer.budget')?.status).toBe('planned');
-    expect(entryByKey.get('civil.regime-matrimonial')?.status).toBe('planned');
+    expect(entryByKey.get('civil.regime-matrimonial')?.status).toBe('partiel');
     expect(entryByKey.get('transmission.donations-anterieures')?.status).toBe('planned');
     expect(entryByKey.get('patrimoine.actif-passif')?.status).toBe('a_verifier');
   });

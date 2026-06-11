@@ -6,19 +6,20 @@ Roadmap structurante du chantier mémento (38 PR métier + PR6b de stabilisation
 
 Dernière mise à jour : 2026-06-11.
 
-| PR                                               | Périmètre                                                                                           | Statut                                  |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| PR 1 — Taxonomie mémento, statuts et gouvernance | `src/domain/settings-memento/` : types, 14 chapitres, validators, garde anti-valeurs                | **Livrée** (PR #585, commit `adfde8ee`) |
-| PR 2 — Correspondance simulateurs → mémento      | `simulatorCoverage*` : 33 simulateurs registry + sous-types + ROADMAP-only                          | **Livrée** (PR #586, commit `92cd5be6`) |
-| PR 3 — Route `/settings/memento` et hub UI V1    | Route, page hub lecture seule, e2e                                                                  | **Livrée** (PR #587, commit `a8117ffb`) |
-| PR 4 — Coverage adapter et audit mémento         | `coverage.ts`, `check:memento-coverage` branché dans `check:static`                                 | **Livrée** (PR #588, commit `744dffb0`) |
-| PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif | **Livrée** (PR #590)                    |
-| PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                        | **Livrée** (PR #591)                    |
-| PR6b — UX mémento et gouvernance sources         | Séparation vue métier/audit, priorités, intentions, sources externes génériques                     | **Livrée**                              |
-| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Livrée**                              |
-| PR 8 — Placements et Base-Contrat                | Allocation, assurance-vie/capitalisation, PEA/CTO, SCPI                                             | **Livrée** (PR #594)                    |
-| PR 9 — Immobilier patrimonial                    | Crédit, investissement locatif, SCI, SCPI, dispositifs fiscaux, non-résidents, arbitrage/réemploi   | **Livrée**                              |
-| PR 10 à PR 38                                    | Voir section D                                                                                      | À venir                                 |
+| PR                                               | Périmètre                                                                                                                                                                                    | Statut                                  |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| PR 1 — Taxonomie mémento, statuts et gouvernance | `src/domain/settings-memento/` : types, 14 chapitres, validators, garde anti-valeurs                                                                                                         | **Livrée** (PR #585, commit `adfde8ee`) |
+| PR 2 — Correspondance simulateurs → mémento      | `simulatorCoverage*` : 33 simulateurs registry + sous-types + ROADMAP-only                                                                                                                   | **Livrée** (PR #586, commit `92cd5be6`) |
+| PR 3 — Route `/settings/memento` et hub UI V1    | Route, page hub lecture seule, e2e                                                                                                                                                           | **Livrée** (PR #587, commit `a8117ffb`) |
+| PR 4 — Coverage adapter et audit mémento         | `coverage.ts`, `check:memento-coverage` branché dans `check:static`                                                                                                                          | **Livrée** (PR #588, commit `744dffb0`) |
+| PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif                                                                                          | **Livrée** (PR #590)                    |
+| PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                                                                                                                 | **Livrée** (PR #591)                    |
+| PR6b — UX mémento et gouvernance sources         | Séparation vue métier/audit, priorités, intentions, sources externes génériques                                                                                                              | **Livrée**                              |
+| PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture                                                                                                   | **Livrée**                              |
+| PR 8 — Placements et Base-Contrat                | Allocation, assurance-vie/capitalisation, PEA/CTO, SCPI                                                                                                                                      | **Livrée** (PR #594)                    |
+| PR 9 — Immobilier patrimonial                    | Crédit, investissement locatif, SCI, SCPI, dispositifs fiscaux, non-résidents, arbitrage/réemploi                                                                                            | **Livrée**                              |
+| PR 13 — International prudent                    | Entrées non-résidents IR/IFI et transmission internationale en `a_verifier`, rattachées aux chapitres existants ; compléments civil (dévolution, réserve, libéralités) et socle démembrement | **Livrée**                              |
+| PR 10 à PR 12, PR 14 à PR 38                     | Voir section D                                                                                                                                                                               | À venir                                 |
 
 Rappels non négociables (détail en section B) :
 

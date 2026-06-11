@@ -10,12 +10,28 @@ describe('settings-memento — fiscalité foyer', () => {
     'fiscalite-foyer.ir',
     'fiscalite-foyer.niches-fiscales',
     'fiscalite-foyer.ifi',
+    'fiscalite-foyer.non-residents',
   ] as const;
 
-  it('déclare les trois entrées fiscalité foyer avec leurs statuts attendus', () => {
+  it('déclare les quatre entrées fiscalité foyer avec leurs statuts attendus', () => {
     expect(entryByKey.get('fiscalite-foyer.ir')?.status).toBe('couvert');
     expect(entryByKey.get('fiscalite-foyer.niches-fiscales')?.status).toBe('partiel');
     expect(entryByKey.get('fiscalite-foyer.ifi')?.status).toBe('partiel');
+    expect(entryByKey.get('fiscalite-foyer.non-residents')?.status).toBe('a_verifier');
+  });
+
+  it('rattache la valorisation du démembrement à l’entrée IFI par la référence commune', () => {
+    const entry = entryByKey.get('fiscalite-foyer.ifi');
+
+    expect(entry!.refIds).toContain('cgi-669');
+  });
+
+  it('garde les non-résidents en attente de qualification sans source affichée', () => {
+    const entry = entryByKey.get('fiscalite-foyer.non-residents');
+
+    expect(entry!.claimKeys).toEqual([]);
+    expect(entry!.refIds).toEqual([]);
+    expect(entry!.relatedSimulatorIds).toEqual([]);
   });
 
   it('rattache chaque entrée fiscalité foyer à la page propriétaire Impôts', () => {
