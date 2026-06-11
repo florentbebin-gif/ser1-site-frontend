@@ -97,6 +97,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
       'base-contrat-parts-scpi-pm-pm-deces-fin-de-vie-sortie-de-la-pm',
     ],
     refIds: [
+      'base-source-art-28-cgi-revenus-fonciers',
       'base-source-art-150-u-cgi-plus-values-immobilieres',
       'boi-rfpi-pvi-10',
       'boi-rfpi-pvi-20',

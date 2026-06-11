@@ -107,6 +107,7 @@ describe('settings-memento — immobilier et arbitrage', () => {
     const hasPm = entry!.claimKeys.some((claimKey) => claimKey.includes('-scpi-pm-'));
 
     expect(entry!.status).toBe('partiel');
+    expect(entry!.refIds).toContain('base-source-art-28-cgi-revenus-fonciers');
     expect(hasPp, 'claims SCPI personne physique manquants').toBe(true);
     expect(hasPm, 'claims SCPI personne morale manquants').toBe(true);
     expect(entry!.relatedSimulatorIds).toEqual(['scpi']);
