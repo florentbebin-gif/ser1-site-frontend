@@ -126,6 +126,23 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
   },
   {
     chapterId: 'transmission-entreprise',
+    key: 'transmission-entreprise.paiement-differe-fractionne',
+    label: 'Paiement différé et fractionné des droits',
+    description:
+      'Crédit de paiement des droits de mutation à titre gratuit en cas de transmission d’entreprise : différé puis fractionnement, garanties et intérêt réduit.',
+    status: 'partiel',
+    statusReason:
+      'Dispositif fondé par l’annexe au CGI et la doctrine BOFiP référencées ; aucun paramètre administré ni calcul, conditions fines à qualifier avant tout moteur.',
+    priority: 'critique',
+    ownerPagePath: '/settings/dmtg-succession',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: ['cgi-ann3-404-ga', 'boi-enr-dg-50-20-50'],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['pacte-dutreil'],
+  },
+  {
+    chapterId: 'transmission-entreprise',
     key: 'transmission-entreprise.donation-titres',
     label: 'Donation de titres de société',
     description:

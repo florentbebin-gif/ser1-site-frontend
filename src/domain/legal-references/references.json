@@ -2015,5 +2015,82 @@
     "relatedSettings": ["base-contrat"],
     "relatedCatalogProducts": ["tontine_pp"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "code-commerce-l232-10",
+    "label": "Code de commerce art. L232-10 — réserve légale",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051322888",
+    "articleOrSection": "Art. L232-10",
+    "scope": "Dotation obligatoire de la réserve légale sur le bénéfice de l'exercice.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-11"
+  },
+  {
+    "id": "code-commerce-l232-11",
+    "label": "Code de commerce art. L232-11 — bénéfice distribuable",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006229026",
+    "articleOrSection": "Art. L232-11",
+    "scope": "Définition du bénéfice distribuable et des sommes distribuables aux associés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l232-12",
+    "label": "Code de commerce art. L232-12 — dividendes et acomptes",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006229031",
+    "articleOrSection": "Art. L232-12",
+    "scope": "Décision de distribution des dividendes et conditions des acomptes sur dividendes.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-11"
+  },
+  {
+    "id": "code-commerce-l223-42",
+    "label": "Code de commerce art. L223-42 — capitaux propres inférieurs à la moitié du capital (SARL)",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047292166",
+    "articleOrSection": "Art. L223-42",
+    "scope": "Procédure applicable quand les capitaux propres d'une SARL deviennent inférieurs à la moitié du capital social.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l225-248",
+    "label": "Code de commerce art. L225-248 — capitaux propres inférieurs à la moitié du capital (SA)",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047292156",
+    "articleOrSection": "Art. L225-248",
+    "scope": "Procédure applicable quand les capitaux propres d'une société par actions deviennent inférieurs à la moitié du capital social.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-11"
+  },
+  {
+    "id": "cgi-ann3-404-ga",
+    "label": "CGI annexe III art. 404 GA — paiement différé et fractionné des droits (transmission d'entreprise)",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048852235",
+    "articleOrSection": "Annexe III, art. 404 GA (renvoie à l'art. 397 A)",
+    "scope": "Garanties et intérêt du crédit de paiement des droits de mutation à titre gratuit en cas de transmission d'entreprise.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boi-enr-dg-50-20-50",
+    "label": "BOFiP BOI-ENR-DG-50-20-50 — paiement différé et fractionné des droits de mutation",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/2147-PGP.html/identifiant=BOI-ENR-DG-50-20-50-20160203",
+    "articleOrSection": "BOI-ENR-DG-50-20-50",
+    "scope": "Doctrine du crédit de paiement différé puis fractionné des droits sur les transmissions d'entreprises à titre gratuit.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   }
 ]

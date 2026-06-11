@@ -19,6 +19,7 @@ import settingKeys from '../src/domain/legal-references/settingKeys.json' with {
 const SOURCE_TYPES = new Set([
   'CGI',
   'Code civil',
+  'Code de commerce',
   'Code monétaire et financier',
   'Code de la consommation',
   'Code du travail',
