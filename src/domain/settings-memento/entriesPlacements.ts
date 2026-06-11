@@ -143,29 +143,4 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: [],
   },
-  {
-    chapterId: 'immobilier',
-    key: 'immobilier.scpi',
-    label: 'SCPI',
-    description:
-      'Parts de SCPI comme sous-parcours du placement : souscription, revenus, cession et transmission documentés par le catalogue Base-Contrat.',
-    status: 'planned',
-    statusReason:
-      'Simulateur SCPI et pack fiscal dédié planifiés dans le registry settings ; l’enveloppe reste documentée en lecture par les claims Base-Contrat.',
-    priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
-    registryKeys: ['immobilier.scpi.regime'],
-    claimKeys: [
-      'base-contrat-parts-scpi-pp-pp-constitution-souscription-et-revenus',
-      'base-contrat-parts-scpi-pp-pp-sortie-plus-value-de-cession',
-      'base-contrat-parts-scpi-pp-pp-deces-succession',
-    ],
-    refIds: [
-      'base-source-art-150-u-cgi-plus-values-immobilieres',
-      'boi-rfpi-pvi-10',
-      'boi-rfpi-pvi-20',
-    ],
-    coverageSources: ['cadrage-externe'],
-    relatedSimulatorIds: ['scpi'],
-  },
 ] as const satisfies readonly MementoEntry[];

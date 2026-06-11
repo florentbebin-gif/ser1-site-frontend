@@ -13,7 +13,6 @@ describe('settings-memento — placements et enveloppes', () => {
     'placements.assurance-vie-capitalisation': 'partiel',
     'placements.enveloppes-titres': 'partiel',
     'placements.epargne-reglementee': 'couvert',
-    'immobilier.scpi': 'planned',
   } as const;
   const R1_KEYS = Object.keys(R1_EXPECTED_STATUSES) as ReadonlyArray<
     keyof typeof R1_EXPECTED_STATUSES
@@ -26,7 +25,7 @@ describe('settings-memento — placements et enveloppes', () => {
     'placements.ps-pfu-revenus-capital::pfu-ir-current',
   ]);
 
-  it('déclare les six entrées du lot placements avec leurs statuts attendus', () => {
+  it('déclare les cinq entrées du lot placements avec leurs statuts attendus', () => {
     for (const key of R1_KEYS) {
       const entry = entryByKey.get(key);
 
@@ -84,7 +83,6 @@ describe('settings-memento — placements et enveloppes', () => {
       'placements.assurance-vie-capitalisation',
       'placements.enveloppes-titres',
       'placements.epargne-reglementee',
-      'immobilier.scpi',
     ] as const) {
       const entry = entryByKey.get(key);
       const baseContratClaims = entry!.claimKeys.filter((claimKey) =>
@@ -99,7 +97,6 @@ describe('settings-memento — placements et enveloppes', () => {
     for (const key of [
       'placements.ps-pfu-revenus-capital',
       'placements.assurance-vie-capitalisation',
-      'immobilier.scpi',
     ] as const) {
       const entry = entryByKey.get(key);
 
@@ -117,14 +114,5 @@ describe('settings-memento — placements et enveloppes', () => {
         expect(coverage.chapterId, key).toBe(entry!.chapterId);
       }
     }
-  });
-
-  it('garde SCPI planifié sans activer le simulateur, avec sa couverture documentaire', () => {
-    const entry = entryByKey.get('immobilier.scpi');
-
-    expect(entry!.status).toBe('planned');
-    expect(entry!.relatedSimulatorIds).toEqual(['scpi']);
-    expect(entry!.registryKeys).toEqual(['immobilier.scpi.regime']);
-    expect(entry!.claimKeys.length).toBeGreaterThan(0);
   });
 });

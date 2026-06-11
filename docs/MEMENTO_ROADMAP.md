@@ -4,7 +4,7 @@ Roadmap structurante du chantier mémento (38 PR métier + PR6b de stabilisation
 
 ## Statut d'avancement
 
-Dernière mise à jour : 2026-06-10.
+Dernière mise à jour : 2026-06-11.
 
 | PR                                               | Périmètre                                                                                           | Statut                                  |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -17,7 +17,8 @@ Dernière mise à jour : 2026-06-10.
 | PR6b — UX mémento et gouvernance sources         | Séparation vue métier/audit, priorités, intentions, sources externes génériques                     | **Livrée**                              |
 | PR 7 — Transmission                              | DMTG succession, AV décès, donation/démembrement, Dutreil, variantes société en couverture          | **Livrée**                              |
 | PR 8 — Placements et Base-Contrat                | Allocation, assurance-vie/capitalisation, PEA/CTO, SCPI                                             | **Livrée** (PR #594)                    |
-| PR 9 à PR 38                                     | Voir section D                                                                                      | À venir                                 |
+| PR 9 — Immobilier patrimonial                    | Crédit, investissement locatif, SCI, SCPI, dispositifs fiscaux, non-résidents, arbitrage/réemploi   | **Livrée**                              |
+| PR 10 à PR 38                                    | Voir section D                                                                                      | À venir                                 |
 
 Rappels non négociables (détail en section B) :
 
