@@ -10,18 +10,12 @@ describe('settings-memento — fiscalité foyer', () => {
     'fiscalite-foyer.ir',
     'fiscalite-foyer.niches-fiscales',
     'fiscalite-foyer.ifi',
-    'immobilier.revenus-fonciers',
-    'immobilier.lmnp-lmp',
-    'immobilier.pv-immobilieres',
   ] as const;
 
-  it('déclare les six entrées fiscalité foyer avec leurs statuts attendus', () => {
+  it('déclare les trois entrées fiscalité foyer avec leurs statuts attendus', () => {
     expect(entryByKey.get('fiscalite-foyer.ir')?.status).toBe('couvert');
     expect(entryByKey.get('fiscalite-foyer.niches-fiscales')?.status).toBe('partiel');
     expect(entryByKey.get('fiscalite-foyer.ifi')?.status).toBe('partiel');
-    expect(entryByKey.get('immobilier.revenus-fonciers')?.status).toBe('planned');
-    expect(entryByKey.get('immobilier.lmnp-lmp')?.status).toBe('planned');
-    expect(entryByKey.get('immobilier.pv-immobilieres')?.status).toBe('planned');
   });
 
   it('rattache chaque entrée fiscalité foyer à la page propriétaire Impôts', () => {
