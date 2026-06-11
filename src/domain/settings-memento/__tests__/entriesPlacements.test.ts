@@ -1,46 +1,89 @@
 import { describe, expect, it } from 'vitest';
 
+import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
 import type { SimulatorId } from '@/domain/simulators/registry';
 
 import { MEMENTO_ENTRIES, getCoverageForSimulator } from '../index';
 
 describe('settings-memento — placements et enveloppes', () => {
   const entryByKey = new Map(MEMENTO_ENTRIES.map((entry) => [entry.key, entry]));
-  const PLACEMENTS_KEYS = [
-    'placements.allocation',
-    'placements.assurance-vie-capitalisation',
-    'placements.enveloppes-titres',
-    'immobilier.scpi',
-  ] as const;
+  const R1_EXPECTED_STATUSES = {
+    'placements.allocation': 'couvert',
+    'placements.ps-pfu-revenus-capital': 'couvert',
+    'placements.assurance-vie-capitalisation': 'partiel',
+    'placements.enveloppes-titres': 'partiel',
+    'placements.epargne-reglementee': 'couvert',
+    'immobilier.scpi': 'planned',
+  } as const;
+  const R1_KEYS = Object.keys(R1_EXPECTED_STATUSES) as ReadonlyArray<
+    keyof typeof R1_EXPECTED_STATUSES
+  >;
 
-  it('déclare les quatre entrées placements avec leurs statuts attendus', () => {
-    expect(entryByKey.get('placements.allocation')?.status).toBe('couvert');
-    expect(entryByKey.get('placements.assurance-vie-capitalisation')?.status).toBe('partiel');
-    expect(entryByKey.get('placements.enveloppes-titres')?.status).toBe('partiel');
-    expect(entryByKey.get('immobilier.scpi')?.status).toBe('partiel');
-  });
+  // La part IR du PFU est administrée sur la page Impôts, mais le taux global
+  // est composé avec la part sociale portée par la page Prélèvements : l'entrée
+  // mémento garde Prélèvements comme propriétaire de preuve.
+  const CROSS_PAGE_CLAIM_EXCEPTIONS = new Set([
+    'placements.ps-pfu-revenus-capital::pfu-ir-current',
+  ]);
 
-  it('rattache chaque entrée placements au catalogue Base-Contrat comme page propriétaire', () => {
-    for (const key of PLACEMENTS_KEYS) {
+  it('déclare les six entrées du lot placements avec leurs statuts attendus', () => {
+    for (const key of R1_KEYS) {
       const entry = entryByKey.get(key);
 
-      expect(entry).toBeDefined();
-      expect(entry!.ownerPagePath).toBe('/settings/base-contrat');
+      expect(entry, `entrée manquante : ${key}`).toBeDefined();
+      expect(entry!.status, key).toBe(R1_EXPECTED_STATUSES[key]);
     }
   });
 
-  it('justifie le statut couvert allocation par des claims settings et le simulateur actif', () => {
-    const entry = entryByKey.get('placements.allocation');
+  it('rattache chaque entrée à sa page propriétaire de preuve', () => {
+    for (const key of R1_KEYS) {
+      const entry = entryByKey.get(key);
+      const expectedOwner =
+        key === 'placements.ps-pfu-revenus-capital'
+          ? '/settings/prelevements'
+          : '/settings/base-contrat';
 
-    expect(entry!.claimKeys.length).toBeGreaterThan(0);
-    expect(entry!.refIds.length).toBeGreaterThan(0);
-    expect(entry!.relatedSimulatorIds).toEqual(['placement']);
+      expect(entry!.ownerPagePath, key).toBe(expectedOwner);
+    }
   });
 
-  it('réutilise des claims Base-Contrat existants sur chaque sous-type d’enveloppe', () => {
+  it('aligne chaque claim sur la page propriétaire de son entrée, hors exception documentée', () => {
+    const bindingsByClaimKey = new Map(
+      SETTINGS_REFERENCE_CHAIN.map((binding) => [binding.claimKey, binding]),
+    );
+
+    for (const key of R1_KEYS) {
+      const entry = entryByKey.get(key);
+
+      for (const claimKey of entry!.claimKeys) {
+        if (CROSS_PAGE_CLAIM_EXCEPTIONS.has(`${key}::${claimKey}`)) continue;
+
+        const binding = bindingsByClaimKey.get(claimKey);
+
+        expect(binding, `${key}: claim inconnu ${claimKey}`).toBeDefined();
+        expect(binding!.pagePath, `${key}: ${claimKey}`).toBe(entry!.ownerPagePath);
+      }
+    }
+  });
+
+  it('justifie les statuts couvert par des claims settings existants', () => {
     for (const key of [
+      'placements.allocation',
+      'placements.ps-pfu-revenus-capital',
+      'placements.epargne-reglementee',
+    ] as const) {
+      const entry = entryByKey.get(key);
+
+      expect(entry!.claimKeys.length, key).toBeGreaterThan(0);
+    }
+  });
+
+  it('réutilise des claims Base-Contrat existants sur chaque entrée adossée au catalogue', () => {
+    for (const key of [
+      'placements.allocation',
       'placements.assurance-vie-capitalisation',
       'placements.enveloppes-titres',
+      'placements.epargne-reglementee',
       'immobilier.scpi',
     ] as const) {
       const entry = entryByKey.get(key);
@@ -48,35 +91,40 @@ describe('settings-memento — placements et enveloppes', () => {
         claimKey.startsWith('base-contrat-'),
       );
 
-      expect(baseContratClaims.length).toBeGreaterThan(0);
+      expect(baseContratClaims.length, key).toBeGreaterThan(0);
     }
   });
 
-  it('garde des sources qualifiées sur les entrées partiel liées au registry', () => {
-    for (const key of ['placements.assurance-vie-capitalisation', 'immobilier.scpi'] as const) {
+  it('garde des sources qualifiées sur les entrées liées au registry', () => {
+    for (const key of [
+      'placements.ps-pfu-revenus-capital',
+      'placements.assurance-vie-capitalisation',
+      'immobilier.scpi',
+    ] as const) {
       const entry = entryByKey.get(key);
 
-      expect(entry!.registryKeys.length).toBeGreaterThan(0);
-      expect(entry!.claimKeys.length + entry!.refIds.length).toBeGreaterThan(0);
+      expect(entry!.registryKeys.length, key).toBeGreaterThan(0);
+      expect(entry!.claimKeys.length + entry!.refIds.length, key).toBeGreaterThan(0);
     }
   });
 
   it('aligne chaque entrée placements sur le chapitre couvert par son simulateur', () => {
-    for (const key of PLACEMENTS_KEYS) {
+    for (const key of R1_KEYS) {
       const entry = entryByKey.get(key);
 
       for (const simulatorId of entry!.relatedSimulatorIds) {
         const coverage = getCoverageForSimulator(simulatorId as SimulatorId);
-        expect(coverage.chapterId).toBe(entry!.chapterId);
+        expect(coverage.chapterId, key).toBe(entry!.chapterId);
       }
     }
   });
 
-  it('garde SCPI en couverture documentaire sans activer le simulateur planifié', () => {
+  it('garde SCPI planifié sans activer le simulateur, avec sa couverture documentaire', () => {
     const entry = entryByKey.get('immobilier.scpi');
 
-    expect(entry!.status).not.toBe('couvert');
+    expect(entry!.status).toBe('planned');
     expect(entry!.relatedSimulatorIds).toEqual(['scpi']);
     expect(entry!.registryKeys).toEqual(['immobilier.scpi.regime']);
+    expect(entry!.claimKeys.length).toBeGreaterThan(0);
   });
 });
