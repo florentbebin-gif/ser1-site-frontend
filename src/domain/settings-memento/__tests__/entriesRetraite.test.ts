@@ -8,9 +8,12 @@ import { MEMENTO_ENTRIES, getCoverageForSimulator } from '../index';
 
 describe('settings-memento — retraite obligatoire', () => {
   const entryByKey = new Map(MEMENTO_ENTRIES.map((entry) => [entry.key, entry]));
-  const R6_EXPECTED_STATUSES = {
+  const RETRAITE_EXPECTED_STATUSES = {
     'retraite.globale': 'planned',
     'retraite.regime-general': 'partiel',
+    'retraite.dispositifs-depart': 'partiel',
+    'retraite.decote-surcote': 'partiel',
+    'retraite.reversion': 'partiel',
     'retraite.agirc-arrco': 'partiel',
     'retraite.dirigeant-assimile-salarie': 'planned',
     'retraite.ssi-artisan-commercant': 'partiel',
@@ -20,8 +23,8 @@ describe('settings-memento — retraite obligatoire', () => {
     'retraite.msa': 'partiel',
     'retraite.autres-caisses-liberales': 'a_verifier',
   } as const;
-  const R6_KEYS = Object.keys(R6_EXPECTED_STATUSES) as ReadonlyArray<
-    keyof typeof R6_EXPECTED_STATUSES
+  const RETRAITE_KEYS = Object.keys(RETRAITE_EXPECTED_STATUSES) as ReadonlyArray<
+    keyof typeof RETRAITE_EXPECTED_STATUSES
   >;
   const R6_REF_IDS = [
     'assurance-retraite-age-taux-plein',
@@ -32,19 +35,28 @@ describe('settings-memento — retraite obligatoire', () => {
     'lacipav-affiliation-retraite',
     'msa-retraite',
   ] as const;
+  const R7_RETIREMENT_REF_IDS = [
+    'css-l351-1-l351-17',
+    'css-l161-22',
+    'css-l353-1',
+    'assurance-retraite-carriere-longue',
+    'assurance-retraite-retraite-progressive',
+    'assurance-retraite-cumul-emploi-retraite',
+    'assurance-retraite-pension-reversion',
+  ] as const;
 
-  it('déclare les dix entrées du lot retraite obligatoire avec leurs statuts attendus', () => {
-    for (const key of R6_KEYS) {
+  it('déclare les treize entrées retraite R6/R7 avec leurs statuts attendus', () => {
+    for (const key of RETRAITE_KEYS) {
       const entry = entryByKey.get(key);
 
       expect(entry, `entrée manquante : ${key}`).toBeDefined();
-      expect(entry!.status, key).toBe(R6_EXPECTED_STATUSES[key]);
+      expect(entry!.status, key).toBe(RETRAITE_EXPECTED_STATUSES[key]);
       expect(entry!.chapterId, key).toBe('retraite');
     }
   });
 
-  it('rattache toutes les entrées retraite obligatoire à Prélèvements', () => {
-    for (const key of R6_KEYS) {
+  it('rattache toutes les entrées retraite à Prélèvements', () => {
+    for (const key of RETRAITE_KEYS) {
       const entry = entryByKey.get(key);
 
       expect(entry!.ownerPagePath, key).toBe('/settings/prelevements');
@@ -98,6 +110,21 @@ describe('settings-memento — retraite obligatoire', () => {
     expect(entryByKey.get('retraite.regime-general')!.refIds).toEqual([
       'assurance-retraite-age-taux-plein',
     ]);
+    expect(entryByKey.get('retraite.dispositifs-depart')!.refIds).toEqual([
+      'css-l351-1-l351-17',
+      'css-l161-22',
+      'assurance-retraite-carriere-longue',
+      'assurance-retraite-retraite-progressive',
+      'assurance-retraite-cumul-emploi-retraite',
+    ]);
+    expect(entryByKey.get('retraite.decote-surcote')!.refIds).toEqual([
+      'assurance-retraite-age-taux-plein',
+      'css-l351-1-l351-17',
+    ]);
+    expect(entryByKey.get('retraite.reversion')!.refIds).toEqual([
+      'css-l353-1',
+      'assurance-retraite-pension-reversion',
+    ]);
     expect(entryByKey.get('retraite.agirc-arrco')!.refIds).toEqual(['agirc-arrco-points-retraite']);
     expect(entryByKey.get('retraite.ssi-artisan-commercant')!.refIds).toEqual([
       'entreprendre-service-public-retraite-ei',
@@ -120,6 +147,15 @@ describe('settings-memento — retraite obligatoire', () => {
     }
   });
 
+  it('n’attache pas les sources R7 retraite au simulateur retraite tant que son lifecycle reste planned', () => {
+    const referencesById = new Map(LEGAL_REFERENCES.map((reference) => [reference.id, reference]));
+
+    for (const refId of R7_RETIREMENT_REF_IDS) {
+      expect(referencesById.get(refId)?.relatedSimulatorIds ?? [], refId).toEqual([]);
+      expect(referencesById.get(refId)?.relatedSettings, refId).toEqual(['prelevements']);
+    }
+  });
+
   it('garde les caisses non qualifiées en a_verifier sans source affichée', () => {
     for (const key of [
       'retraite.caisses-sante-liberales',
@@ -134,7 +170,7 @@ describe('settings-memento — retraite obligatoire', () => {
   });
 
   it('ne marque aucun sujet retraite obligatoire comme couvert ou bloqué', () => {
-    for (const key of R6_KEYS) {
+    for (const key of RETRAITE_KEYS) {
       const entry = entryByKey.get(key);
 
       expect(entry!.status, key).not.toBe('couvert');

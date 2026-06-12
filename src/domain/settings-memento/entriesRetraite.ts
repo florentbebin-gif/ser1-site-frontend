@@ -43,6 +43,67 @@ export const MEMENTO_RETRAITE_ENTRIES = [
   },
   {
     chapterId: 'retraite',
+    key: 'retraite.dispositifs-depart',
+    label: 'Dispositifs de départ',
+    description:
+      'Départs anticipés, retraite progressive et cumul emploi-retraite à distinguer du calcul de retraite standard.',
+    status: 'partiel',
+    statusReason:
+      'Les sources CSS et Assurance retraite qualifient les principaux dispositifs ; aucun moteur multi-carrière n’est livré.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/prelevements',
+    registryKeys: [
+      'retraite-prevoyance.pass',
+      'retraite-prevoyance.cotisations-retraite',
+      'retraite-prevoyance.validation-retraite-600-smic',
+    ],
+    claimKeys: ['pass-latest'],
+    refIds: [
+      'css-l351-1-l351-17',
+      'css-l161-22',
+      'assurance-retraite-carriere-longue',
+      'assurance-retraite-retraite-progressive',
+      'assurance-retraite-cumul-emploi-retraite',
+    ],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['retraite'],
+  },
+  {
+    chapterId: 'retraite',
+    key: 'retraite.decote-surcote',
+    label: 'Décote et surcote',
+    description:
+      'Minorations et majorations de pension liées à la durée d’assurance et au choix de date de liquidation.',
+    status: 'partiel',
+    statusReason:
+      'Les sources Assurance retraite et CSS cadrent le sujet ; SER1 ne calcule pas encore les effets par carrière.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/prelevements',
+    registryKeys: ['retraite-prevoyance.cotisations-retraite'],
+    claimKeys: [],
+    refIds: ['assurance-retraite-age-taux-plein', 'css-l351-1-l351-17'],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['retraite'],
+  },
+  {
+    chapterId: 'retraite',
+    key: 'retraite.reversion',
+    label: 'Réversion',
+    description:
+      'Droits dérivés du conjoint survivant à intégrer aux futurs scénarios retraite et transmission.',
+    status: 'partiel',
+    statusReason:
+      'La pension de réversion est qualifiée par les sources CSS et Assurance retraite ; le calcul des ressources reste hors lot.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/prelevements',
+    registryKeys: ['retraite-prevoyance.cotisations-retraite'],
+    claimKeys: [],
+    refIds: ['css-l353-1', 'assurance-retraite-pension-reversion'],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['retraite', 'succession'],
+  },
+  {
+    chapterId: 'retraite',
     key: 'retraite.agirc-arrco',
     label: 'Complémentaire AGIRC-ARRCO',
     description:
