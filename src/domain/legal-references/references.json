@@ -24,6 +24,17 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "cgi-200-0-a",
+    "label": "CGI art. 200-0 A — plafonnement global des avantages fiscaux",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053543258",
+    "articleOrSection": "Art. 200-0 A",
+    "scope": "Plafonnement global des avantages fiscaux accordés au titre de l'impôt sur le revenu.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-223-sexies",
     "label": "CGI art. 223 sexies — contribution exceptionnelle sur les hauts revenus",
     "sourceType": "CGI",
@@ -100,6 +111,17 @@
     "volatility": "lawChange",
     "relatedSimulatorIds": ["placement"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "cgi-150-0-d",
+    "label": "CGI art. 150-0 D — abattements sur titres",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218045",
+    "articleOrSection": "Art. 150-0 D",
+    "scope": "Modalités de calcul des gains nets de cession de valeurs mobilières, dont abattements de durée de détention lorsque le régime les maintient.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "cgi-680",
@@ -785,6 +807,61 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-197-a",
+    "label": "CGI art. 197 A — taux minimum des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037985917",
+    "articleOrSection": "Art. 197 A",
+    "scope": "Calcul minimum de l'impôt sur le revenu dû par les contribuables non domiciliés en France percevant des revenus de source française.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-182-a",
+    "label": "CGI art. 182 A — retenue à la source des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051765171",
+    "articleOrSection": "Art. 182 A",
+    "scope": "Retenue à la source sur certains traitements, salaires, pensions et rentes de source française versés à des non-résidents.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-187",
+    "label": "CGI art. 187 — retenues à la source sur revenus distribués",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218440",
+    "articleOrSection": "Art. 187",
+    "scope": "Taux de retenue à la source applicables à certains revenus distribués payés à des bénéficiaires situés hors de France.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-8",
+    "label": "CGI art. 8 — sociétés de personnes et translucidité fiscale",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025842591",
+    "articleOrSection": "Art. 8",
+    "scope": "Imposition des associés de sociétés de personnes et sociétés civiles relevant du régime de translucidité fiscale.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-206",
+    "label": "CGI art. 206 — sociétés passibles de l'IS",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051765059",
+    "articleOrSection": "Art. 206",
+    "scope": "Assujettissement à l'impôt sur les sociétés, dont situations de sociétés civiles exerçant certaines activités ou optant pour l'IS.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-158",
     "label": "CGI art. 158 — revenu net global et abattements",
     "sourceType": "CGI",
@@ -820,6 +897,28 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-972",
+    "label": "CGI art. 972 — contrats rachetables et IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036385019",
+    "articleOrSection": "Art. 972",
+    "scope": "Intégration à l'IFI de la fraction immobilière des contrats rachetables et contrats de capitalisation.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-974",
+    "label": "CGI art. 974 — passif déductible IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037988599",
+    "articleOrSection": "Art. 974",
+    "scope": "Dettes déductibles de l'assiette de l'impôt sur la fortune immobilière.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-977",
     "label": "CGI art. 977 — tarif IFI",
     "sourceType": "CGI",
@@ -829,6 +928,50 @@
     "volatility": "lawChange",
     "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "cgi-979",
+    "label": "CGI art. 979 — plafonnement IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036385045",
+    "articleOrSection": "Art. 979",
+    "scope": "Mécanisme de plafonnement de l'impôt sur la fortune immobilière.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-150-ve",
+    "label": "CGI art. 150 VE — abattement exceptionnel PVI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053544979",
+    "articleOrSection": "Art. 150 VE",
+    "scope": "Abattement exceptionnel applicable à certaines plus-values immobilières selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-244-bis-a",
+    "label": "CGI art. 244 bis A — PVI des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048806274",
+    "articleOrSection": "Art. 244 bis A",
+    "scope": "Prélèvement applicable à certaines plus-values immobilières de source française réalisées par des non-résidents.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-1609-nonies-g",
+    "label": "CGI art. 1609 nonies G — taxe sur les PVI élevées",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048806252",
+    "articleOrSection": "Art. 1609 nonies G",
+    "scope": "Taxe additionnelle applicable aux plus-values immobilières élevées.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "service-public-ps-revenus-capital-2026",
@@ -2109,6 +2252,39 @@
       "groupement_foncier_forestier_pm"
     ],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "boi-rfpi-pvi-20-20",
+    "label": "BOFiP BOI-RFPI-PVI-20-20 — plus-value imposable",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/292-PGP.html/identifiant=BOI-RFPI-PVI-20-20-20230718",
+    "articleOrSection": "BOI-RFPI-PVI-20-20",
+    "scope": "Détermination de la plus-value immobilière imposable, dont abattements de durée de détention et abattements exceptionnels.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boi-rfpi-pvinr-20-20",
+    "label": "BOFiP BOI-RFPI-PVINR-20-20 — prélèvements sociaux non-résidents",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/7508-PGP.html/identifiant=BOI-RFPI-PVINR-20-20-20220629",
+    "articleOrSection": "BOI-RFPI-PVINR-20-20",
+    "scope": "Prélèvements sociaux applicables aux plus-values immobilières des non-résidents et cas d'affiliation à un régime étranger de sécurité sociale.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boi-rfpi-champ-30-20",
+    "label": "BOFiP BOI-RFPI-CHAMP-30-20 — sociétés immobilières",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/1237-PGP.html/identifiant=BOI-RFPI-CHAMP-30-20-20121008",
+    "articleOrSection": "BOI-RFPI-CHAMP-30-20",
+    "scope": "Régime des revenus fonciers perçus par l'intermédiaire de sociétés immobilières non soumises à l'impôt sur les sociétés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "boi-bic-champ-40",
