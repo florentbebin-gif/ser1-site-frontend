@@ -14,7 +14,7 @@ describe('settings-memento — dirigeant et social', () => {
     'dirigeant.charges-sociales-tns': 'partiel',
     'dirigeant.charges-sociales-liberales': 'planned',
     'dirigeant.puma-csm': 'planned',
-    'dirigeant.micro-social': 'planned',
+    'dirigeant.micro-social': 'absent',
     'dirigeant.sortie-capitaux': 'partiel',
     'dirigeant.prevoyance': 'planned',
   } as const;
@@ -35,7 +35,11 @@ describe('settings-memento — dirigeant et social', () => {
     for (const key of R5_KEYS) {
       const entry = entryByKey.get(key);
       const expectedOwner =
-        key === 'dirigeant.prevoyance' ? '/settings/prevoyance-regimes' : '/settings/prelevements';
+        key === 'dirigeant.prevoyance'
+          ? '/settings/prevoyance-regimes'
+          : key === 'dirigeant.micro-social'
+            ? null
+            : '/settings/prelevements';
 
       expect(entry!.ownerPagePath, key).toBe(expectedOwner);
     }
@@ -67,9 +71,18 @@ describe('settings-memento — dirigeant et social', () => {
       'boss-assiette-generale',
     ]);
     expect(entryByKey.get('dirigeant.puma-csm')!.refIds).toEqual(['service-public-puma']);
-    expect(entryByKey.get('dirigeant.micro-social')!.refIds).toEqual([
-      'entreprendre-service-public-regime-micro-social',
-    ]);
+  });
+
+  it('garde le micro-social hors cible sans propriétaire ni source', () => {
+    const entry = entryByKey.get('dirigeant.micro-social');
+
+    expect(entry!.status).toBe('absent');
+    expect(entry!.ownerPagePath).toBeNull();
+    expect(entry!.registryKeys).toEqual([]);
+    expect(entry!.claimKeys).toEqual([]);
+    expect(entry!.refIds).toEqual([]);
+    expect(entry!.relatedSimulatorIds).toEqual([]);
+    expect(entry!.statusReason).toContain('Hors cible initiale');
   });
 
   it('laisse les régimes libéraux sans source transversale artificielle', () => {

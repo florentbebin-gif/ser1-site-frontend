@@ -777,17 +777,6 @@
     "lastCheckedAt": "2026-06-12"
   },
   {
-    "id": "entreprendre-service-public-regime-micro-social",
-    "label": "Entreprendre Service-Public — régime micro-social",
-    "sourceType": "Service-Public",
-    "officialUrl": "https://entreprendre.service-public.fr/vosdroits/F37353",
-    "articleOrSection": "Régime micro-social",
-    "scope": "Déclaration et paiement des cotisations du micro-entrepreneur sous régime micro-social.",
-    "volatility": "lawChange",
-    "relatedSettings": ["prelevements"],
-    "lastCheckedAt": "2026-06-12"
-  },
-  {
     "id": "css-l136-6",
     "label": "Code de la sécurité sociale art. L136-6 — revenus du patrimoine",
     "sourceType": "Code de la sécurité sociale",

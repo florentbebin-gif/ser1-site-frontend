@@ -119,16 +119,16 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     label: 'Micro-social',
     description:
       'Régime micro-social du dirigeant indépendant, avec déclaration périodique et cotisations liées au chiffre d’affaires déclaré.',
-    status: 'planned',
+    status: 'absent',
     statusReason:
-      'Source Entreprendre Service-Public qualifiée ; aucun paramètre micro-social ni moteur indépendant n’est livré.',
-    priority: 'utile',
-    ownerPagePath: '/settings/prelevements',
-    registryKeys: ['social-dirigeant.charges-sociales'],
+      'Hors cible initiale du mémento dirigeant/social ; la décision V5 conserve le micro-social sans source, propriétaire ni simulateur.',
+    priority: 'complementaire',
+    ownerPagePath: null,
+    registryKeys: [],
     claimKeys: [],
-    refIds: ['entreprendre-service-public-regime-micro-social'],
+    refIds: [],
     coverageSources: ['cadrage-externe'],
-    relatedSimulatorIds: ['remuneration'],
+    relatedSimulatorIds: [],
   },
   {
     chapterId: 'dirigeant',
