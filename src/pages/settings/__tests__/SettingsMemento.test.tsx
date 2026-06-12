@@ -145,6 +145,8 @@ describe('route settings mémento', () => {
       '/settings/comptables-societes',
       '/settings/prelevements',
       '/settings/dmtg-succession',
+      '/settings/base-contrat',
+      '/settings/fiscalites',
     ]) {
       expect(getActiveSettingsKey(migratedPath)).toBe('memento');
       expect(isDeclaredSettingsPath(migratedPath)).toBe(false);
@@ -188,18 +190,11 @@ describe('contrat de migration settings vers mémento', () => {
 
   it('retire les routes migrées et conserve les autres routes sources avant leurs PR dédiées', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
-    expect(routePaths).not.toContain('/settings/impots');
-    expect(routePaths).not.toContain('/settings/comptables-societes');
-    expect(routePaths).not.toContain('/settings/prelevements');
-    expect(routePaths).not.toContain('/settings/dmtg-succession');
 
-    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS.filter(
-      (candidate) =>
-        !['impots', 'comptables-societes', 'prelevements', 'dmtg-succession'].includes(
-          candidate.id,
-        ),
-    )) {
-      expect(routePaths, section.id).toContain(section.legacyPagePath);
+    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS) {
+      const assertion = expect(routePaths, section.id);
+      if (section.id === 'prevoyance-regimes') assertion.toContain(section.legacyPagePath);
+      else assertion.not.toContain(section.legacyPagePath);
     }
   });
 

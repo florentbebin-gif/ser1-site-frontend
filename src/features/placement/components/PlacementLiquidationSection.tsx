@@ -211,7 +211,7 @@ export function PlacementLiquidationSection({
       )}
 
       <div className="pl-hint">
-        <a href="/settings/base-contrat">Consulter la fiscalité des contrats &rarr;</a>
+        <a href="/settings/memento">Consulter la fiscalité des contrats &rarr;</a>
       </div>
     </div>
   );

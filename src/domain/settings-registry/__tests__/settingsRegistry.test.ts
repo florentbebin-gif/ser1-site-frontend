@@ -111,6 +111,9 @@ describe('settings-registry', () => {
     const orphanOwnerClaims = SETTINGS_REFERENCE_CHAIN.filter((binding) =>
       CORE_SETTINGS_PAGE_PATHS.has(binding.pagePath),
     )
+      // Les claims Base-Contrat sont générés depuis le catalogue et les règles,
+      // puis vérifiés dynamiquement par check:settings-references.
+      .filter((binding) => binding.target.kind !== 'base-contrat-rule')
       .filter((binding) => !declaredClaimsByOwner.has(`${binding.pagePath}:${binding.claimKey}`))
       .map((binding) => `${binding.pagePath}:${binding.claimKey}`);
 

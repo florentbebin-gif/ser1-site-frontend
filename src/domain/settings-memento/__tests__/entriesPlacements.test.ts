@@ -30,12 +30,8 @@ describe('settings-memento — placements et enveloppes', () => {
   it('rattache chaque entrée à sa page propriétaire de preuve', () => {
     for (const key of R1_KEYS) {
       const entry = entryByKey.get(key);
-      const expectedOwner =
-        key === 'placements.ps-pfu-revenus-capital'
-          ? '/settings/memento'
-          : '/settings/base-contrat';
 
-      expect(entry!.ownerPagePath, key).toBe(expectedOwner);
+      expect(entry!.ownerPagePath, key).toBe('/settings/memento');
     }
   });
 

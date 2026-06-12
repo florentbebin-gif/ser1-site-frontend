@@ -40,7 +40,7 @@ export const SETTINGS_FAMILIES = [
     id: 'placements',
     label: 'Placements',
     description: 'Règles par enveloppe financière et dispositifs de placement patrimonial.',
-    ownerPages: ['/settings/base-contrat', '/settings/memento'],
+    ownerPages: ['/settings/memento'],
     status: 'partial',
   },
   {
