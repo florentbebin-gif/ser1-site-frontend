@@ -63,6 +63,19 @@ describe('settings-memento — retraite obligatoire', () => {
     }
   });
 
+  it('trace la fonction publique sans promettre de couverture active', () => {
+    const entry = entryByKey.get('retraite.fonction-publique');
+
+    expect(entry).toBeDefined();
+    expect(entry!.chapterId).toBe('retraite');
+    expect(entry!.status).toBe('absent');
+    expect(entry!.ownerPagePath).toBeNull();
+    expect(entry!.registryKeys).toEqual([]);
+    expect(entry!.claimKeys).toEqual([]);
+    expect(entry!.refIds).toEqual([]);
+    expect(entry!.relatedSimulatorIds).toEqual(['retraite']);
+  });
+
   it('conserve retraite globale en planned malgré les settings transverses existants', () => {
     const entry = entryByKey.get('retraite.globale');
 

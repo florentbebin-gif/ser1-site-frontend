@@ -7,6 +7,7 @@ import {
   MEMENTO_ENTRIES,
   getCoverageForSimulator,
   PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
+  PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS,
   PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
   PREVOYANCE_REGIME_CLAIMS,
 } from '../index';
@@ -49,6 +50,27 @@ describe('settings-memento — prévoyance obligatoire', () => {
       'base-source-boss-prevoyance-tns',
     ]);
     expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
+  });
+
+  it('rattache les contrats assurantiels aux règles Base-Contrat prévoyance', () => {
+    const entry = entryByKey.get('prevoyance.contrats-assurantiels');
+
+    expect(entry).toBeDefined();
+    expect(entry!.chapterId).toBe('prevoyance');
+    expect(entry!.status).toBe('partiel');
+    expect(entry!.ownerPagePath).toBe('/settings/base-contrat');
+    expect(entry!.claimKeys).toEqual(PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS);
+    expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
+
+    for (const claimKey of PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS) {
+      const binding = bindingsByClaimKey.get(claimKey);
+
+      expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
+      expect(binding!.pagePath, claimKey).toBe('/settings/base-contrat');
+      expect(binding!.sectionKey, claimKey).toBe('assurance-prevoyance');
+      expect(binding!.target.kind, claimKey).toBe('base-contrat-rule');
+      expect(binding!.refIds.length, claimKey).toBeGreaterThan(0);
+    }
   });
 
   it('verrouille la cartographie des caisses attendue par R7', () => {
