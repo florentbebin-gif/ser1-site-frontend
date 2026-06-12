@@ -58,7 +58,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
     expect(entry).toBeDefined();
     expect(entry!.chapterId).toBe('prevoyance');
     expect(entry!.status).toBe('partiel');
-    expect(entry!.ownerPagePath).toBe('/settings/base-contrat');
+    expect(entry!.ownerPagePath).toBe('/settings/memento');
     expect(entry!.claimKeys).toEqual(PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS);
     expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
 
@@ -66,7 +66,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
       const binding = bindingsByClaimKey.get(claimKey);
 
       expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
-      expect(binding!.pagePath, claimKey).toBe('/settings/base-contrat');
+      expect(binding!.pagePath, claimKey).toBe('/settings/memento');
       expect(binding!.sectionKey, claimKey).toBe('assurance-prevoyance');
       expect(binding!.target.kind, claimKey).toBe('base-contrat-rule');
       expect(binding!.refIds.length, claimKey).toBeGreaterThan(0);

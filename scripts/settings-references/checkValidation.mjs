@@ -228,7 +228,7 @@ function validateBinding(binding, index, context) {
     } else if (!isSpecificText(binding.noRefReason)) {
       errors.push(`${label}: noRefReason spécifique obligatoire quand refIds est vide`);
     } else if (
-      binding.pagePath === '/settings/base-contrat' &&
+      binding.target?.kind === 'base-contrat-rule' &&
       BASE_CONTRAT_INCOMPLETE_SOURCE_PATTERNS.some((pattern) => pattern.test(binding.noRefReason))
     ) {
       errors.push(
@@ -296,8 +296,9 @@ function countBaseContratRuntimeClaims(context) {
 
 function expectedClaimsForPage(pagePath, context) {
   const expected = COVERAGE_EXPECTED_CLAIMS_BY_PAGE[pagePath];
-  if (pagePath === '/settings/base-contrat') {
-    return countBaseContratRuntimeClaims(context);
+  if (pagePath === '/settings/memento') {
+    const baseContratClaims = countBaseContratRuntimeClaims(context);
+    return Number.isInteger(baseContratClaims) ? expected + baseContratClaims : expected;
   }
   return expected;
 }

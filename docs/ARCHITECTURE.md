@@ -132,7 +132,7 @@ canonique lisible par Node ; il relie chaque claim Settings à une cible contrô
 - `settings-default` : chemin de fallback dans `DEFAULT_TAX_SETTINGS`, `DEFAULT_PS_SETTINGS` ou
   `DEFAULT_FISCALITY_SETTINGS` ;
 - `pass-history` : millésime `public.pass_history` (`year` ou `latest`) ;
-- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/base-contrat` ;
+- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/memento` ;
 - `prevoyance-db` : table/code/jsonPath des sources JSONB prévoyance.
 
 Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
@@ -143,8 +143,8 @@ par page. Il est branché dans `check:static` et son rapport doit rester en
 `coverage.mode = "exhaustive"` avec `coverage.isExhaustive = true`. `coverage.byPage` expose pour
 chaque surface le nombre de bindings déclarés (`declared`) et le nombre de claims attendus
 (`expected`). Les surfaces cibles déclarées doivent rester complètes sans claim manquant ou
-surnuméraire : `/settings/memento`, `/settings/base-contrat`, `/settings/prevoyance-regimes`. La
-cible Base-Contrat est dynamique : son attendu est recalculé depuis `CATALOG` + `getRules()`.
+surnuméraire : `/settings/memento`, `/settings/prevoyance-regimes`. La part Base-Contrat du
+mémento est dynamique : son attendu est recalculé depuis `CATALOG` + `getRules()`.
 
 L'audit `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
 liveness URL hors CI et la lecture des sources prévoyance en base. Ajouter `--fetch` force la
@@ -674,7 +674,7 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 Source de vérité : `src/domain/base-contrat/` (catalogue + règles).
 Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note + statut de revue juridique).
 
-UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
+UI : le panneau Base-Contrat de `/settings/memento` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
 
 ### Base CG retraite
 
@@ -748,7 +748,6 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | --------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | `/settings`                       | `SettingsGeneral`      | —                                                                                                | Généraux (placeholder)                                                                        |
 | `/settings/memento`               | `SettingsMemento`      | `tax_settings`, `ps_settings`, `fiscality_settings`, `pass_history`                              | Mémento utilisateur et éditeurs migrés : fiscalité foyer, société, prélèvements sociaux, DMTG |
-| `/settings/base-contrat`          | `BaseContrat`          | `base_contrat_overrides`                                                                         | Référentiel produits (read-only 3 colonnes + toggles admin)                                   |
 | `/settings/base-contrat-retraite` | `BaseCgRetraite`       | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                         |
 | `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`    | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                        |
 | `/settings/design-system`         | `SettingsDesignSystem` | —                                                                                                | Audit visuel interne admin                                                                    |
@@ -886,7 +885,7 @@ Le référentiel Base-Contrat reste pur côté domaine :
 
 - `src/domain/base-contrat/rules/fiscalLabels.ts` construit des libellés fiscaux à partir d'un contexte fourni.
 - `getRules(productId, audience, context?)` rend les placeholders fiscaux avec ces libellés.
-- `src/pages/settings/BaseContrat.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
+- `src/pages/settings/BaseContrat/BaseContratSettingsPanel.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
 
 Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabase ni les hooks applicatifs.
 

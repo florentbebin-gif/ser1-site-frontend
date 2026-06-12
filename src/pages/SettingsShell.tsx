@@ -27,12 +27,6 @@ export default function SettingsShell(): React.ReactElement {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (window.location.pathname.startsWith('/settings/fiscalites')) {
-      window.history.replaceState({}, '', '/settings/base-contrat');
-      setActiveTab('baseContrats');
-      return;
-    }
-
     if (
       window.location.pathname.startsWith('/settings/') &&
       !isDeclaredSettingsPath(window.location.pathname)

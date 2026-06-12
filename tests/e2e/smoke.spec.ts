@@ -216,6 +216,9 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(
       page.getByRole('button', { name: 'Comptables & sociétés', exact: true }),
     ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Référentiel contrats', exact: true }),
+    ).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'DMTG & Succession', exact: true })).toHaveCount(
       0,
     );

@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BaseContrat from '../BaseContrat';
+import BaseContratSettingsPanel from '../BaseContrat/BaseContratSettingsPanel';
 import type { UserRoleState } from '@/auth/useUserRole';
 import type { ProductRules } from '@/domain/base-contrat/rules';
 import { getLegalReference } from '@/domain/legal-references';
@@ -21,10 +21,6 @@ vi.mock('@/auth/useUserRole', () => ({
     isAdmin,
     isLoading: false,
   }),
-}));
-
-vi.mock('@/components/UserInfoBanner', () => ({
-  UserInfoBanner: () => <div data-testid="user-info-banner" />,
 }));
 
 vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
@@ -87,7 +83,7 @@ vi.mock('@/domain/base-contrat/rules/index', () => ({
 }));
 
 async function openFirstProduct() {
-  render(<BaseContrat />);
+  render(<BaseContratSettingsPanel />);
 
   await screen.findByText('Référentiel contrats');
   await userEvent.click(screen.getByRole('button', { name: /Assurance prévoyance/i }));
@@ -96,7 +92,7 @@ async function openFirstProduct() {
   return productHeader;
 }
 
-describe('BaseContrat', () => {
+describe('BaseContratSettingsPanel', () => {
   beforeEach(() => {
     isAdmin = false;
     getBaseContratOverridesMock.mockReset();
@@ -112,7 +108,7 @@ describe('BaseContrat', () => {
   });
 
   it('rend le choix audience comme un radiogroup', async () => {
-    render(<BaseContrat />);
+    render(<BaseContratSettingsPanel />);
 
     await screen.findByText('Référentiel contrats');
 

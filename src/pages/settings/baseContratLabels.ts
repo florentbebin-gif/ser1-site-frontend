@@ -1,5 +1,5 @@
 /**
- * Labels FR — Base-Contrat (UI /settings/base-contrat).
+ * Labels FR — Base-Contrat (panneau /settings/memento).
  * La page conserve uniquement les labels encore utilisés.
  */
 

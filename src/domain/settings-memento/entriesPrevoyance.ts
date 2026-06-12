@@ -216,7 +216,7 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     statusReason:
       'Les claims Base-Contrat existent pour les blocs assurantiels ; les garanties restent portées par les règles de contrat et leurs overrides.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
     claimKeys: PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS,
     refIds: [],

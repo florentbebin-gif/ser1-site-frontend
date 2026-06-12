@@ -86,7 +86,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Enveloppe documentée en lecture par les claims Base-Contrat pour les détentions physique et morale ; le simulateur SCPI et son pack fiscal dédié restent planifiés dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.scpi.regime'],
     claimKeys: [
       'base-contrat-parts-scpi-pp-pp-constitution-souscription-et-revenus',
@@ -132,7 +132,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Dispositifs sourcés un par un via les claims du catalogue Base-Contrat ; aucun moteur ni paramètre administré, les conditions fines restent à qualifier avant tout calcul.',
     priority: 'utile',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'base-contrat-censi-bouvard-pp-constitution-reduction-ou-deduction-d-ir',

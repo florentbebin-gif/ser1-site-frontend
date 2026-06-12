@@ -742,7 +742,7 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 
 ### Étape 4 — Vérifier les produits "À vérifier"
 
-1. Aller sur `/settings/base-contrat`.
+1. Aller sur `/settings/memento`.
 2. (Admin) Rechercher un produit et ajuster son état **Clôturé / Ouvert** si nécessaire.
    - Une clôture s'accompagne d'une **date** (et d'une note optionnelle).
 
@@ -774,7 +774,7 @@ une bannière uniquement aux admins connectés et seulement tant que ce rapport 
 Le navigateur ne relance jamais l'audit et ne contacte jamais directement les URLs Légifrance/BOFiP.
 
 `check:settings-references` est branché dans `check:static`. Les surfaces
-`/settings/memento`, `/settings/base-contrat` et `/settings/prevoyance-regimes` doivent rester à
+`/settings/memento` et `/settings/prevoyance-regimes` doivent rester à
 `coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
 zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`
 sert à lister les claims périmés ou à vérifier. Pour les références `annual`, le blocage démarre au
@@ -795,7 +795,7 @@ garanties/cotisations ; l'audit DB doit refuser toute régression.
 
 ## Base-Contrat — Clôturer / rouvrir un produit
 
-La page `/settings/base-contrat` affiche un **catalogue hardcodé** et permet uniquement (admin) de :
+Le panneau Base-Contrat de `/settings/memento` affiche un **catalogue hardcodé** et permet uniquement (admin) de :
 
 - **Clôturer / rouvrir** un produit avec une date
 - Ajouter une **note admin** optionnelle

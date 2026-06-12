@@ -89,7 +89,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Les simulateurs PER actifs consomment un ruleset centralisé et les claims Base-Contrat PERIN qualifient les blocs produit nécessaires au mémento.',
     priority: 'critique',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['placements.per-individuel'],
     claimKeys: PER_INDIVIDUEL_CLAIMS,
     refIds: [
@@ -168,7 +168,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Les claims Base-Contrat qualifient les blocs article 83 et PERO ; SER1 ne livre pas de moteur dédié à ces contrats collectifs.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: ARTICLE_83_PERO_CLAIMS,
     refIds: [
@@ -190,7 +190,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Les claims Base-Contrat et références CGI qualifient le cadrage ; aucun parcours dédié Madelin n’est livré hors simulateurs PER existants.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['placements.per-individuel'],
     claimKeys: MADELIN_RETRAITE_CLAIMS,
     refIds: [
@@ -212,7 +212,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Les claims Base-Contrat PERCOL/PERCO complètent l’entrée société ; le simulateur épargne salariale reste placeholder et aucun moteur n’est activé.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['placements.epargne-salariale'],
     claimKeys: EPARGNE_SALARIALE_RETRAITE_CLAIMS,
     refIds: [

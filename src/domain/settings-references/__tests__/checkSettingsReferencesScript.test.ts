@@ -99,7 +99,7 @@ function validBinding(overrides: Record<string, unknown> = {}) {
 
 function validBaseContratBinding(audience: 'pp' | 'pm', overrides: Record<string, unknown> = {}) {
   return validBinding({
-    pagePath: '/settings/base-contrat',
+    pagePath: '/settings/memento',
     sectionKey: 'assurance-epargne',
     category: 'deces-transmission',
     claimKey: `capitalisation-succession-active-${audience}`,
@@ -369,21 +369,12 @@ describe('check-settings-references', () => {
     expect(report.coverage.isExhaustive).toBe(true);
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
-      '/settings/base-contrat': 2,
-      '/settings/memento': 23,
+      '/settings/memento': 25,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/memento']).toEqual({
-      expected: 23,
-      declared: 23,
-      expectedDefined: true,
-      complete: true,
-      missing: 0,
-      extra: 0,
-    });
-    expect(report.coverage.byPage['/settings/base-contrat']).toEqual({
-      expected: 2,
-      declared: 2,
+      expected: 25,
+      declared: 25,
       expectedDefined: true,
       complete: true,
       missing: 0,

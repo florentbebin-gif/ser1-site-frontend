@@ -27,6 +27,7 @@ import type { MementoSettingsMigrationSection } from './mementoSettingsSections'
 const ComptablesSocietesSettingsPanel = lazy(
   () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
 );
+const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
 const DmtgSuccessionSettingsPanel = lazy(
   () => import('../DmtgSuccession/DmtgSuccessionSettingsPanel'),
 );
@@ -240,7 +241,7 @@ function SettingsSourceRow({
       </div>
 
       <div className="settings-memento-row__owner">
-        <span className="settings-memento-owner-placeholder">{section.legacyPagePath}</span>
+        <span className="settings-memento-owner-placeholder">{section.targetPagePath}</span>
       </div>
     </article>
   );
@@ -292,6 +293,17 @@ function SettingsSectionContent({
         <SettingsSourceRow section={section} />
         <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
           <DmtgSuccessionSettingsPanel />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (section.id === 'base-contrat' && chapter.id === 'placements') {
+    return (
+      <div className="settings-memento-settings-editor">
+        <SettingsSourceRow section={section} />
+        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
+          <BaseContratSettingsPanel />
         </Suspense>
       </div>
     );
