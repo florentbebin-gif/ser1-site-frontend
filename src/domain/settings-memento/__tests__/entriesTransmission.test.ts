@@ -14,19 +14,30 @@ describe('settings-memento — transmission', () => {
     'transmission.liberalites',
     'transmission.transmission-internationale',
     'transmission-entreprise.pacte-dutreil',
+    'transmission-entreprise.paiement-differe-fractionne',
     'transmission-entreprise.donation-titres',
     'transmission-entreprise.liquidite-societe',
   ] as const;
 
-  it('déclare les huit entrées transmission avec leurs statuts attendus', () => {
+  it('déclare les neuf entrées transmission avec leurs statuts attendus', () => {
     expect(entryByKey.get('transmission.succession-dmtg')?.status).toBe('couvert');
     expect(entryByKey.get('transmission.assurance-vie-deces')?.status).toBe('couvert');
     expect(entryByKey.get('transmission.donation-demembrement')?.status).toBe('planned');
     expect(entryByKey.get('transmission.liberalites')?.status).toBe('partiel');
     expect(entryByKey.get('transmission.transmission-internationale')?.status).toBe('a_verifier');
     expect(entryByKey.get('transmission-entreprise.pacte-dutreil')?.status).toBe('planned');
+    expect(entryByKey.get('transmission-entreprise.paiement-differe-fractionne')?.status).toBe(
+      'partiel',
+    );
     expect(entryByKey.get('transmission-entreprise.donation-titres')?.status).toBe('planned');
     expect(entryByKey.get('transmission-entreprise.liquidite-societe')?.status).toBe('planned');
+  });
+
+  it('fonde le paiement différé et fractionné sur les références qualifiées', () => {
+    const entry = entryByKey.get('transmission-entreprise.paiement-differe-fractionne');
+
+    expect(entry!.refIds).toEqual(['cgi-ann3-397-a', 'cgi-ann3-404-ga', 'boi-enr-dg-50-20-50']);
+    expect(entry!.relatedSimulatorIds).toEqual(['pacte-dutreil']);
   });
 
   it('garde la transmission internationale en attente de qualification sans source affichée', () => {

@@ -5,6 +5,7 @@ export type LegalReferenceId = string;
 export type LegalSourceType =
   | 'CGI'
   | 'Code civil'
+  | 'Code de commerce'
   | 'Code monétaire et financier'
   | 'Code de la consommation'
   | 'Code du travail'
