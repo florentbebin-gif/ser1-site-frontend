@@ -88,6 +88,91 @@ export const MEMENTO_SOCIETE_ENTRIES = [
   },
   {
     chapterId: 'societe',
+    key: 'societe.bilans-liasses-source',
+    label: 'Bilans et liasses comme sources dossier',
+    description:
+      'Bilans, liasses et pièces comptables comme sources du futur dossier société, sans saisie settings exhaustive.',
+    status: 'planned',
+    statusReason:
+      'Besoin F5 inventorié ; les bilans et liasses doivent alimenter le dossier société futur, sans page de production comptable ni moteur livré.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/comptables-societes',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['projection-comptable', 'valorisation-titres', 'tresorerie-societe'],
+  },
+  {
+    chapterId: 'societe',
+    key: 'societe.primes',
+    label: 'Primes d’émission, fusion ou apport',
+    description:
+      'Primes inscrites dans les capitaux propres et mobilisables par les futures projections ou valorisations de titres.',
+    status: 'planned',
+    statusReason:
+      'Sujet comptable F5 inventorié ; aucune source qualifiée, valeur administrée ni consommation moteur dédiée n’est livrée.',
+    priority: 'utile',
+    ownerPagePath: '/settings/comptables-societes',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['projection-comptable', 'valorisation-titres'],
+  },
+  {
+    chapterId: 'societe',
+    key: 'societe.emprunts',
+    label: 'Emprunts société',
+    description:
+      'Encours, intérêts, échéancier et actif financé à rattacher au futur modèle société et aux projections.',
+    status: 'planned',
+    statusReason:
+      'Trésorerie société consomme déjà des emprunts dans son périmètre actuel, mais le modèle bilan F5 et les sources comptables restent à qualifier.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/comptables-societes',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['tresorerie-societe', 'projection-comptable'],
+  },
+  {
+    chapterId: 'societe',
+    key: 'societe.immobilisations',
+    label: 'Immobilisations',
+    description:
+      'Immobilisations et amortissements éventuels comme données de bilan pour projection et valorisation.',
+    status: 'planned',
+    statusReason:
+      'Besoin F5 inventorié ; aucun moteur de projection comptable ni source ANC qualifiée n’est livré dans ce lot.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/comptables-societes',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['projection-comptable', 'valorisation-titres'],
+  },
+  {
+    chapterId: 'societe',
+    key: 'societe.immobilier-detenu',
+    label: 'Immobilier détenu par la société',
+    description:
+      'Détention d’immobilier par une société, à relier aux futures valorisations, analyses IFI/SCI et projections de trésorerie.',
+    status: 'planned',
+    statusReason:
+      'Sujet transversal F5/F3 inventorié ; le modèle actif/passif et le traitement fiscal restent à qualifier avant tout calcul.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/comptables-societes',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['valorisation-titres', 'tresorerie-societe'],
+  },
+  {
+    chapterId: 'societe',
     key: 'societe.tresorerie',
     label: 'Trésorerie société',
     description:

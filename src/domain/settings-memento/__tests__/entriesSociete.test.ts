@@ -13,6 +13,11 @@ describe('settings-memento — société et comptabilité', () => {
     'societe.compte-courant-associe': 'partiel',
     'societe.resultat-distribuable-reserves': 'partiel',
     'societe.capitaux-propres': 'partiel',
+    'societe.bilans-liasses-source': 'planned',
+    'societe.primes': 'planned',
+    'societe.emprunts': 'planned',
+    'societe.immobilisations': 'planned',
+    'societe.immobilier-detenu': 'planned',
     'societe.tresorerie': 'partiel',
     'societe.organigramme': 'planned',
     'societe.projection-comptable': 'planned',
@@ -37,7 +42,7 @@ describe('settings-memento — société et comptabilité', () => {
     'societe.epargne-salariale::base-contrat-percol-pp-pp-sortie-apres-5-ans',
   ]);
 
-  it('déclare les treize entrées du lot société avec leurs statuts attendus', () => {
+  it('déclare les dix-huit entrées du lot société avec leurs statuts attendus', () => {
     for (const key of R4_KEYS) {
       const entry = entryByKey.get(key);
 
@@ -91,6 +96,22 @@ describe('settings-memento — société et comptabilité', () => {
       'code-commerce-l232-12',
     ]);
     expect(capitauxPropres!.refIds).toEqual(['code-commerce-l223-42', 'code-commerce-l225-248']);
+  });
+
+  it('garde les sujets F5 sans source qualifiée en planned', () => {
+    for (const key of [
+      'societe.bilans-liasses-source',
+      'societe.primes',
+      'societe.emprunts',
+      'societe.immobilisations',
+      'societe.immobilier-detenu',
+    ] as const) {
+      const entry = entryByKey.get(key);
+
+      expect(entry!.status, key).toBe('planned');
+      expect(entry!.claimKeys, key).toEqual([]);
+      expect(entry!.refIds, key).toEqual([]);
+    }
   });
 
   it('garde des sources qualifiées sur les entrées liées au registry settings', () => {
