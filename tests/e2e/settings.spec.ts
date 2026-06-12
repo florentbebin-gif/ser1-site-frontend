@@ -34,6 +34,7 @@ test.describe('Settings', () => {
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Mémento' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Impôts' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Comptables & sociétés' })).toHaveCount(0);
 
     // Check if the content area loads (active component)
     // The 'Généraux' tab renders the Settings component which usually has some content.

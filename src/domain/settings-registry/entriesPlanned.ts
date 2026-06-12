@@ -1,6 +1,5 @@
 import type { SettingsRegistryEntry } from './types';
 import {
-  ownerComptables,
   ownerDmtg,
   ownerMemento,
   ownerPrelevements,
@@ -105,7 +104,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerComptables,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['cession-titres', 'holding', 'arbitrage-reemploi'],
     status: 'planned',
     statusReason: 'Planifié pour Société & dirigeant, sans valeur de cession codée.',
@@ -125,7 +124,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerComptables,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['remuneration', 'sortie-capitaux'],
     status: 'planned',
     statusReason: 'Nécessite le modèle dirigeant/société, reporté hors F0.5.',
@@ -145,7 +144,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerComptables,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['holding', 'cession-titres'],
     status: 'planned',
     statusReason: 'Planifié pour PR Société & dirigeant, sans moteur ni valeurs.',

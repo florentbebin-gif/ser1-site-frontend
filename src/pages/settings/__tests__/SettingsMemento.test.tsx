@@ -137,9 +137,14 @@ describe('route settings mémento', () => {
     expect(getVisibleSettingsRoutes(false).some((entry) => entry.key === 'memento')).toBe(true);
     expect(getActiveSettingsKey('/settings/memento')).toBe('memento');
     expect(getActiveSettingsKey('/settings/impots')).toBe('memento');
+    expect(getActiveSettingsKey('/settings/comptables-societes')).toBe('memento');
     expect(isDeclaredSettingsPath('/settings/impots')).toBe(false);
+    expect(isDeclaredSettingsPath('/settings/comptables-societes')).toBe(false);
     expect(isDeclaredSettingsPath('/settings/memento-old')).toBe(false);
     expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/impots')).toBe(false);
+    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/comptables-societes')).toBe(
+      false,
+    );
   });
 });
 
@@ -176,12 +181,13 @@ describe('contrat de migration settings vers mémento', () => {
     expect(new Set(targetSectionKeys).size).toBe(targetSectionKeys.length);
   });
 
-  it('retire la route Impôts et conserve les autres routes sources avant leurs PR dédiées', () => {
+  it('retire les routes migrées et conserve les autres routes sources avant leurs PR dédiées', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
     expect(routePaths).not.toContain('/settings/impots');
+    expect(routePaths).not.toContain('/settings/comptables-societes');
 
     for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS.filter(
-      (candidate) => candidate.id !== 'impots',
+      (candidate) => !['impots', 'comptables-societes'].includes(candidate.id),
     )) {
       expect(routePaths, section.id).toContain(section.legacyPagePath);
     }
@@ -318,6 +324,23 @@ describe('SettingsMemento', () => {
     expect(
       screen.getByRole('button', { name: /Impôt sur la fortune immobilière/i }),
     ).toBeInTheDocument();
+  });
+
+  it('rend les paramètres Comptables & sociétés depuis le chapitre Société', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openChapter(user, 'Société');
+    await openSubAccordion(user, 'Paramètres calculateurs');
+
+    expect(await screen.findByText('Registre settings comptables & sociétés')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: /Impôt sur les sociétés/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Impôt sur les sociétés/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 
   it('n’affiche aucune source externe protégée ni PDF externe', async () => {

@@ -34,7 +34,7 @@ describe('settings-memento — société et comptabilité', () => {
   // Le seuil social des dividendes TNS est administré sur Prélèvements et les
   // dispositifs d'épargne salariale sont documentés par le catalogue
   // Base-Contrat : ces claims gardent leur page d'origine alors que la page
-  // propriétaire métier reste Comptables & sociétés.
+  // propriétaire métier est le mémento.
   const CROSS_PAGE_CLAIM_EXCEPTIONS = new Set([
     'societe.tresorerie::social-dirigeant-dividendes-tns',
     'societe.epargne-salariale::base-contrat-percol-pp-pp-constitution-versements',
@@ -51,11 +51,11 @@ describe('settings-memento — société et comptabilité', () => {
     }
   });
 
-  it('rattache toutes les entrées société à la page propriétaire Comptables & sociétés', () => {
+  it('rattache toutes les entrées société à la page propriétaire mémento', () => {
     for (const key of R4_KEYS) {
       const entry = entryByKey.get(key);
 
-      expect(entry!.ownerPagePath, key).toBe('/settings/comptables-societes');
+      expect(entry!.ownerPagePath, key).toBe('/settings/memento');
     }
   });
 

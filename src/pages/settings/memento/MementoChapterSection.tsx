@@ -1,4 +1,12 @@
-import { useEffect, useId, useState, type ReactElement, type ReactNode } from 'react';
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useId,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 import { SettingsIcon } from '@/components/settings/SettingsTitleWithIcon';
 import type {
@@ -10,12 +18,16 @@ import { getSettingsRegistryEntry, type SettingsOwnerPagePath } from '@/domain/s
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 import type { SimulatorDefinition, SimulatorLifecycle } from '@/domain/simulators/types';
 
-import ImpotsSettingsPanel from '../Impots/ImpotsSettingsPanel';
 import MementoEntryRow, {
   canRenderMementoOwnerLink,
   MEMENTO_STATUS_LABELS,
 } from './MementoEntryRow';
 import type { MementoSettingsMigrationSection } from './mementoSettingsSections';
+
+const ComptablesSocietesSettingsPanel = lazy(
+  () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
+);
+const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
 
 type MementoSubSectionId = 'lecture' | 'parametres' | 'couverture';
 
@@ -231,18 +243,35 @@ function SettingsSourceRow({
 }
 
 function SettingsSectionContent({
+  chapter,
   section,
 }: {
+  chapter: MementoChapter;
   section: MementoSettingsMigrationSection;
 }): ReactElement {
-  if (section.id !== 'impots') return <SettingsSourceRow section={section} />;
+  if (section.id === 'impots' && chapter.id === 'fiscalite-foyer') {
+    return (
+      <div className="settings-memento-settings-editor">
+        <SettingsSourceRow section={section} />
+        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
+          <ImpotsSettingsPanel />
+        </Suspense>
+      </div>
+    );
+  }
 
-  return (
-    <div className="settings-memento-settings-editor">
-      <SettingsSourceRow section={section} />
-      <ImpotsSettingsPanel />
-    </div>
-  );
+  if (section.id === 'comptables-societes' && chapter.id === 'societe') {
+    return (
+      <div className="settings-memento-settings-editor">
+        <SettingsSourceRow section={section} />
+        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
+          <ComptablesSocietesSettingsPanel />
+        </Suspense>
+      </div>
+    );
+  }
+
+  return <SettingsSourceRow section={section} />;
 }
 
 function MementoSubAccordion({
@@ -374,7 +403,7 @@ export default function MementoChapterSection({
             {settingsSections.length > 0 ? (
               <div className="settings-memento-section__rows">
                 {settingsSections.map((section) => (
-                  <SettingsSectionContent key={section.id} section={section} />
+                  <SettingsSectionContent key={section.id} chapter={chapter} section={section} />
                 ))}
               </div>
             ) : (
