@@ -1,11 +1,5 @@
 import type { SettingsRegistryEntry } from './types';
-import {
-  ownerDmtg,
-  ownerMemento,
-  ownerPrelevements,
-  plannedValidation,
-  sourceToComplete,
-} from './entryHelpers';
+import { ownerDmtg, ownerMemento, plannedValidation, sourceToComplete } from './entryHelpers';
 
 export const SETTINGS_PLANNED_REGISTRY = [
   {
@@ -184,7 +178,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerPrelevements,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['retraite', 'remuneration'],
     status: 'planned',
     statusReason: 'Dépend des futurs régimes retraite et du dossier dirigeant.',
@@ -204,7 +198,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerPrelevements,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['retraite', 'remuneration'],
     status: 'planned',
     statusReason: 'Bloqué tant que le modèle retraite globale n’existe pas.',
@@ -244,7 +238,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerPrelevements,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['remuneration', 'retraite', 'sortie-capitaux'],
     status: 'planned',
     statusReason: 'Reporté aux PR social dirigeant/retraite globale.',
@@ -265,7 +259,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerPrelevements,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['remuneration'],
     status: 'planned',
     statusReason: 'Déclaré pour bloquer toute consommation avant pack dédié.',

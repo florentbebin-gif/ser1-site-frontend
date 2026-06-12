@@ -148,7 +148,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
   for (let index = 0; index < 5; index += 1) {
     bindings.push(
       validBinding({
-        pagePath: '/settings/prelevements',
+        pagePath: '/settings/memento',
         sectionKey: 'prelevements-fixture',
         claimKey: `prelevements-fixture-${index}`,
         claimLabel: `Claim prélèvements ${index}`,
@@ -371,13 +371,12 @@ describe('check-settings-references', () => {
     expect(report.coverage.bindingsByPage).toEqual({
       '/settings/base-contrat': 2,
       '/settings/dmtg-succession': 7,
-      '/settings/memento': 11,
-      '/settings/prelevements': 5,
+      '/settings/memento': 16,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/memento']).toEqual({
-      expected: 11,
-      declared: 11,
+      expected: 16,
+      declared: 16,
       expectedDefined: true,
       complete: true,
       missing: 0,

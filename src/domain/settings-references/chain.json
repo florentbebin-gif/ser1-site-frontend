@@ -102,7 +102,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/prelevements",
+    "pagePath": "/settings/memento",
     "sectionKey": "patrimony",
     "sectionLabel": "Prélèvements sociaux patrimoine",
     "category": "valeur-fiscale",
@@ -119,7 +119,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/prelevements",
+    "pagePath": "/settings/memento",
     "sectionKey": "retirement-thresholds",
     "sectionLabel": "Seuils RFR retraite",
     "category": "valeur-fiscale",
@@ -136,7 +136,7 @@
     "volatility": "annual"
   },
   {
-    "pagePath": "/settings/prelevements",
+    "pagePath": "/settings/memento",
     "sectionKey": "pass",
     "sectionLabel": "PASS",
     "category": "cotisations",
@@ -152,7 +152,7 @@
     "volatility": "annual"
   },
   {
-    "pagePath": "/settings/prelevements",
+    "pagePath": "/settings/memento",
     "sectionKey": "social-dirigeant",
     "sectionLabel": "Charges sociales dirigeant",
     "category": "cotisations",
@@ -7392,7 +7392,7 @@
     "volatility": "annual"
   },
   {
-    "pagePath": "/settings/prelevements",
+    "pagePath": "/settings/memento",
     "sectionKey": "retirement",
     "sectionLabel": "Cotisations retraite",
     "category": "cotisations",

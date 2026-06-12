@@ -249,7 +249,7 @@ export function PlacementTransmissionSection({
           {psSettings?.patrimony?.current?.generalRate ??
             DEFAULT_PS_SETTINGS.patrimony.current.generalRate}
           % pour le PEA (
-          <a href="/settings/prelevements" className="pl-transmission-info-card__link">
+          <a href="/settings/memento" className="pl-transmission-info-card__link">
             paramétrable
           </a>
           ). PER : pas de PS au décès dans ce simulateur ; les PS sont acquittés à la sortie en vie.

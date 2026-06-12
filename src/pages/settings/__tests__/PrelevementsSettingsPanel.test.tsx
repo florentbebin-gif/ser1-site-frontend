@@ -5,7 +5,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
-import SettingsPrelevements from '../SettingsPrelevements';
+import PrelevementsSettingsPanel from '../Prelevements/PrelevementsSettingsPanel';
 
 let isAdmin = true;
 
@@ -73,10 +73,6 @@ vi.mock('@/auth/useUserRole', () => ({
   }),
 }));
 
-vi.mock('@/components/UserInfoBanner', () => ({
-  UserInfoBanner: () => <div data-testid="user-info-banner" />,
-}));
-
 vi.mock('@/supabaseClient', () => ({
   supabase: {
     from: fromMock,
@@ -89,7 +85,7 @@ vi.mock('@/utils/cache/fiscalSettingsCache', () => ({
   broadcastInvalidation: broadcastInvalidationMock,
 }));
 
-describe('SettingsPrelevements', () => {
+describe('PrelevementsSettingsPanel', () => {
   beforeEach(() => {
     isAdmin = true;
     psUpsertMock.mockReset();
@@ -118,7 +114,7 @@ describe('SettingsPrelevements', () => {
   it('sauvegarde les prélèvements et le PASS avec le bouton global', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsPrelevements />);
+    render(<PrelevementsSettingsPanel />);
 
     await screen.findByRole('button', { name: /Historique du PASS/i });
     await user.click(screen.getByRole('button', { name: /Historique du PASS/i }));
@@ -150,7 +146,7 @@ describe('SettingsPrelevements', () => {
   it('édite les charges sociales dirigeant sourcées dans ps_settings', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsPrelevements />);
+    render(<PrelevementsSettingsPanel />);
 
     await screen.findByRole('button', { name: /Charges sociales dirigeant/i });
     await user.click(screen.getByRole('button', { name: /Charges sociales dirigeant/i }));
@@ -200,7 +196,7 @@ describe('SettingsPrelevements', () => {
   it('empêche la sauvegarde des charges sociales dirigeant incohérentes', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsPrelevements />);
+    render(<PrelevementsSettingsPanel />);
 
     await screen.findByRole('button', { name: /Charges sociales dirigeant/i });
     await user.click(screen.getByRole('button', { name: /Charges sociales dirigeant/i }));
@@ -223,7 +219,7 @@ describe('SettingsPrelevements', () => {
     const user = userEvent.setup();
     passUpsertMock.mockResolvedValueOnce({ error: { message: 'PASS refusé' } });
 
-    render(<SettingsPrelevements />);
+    render(<PrelevementsSettingsPanel />);
 
     await screen.findByRole('button', { name: /Historique du PASS/i });
     await user.click(screen.getByRole('button', { name: 'Enregistrer les paramètres' }));

@@ -31,7 +31,7 @@ describe('settings-memento — dirigeant et social', () => {
     }
   });
 
-  it('rattache les sujets sociaux à Prélèvements et la prévoyance à sa page dédiée', () => {
+  it('rattache les sujets sociaux au mémento et la prévoyance à sa page dédiée', () => {
     for (const key of R5_KEYS) {
       const entry = entryByKey.get(key);
       const expectedOwner =
@@ -39,19 +39,19 @@ describe('settings-memento — dirigeant et social', () => {
           ? '/settings/prevoyance-regimes'
           : key === 'dirigeant.micro-social'
             ? null
-            : '/settings/prelevements';
+            : '/settings/memento';
 
       expect(entry!.ownerPagePath, key).toBe(expectedOwner);
     }
   });
 
-  it('garde le claim social dirigeant aligné avec la page Prélèvements', () => {
+  it('garde le claim social dirigeant aligné avec le mémento', () => {
     const binding = SETTINGS_REFERENCE_CHAIN.find(
       (item) => item.claimKey === 'social-dirigeant-dividendes-tns',
     );
 
     expect(binding).toBeDefined();
-    expect(binding!.pagePath).toBe('/settings/prelevements');
+    expect(binding!.pagePath).toBe('/settings/memento');
 
     for (const key of [
       'dirigeant.dividendes-tns',

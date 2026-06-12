@@ -2,19 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
-import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { usePassHistory } from '@/hooks/settings/usePassHistory';
+import type { SettingRegistryKey } from '@/domain/settings-registry';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import { validatePrelevementsSettings, isValid } from './validators/dmtgValidators';
+import { validatePrelevementsSettings, isValid } from '../validators/dmtgValidators';
 
-import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoineSection';
-import PrelevementsRetraitesSection from './Prelevements/PrelevementsRetraitesSection';
-import PrelevementsSeuilsSection from './Prelevements/PrelevementsSeuilsSection';
-import PrelevementsSocialDirigeantSection from './Prelevements/PrelevementsSocialDirigeantSection';
+import PrelevementsPatrimoineSection from './PrelevementsPatrimoineSection';
+import PrelevementsRetraitesSection from './PrelevementsRetraitesSection';
+import PrelevementsSeuilsSection from './PrelevementsSeuilsSection';
+import PrelevementsSocialDirigeantSection from './PrelevementsSocialDirigeantSection';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -40,6 +40,19 @@ interface TaxSettingsRow {
   data: Partial<TaxSettings> | null;
 }
 
+const PRELEVEMENTS_REGISTRY_KEYS = [
+  'impots.ps-patrimoine',
+  'retraite-prevoyance.ps-retraite',
+  'retraite-prevoyance.seuils-rfr',
+  'retraite-prevoyance.pass',
+  'placements.per-individuel',
+  'social-dirigeant.charges-sociales',
+  'retraite-prevoyance.cotisations-retraite',
+  'retraite-prevoyance.validation-retraite-600-smic',
+  'social-dirigeant.puma-csm',
+  'placements.epargne-salariale',
+] as const satisfies readonly SettingRegistryKey[];
+
 function derivePsYearLabel(irLabel: string | undefined, fallbackLabel: string): string {
   if (!irLabel) return fallbackLabel;
   const match = irLabel.match(/(\d{4}).*revenus\s+(\d{4})/i);
@@ -52,7 +65,7 @@ function derivePsYearLabel(irLabel: string | undefined, fallbackLabel: string): 
   return `${taxYear} (RFR ${incomeYear - 1} & Avis IR ${incomeYear})`;
 }
 
-export default function SettingsPrelevements() {
+export default function PrelevementsSettingsPanel() {
   const { isAdmin } = useUserRole();
   const [settings, setSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
   const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
@@ -280,9 +293,12 @@ export default function SettingsPrelevements() {
   const { patrimony, retirement, retirementThresholds, socialDirigeant } = settings;
 
   return (
-    <div className="settings-stack settings-stack--offset">
-      <UserInfoBanner />
-      <SettingsRegistryStatusPanel ownerPage="/settings/prelevements" />
+    <div className="settings-stack">
+      <SettingsRegistryStatusPanel
+        ownerPage="/settings/memento"
+        settingKeys={PRELEVEMENTS_REGISTRY_KEYS}
+        title="Registre settings paramètres sociaux"
+      />
 
       {error && (
         <div className="settings-feedback-message settings-feedback-message--error">{error}</div>

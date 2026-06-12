@@ -5,7 +5,7 @@
  *   - fiscality_settings (V2 format) → DEFAULT_FISCALITY_SETTINGS
  *
  * Utilisé comme fallback quand Supabase ne répond pas, ET comme état initial
- * des pages Settings (Mémento, SettingsPrelevements, BaseContrat).
+ * des pages Settings (Mémento, BaseContrat).
  *
  * ⚠️  Ne jamais dupliquer ces objets ailleurs — toujours importer depuis ce fichier.
  */
@@ -375,7 +375,7 @@ export const DEFAULT_PS_SETTINGS = {
 // DEFAULT_PASS_HISTORY
 // Source : valeurs officielles du Plafond Annuel de la Sécurité Sociale.
 // Source de vérité runtime : table Supabase `public.pass_history`
-// (administrée via Settings > Prélèvements sociaux > PassHistoryAccordion).
+// (administrée via Settings > Mémento > Prélèvements sociaux).
 // Ce fallback est utilisé quand Supabase ne répond pas.
 // ─────────────────────────────────────────────────────────────────────────────
 

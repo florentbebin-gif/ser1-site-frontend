@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import {
   listSettingsForOwnerPage,
+  type SettingRegistryKey,
   type SettingsFamilyId,
   type SettingsOwnerPagePath,
   type SettingsRegistryEntry,
@@ -29,7 +30,6 @@ const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; pl
 
 const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
   '/settings/memento': 'Registre settings mémento',
-  '/settings/prelevements': 'Registre settings paramètres sociaux',
   '/settings/base-contrat': 'Registre settings référentiel contrats',
   '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',
   '/settings/dmtg-succession': 'Registre settings DMTG & Succession',
@@ -39,6 +39,7 @@ const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
 interface SettingsRegistryStatusPanelProps {
   ownerPage: SettingsOwnerPagePath;
   families?: readonly SettingsFamilyId[];
+  settingKeys?: readonly SettingRegistryKey[];
   title?: string;
 }
 
@@ -101,16 +102,21 @@ function SettingsRegistryItem({ entry }: { entry: SettingsRegistryEntry }): Reac
 export function SettingsRegistryStatusPanel({
   ownerPage,
   families,
+  settingKeys,
   title,
 }: SettingsRegistryStatusPanelProps): ReactElement | null {
   const { isAdmin } = useUserRole();
   if (!isAdmin) return null;
 
   const ownerEntries = listSettingsForOwnerPage(ownerPage);
-  const entries =
+  const familyEntries =
     families && families.length > 0
       ? ownerEntries.filter((entry) => families.includes(entry.family))
       : ownerEntries;
+  const allowedSettingKeys = settingKeys ? new Set<string>(settingKeys) : null;
+  const entries = allowedSettingKeys
+    ? familyEntries.filter((entry) => allowedSettingKeys.has(entry.key))
+    : familyEntries;
   if (entries.length === 0) return null;
 
   const groupedEntries = groupByStatus(entries);

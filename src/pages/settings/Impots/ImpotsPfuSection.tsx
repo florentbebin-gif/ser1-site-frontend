@@ -82,7 +82,7 @@ export default function ImpotsPfuSection({
         >
           <p className="fisc-intro">
             La part prélèvements sociaux du PFU est calculée automatiquement depuis
-            /settings/prelevements. Seule la part IR reste éditable ici.
+            /settings/memento. Seule la part IR reste éditable ici.
             <LegalRefInlineList ids={INCOME_TAX_PFU_BLOCK_REF_IDS} />
           </p>
 

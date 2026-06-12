@@ -236,7 +236,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Les claims IR et prélèvements sociaux retraite sont administrés ; la doctrine de sortie PER reste rattachée aux blocs Base-Contrat plutôt qu’à un moteur fiscal séparé.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'impots.ir.abattements-et-decote',
       'retraite-prevoyance.ps-retraite',
