@@ -31,7 +31,6 @@ const STATUS_WITHOUT_OWNER_LINK = new Set<MementoStatus>([
 
 const MEMENTO_OWNER_PAGE_LABELS: Record<NonNullable<MementoEntry['ownerPagePath']>, string> = {
   '/settings/memento': 'Mémento',
-  '/settings/comptables-societes': 'Comptables & sociétés',
   '/settings/prelevements': 'Paramètres sociaux',
   '/settings/dmtg-succession': 'DMTG & Succession',
   '/settings/base-contrat': 'Référentiel contrats',

@@ -6,16 +6,13 @@ describe('settings-references', () => {
   it('expose le registre canonique et le filtre par page', () => {
     expect(SETTINGS_REFERENCE_CHAIN.length).toBeGreaterThan(0);
 
-    const impotsBindings = listSettingsReferenceBindings('/settings/memento');
-    const comptablesSocietesBindings = listSettingsReferenceBindings(
-      '/settings/comptables-societes',
-    );
+    const mementoBindings = listSettingsReferenceBindings('/settings/memento');
 
-    expect(impotsBindings.length).toBeGreaterThan(0);
-    expect(impotsBindings.every((binding) => binding.pagePath === '/settings/memento')).toBe(true);
-    expect(comptablesSocietesBindings.map((binding) => binding.claimKey)).toEqual([
-      'corporate-tax-current',
-    ]);
+    expect(mementoBindings.length).toBeGreaterThan(0);
+    expect(mementoBindings.every((binding) => binding.pagePath === '/settings/memento')).toBe(true);
+    expect(mementoBindings.map((binding) => binding.claimKey)).toEqual(
+      expect.arrayContaining(['income-tax-scale-current', 'corporate-tax-current']),
+    );
   });
 
   it('chaîne les claims charges sociales dirigeant de la page prélèvements', () => {

@@ -12,7 +12,7 @@ export const SETTINGS_FAMILIES = [
     id: 'comptables-societes',
     label: 'Comptables & sociétés',
     description: 'Paramètres IS, dividendes, mère-fille, cession de titres et holding.',
-    ownerPages: ['/settings/comptables-societes'],
+    ownerPages: ['/settings/memento'],
     status: 'partial',
   },
   {

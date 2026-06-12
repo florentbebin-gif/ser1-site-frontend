@@ -29,7 +29,6 @@ const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; pl
 
 const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
   '/settings/memento': 'Registre settings mémento',
-  '/settings/comptables-societes': 'Registre settings comptables & sociétés',
   '/settings/prelevements': 'Registre settings paramètres sociaux',
   '/settings/base-contrat': 'Registre settings référentiel contrats',
   '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',

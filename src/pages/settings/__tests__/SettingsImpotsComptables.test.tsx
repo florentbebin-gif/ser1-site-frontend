@@ -6,8 +6,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import ComptablesSocietesSettingsPanel from '../ComptablesSocietes/ComptablesSocietesSettingsPanel';
 import ImpotsSettingsPanel from '../Impots/ImpotsSettingsPanel';
-import SettingsComptablesSocietes from '../SettingsComptablesSocietes';
 
 let isAdmin = true;
 let taxSettingsData: typeof DEFAULT_TAX_SETTINGS = DEFAULT_TAX_SETTINGS;
@@ -184,7 +184,7 @@ describe('ImpotsSettingsPanel', () => {
   });
 });
 
-describe('SettingsComptablesSocietes', () => {
+describe('ComptablesSocietesSettingsPanel', () => {
   beforeEach(() => {
     isAdmin = true;
     taxSettingsData = DEFAULT_TAX_SETTINGS;
@@ -199,7 +199,7 @@ describe('SettingsComptablesSocietes', () => {
   it('rend et sauvegarde l’IS dans Comptables & sociétés, sans bloc IFI', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsComptablesSocietes />);
+    render(<ComptablesSocietesSettingsPanel />);
 
     const isButton = await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
     expect(
@@ -231,7 +231,7 @@ describe('SettingsComptablesSocietes', () => {
   it('expose les settings partiels et planifiés côté société en lecture seule', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsComptablesSocietes />);
+    render(<ComptablesSocietesSettingsPanel />);
 
     await screen.findByText('Registre settings comptables & sociétés');
     expect(screen.queryByText('Partiel')).not.toBeInTheDocument();

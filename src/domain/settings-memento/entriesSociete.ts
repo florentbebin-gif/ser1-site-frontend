@@ -6,12 +6,12 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.is',
     label: 'Impôt sur les sociétés',
     description:
-      'Taux, seuil du taux réduit et paramètres de liquidation de l’impôt sur les sociétés administrés par la page Comptables & sociétés.',
+      'Taux, seuil du taux réduit et paramètres de liquidation de l’impôt sur les sociétés administrés dans le mémento.',
     status: 'couvert',
     statusReason:
       'Paramètres IS administrés et sourcés via le claim settings-references ; consommés par le simulateur trésorerie société actif.',
     priority: 'critique',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['comptables-societes.is'],
     claimKeys: ['corporate-tax-current'],
     refIds: ['cgi-209', 'cgi-219', 'boi-is-liq-10', 'boi-is-liq-20'],
@@ -28,7 +28,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Quote-part administrée via le claim settings IS ; les conditions d’éligibilité du régime mère-fille restent à qualifier sur le CGI.',
     priority: 'critique',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['comptables-societes.mere-fille-qpfc'],
     claimKeys: ['corporate-tax-current'],
     refIds: ['cgi-209', 'cgi-219'],
@@ -45,7 +45,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Taux maximal d’intérêts déductibles administré via le claim settings IS ; le régime complet des avances et remboursements reste à qualifier.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['comptables-societes.is'],
     claimKeys: ['corporate-tax-current'],
     refIds: ['cgi-209'],
@@ -62,7 +62,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Règles fondées par les articles du Code de commerce référencés ; aucun paramètre administré ni moteur de projection livré.',
     priority: 'critique',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-commerce-l232-10', 'code-commerce-l232-11', 'code-commerce-l232-12'],
@@ -79,7 +79,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Procédures fondées par les articles du Code de commerce référencés ; aucun paramètre administré ni moteur livré.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-commerce-l223-42', 'code-commerce-l225-248'],
@@ -96,7 +96,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Besoin F5 inventorié ; les bilans et liasses doivent alimenter le dossier société futur, sans page de production comptable ni moteur livré.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -113,7 +113,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Sujet comptable F5 inventorié ; aucune source qualifiée, valeur administrée ni consommation moteur dédiée n’est livrée.',
     priority: 'utile',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -130,7 +130,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Trésorerie société consomme déjà des emprunts dans son périmètre actuel, mais le modèle bilan F5 et les sources comptables restent à qualifier.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -147,7 +147,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Besoin F5 inventorié ; aucun moteur de projection comptable ni source ANC qualifiée n’est livré dans ce lot.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -164,7 +164,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Sujet transversal F5/F3 inventorié ; le modèle actif/passif et le traitement fiscal restent à qualifier avant tout calcul.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -181,7 +181,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Simulateur trésorerie société actif consommant l’IS, la quote-part mère-fille et le seuil social des dividendes TNS ; les périmètres comptables complémentaires restent planifiés.',
     priority: 'critique',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'comptables-societes.is',
       'comptables-societes.mere-fille-qpfc',
@@ -202,7 +202,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Simulateur organigramme société planifié ; formes sociales, associés et participations relèvent du socle société à venir.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -219,7 +219,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Simulateur projection comptable planifié ; le socle distribuable et réserves est fondé par le Code de commerce sans moteur livré.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-commerce-l232-10', 'code-commerce-l232-11'],
@@ -236,7 +236,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Simulateur valorisation planifié ; la méthode d’évaluation reste à qualifier sur la doctrine administrative.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['boi-enr-dmtg-10-40'],
@@ -253,7 +253,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Régime des plus-values mobilières de droit commun sourcé ; les régimes dirigeants et le moteur de cession restent planifiés au registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['comptables-societes.pv-mobilieres'],
     claimKeys: [],
     refIds: ['cgi-150-0-a', 'boi-rppm-pvbmi-30-20'],
@@ -270,7 +270,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Pack registry planifié ; le report d’imposition de l’apport-cession et les conditions de structuration holding restent à sourcer avant tout moteur.',
     priority: 'critique',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['comptables-societes.holding-apport-cession'],
     claimKeys: [],
     refIds: [],
@@ -287,7 +287,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Montage inscrit à la roadmap sans moteur ni source ; le périmètre et la méthode doivent être qualifiés sur une source officielle avant toute couverture.',
     priority: 'utile',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -304,7 +304,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     statusReason:
       'Dispositifs collectifs documentés par les claims du catalogue Base-Contrat et le Code du travail ; la route reste placeholder et les plafonds ne sont pas administrés.',
     priority: 'structurant',
-    ownerPagePath: '/settings/comptables-societes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['placements.epargne-salariale'],
     claimKeys: [
       'base-contrat-percol-pp-pp-constitution-versements',

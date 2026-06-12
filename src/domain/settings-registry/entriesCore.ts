@@ -2,7 +2,6 @@ import type { SettingsRegistryEntry } from './types';
 import {
   completeSource,
   currentJsonb,
-  ownerComptables,
   ownerDmtg,
   ownerMemento,
   ownerPrelevements,
@@ -212,11 +211,11 @@ export const SETTINGS_CORE_REGISTRY = [
       rules: ['Taux entre 0 et 100, seuils positifs, QPFC standard supérieure au groupe.'],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerComptables,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['tresorerie-societe', 'projection-comptable'],
     status: 'ready',
     statusReason:
-      'Page Comptables & sociétés existante, sauvegarde tax_settings et référence chaînée.',
+      'Section Comptables & sociétés du mémento active, sauvegarde tax_settings et référence chaînée.',
   },
   {
     family: 'comptables-societes',
@@ -239,7 +238,7 @@ export const SETTINGS_CORE_REGISTRY = [
       rules: ['QPFC standard supérieure ou égale au régime groupe.'],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerComptables,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['tresorerie-societe', 'holding'],
     status: 'partial',
     statusReason:

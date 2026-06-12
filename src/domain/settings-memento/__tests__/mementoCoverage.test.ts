@@ -60,7 +60,7 @@ describe('settings-memento coverage audit', () => {
       knownSettingsUrlPaths: SETTINGS_ROUTES.length,
     });
     expect(report.settingsRoutes).toMatchObject({
-      hasCanonicalSocietyPath: true,
+      hasMementoPath: true,
       hasSingularSocietyPath: false,
       unknownOwnerPagePaths: [],
     });
@@ -169,10 +169,10 @@ describe('settings-memento coverage audit', () => {
     );
   });
 
-  it('verrouille la route société plurielle comme seule route canonique', () => {
-    const missingCanonical = validateMementoCoverage({
+  it('verrouille le mémento comme route settings canonique', () => {
+    const missingMemento = validateMementoCoverage({
       knownSettingsUrlPaths: knownSettingsUrlPaths
-        .filter((path) => path !== '/settings/comptables-societes')
+        .filter((path) => path !== '/settings/memento')
         .concat('/settings/comptables-societe'),
     });
     const singularOwner = validateWithEntries([
@@ -183,16 +183,16 @@ describe('settings-memento coverage audit', () => {
       }),
     ]);
 
-    expect(missingCanonical.errors).toEqual(
+    expect(missingMemento.errors).toEqual(
       expect.arrayContaining([
-        'SETTINGS_ROUTES: /settings/comptables-societes doit rester déclarée.',
-        'SETTINGS_ROUTES: route société non canonique détectée (/settings/comptables-societe).',
+        'SETTINGS_ROUTES: /settings/memento doit rester déclarée.',
+        'SETTINGS_ROUTES: route société historique détectée (/settings/comptables-societe).',
       ]),
     );
     expect(singularOwner.errors).toEqual(
       expect.arrayContaining([
         'societe.is: ownerPagePath inconnu dans SETTINGS_ROUTES (/settings/comptables-societe).',
-        'societe.is: ownerPagePath société doit utiliser /settings/comptables-societes.',
+        'societe.is: ownerPagePath société historique interdit.',
       ]),
     );
   });

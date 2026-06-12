@@ -17,7 +17,6 @@ import type { SettingsRegistryEntry } from '../types';
 
 const CORE_SETTINGS_PAGE_PATHS = new Set([
   '/settings/memento',
-  '/settings/comptables-societes',
   '/settings/prelevements',
   '/settings/dmtg-succession',
 ]);

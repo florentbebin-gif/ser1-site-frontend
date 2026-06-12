@@ -133,7 +133,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
 
   bindings.push(
     validBinding({
-      pagePath: '/settings/comptables-societes',
+      pagePath: '/settings/memento',
       sectionKey: 'comptables-societes-fixture',
       claimKey: 'comptables-societes-fixture-0',
       claimLabel: 'Claim Comptables & sociétés 0',
@@ -370,23 +370,14 @@ describe('check-settings-references', () => {
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
       '/settings/base-contrat': 2,
-      '/settings/comptables-societes': 1,
       '/settings/dmtg-succession': 7,
-      '/settings/memento': 10,
+      '/settings/memento': 11,
       '/settings/prelevements': 5,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/memento']).toEqual({
-      expected: 10,
-      declared: 10,
-      expectedDefined: true,
-      complete: true,
-      missing: 0,
-      extra: 0,
-    });
-    expect(report.coverage.byPage['/settings/comptables-societes']).toEqual({
-      expected: 1,
-      declared: 1,
+      expected: 11,
+      declared: 11,
       expectedDefined: true,
       complete: true,
       missing: 0,

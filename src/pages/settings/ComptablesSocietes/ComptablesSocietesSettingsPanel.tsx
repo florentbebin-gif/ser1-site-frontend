@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { broadcastInvalidation, invalidate } from '@/utils/cache/fiscalSettingsCache';
-import ComptablesSocietesISSection from './ComptablesSocietes/ComptablesSocietesISSection';
-import { isValid, validateCorporateTaxSettings } from './validators/dmtgValidators';
+import ComptablesSocietesISSection from './ComptablesSocietesISSection';
+import { isValid, validateCorporateTaxSettings } from '../validators/dmtgValidators';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -56,7 +55,7 @@ function mergeTaxSettings(base: TaxSettings, nextData: Partial<TaxSettings>): Ta
   };
 }
 
-export default function SettingsComptablesSocietes() {
+export default function ComptablesSocietesSettingsPanel() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
@@ -159,9 +158,12 @@ export default function SettingsComptablesSocietes() {
   }
 
   return (
-    <div className="settings-stack settings-stack--offset">
-      <UserInfoBanner />
-      <SettingsRegistryStatusPanel ownerPage="/settings/comptables-societes" />
+    <div className="settings-stack">
+      <SettingsRegistryStatusPanel
+        ownerPage="/settings/memento"
+        families={['comptables-societes']}
+        title="Registre settings comptables & sociétés"
+      />
 
       <div className="fisc-accordion">
         <ComptablesSocietesISSection

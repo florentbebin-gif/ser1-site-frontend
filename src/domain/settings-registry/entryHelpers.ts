@@ -66,6 +66,5 @@ export const plannedValidation = {
 } as const;
 
 export const ownerMemento: SettingsOwnerPagePath = '/settings/memento';
-export const ownerComptables: SettingsOwnerPagePath = '/settings/comptables-societes';
 export const ownerPrelevements: SettingsOwnerPagePath = '/settings/prelevements';
 export const ownerDmtg: SettingsOwnerPagePath = '/settings/dmtg-succession';
