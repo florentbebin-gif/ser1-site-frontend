@@ -11,7 +11,11 @@ describe('settings-references', () => {
     expect(mementoBindings.length).toBeGreaterThan(0);
     expect(mementoBindings.every((binding) => binding.pagePath === '/settings/memento')).toBe(true);
     expect(mementoBindings.map((binding) => binding.claimKey)).toEqual(
-      expect.arrayContaining(['income-tax-scale-current', 'corporate-tax-current']),
+      expect.arrayContaining([
+        'income-tax-scale-current',
+        'corporate-tax-current',
+        'dmtg-fiscal-values-current',
+      ]),
     );
   });
 

@@ -2,7 +2,6 @@ import type { SettingsRegistryEntry } from './types';
 import {
   completeSource,
   currentJsonb,
-  ownerDmtg,
   ownerMemento,
   percentValidation,
   plannedValidation,
@@ -378,7 +377,7 @@ export const SETTINGS_CORE_REGISTRY = [
       rules: ['Barèmes ordonnés, abattements positifs, golden scenario DMTG conservé.'],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerDmtg,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: [
       'donations-anterieures',
       'placement',
@@ -388,7 +387,7 @@ export const SETTINGS_CORE_REGISTRY = [
       'pacte-dutreil',
     ],
     status: 'ready',
-    statusReason: 'Édité sur DMTG & Succession et consommé par le contexte fiscal strict.',
+    statusReason: 'Édité dans le mémento et consommé par le contexte fiscal strict.',
   },
   {
     family: 'transmission',
@@ -411,10 +410,10 @@ export const SETTINGS_CORE_REGISTRY = [
       rules: ['Âge pivot borné, abattements positifs et taux en pourcentage.'],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerDmtg,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['succession', 'placement'],
     status: 'ready',
-    statusReason: 'Règles décès éditables sur DMTG & Succession et chaînées.',
+    statusReason: 'Règles décès éditables dans le mémento et chaînées.',
   },
   {
     family: 'placements',
@@ -436,7 +435,7 @@ export const SETTINGS_CORE_REGISTRY = [
       rules: ['Les sous-règles non sourcées restent interdites en consommation future.'],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerDmtg,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['placement', 'succession', 'scpi', 'arbitrage-reemploi'],
     status: 'partial',
     statusReason: 'Des règles existent, mais le pack placement complet n’est pas attesté.',

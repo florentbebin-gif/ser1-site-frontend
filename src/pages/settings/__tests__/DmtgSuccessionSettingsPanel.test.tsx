@@ -11,7 +11,7 @@ import {
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
 import { getLegalReference } from '@/domain/legal-references';
-import SettingsDmtgSuccession from '../SettingsDmtgSuccession';
+import DmtgSuccessionSettingsPanel from '../DmtgSuccession/DmtgSuccessionSettingsPanel';
 
 let isAdmin = true;
 let taxSettingsData: unknown = DEFAULT_TAX_SETTINGS;
@@ -68,10 +68,6 @@ vi.mock('@/auth/useUserRole', () => ({
   }),
 }));
 
-vi.mock('@/components/UserInfoBanner', () => ({
-  UserInfoBanner: () => <div data-testid="user-info-banner" />,
-}));
-
 vi.mock('@/utils/cache/fiscalSettingsCache', () => ({
   invalidate: vi.fn(),
   broadcastInvalidation: vi.fn(),
@@ -91,7 +87,7 @@ vi.mock('@/supabaseClient', () => ({
   },
 }));
 
-describe('SettingsDmtgSuccession', () => {
+describe('DmtgSuccessionSettingsPanel', () => {
   beforeEach(() => {
     isAdmin = true;
     taxSettingsData = DEFAULT_TAX_SETTINGS;
@@ -112,7 +108,7 @@ describe('SettingsDmtgSuccession', () => {
       },
     };
 
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
@@ -124,7 +120,7 @@ describe('SettingsDmtgSuccession', () => {
   });
 
   it('autorise la sauvegarde admin quand le golden DMTG local passe', async () => {
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
@@ -140,7 +136,7 @@ describe('SettingsDmtgSuccession', () => {
   it('expose le registre settings transmission et placements en lecture seule', async () => {
     const user = userEvent.setup();
 
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await screen.findByText('Registre settings DMTG & Succession');
     expect(screen.queryByText('Partiel')).not.toBeInTheDocument();
@@ -158,7 +154,7 @@ describe('SettingsDmtgSuccession', () => {
   });
 
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
@@ -192,7 +188,7 @@ describe('SettingsDmtgSuccession', () => {
       },
     };
 
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
@@ -232,7 +228,7 @@ describe('SettingsDmtgSuccession', () => {
       },
     };
 
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
@@ -247,7 +243,7 @@ describe('SettingsDmtgSuccession', () => {
   });
 
   it('rend les références juridiques DMTG cliquables', async () => {
-    render(<SettingsDmtgSuccession />);
+    render(<DmtgSuccessionSettingsPanel />);
 
     await waitFor(() => {
       expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();

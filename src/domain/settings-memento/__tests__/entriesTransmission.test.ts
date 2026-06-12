@@ -55,12 +55,12 @@ describe('settings-memento — transmission', () => {
     expect(entry!.statusReason).toContain('donation entre époux');
   });
 
-  it('rattache toutes les entrées transmission à la page propriétaire DMTG', () => {
+  it('rattache toutes les entrées transmission au mémento', () => {
     for (const key of TRANSMISSION_KEYS) {
       const entry = entryByKey.get(key);
 
       expect(entry).toBeDefined();
-      expect(entry!.ownerPagePath).toBe('/settings/dmtg-succession');
+      expect(entry!.ownerPagePath).toBe('/settings/memento');
     }
   });
 

@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './styles/impots.css';
-import './styles/dmtg.css';
+import '../styles/impots.css';
+import '../styles/dmtg.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
-import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
+import type { SettingRegistryKey } from '@/domain/settings-registry';
 
 import {
   DEFAULT_ASSURANCE_VIE_RULES,
@@ -15,22 +15,22 @@ import {
 import { getFiscalityRules, toFiscalitySettingsV2 } from '@/utils/cache/fiscalitySettingsAccess';
 import type { FiscalitySettingsV2 } from '@/utils/cache/fiscalitySettings';
 
-import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
-import { validateDmtg, validateAvDeces, isValid } from './validators/dmtgValidators';
-import { DEFAULT_DONATION } from './DmtgSuccession/dmtgReferenceData';
+import ImpotsDmtgSection from '../Impots/ImpotsDmtgSection';
+import { validateDmtg, validateAvDeces, isValid } from '../validators/dmtgValidators';
+import { DEFAULT_DONATION } from './dmtgReferenceData';
 import {
   formatDmtgSchemaError,
   normalizeDmtgTaxSettingsForLoad,
   validateDmtgFiscalityPayload,
   validateDmtgTaxPayload,
-} from './DmtgSuccession/dmtgSettingsSchema';
-import DonationSection from './DmtgSuccession/DonationSection';
-import AvDecesSection from './DmtgSuccession/AvDecesSection';
-import ReserveCivilSection from './DmtgSuccession/ReserveCivilSection';
-import RegimesSection from './DmtgSuccession/RegimesSection';
-import LiberalitesSection from './DmtgSuccession/LiberalitesSection';
-import AvantagesMatrimoniauxSection from './DmtgSuccession/AvantagesMatrimoniauxSection';
-import { checkDmtgGoldenScenario } from './DmtgSuccession/dmtgGoldenCheck';
+} from './dmtgSettingsSchema';
+import DonationSection from './DonationSection';
+import AvDecesSection from './AvDecesSection';
+import ReserveCivilSection from './ReserveCivilSection';
+import RegimesSection from './RegimesSection';
+import LiberalitesSection from './LiberalitesSection';
+import AvantagesMatrimoniauxSection from './AvantagesMatrimoniauxSection';
+import { checkDmtgGoldenScenario } from './dmtgGoldenCheck';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -68,7 +68,14 @@ interface SettingsRow<T> {
   data: Partial<T> | null;
 }
 
-export default function SettingsDmtgSuccession() {
+const DMTG_REGISTRY_KEYS = [
+  'transmission.dmtg-succession',
+  'transmission.assurance-vie-deces',
+  'placements.assurance-vie-capitalisation',
+  'transmission.dutreil',
+] as const satisfies readonly SettingRegistryKey[];
+
+export default function DmtgSuccessionSettingsPanel() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
@@ -340,9 +347,12 @@ export default function SettingsDmtgSuccession() {
     DEFAULT_ASSURANCE_VIE_RULES.deces;
 
   return (
-    <div className="settings-stack settings-stack--offset">
-      <UserInfoBanner />
-      <SettingsRegistryStatusPanel ownerPage="/settings/dmtg-succession" />
+    <div className="settings-stack">
+      <SettingsRegistryStatusPanel
+        ownerPage="/settings/memento"
+        settingKeys={DMTG_REGISTRY_KEYS}
+        title="Registre settings DMTG & Succession"
+      />
 
       <div className="fisc-accordion">
         <ImpotsDmtgSection

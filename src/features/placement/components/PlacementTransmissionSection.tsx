@@ -236,7 +236,7 @@ export function PlacementTransmissionSection({
           <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
         </ul>
         <p>
-          <a href="/settings/dmtg-succession" className="pl-transmission-info-card__link">
+          <a href="/settings/memento" className="pl-transmission-info-card__link">
             Consulter le barème DMTG &rarr;
           </a>
         </p>
