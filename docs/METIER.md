@@ -173,9 +173,8 @@ Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les p
 
 ### Ou cela se pilote
 
-- `settings/impots` pour les barèmes IR, PFU part IR, CEHR/CDHR et IFI
-- `settings/comptables-societes` pour l'IS et les paramètres société
-- `settings/prelevements` pour les PS patrimoine, retraites et seuils
+- `/settings/memento` pour les paramètres fiscaux, sociaux, société et transmission.
+- `/settings/base-contrat-retraite` pour la base documentaire des contrats retraite.
 
 ### Attestation des valeurs
 

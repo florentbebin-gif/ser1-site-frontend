@@ -18,8 +18,8 @@ import SettingsMemento from '../SettingsMemento';
 import MementoEntryRow from '../memento/MementoEntryRow';
 import {
   bindingMatchesMementoSettingsSection,
-  getMementoSettingsMigrationSection,
-  MEMENTO_SETTINGS_MIGRATION_SECTIONS,
+  getMementoSettingsSection,
+  MEMENTO_SETTINGS_SECTIONS,
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
 
@@ -140,31 +140,18 @@ describe('route settings mémento', () => {
     expect(mementoIndex).toBe(generalIndex + 1);
     expect(getVisibleSettingsRoutes(false).some((entry) => entry.key === 'memento')).toBe(true);
     expect(isDeclaredSettingsPath('/settings/memento-old')).toBe(false);
-    for (const migratedPath of [
-      '/settings/impots',
-      '/settings/comptables-societes',
-      '/settings/prelevements',
-      '/settings/dmtg-succession',
-      '/settings/base-contrat',
-      '/settings/prevoyance-regimes',
-      '/settings/fiscalites',
-    ]) {
-      expect(getActiveSettingsKey(migratedPath)).toBe('memento');
-      expect(isDeclaredSettingsPath(migratedPath)).toBe(false);
-      expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === migratedPath)).toBe(false);
-    }
+    expect(getActiveSettingsKey('/settings/section-inconnue')).toBe('memento');
+    expect(isDeclaredSettingsPath('/settings/section-inconnue')).toBe(false);
   });
 });
 
-describe('contrat de migration settings vers mémento', () => {
+describe('contrat des sections settings du mémento', () => {
   const routePaths = SETTINGS_ROUTES.map((route) => route.urlPath);
 
-  it('déclare les six pages settings à intégrer dans /settings/memento', () => {
-    const targetSectionKeys = MEMENTO_SETTINGS_MIGRATION_SECTIONS.map(
-      (section) => section.targetSectionKey,
-    );
+  it('déclare les six sections settings intégrées dans /settings/memento', () => {
+    const targetSectionKeys = MEMENTO_SETTINGS_SECTIONS.map((section) => section.targetSectionKey);
 
-    expect(MEMENTO_SETTINGS_MIGRATION_SECTIONS.map((section) => section.id)).toEqual([
+    expect(MEMENTO_SETTINGS_SECTIONS.map((section) => section.id)).toEqual([
       'impots',
       'comptables-societes',
       'prelevements',
@@ -172,60 +159,46 @@ describe('contrat de migration settings vers mémento', () => {
       'base-contrat',
       'prevoyance-regimes',
     ]);
-    expect(MEMENTO_SETTINGS_MIGRATION_SECTIONS.map((section) => section.legacyPagePath)).toEqual([
-      '/settings/impots',
-      '/settings/comptables-societes',
-      '/settings/prelevements',
-      '/settings/dmtg-succession',
-      '/settings/base-contrat',
-      '/settings/prevoyance-regimes',
-    ]);
-    expect(
-      new Set(MEMENTO_SETTINGS_MIGRATION_SECTIONS.map((section) => section.targetPagePath)),
-    ).toEqual(new Set([MEMENTO_SETTINGS_TARGET_PATH]));
-    expect(
-      MEMENTO_SETTINGS_MIGRATION_SECTIONS.map((section) => section.legacyPagePath),
-    ).not.toContain('/settings/base-contrat-retraite');
+    expect(new Set(MEMENTO_SETTINGS_SECTIONS.map((section) => section.targetPagePath))).toEqual(
+      new Set([MEMENTO_SETTINGS_TARGET_PATH]),
+    );
     expect(new Set(targetSectionKeys).size).toBe(targetSectionKeys.length);
   });
 
-  it('retire les routes migrées et conserve les autres routes sources avant leurs PR dédiées', () => {
+  it('conserve /settings/memento comme route settings fiscal/social unique', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
-
-    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS) {
-      expect(routePaths, section.id).not.toContain(section.legacyPagePath);
-    }
+    expect(routePaths).toContain('/settings/base-contrat-retraite');
   });
 
   it('verrouille les sources de lecture et d’écriture par domaine migré', () => {
-    expect(getMementoSettingsMigrationSection('impots')).toMatchObject({
+    expect(getMementoSettingsSection('impots')).toMatchObject({
       readSources: ['tax_settings', 'ps_settings'],
       writeSources: ['tax_settings'],
     });
-    expect(getMementoSettingsMigrationSection('comptables-societes')).toMatchObject({
+    expect(getMementoSettingsSection('comptables-societes')).toMatchObject({
       readSources: ['tax_settings'],
       writeSources: ['tax_settings'],
     });
-    expect(getMementoSettingsMigrationSection('prelevements')).toMatchObject({
+    expect(getMementoSettingsSection('prelevements')).toMatchObject({
       readSources: ['ps_settings', 'tax_settings', 'pass_history'],
       writeSources: ['ps_settings', 'pass_history'],
     });
-    expect(getMementoSettingsMigrationSection('dmtg-succession')).toMatchObject({
+    expect(getMementoSettingsSection('dmtg-succession')).toMatchObject({
       readSources: ['tax_settings', 'fiscality_settings'],
       writeSources: ['tax_settings', 'fiscality_settings'],
     });
-    expect(getMementoSettingsMigrationSection('base-contrat')).toMatchObject({
+    expect(getMementoSettingsSection('base-contrat')).toMatchObject({
       readSources: ['base_contrat_catalog', 'base_contrat_overrides'],
       writeSources: ['base_contrat_overrides'],
     });
-    expect(getMementoSettingsMigrationSection('prevoyance-regimes')).toMatchObject({
+    expect(getMementoSettingsSection('prevoyance-regimes')).toMatchObject({
       readSources: ['prevoyance_regime_settings', 'prevoyance_maintien_employeur_settings'],
       writeSources: ['prevoyance_regime_settings', 'prevoyance_maintien_employeur_settings'],
     });
   });
 
-  it('compte les claims settings-references sans perte avant migration effective', () => {
-    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS) {
+  it('compte les claims settings-references sans perte', () => {
+    for (const section of MEMENTO_SETTINGS_SECTIONS) {
       const count = SETTINGS_REFERENCE_CHAIN.filter((binding) =>
         bindingMatchesMementoSettingsSection(binding, section),
       ).length;

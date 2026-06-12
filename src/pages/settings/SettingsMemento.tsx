@@ -23,8 +23,8 @@ import {
 import MementoChapterSection from './memento/MementoChapterSection';
 import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './memento/MementoEntryRow';
 import {
-  getMementoSettingsMigrationSection,
-  type MementoSettingsMigrationSection,
+  getMementoSettingsSection,
+  type MementoSettingsSection,
   type MementoSettingsSectionId,
 } from './memento/mementoSettingsSections';
 
@@ -37,7 +37,7 @@ interface FilteredChapter {
   chapter: MementoChapter;
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
-  settingsSections: readonly MementoSettingsMigrationSection[];
+  settingsSections: readonly MementoSettingsSection[];
   editorial: MementoChapterEditorial | null;
 }
 
@@ -152,9 +152,9 @@ function chapterMatchesFilters(
 
 function settingsSectionsForChapter(
   chapterId: MementoChapterId,
-): readonly MementoSettingsMigrationSection[] {
+): readonly MementoSettingsSection[] {
   return (MEMENTO_CHAPTER_SETTINGS_SECTION_IDS[chapterId] ?? []).map((sectionId) =>
-    getMementoSettingsMigrationSection(sectionId),
+    getMementoSettingsSection(sectionId),
   );
 }
 

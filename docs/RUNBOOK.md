@@ -716,19 +716,19 @@ rg "user_metadata" supabase/migrations --type sql
 
 Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence technique requise — chaque étape est indépendante.
 
-### Étape 1 — Mettre à jour les paramètres Impôts
+### Étape 1 — Mettre à jour la fiscalité du foyer
 
 1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : barème IR, PFU part IR, CEHR/CDHR, IFI.
 3. Enregistrer.
 
-### Étape 1 bis — Mettre à jour les paramètres Comptables & sociétés
+### Étape 1 bis — Mettre à jour les paramètres société
 
 1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : taux IS, seuil du taux réduit, régime mère-fille, déductibilité CCA/dividendes.
 3. Enregistrer.
 
-### Étape 2 — Mettre à jour les Prélèvements sociaux
+### Étape 2 — Mettre à jour les paramètres sociaux
 
 1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : taux PS patrimoine (cas général et régime d'exception), tranches retraite et historique PASS (`pass_history`).

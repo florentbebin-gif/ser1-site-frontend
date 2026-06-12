@@ -226,11 +226,12 @@ Garde-fous :
 
 ### Mémento patrimonial & social — `src/domain/settings-memento/`
 
-Le mémento patrimonial & social vit dans `src/domain/settings-memento/`. Il sert de grille de
-couverture métier en lecture seule entre doctrine, pages Settings propriétaires, simulateurs,
-chaînage Settings et références officielles. Il ne porte aucune valeur fiscale, sociale ou
-comptable révisable, ne crée aucune écriture et ne remplace ni `settings-registry`, ni
-`settings-references`, ni les moteurs.
+Le mémento patrimonial & social vit dans `src/domain/settings-memento/`. Le domaine sert de grille
+de couverture métier entre doctrine, page Settings propriétaire, simulateurs, chaînage Settings et
+références officielles. Il ne porte aucune valeur fiscale, sociale ou comptable révisable et ne
+remplace ni `settings-registry`, ni `settings-references`, ni les moteurs. La page
+`/settings/memento` rend cette grille et accueille les éditeurs qui écrivent dans les tables
+Supabase settings existantes.
 
 Les statuts canoniques sont :
 
@@ -250,8 +251,9 @@ taxonomie.
 
 La page `/settings/memento` expose deux lectures distinctes de la même source TypeScript :
 
-- vue métier : entrées mémento, intentions, priorités, statut, page propriétaire, simulateurs liés
-  et disponibilité des références officielles ;
+- vue métier : entrées mémento, intentions, priorités, statut, section propriétaire, simulateurs
+  liés et disponibilité des références officielles ;
+- édition settings : accordéons d'administration écrivant dans les tables Supabase existantes ;
 - audit coverage : lignes `SIMULATOR_MEMENTO_COVERAGE`, routes propriétaires, lifecycles, statuts
   techniques et notes utiles aux checks.
 
@@ -1057,7 +1059,8 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.
 - Si une page sensible est `adminOnly` en front, verifier aussi l'enforcement backend/RLS.
-- Si une route settings remplace une ancienne route, documenter le mapping de migration et vérifier l'absence de redirect runtime non voulu.
+- Si une route settings est ajoutée ou retirée, mettre à jour `SETTINGS_ROUTES`, les tests de
+  couverture auth et la documentation des routes déclarées.
 
 ### 3) Organiser une feature de simulateur
 
