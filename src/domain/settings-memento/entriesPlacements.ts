@@ -83,7 +83,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
       'Sous-types titres du simulateur placement : éligibilité et versements des plans, retraits selon la maturité du plan et imposition des revenus et cessions du compte-titres.',
     status: 'partiel',
     statusReason:
-      'Claims Base-Contrat des plans et du compte-titres présents ; les abattements de détention des titres acquis avant la réforme du prélèvement forfaitaire restent à qualifier.',
+      'Claims Base-Contrat des plans et du compte-titres présents ; les abattements de détention antérieurs au PFU sont sourcés mais le pack placement complet reste partiel dans le registry settings.',
     priority: 'structurant',
     ownerPagePath: '/settings/memento',
     registryKeys: [],
@@ -103,6 +103,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
       'base-source-art-150-0-a-ii-2-cgi-pea',
       'base-source-art-200-a-cgi-pfu',
       'cgi-150-0-a',
+      'cgi-150-0-d',
       'boi-rppm-pvbmi-30-20',
     ],
     coverageSources: ['cadrage-externe'],

@@ -17,21 +17,30 @@ describe('settings-memento — fiscalité foyer', () => {
     expect(entryByKey.get('fiscalite-foyer.ir')?.status).toBe('couvert');
     expect(entryByKey.get('fiscalite-foyer.niches-fiscales')?.status).toBe('partiel');
     expect(entryByKey.get('fiscalite-foyer.ifi')?.status).toBe('partiel');
-    expect(entryByKey.get('fiscalite-foyer.non-residents')?.status).toBe('a_verifier');
+    expect(entryByKey.get('fiscalite-foyer.non-residents')?.status).toBe('partiel');
+  });
+
+  it('distingue le plafonnement global des niches du PFU', () => {
+    const entry = entryByKey.get('fiscalite-foyer.niches-fiscales');
+
+    expect(entry!.refIds).toContain('cgi-200-0-a');
+    expect(entry!.refIds).not.toContain('cgi-200-a');
   });
 
   it('rattache la valorisation du démembrement à l’entrée IFI par la référence commune', () => {
     const entry = entryByKey.get('fiscalite-foyer.ifi');
 
     expect(entry!.refIds).toContain('cgi-669');
+    expect(entry!.refIds).toEqual(expect.arrayContaining(['cgi-972', 'cgi-974', 'cgi-979']));
   });
 
-  it('garde les non-résidents en attente de qualification sans source affichée', () => {
+  it('rattache les non-résidents aux sources fiscales qualifiées sans claim settings', () => {
     const entry = entryByKey.get('fiscalite-foyer.non-residents');
 
     expect(entry!.claimKeys).toEqual([]);
-    expect(entry!.refIds).toEqual([]);
+    expect(entry!.refIds).toEqual(['cgi-197-a', 'cgi-182-a', 'cgi-187', 'cgi-964']);
     expect(entry!.relatedSimulatorIds).toEqual(['ifi']);
+    expect(entry!.statusReason).toContain('conventions fiscales');
   });
 
   it('rattache chaque entrée fiscalité foyer à la page propriétaire mémento', () => {

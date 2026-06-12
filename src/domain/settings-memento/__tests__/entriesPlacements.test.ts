@@ -80,6 +80,14 @@ describe('settings-memento — placements et enveloppes', () => {
     }
   });
 
+  it('source les abattements de détention des titres sans confondre PFU et plafonnement global', () => {
+    const entry = entryByKey.get('placements.enveloppes-titres');
+
+    expect(entry!.refIds).toContain('cgi-150-0-d');
+    expect(entry!.refIds).toContain('cgi-150-0-a');
+    expect(entry!.refIds).toContain('base-source-art-200-a-cgi-pfu');
+  });
+
   it('garde des sources qualifiées sur les entrées liées au registry', () => {
     for (const key of [
       'placements.ps-pfu-revenus-capital',

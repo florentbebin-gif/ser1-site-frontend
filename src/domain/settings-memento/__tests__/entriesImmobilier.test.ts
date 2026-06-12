@@ -16,7 +16,7 @@ describe('settings-memento — immobilier et arbitrage', () => {
     'immobilier.investissement-locatif': 'planned',
     'immobilier.dispositifs-fiscaux': 'partiel',
     'immobilier.sci': 'planned',
-    'immobilier.non-residents': 'a_verifier',
+    'immobilier.non-residents': 'partiel',
     'arbitrage.vendre-conserver-reemployer': 'planned',
   } as const;
   const R2_KEYS = Object.keys(R2_EXPECTED_STATUSES) as ReadonlyArray<
@@ -82,6 +82,15 @@ describe('settings-memento — immobilier et arbitrage', () => {
     }
   });
 
+  it('source la surtaxe et les abattements exceptionnels des plus-values immobilières', () => {
+    const entry = entryByKey.get('immobilier.pv-immobilieres');
+
+    expect(entry!.refIds).toEqual(
+      expect.arrayContaining(['cgi-150-ve', 'cgi-1609-nonies-g', 'boi-rfpi-pvi-20-20']),
+    );
+    expect(entry!.status).toBe('planned');
+  });
+
   it('rattache l’intégralité des dispositifs fiscaux immobiliers du catalogue Base-Contrat', () => {
     const DISPOSITIF_SECTION_KEY = 'dispositifs-fiscaux-immobilier';
     const dispositifClaimKeys = new Set(
@@ -114,18 +123,22 @@ describe('settings-memento — immobilier et arbitrage', () => {
     expect(entry!.registryKeys).toEqual(['immobilier.scpi.regime']);
   });
 
-  it('garde le périmètre non-résidents en attente de qualification sans source affichée', () => {
+  it('source le périmètre immobilier non-résident sans couvrir les conventions', () => {
     const entry = entryByKey.get('immobilier.non-residents');
 
-    expect(entry!.status).toBe('a_verifier');
+    expect(entry!.status).toBe('partiel');
     expect(entry!.claimKeys).toEqual([]);
-    expect(entry!.refIds).toEqual([]);
+    expect(entry!.refIds).toEqual(['cgi-244-bis-a', 'boi-rfpi-pvinr-20-20']);
+    expect(entry!.statusReason).toContain('conventions fiscales');
   });
 
-  it('rattache la SCI à sa référence civile de détention de parts', () => {
+  it('rattache la SCI à ses références civiles et fiscales de détention', () => {
     const entry = entryByKey.get('immobilier.sci');
 
     expect(entry!.refIds).toContain('code-civil-1075');
+    expect(entry!.refIds).toEqual(
+      expect.arrayContaining(['cgi-8', 'cgi-206', 'boi-rfpi-champ-30-20']),
+    );
   });
 
   it('aligne chaque entrée du lot sur le chapitre couvert par son simulateur', () => {
