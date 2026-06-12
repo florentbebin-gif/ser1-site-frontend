@@ -5,7 +5,7 @@
  * des URLs officielles et, sur demande, cohérence des sources prévoyance en DB.
  *
  * Usage :
- *   node scripts/audit-settings-references.mjs [--root <chemin>] [--json] [--stale] [--with-db]
+ *   node scripts/audit-settings-references.mjs [--root <chemin>] [--json] [--stale] [--with-db] [--fetch] [--write-supabase-report]
  */
 
 import fs from 'node:fs';
@@ -38,6 +38,7 @@ const LIVENESS_HEADERS = {
   'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
 };
 const SERVICE_ROLE_KEY_ENV = ['SUPABASE', 'SERVICE', 'ROLE', 'KEY'].join('_');
+const SER1_SERVICE_KEY_ENV = ['SER1', 'SUPABASE', 'SERVICE', 'KEY'].join('_');
 
 function getUrlPathname(value) {
   try {
@@ -65,6 +66,7 @@ function parseArgs(argv) {
     stale: false,
     withDb: false,
     fetchUrls: process.env.CI !== 'true',
+    writeSupabaseReport: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -81,8 +83,16 @@ function parseArgs(argv) {
       options.withDb = true;
       continue;
     }
+    if (arg === '--fetch') {
+      options.fetchUrls = true;
+      continue;
+    }
     if (arg === '--no-fetch') {
       options.fetchUrls = false;
+      continue;
+    }
+    if (arg === '--write-supabase-report') {
+      options.writeSupabaseReport = true;
       continue;
     }
     if (arg === '--root') {
@@ -312,7 +322,7 @@ export async function auditUrlLiveness(urls, enabled, fetcher = fetch) {
 
 function getSupabaseEnv() {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env[SERVICE_ROLE_KEY_ENV];
+  const serviceRoleKey = process.env[SERVICE_ROLE_KEY_ENV] ?? process.env[SER1_SERVICE_KEY_ENV];
   const key = serviceRoleKey ?? process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   const email = process.env.E2E_EMAIL ?? process.env.SER1_LLM_TEST_EMAIL;
   const password = process.env.E2E_PASSWORD ?? process.env.SER1_LLM_TEST_PASSWORD;
@@ -558,9 +568,99 @@ async function auditPrevoyanceDb(withDb) {
   };
 }
 
-async function run() {
-  const options = parseArgs(process.argv.slice(2));
-  loadLocalEnv(options.root);
+export function summarizeReferenceAuditReport(report) {
+  return {
+    ok: report.ok,
+    requiresAction: !report.ok,
+    bindingCount: report.bindingCount,
+    referencedUrlCount: report.referencedUrlCount,
+    staleBindingCount: report.stale.bindings.length,
+    staleReferenceCount: report.stale.references.length,
+    urlFailureCount: report.liveness.failures.length,
+    urlBlockedCount: report.liveness.blocked.length,
+    urlInconclusiveCount: report.liveness.inconclusive.length,
+    dbFindingCount: report.db.findings.length,
+    warningCount: report.warnings.length,
+    errorCount: report.errors.length,
+  };
+}
+
+function buildRunContext(env = process.env) {
+  const repository = env.GITHUB_REPOSITORY ?? null;
+  const runId = env.GITHUB_RUN_ID ?? null;
+  const runAttempt = env.GITHUB_RUN_ATTEMPT ?? null;
+  const serverUrl = env.GITHUB_SERVER_URL ?? 'https://github.com';
+
+  return {
+    source: env.GITHUB_ACTIONS === 'true' ? 'github_actions' : 'local',
+    workflowName: env.GITHUB_WORKFLOW ?? null,
+    githubRunId: runId,
+    githubRunAttempt: runAttempt,
+    commitSha: env.GITHUB_SHA ?? null,
+    repository,
+    runUrl: repository && runId ? `${serverUrl}/${repository}/actions/runs/${runId}` : null,
+  };
+}
+
+export function buildReferenceAuditReportRow(report, context = buildRunContext()) {
+  const summary = summarizeReferenceAuditReport(report);
+
+  return {
+    ok: summary.ok,
+    requires_action: summary.requiresAction,
+    binding_count: summary.bindingCount,
+    referenced_url_count: summary.referencedUrlCount,
+    stale_binding_count: summary.staleBindingCount,
+    stale_reference_count: summary.staleReferenceCount,
+    url_failure_count: summary.urlFailureCount,
+    url_blocked_count: summary.urlBlockedCount,
+    url_inconclusive_count: summary.urlInconclusiveCount,
+    db_finding_count: summary.dbFindingCount,
+    warning_count: summary.warningCount,
+    error_count: summary.errorCount,
+    report,
+    source: context.source,
+    workflow_name: context.workflowName,
+    github_run_id: context.githubRunId,
+    github_run_attempt: context.githubRunAttempt,
+    commit_sha: context.commitSha,
+    run_url: context.runUrl,
+  };
+}
+
+async function writeSupabaseReferenceAuditReport(report) {
+  const env = getSupabaseEnv();
+  const serviceRoleKey = process.env[SERVICE_ROLE_KEY_ENV] ?? process.env[SER1_SERVICE_KEY_ENV];
+
+  if (!env.url || !serviceRoleKey) {
+    throw new Error(
+      'Écriture Supabase ignorée : définir une URL Supabase et une clé de service Supabase.',
+    );
+  }
+
+  const { createClient } = await import('@supabase/supabase-js');
+  const client = createClient(env.url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const row = buildReferenceAuditReportRow(report);
+  const { data, error } = await client
+    .from('reference_audit_reports')
+    .insert(row)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(`Écriture Supabase impossible : ${error.message}`);
+  }
+
+  return {
+    enabled: true,
+    table: 'reference_audit_reports',
+    id: data?.id ?? null,
+  };
+}
+
+async function buildReferenceAuditReport(options) {
   const chainPath = path.join(options.root, 'src', 'domain', 'settings-references', 'chain.json');
   const referencesPath = path.join(
     options.root,
@@ -593,40 +693,64 @@ async function run() {
   ];
   const warnings = [...liveness.warnings, ...db.warnings];
 
+  return {
+    ok: errors.length === 0,
+    bindingCount: Array.isArray(chain) ? chain.length : 0,
+    referencedUrlCount: referencedUrls.length,
+    stale,
+    liveness,
+    db,
+    warnings,
+    errors,
+  };
+}
+
+async function run() {
+  const options = parseArgs(process.argv.slice(2));
+  loadLocalEnv(options.root);
+  const report = await buildReferenceAuditReport(options);
+  let outputReport = {
+    ...report,
+    storage: { enabled: false },
+  };
+
+  if (options.writeSupabaseReport) {
+    try {
+      const storage = await writeSupabaseReferenceAuditReport(report);
+      outputReport = { ...report, storage };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      outputReport = {
+        ...report,
+        ok: false,
+        storage: { enabled: true, error: message },
+        errors: [...report.errors, message],
+      };
+    }
+  }
+
   if (options.json) {
-    console.log(
-      JSON.stringify(
-        {
-          ok: errors.length === 0,
-          bindingCount: Array.isArray(chain) ? chain.length : 0,
-          referencedUrlCount: referencedUrls.length,
-          stale,
-          liveness,
-          db,
-          warnings,
-          errors,
-        },
-        null,
-        2,
-      ),
-    );
+    console.log(JSON.stringify(outputReport, null, 2));
   } else {
-    if (errors.length > 0) {
+    if (outputReport.errors.length > 0) {
       console.error('audit:settings-references ❌');
-      for (const error of errors) {
+      for (const error of outputReport.errors) {
         console.error(`- ${error}`);
       }
     } else {
+      console.log(`audit:settings-references ✅ ${outputReport.bindingCount} bindings audités`);
+    }
+    if (outputReport.storage.enabled && !outputReport.storage.error) {
       console.log(
-        `audit:settings-references ✅ ${Array.isArray(chain) ? chain.length : 0} bindings audités`,
+        `Rapport Supabase écrit dans ${outputReport.storage.table} (${outputReport.storage.id ?? 'id inconnu'}).`,
       );
     }
-    for (const warning of warnings) {
+    for (const warning of outputReport.warnings) {
       console.warn(`Avertissement : ${warning}`);
     }
   }
 
-  if (errors.length > 0) {
+  if (outputReport.errors.length > 0) {
     process.exit(1);
   }
 }
