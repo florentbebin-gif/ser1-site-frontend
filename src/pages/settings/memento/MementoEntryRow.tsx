@@ -4,7 +4,7 @@ import type {
   MementoBusinessPriority,
   MementoEntry,
   MementoStatus,
-} from '@/domain/settings-memento';
+} from '@/domain/settings-memento/types';
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 
 export const MEMENTO_STATUS_LABELS: Record<MementoStatus, string> = {
