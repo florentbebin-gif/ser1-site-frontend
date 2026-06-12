@@ -137,7 +137,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     ownerPagePath: '/settings/dmtg-succession',
     registryKeys: [],
     claimKeys: [],
-    refIds: ['cgi-ann3-404-ga', 'boi-enr-dg-50-20-50'],
+    refIds: ['cgi-ann3-397-a', 'cgi-ann3-404-ga', 'boi-enr-dg-50-20-50'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['pacte-dutreil'],
   },

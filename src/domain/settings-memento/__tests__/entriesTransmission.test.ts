@@ -36,7 +36,7 @@ describe('settings-memento — transmission', () => {
   it('fonde le paiement différé et fractionné sur les références qualifiées', () => {
     const entry = entryByKey.get('transmission-entreprise.paiement-differe-fractionne');
 
-    expect(entry!.refIds).toEqual(['cgi-ann3-404-ga', 'boi-enr-dg-50-20-50']);
+    expect(entry!.refIds).toEqual(['cgi-ann3-397-a', 'cgi-ann3-404-ga', 'boi-enr-dg-50-20-50']);
     expect(entry!.relatedSimulatorIds).toEqual(['pacte-dutreil']);
   });
 

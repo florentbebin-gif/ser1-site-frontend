@@ -2072,6 +2072,17 @@
     "lastCheckedAt": "2026-06-11"
   },
   {
+    "id": "cgi-ann3-397-a",
+    "label": "CGI annexe III art. 397 A — paiement différé et fractionné des droits (transmission d'entreprise, article porteur)",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006299725",
+    "articleOrSection": "Annexe III, art. 397 A",
+    "scope": "Dispositif porteur du crédit de paiement des droits de mutation à titre gratuit en cas de transmission d'entreprise : différé puis fractionnement.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-ann3-404-ga",
     "label": "CGI annexe III art. 404 GA — paiement différé et fractionné des droits (transmission d'entreprise)",
     "sourceType": "CGI",
