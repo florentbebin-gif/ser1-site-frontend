@@ -314,7 +314,7 @@ describe('SettingsMemento', () => {
 
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    expect(screen.getByTestId('memento-coverage-ir')).toBeInTheDocument();
+    expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
   });
 
   it('rend les paramètres Impôts depuis le sous-accordéon du mémento', async () => {
@@ -427,21 +427,21 @@ describe('SettingsMemento', () => {
     await openChapter(user, 'Foyer');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    const filiation = screen.getByTestId('memento-coverage-filiation');
+    const filiation = await screen.findByTestId('memento-coverage-filiation');
     expect(within(filiation).queryAllByRole('link')).toHaveLength(0);
     expect(within(filiation).queryAllByRole('button')).toHaveLength(0);
 
     await openChapter(user, 'Patrimoine');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    const actifPassif = screen.getByTestId('memento-coverage-actif-passif');
+    const actifPassif = await screen.findByTestId('memento-coverage-actif-passif');
     expect(within(actifPassif).queryAllByRole('link')).toHaveLength(0);
     expect(within(actifPassif).queryAllByRole('button')).toHaveLength(0);
 
     await openChapter(user, 'Société');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    const epargneSalariale = screen.getByTestId('memento-coverage-epargne-salariale');
+    const epargneSalariale = await screen.findByTestId('memento-coverage-epargne-salariale');
     expect(within(epargneSalariale).queryAllByRole('link')).toHaveLength(0);
     expect(within(epargneSalariale).queryAllByRole('button')).toHaveLength(0);
   });
@@ -473,7 +473,7 @@ describe('SettingsMemento', () => {
     await openChapter(user, 'Société');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    expect(screen.getByTestId('memento-coverage-cession-titres')).toBeInTheDocument();
+    expect(await screen.findByTestId('memento-coverage-cession-titres')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
 
     await user.clear(screen.getByLabelText('Recherche mémento'));
@@ -481,7 +481,7 @@ describe('SettingsMemento', () => {
     await openChapter(user, 'Fiscalité foyer');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    expect(screen.getByTestId('memento-coverage-ir')).toBeInTheDocument();
+    expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-filiation')).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('Statut'), 'all');
@@ -489,7 +489,7 @@ describe('SettingsMemento', () => {
     await openChapter(user, 'Société');
     await openSubAccordion(user, 'Couverture simulateurs');
 
-    expect(screen.getByTestId('memento-coverage-organigramme-societe')).toBeInTheDocument();
+    expect(await screen.findByTestId('memento-coverage-organigramme-societe')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
   });
 });
