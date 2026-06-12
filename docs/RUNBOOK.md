@@ -64,7 +64,7 @@ Scripts ponctuels documentés :
 - `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, branché dans `check:static`. Le registre est exhaustif ; le rapport liste les pages représentées, le nombre de bindings déclarés par page et `coverage.byPage[*].declared/expected`. `coverage.mode` doit rester `exhaustive` et `coverage.isExhaustive = true`.
 - `npm run check:memento-coverage` : garde Vitest du mémento patrimonial & social, branchée dans `check:static`. Le check réexécute la taxonomie, la couverture simulateurs, les invariants ownerPagePath ↔ `SETTINGS_ROUTES`, registres settings/références/simulateurs, lifecycles non couverts et route société canonique `/settings/comptables-societes`. En cas d'échec, corriger `src/domain/settings-memento/`, `src/routes/settingsRoutes.ts` ou le registre source concerné ; ne pas ajouter de script `.mjs` parallèle ni de valeur fiscale/sociale dans le mémento.
 - `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings. Pour la liveness URL, `404`/`410` signifie URL morte et bloque l'audit ; `401`/`403`/`429` signifie URL non vérifiable automatiquement et reste un avertissement. Les timeouts, erreurs DNS et `5xx` sont inconclusifs, pas des preuves d'URL morte.
-- `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si une URL Supabase et une clé de lecture autorisée sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée.
+- `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si une URL Supabase et une clé de lecture autorisée sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée. Ajouter `--fetch` force la liveness URL en CI ; ajouter `--write-supabase-report` écrit le dernier rapport dans `reference_audit_reports` avec une clé service role.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
 - `npm run snapshot:sim` : capture visuelle locale, hors CI tant que le résultat n'est pas exploité comme gate.
 - `npm run report:large-files` : rapport manuel des fichiers `src` à 400+ lignes avec décision, catégorie et plafond de baseline.
@@ -767,6 +767,11 @@ npm run audit:settings-references -- --stale
 ```powershell
 npm run audit:settings-references -- --stale --with-db
 ```
+
+Le job GitHub Actions hebdomadaire `Settings reference audit` lance cette variante avec
+`--fetch --json --write-supabase-report`. Quand le dernier rapport Supabase est non OK, la Home affiche
+une bannière uniquement aux admins connectés et seulement tant que ce rapport n'a pas été acquitté.
+Le navigateur ne relance jamais l'audit et ne contacte jamais directement les URLs Légifrance/BOFiP.
 
 `check:settings-references` est branché dans `check:static`. Les 6 surfaces
 `/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements`, `/settings/base-contrat`,

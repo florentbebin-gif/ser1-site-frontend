@@ -2,13 +2,15 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { DossierContextCards } from '../components/ui/dossier/DossierContextCards';
-import { HomeGuide, HOME_PRIMARY_ACTIONS } from '../features/home';
+import { HomeGuide, HOME_PRIMARY_ACTIONS, ReferenceAuditBanner } from '../features/home';
+import { useReferenceAuditNotification } from '../hooks/useReferenceAuditNotification';
 import { useUserMode } from '../settings/userMode';
 import { IconArrowRight, IconClipboardCheck, IconScanLine, IconUpload } from '../icons/ui';
 import './Home.css';
 
 export default function Home(): React.ReactElement {
   const { mode } = useUserMode();
+  const referenceAuditNotification = useReferenceAuditNotification();
 
   return (
     <div className="home-layout" data-testid="home-layout">
@@ -64,6 +66,15 @@ export default function Home(): React.ReactElement {
             )}
           </div>
         </section>
+
+        {referenceAuditNotification.isVisible && referenceAuditNotification.report && (
+          <ReferenceAuditBanner
+            report={referenceAuditNotification.report}
+            isSubmitting={referenceAuditNotification.isSubmitting}
+            error={referenceAuditNotification.error}
+            onDismiss={referenceAuditNotification.acknowledge}
+          />
+        )}
 
         <div className="home-divider" aria-hidden="true" />
 

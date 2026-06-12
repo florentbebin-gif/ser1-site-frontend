@@ -112,6 +112,18 @@ const COVERED_TABLES = {
     read: 'authenticated',
     writes: { insert: 'admin', update: 'admin', delete: 'admin' },
   },
+  reference_audit_acknowledgements: {
+    sensitivity: 'sensitive',
+    reason: 'Acquittements admin des rapports de fraicheur references Settings.',
+    read: 'own_or_admin',
+    writes: { insert: 'own_or_admin', update: 'own_or_admin' },
+  },
+  reference_audit_reports: {
+    sensitivity: 'sensitive',
+    reason: 'Rapports JSONB de fraicheur des references Settings, visibles par admin.',
+    read: 'admin',
+    writes: { insert: 'service_role' },
+  },
   profiles: {
     sensitivity: 'sensitive',
     reason: 'Profil user/cabinet, lecture own/admin et update admin.',

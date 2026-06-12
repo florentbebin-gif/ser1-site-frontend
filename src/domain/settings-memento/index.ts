@@ -10,6 +10,23 @@ export {
 } from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
 export {
+  MEMENTO_LEXICON_SENSITIVITY_VALUES,
+  MEMENTO_LEXICON_STATUS_VALUES,
+  MEMENTO_LEXICON_TERMS,
+  validateMementoLexicon,
+  type MementoLexiconSensitivity,
+  type MementoLexiconStatus,
+  type MementoLexiconTerm,
+  type MementoLexiconValidationResult,
+} from './lexicon';
+export {
+  ARTICLE_83_PERO_CLAIMS,
+  EPARGNE_SALARIALE_RETRAITE_CLAIMS,
+  FISCALITE_SORTIE_RETRAITE_CLAIMS,
+  MADELIN_RETRAITE_CLAIMS,
+  PER_INDIVIDUEL_CLAIMS,
+} from './entriesEpargneRetraite';
+export {
   PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
   PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
   PREVOYANCE_REGIME_CLAIMS,

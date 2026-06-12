@@ -20,8 +20,13 @@ type ScriptResult = {
 type AuditReport = {
   ok: boolean;
   liveness: {
+    checked: number;
     failures: Array<Record<string, unknown>>;
     blocked: Array<Record<string, unknown>>;
+  };
+  storage?: {
+    enabled: boolean;
+    error?: string;
   };
 };
 
@@ -47,6 +52,21 @@ type AuditModule = {
     };
     findings: string[];
   };
+  summarizeReferenceAuditReport: (report: Record<string, unknown>) => {
+    requiresAction: boolean;
+    staleBindingCount: number;
+    staleReferenceCount: number;
+    urlFailureCount: number;
+    urlBlockedCount: number;
+    urlInconclusiveCount: number;
+    dbFindingCount: number;
+    warningCount: number;
+    errorCount: number;
+  };
+  buildReferenceAuditReportRow: (
+    report: Record<string, unknown>,
+    context: Record<string, string | null>,
+  ) => Record<string, unknown>;
 };
 
 function createRoot() {
@@ -135,13 +155,21 @@ async function withHttpStatus(statusCode: number, test: (origin: string) => Prom
   }
 }
 
-function runAudit(root: string): Promise<ScriptResult> {
+function runAudit(
+  root: string,
+  extraArgs: string[] = [],
+  envOverrides: Record<string, string | undefined> = {},
+): Promise<ScriptResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [scriptPath, '--root', root, '--stale', '--json'], {
-      cwd: process.cwd(),
-      env: { ...process.env, CI: 'false' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    const child = spawn(
+      process.execPath,
+      [scriptPath, '--root', root, '--stale', '--json', ...extraArgs],
+      {
+        cwd: process.cwd(),
+        env: { ...process.env, CI: 'false', ...envOverrides },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
     let stdout = '';
     let stderr = '';
 
@@ -224,6 +252,80 @@ describe('audit-settings-references', () => {
       ]);
       expect(report.liveness.blocked).toHaveLength(0);
     });
+  });
+
+  it('force le fetch URL en CI avec --fetch', async () => {
+    await withHttpStatus(404, async (origin) => {
+      const root = createRoot();
+      writeAuditRoot(root, `${origin}/dead`);
+
+      const withoutFetch = await runAudit(root, [], { CI: 'true' });
+      const withoutFetchReport = parseReport(withoutFetch.stdout);
+      const withFetch = await runAudit(root, ['--fetch'], { CI: 'true' });
+      const withFetchReport = parseReport(withFetch.stdout);
+
+      expect(withoutFetch.status).toBe(0);
+      expect(withoutFetchReport.liveness.checked).toBe(0);
+      expect(withFetch.status).toBe(1);
+      expect(withFetchReport.liveness.failures).toEqual([
+        expect.objectContaining({ id: 'demo-ref', status: 404 }),
+      ]);
+    });
+  });
+
+  it('résume un rapport stockable dans Supabase', async () => {
+    const { summarizeReferenceAuditReport, buildReferenceAuditReportRow } = await loadAuditModule();
+    const report = {
+      ok: false,
+      bindingCount: 444,
+      referencedUrlCount: 173,
+      stale: { bindings: [{ claimKey: 'a' }], references: [{ id: 'b' }] },
+      liveness: {
+        checked: 173,
+        failures: [{ id: 'dead' }],
+        blocked: [{ id: 'blocked' }],
+        inconclusive: [{ id: 'later' }],
+        warnings: ['warning'],
+      },
+      db: { findings: ['db finding'], warnings: [] },
+      warnings: ['warning'],
+      errors: ['erreur'],
+    };
+
+    const summary = summarizeReferenceAuditReport(report);
+    const row = buildReferenceAuditReportRow(report, {
+      source: 'github_actions',
+      workflowName: 'Settings reference audit',
+      githubRunId: '123',
+      githubRunAttempt: '1',
+      commitSha: 'abc',
+      repository: 'florentbebin-gif/ser1-site-frontend',
+      runUrl: 'https://github.com/florentbebin-gif/ser1-site-frontend/actions/runs/123',
+    });
+
+    expect(summary).toMatchObject({
+      requiresAction: true,
+      staleBindingCount: 1,
+      staleReferenceCount: 1,
+      urlFailureCount: 1,
+      urlBlockedCount: 1,
+      urlInconclusiveCount: 1,
+      dbFindingCount: 1,
+      warningCount: 1,
+      errorCount: 1,
+    });
+    expect(row).toMatchObject({
+      ok: false,
+      requires_action: true,
+      binding_count: 444,
+      referenced_url_count: 173,
+      stale_binding_count: 1,
+      stale_reference_count: 1,
+      url_failure_count: 1,
+      source: 'github_actions',
+      github_run_id: '123',
+    });
+    expect(row.report).toBe(report);
   });
 
   it('signale une absence de source prévoyance dont la raison ne nomme pas le régime', async () => {

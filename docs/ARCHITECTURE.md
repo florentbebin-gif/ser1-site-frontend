@@ -147,12 +147,22 @@ chaque surface le nombre de bindings déclarés (`declared`) et le nombre de cla
 `/settings/dmtg-succession`, `/settings/prevoyance-regimes`. La cible Base-Contrat est dynamique :
 son attendu est recalculé depuis `CATALOG` + `getRules()`.
 
-L'audit manuel `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
-liveness URL hors CI et la lecture des sources prévoyance en base. Les références `annual` deviennent
+L'audit `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
+liveness URL hors CI et la lecture des sources prévoyance en base. Ajouter `--fetch` force la
+vérification HTTP même quand `CI=true`, et `--write-supabase-report` écrit le rapport dans
+`public.reference_audit_reports` via une clé service role. Les références `annual` deviennent
 bloquantes au 1er février de l'année suivant leur vérification (`verifiedAt`). Les statuts HTTP
 `401`, `403` et `429` sont classés non vérifiables automatiquement, pas morts ; seuls `404` et `410`
 rendent l'URL bloquante. Sans variables Supabase, l'audit produit un rapport code-only avec
 avertissement.
+
+Le workflow GitHub Actions `Settings reference audit` exécute l'audit chaque semaine avec
+`--fetch --json --write-supabase-report`. La Home ne lance jamais l'audit dans le navigateur :
+elle lit seulement le dernier rapport via `useReferenceAuditNotification`. Si le rapport demande une
+action, un admin voit une bannière dismissible ; l'acquittement est stocké dans
+`public.reference_audit_acknowledgements` par couple admin/rapport. Les policies RLS donnent la
+lecture des rapports aux admins, l'écriture des rapports au service role et l'acquittement à l'admin
+connecté.
 La prévoyance garde les bindings `prevoyance-db` dans `chain.json`, mais les sources réelles vivent
 dans `sources.references` en base, par régime et par catégorie (`arret`, `invalidite`, `deces`,
 `cotisations`). Les pages officielles de caisses et organismes institutionnels validées par l'audit
@@ -265,6 +275,11 @@ Gouvernance des sources de couverture :
 - Si une thématique est identifiée sans source officielle qualifiée, l'entrée reste `a_verifier` ou
   `blocked_missing_official_source`. En cas de contradiction avec un support de cadrage externe, la
   source officielle prévaut.
+
+Le lexique interne du mémento vit dans `src/domain/settings-memento/lexicon.ts`. Il reformule les
+termes SER1 et rattache chaque terme fiscal, social, juridique ou calculatoire à une source officielle
+ou au statut `a_verifier`. Il ne copie pas de définition externe et reste validé par
+`validateMementoLexicon`.
 
 Garde-fous :
 

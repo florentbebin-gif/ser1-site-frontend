@@ -1,0 +1,105 @@
+name: Settings reference audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Lundi 04:30 UTC : audit hebdomadaire des sources Settings.
+    - cron: '30 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  settings-reference-audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.22.1'
+          cache: 'npm'
+
+      - name: Pin npm version
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run freshness audit and store report
+        id: audit
+        env:
+          CI: 'true'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SER1_SUPABASE_SERVICE_KEY: ${{ secrets[format('{0}_{1}_{2}_{3}', 'SUPABASE', 'SERVICE', 'ROLE', 'KEY')] }}
+        run: |
+          set +e
+          npm run audit:settings-references -- --stale --with-db --fetch --json --write-supabase-report > audit-report.json
+          status=$?
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+          cat audit-report.json
+          node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          let report;
+          try {
+            report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+          } catch (error) {
+            console.log('### Audit références Settings');
+            console.log('');
+            console.log(`- Rapport JSON illisible : ${error.message}`);
+            process.exit(0);
+          }
+          console.log('### Audit références Settings');
+          console.log('');
+          console.log(`- Statut : ${report.ok ? 'OK' : 'action requise'}`);
+          console.log(`- Bindings audités : ${report.bindingCount}`);
+          console.log(`- URLs vérifiées : ${report.liveness?.checked ?? 0}`);
+          console.log(`- Références stale : ${report.stale?.references?.length ?? 0}`);
+          console.log(`- Bindings stale : ${report.stale?.bindings?.length ?? 0}`);
+          console.log(`- URLs mortes : ${report.liveness?.failures?.length ?? 0}`);
+          console.log(`- Warnings : ${report.warnings?.length ?? 0}`);
+          console.log(`- Erreurs : ${report.errors?.length ?? 0}`);
+          if (report.storage?.enabled) {
+            const storage = report.storage.error
+              ? `échec (${report.storage.error})`
+              : `écrit (${report.storage.id ?? 'id inconnu'})`;
+            console.log(`- Stockage Supabase : ${storage}`);
+          }
+          if (Array.isArray(report.errors) && report.errors.length > 0) {
+            console.log('');
+            console.log('#### Premières erreurs');
+            for (const error of report.errors.slice(0, 20)) {
+              console.log(`- ${error}`);
+            }
+          }
+          NODE
+          exit 0
+
+      - name: Require Supabase report storage
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          let report;
+          try {
+            report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+          } catch (error) {
+            console.error(`Rapport d'audit JSON illisible : ${error.message}`);
+            process.exit(1);
+          }
+          if (report.storage?.error) {
+            console.error(`Stockage Supabase du rapport impossible : ${report.storage.error}`);
+            process.exit(1);
+          }
+          if (!report.storage?.enabled || !report.storage?.id) {
+            console.error('Aucun rapport Supabase écrit : la bannière Home admin ne pourra pas se déclencher.');
+            process.exit(1);
+          }
+          console.log(`Rapport Supabase écrit : ${report.storage.id}`);
+          NODE
