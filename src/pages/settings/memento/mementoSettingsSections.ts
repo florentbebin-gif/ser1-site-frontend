@@ -2,14 +2,6 @@ import type { SettingsReferenceBinding } from '@/domain/settings-references';
 
 export const MEMENTO_SETTINGS_TARGET_PATH = '/settings/memento' as const;
 
-export type MementoMigratedSettingsPagePath =
-  | '/settings/impots'
-  | '/settings/comptables-societes'
-  | '/settings/prelevements'
-  | '/settings/dmtg-succession'
-  | '/settings/base-contrat'
-  | '/settings/prevoyance-regimes';
-
 export type MementoSettingsSectionId =
   | 'impots'
   | 'comptables-societes'
@@ -28,10 +20,9 @@ export type MementoSettingsDataSource =
   | 'prevoyance_regime_settings'
   | 'prevoyance_maintien_employeur_settings';
 
-export interface MementoSettingsMigrationSection {
+export interface MementoSettingsSection {
   id: MementoSettingsSectionId;
   label: string;
-  legacyPagePath: MementoMigratedSettingsPagePath;
   targetPagePath: typeof MEMENTO_SETTINGS_TARGET_PATH;
   targetSectionKey: MementoSettingsSectionId;
   sourceSectionKeys: readonly string[];
@@ -40,11 +31,10 @@ export interface MementoSettingsMigrationSection {
   expectedSettingsReferenceClaims: number;
 }
 
-export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
+export const MEMENTO_SETTINGS_SECTIONS = [
   {
     id: 'impots',
     label: 'Fiscalité du foyer',
-    legacyPagePath: '/settings/impots',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'impots',
     sourceSectionKeys: ['income-tax', 'pfu', 'cehr', 'cdhr', 'ifi'],
@@ -55,7 +45,6 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
   {
     id: 'comptables-societes',
     label: 'Comptables et sociétés',
-    legacyPagePath: '/settings/comptables-societes',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'comptables-societes',
     sourceSectionKeys: ['corporate-tax'],
@@ -66,7 +55,6 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
   {
     id: 'prelevements',
     label: 'Prélèvements sociaux',
-    legacyPagePath: '/settings/prelevements',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'prelevements',
     sourceSectionKeys: [
@@ -83,7 +71,6 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
   {
     id: 'dmtg-succession',
     label: 'Transmission, DMTG et succession',
-    legacyPagePath: '/settings/dmtg-succession',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'dmtg-succession',
     sourceSectionKeys: ['donations', 'droits-mutation', 'assurance-vie-deces', 'liberalites'],
@@ -94,7 +81,6 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
   {
     id: 'base-contrat',
     label: 'Référentiel contrats',
-    legacyPagePath: '/settings/base-contrat',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'base-contrat',
     sourceSectionKeys: [
@@ -118,7 +104,6 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
   {
     id: 'prevoyance-regimes',
     label: 'Prévoyance et régimes',
-    legacyPagePath: '/settings/prevoyance-regimes',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'prevoyance-regimes',
     sourceSectionKeys: [
@@ -145,26 +130,20 @@ export const MEMENTO_SETTINGS_MIGRATION_SECTIONS = [
     writeSources: ['prevoyance_regime_settings', 'prevoyance_maintien_employeur_settings'],
     expectedSettingsReferenceClaims: 69,
   },
-] as const satisfies readonly MementoSettingsMigrationSection[];
+] as const satisfies readonly MementoSettingsSection[];
 
-export function getMementoSettingsMigrationSection(
-  id: MementoSettingsSectionId,
-): MementoSettingsMigrationSection {
-  const section = MEMENTO_SETTINGS_MIGRATION_SECTIONS.find((candidate) => candidate.id === id);
+export function getMementoSettingsSection(id: MementoSettingsSectionId): MementoSettingsSection {
+  const section = MEMENTO_SETTINGS_SECTIONS.find((candidate) => candidate.id === id);
   if (!section) {
-    throw new Error(`Section de migration mémento inconnue : ${id}`);
+    throw new Error(`Section settings mémento inconnue : ${id}`);
   }
   return section;
 }
 
 export function bindingMatchesMementoSettingsSection(
   binding: SettingsReferenceBinding,
-  section: MementoSettingsMigrationSection,
+  section: MementoSettingsSection,
 ): boolean {
-  if (binding.pagePath === section.legacyPagePath) {
-    return section.sourceSectionKeys.includes(binding.sectionKey);
-  }
-
   return (
     binding.pagePath === section.targetPagePath &&
     (binding.sectionKey === section.targetSectionKey ||

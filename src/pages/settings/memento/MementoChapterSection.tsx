@@ -18,7 +18,7 @@ import type {
 
 import MementoEntryRow from './MementoEntryRow';
 import MementoEditorialRow from './MementoEditorialRow';
-import type { MementoSettingsMigrationSection } from './mementoSettingsSections';
+import type { MementoSettingsSection } from './mementoSettingsSections';
 
 const ComptablesSocietesSettingsPanel = lazy(
   () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
@@ -40,7 +40,7 @@ interface MementoChapterSectionProps {
   chapter: MementoChapter;
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
-  settingsSections: readonly MementoSettingsMigrationSection[];
+  settingsSections: readonly MementoSettingsSection[];
   editorial: MementoChapterEditorial | null;
   isOpen: boolean;
   onToggle: () => void;
@@ -65,7 +65,7 @@ const SETTINGS_SOURCE_LABELS = {
   base_contrat_overrides: 'Overrides contrats',
   prevoyance_regime_settings: 'Régimes prévoyance',
   prevoyance_maintien_employeur_settings: 'Maintien employeur',
-} as const satisfies Record<MementoSettingsMigrationSection['readSources'][number], string>;
+} as const satisfies Record<MementoSettingsSection['readSources'][number], string>;
 
 function ChapterIcon(): ReactElement {
   return (
@@ -89,11 +89,7 @@ function formatCount(count: number, singular: string, plural: string): string {
   return `${count} ${count > 1 ? plural : singular}`;
 }
 
-function SettingsSourceRow({
-  section,
-}: {
-  section: MementoSettingsMigrationSection;
-}): ReactElement {
+function SettingsSourceRow({ section }: { section: MementoSettingsSection }): ReactElement {
   return (
     <article className="settings-memento-row settings-memento-row--settings-source">
       <div className="settings-memento-row__main">
@@ -126,7 +122,7 @@ function SettingsSectionContent({
   section,
 }: {
   chapter: MementoChapter;
-  section: MementoSettingsMigrationSection;
+  section: MementoSettingsSection;
 }): ReactElement {
   if (section.id === 'impots' && chapter.id === 'fiscalite-foyer') {
     return (
