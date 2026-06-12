@@ -299,6 +299,8 @@ describe('SettingsMemento', () => {
     await user.keyboard('{Enter}');
 
     expect(lecture).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('À retenir')).toBeInTheDocument();
+    expect(screen.getByText(/Le foyer donne le point de départ du conseil/i)).toBeInTheDocument();
     expect(screen.getByText('Filiation et branches familiales')).toBeInTheDocument();
   });
 

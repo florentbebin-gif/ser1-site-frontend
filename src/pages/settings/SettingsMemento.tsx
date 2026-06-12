@@ -4,6 +4,7 @@ import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import {
   MEMENTO_BUSINESS_PRIORITY_VALUES,
   MEMENTO_CHAPTERS,
+  MEMENTO_EDITORIAL_BY_CHAPTER,
   MEMENTO_ENTRIES,
   MEMENTO_STATUS_VALUES,
   MEMENTO_USER_INTENTS,
@@ -11,6 +12,7 @@ import {
   chaptersForIntent,
   type MementoBusinessPriority,
   type MementoChapter,
+  type MementoChapterEditorial,
   type MementoChapterId,
   type MementoEntry,
   type MementoStatus,
@@ -36,6 +38,7 @@ interface FilteredChapter {
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
   settingsSections: readonly MementoSettingsMigrationSection[];
+  editorial: MementoChapterEditorial | null;
 }
 
 const MEMENTO_ENTRY_LIST: readonly MementoEntry[] = MEMENTO_ENTRIES;
@@ -103,6 +106,17 @@ function coverageMatchesSearch(entry: SimulatorCoverageEntry, search: string): b
   ).includes(search);
 }
 
+function editorialMatchesSearch(
+  editorial: MementoChapterEditorial | null,
+  search: string,
+): boolean {
+  if (!editorial) return false;
+  if (!search) return true;
+  return normalizeSearchText([editorial.summary, ...editorial.keyPoints].join(' ')).includes(
+    search,
+  );
+}
+
 function entryMatchesFilters(
   entry: MementoEntry,
   chapter: MementoChapter,
@@ -158,9 +172,10 @@ function buildFilteredChapters(
 
   return MEMENTO_CHAPTERS.map((chapter) => {
     if (!chapterMatchesFilters(chapter, chapterFilter, intentChapterIds)) {
-      return { chapter, entries: [], coverage: [], settingsSections: [] };
+      return { chapter, entries: [], coverage: [], settingsSections: [], editorial: null };
     }
 
+    const editorial = MEMENTO_EDITORIAL_BY_CHAPTER.get(chapter.id) ?? null;
     const entries = MEMENTO_ENTRY_LIST.filter(
       (entry) =>
         entry.chapterId === chapter.id &&
@@ -172,11 +187,25 @@ function buildFilteredChapters(
         coverageMatchesFilters(entry, chapter, search, statusFilter),
     );
     const settingsSections = settingsSectionsForChapter(chapter.id);
+    const editorialVisible =
+      statusFilter === 'all' &&
+      priorityFilter === 'all' &&
+      (search === '' ||
+        editorialMatchesSearch(editorial, search) ||
+        normalizeSearchText(chapter.label).includes(search));
 
-    return { chapter, entries, coverage, settingsSections };
+    return {
+      chapter,
+      entries,
+      coverage,
+      settingsSections,
+      editorial: editorialVisible ? editorial : null,
+    };
   }).filter(
-    ({ entries, coverage, settingsSections }) =>
-      entries.length + coverage.length > 0 || (!hasContentFilter && settingsSections.length > 0),
+    ({ entries, coverage, settingsSections, editorial }) =>
+      entries.length + coverage.length > 0 ||
+      editorial !== null ||
+      (!hasContentFilter && settingsSections.length > 0),
   );
 }
 
@@ -318,6 +347,7 @@ export default function SettingsMemento(): ReactElement {
               entries={section.entries}
               coverage={section.coverage}
               settingsSections={section.settingsSections}
+              editorial={section.editorial}
               isOpen={openChapterId === section.chapter.id}
               onToggle={() =>
                 setOpenChapterId((current) =>

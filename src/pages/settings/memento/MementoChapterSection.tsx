@@ -11,6 +11,7 @@ import {
 import { SettingsIcon } from '@/components/settings/SettingsTitleWithIcon';
 import type {
   MementoChapter,
+  MementoChapterEditorial,
   MementoEntry,
   SimulatorCoverageEntry,
 } from '@/domain/settings-memento';
@@ -22,6 +23,7 @@ import MementoEntryRow, {
   canRenderMementoOwnerLink,
   MEMENTO_STATUS_LABELS,
 } from './MementoEntryRow';
+import MementoEditorialRow from './MementoEditorialRow';
 import type { MementoSettingsMigrationSection } from './mementoSettingsSections';
 
 const ComptablesSocietesSettingsPanel = lazy(
@@ -44,6 +46,7 @@ interface MementoChapterSectionProps {
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
   settingsSections: readonly MementoSettingsMigrationSection[];
+  editorial: MementoChapterEditorial | null;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -377,6 +380,7 @@ export default function MementoChapterSection({
   entries,
   coverage,
   settingsSections,
+  editorial,
   isOpen,
   onToggle,
 }: MementoChapterSectionProps): ReactElement {
@@ -429,12 +433,13 @@ export default function MementoChapterSection({
             id="lecture"
             title="Lecture métier"
             summary="Synthèse courte, statut et rattachement utile au CGP."
-            count={entries.length}
+            count={entries.length + (editorial ? 1 : 0)}
             openSubSection={openSubSection}
             setOpenSubSection={setOpenSubSection}
           >
-            {entries.length > 0 ? (
+            {entries.length > 0 || editorial ? (
               <div className="settings-memento-section__rows">
+                {editorial ? <MementoEditorialRow editorial={editorial} /> : null}
                 {entries.map((entry) => (
                   <MementoEntryRow key={entry.key} entry={entry} />
                 ))}

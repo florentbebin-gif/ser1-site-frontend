@@ -10,6 +10,11 @@ export {
 } from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
 export {
+  MEMENTO_EDITORIAL,
+  MEMENTO_EDITORIAL_BY_CHAPTER,
+  type MementoChapterEditorial,
+} from './editorial';
+export {
   MEMENTO_LEXICON_SENSITIVITY_VALUES,
   MEMENTO_LEXICON_STATUS_VALUES,
   MEMENTO_LEXICON_TERMS,
