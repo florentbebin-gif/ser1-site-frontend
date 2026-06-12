@@ -30,7 +30,7 @@ export type SettingsReferenceStatus = 'complete' | 'a-completer';
 export type SettingsMillesime = `${number}` | 'a-renseigner-avant-codage';
 
 export type SettingsOwnerPagePath =
-  | '/settings/impots'
+  | '/settings/memento'
   | '/settings/comptables-societes'
   | '/settings/prelevements'
   | '/settings/dmtg-succession'

@@ -23,7 +23,7 @@ const validEntry = (overrides: Partial<MementoEntry> = {}): MementoEntry => ({
   status: 'couvert',
   statusReason: 'Sources officielles connues via le chaînage settings existant.',
   priority: 'critique',
-  ownerPagePath: '/settings/impots',
+  ownerPagePath: '/settings/memento',
   registryKeys: ['impots.ir.bareme'],
   claimKeys: ['income-tax-scale-current'],
   refIds: [],

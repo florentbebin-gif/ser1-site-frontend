@@ -113,7 +113,7 @@ export const MEMENTO_EPARGNE_RETRAITE_ENTRIES = [
     statusReason:
       'Le simulateur actif est rattaché aux settings IR et au ruleset PER centralisé ; les claims d’abattement pensions et PERIN cadrent la fiscalité consommée.',
     priority: 'critique',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'impots.ir.bareme',
       'impots.ir.abattements-et-decote',

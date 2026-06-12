@@ -4,6 +4,7 @@ import {
   SETTINGS_ROUTES,
   getActiveSettingsKey,
   getVisibleSettingsRoutes,
+  isDeclaredSettingsPath,
   type SettingsRouteEntry,
 } from '../routes/settingsRoutes';
 import '@/styles/sim/index.css';
@@ -24,11 +25,20 @@ export default function SettingsShell(): React.ReactElement {
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      window.location.pathname.startsWith('/settings/fiscalites')
-    ) {
+    if (typeof window === 'undefined') return;
+
+    if (window.location.pathname.startsWith('/settings/fiscalites')) {
       window.history.replaceState({}, '', '/settings/base-contrat');
+      setActiveTab('baseContrats');
+      return;
+    }
+
+    if (
+      window.location.pathname.startsWith('/settings/') &&
+      !isDeclaredSettingsPath(window.location.pathname)
+    ) {
+      window.history.replaceState({}, '', '/settings/memento');
+      setActiveTab('memento');
     }
   }, []);
 

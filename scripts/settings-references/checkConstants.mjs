@@ -1,5 +1,5 @@
 export const SETTINGS_PAGES = new Set([
-  '/settings/impots',
+  '/settings/memento',
   '/settings/comptables-societes',
   '/settings/prelevements',
   '/settings/base-contrat',
@@ -8,7 +8,7 @@ export const SETTINGS_PAGES = new Set([
 ]);
 
 export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = {
-  '/settings/impots': 10,
+  '/settings/memento': 10,
   '/settings/comptables-societes': 1,
   '/settings/prelevements': 5,
   '/settings/base-contrat': null,

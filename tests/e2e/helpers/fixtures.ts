@@ -18,5 +18,5 @@ export const ROUTES = {
   audit: '/audit',
   strategy: '/strategy',
   settings: '/settings',
-  settingsImpots: '/settings/impots',
+  settingsMemento: '/settings/memento',
 } as const;

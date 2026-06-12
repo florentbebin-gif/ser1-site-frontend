@@ -3,12 +3,13 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MementoEntry, MementoStatus } from '@/domain/settings-memento';
 import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
 import {
   getActiveSettingsKey,
+  isDeclaredSettingsPath,
   getVisibleSettingsRoutes,
   SETTINGS_ROUTES,
 } from '@/routes/settingsRoutes';
@@ -22,6 +23,8 @@ import {
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
 
+const fromMock = vi.hoisted(() => vi.fn());
+
 const ENTRY_COUVERTE: MementoEntry = {
   chapterId: 'fiscalite-foyer',
   key: 'fiscalite-foyer.ir',
@@ -30,13 +33,56 @@ const ENTRY_COUVERTE: MementoEntry = {
   status: 'couvert',
   statusReason: 'Sources officielles déjà portées par le registre settings.',
   priority: 'critique',
-  ownerPagePath: '/settings/impots',
+  ownerPagePath: '/settings/memento',
   registryKeys: [],
   claimKeys: ['ir.bareme'],
   refIds: [],
   coverageSources: [],
   relatedSimulatorIds: ['ir'],
 };
+
+function makeSettingsBuilder() {
+  const listResult = { data: [], error: null };
+  const singleResult = { data: null, error: { code: 'PGRST116' } };
+  const writeResult = { data: null, error: null };
+
+  const builder = {} as {
+    select: () => typeof builder;
+    eq: () => typeof builder;
+    maybeSingle: () => Promise<typeof singleResult>;
+    upsert: () => Promise<typeof writeResult>;
+    then: PromiseLike<typeof listResult>['then'];
+  };
+
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.maybeSingle = vi.fn(() => Promise.resolve(singleResult));
+  builder.upsert = vi.fn(() => Promise.resolve(writeResult));
+  builder.then = (onFulfilled, onRejected) =>
+    Promise.resolve(listResult).then(onFulfilled, onRejected);
+
+  return builder;
+}
+
+vi.mock('@/auth/useUserRole', () => ({
+  useUserRole: () => ({
+    role: 'admin',
+    user: null,
+    isAdmin: true,
+    isLoading: false,
+  }),
+}));
+
+vi.mock('@/supabaseClient', () => ({
+  supabase: {
+    from: fromMock,
+  },
+}));
+
+vi.mock('@/utils/cache/fiscalSettingsCache', () => ({
+  invalidate: vi.fn(),
+  broadcastInvalidation: vi.fn(),
+}));
 
 const entryWithStatus = (status: MementoStatus): MementoEntry => ({
   ...ENTRY_COUVERTE,
@@ -90,6 +136,10 @@ describe('route settings mémento', () => {
     expect(mementoIndex).toBe(generalIndex + 1);
     expect(getVisibleSettingsRoutes(false).some((entry) => entry.key === 'memento')).toBe(true);
     expect(getActiveSettingsKey('/settings/memento')).toBe('memento');
+    expect(getActiveSettingsKey('/settings/impots')).toBe('memento');
+    expect(isDeclaredSettingsPath('/settings/impots')).toBe(false);
+    expect(isDeclaredSettingsPath('/settings/memento-old')).toBe(false);
+    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/impots')).toBe(false);
   });
 });
 
@@ -126,10 +176,13 @@ describe('contrat de migration settings vers mémento', () => {
     expect(new Set(targetSectionKeys).size).toBe(targetSectionKeys.length);
   });
 
-  it('conserve les routes source et cible pendant M0', () => {
+  it('retire la route Impôts et conserve les autres routes sources avant leurs PR dédiées', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
+    expect(routePaths).not.toContain('/settings/impots');
 
-    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS) {
+    for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS.filter(
+      (candidate) => candidate.id !== 'impots',
+    )) {
       expect(routePaths, section.id).toContain(section.legacyPagePath);
     }
   });
@@ -178,7 +231,7 @@ describe('MementoEntryRow', () => {
 
     expect(screen.getByRole('link', { name: /ouvrir la page propriétaire/i })).toHaveAttribute(
       'href',
-      '/settings/impots',
+      '/settings/memento',
     );
   });
 
@@ -188,12 +241,17 @@ describe('MementoEntryRow', () => {
       const { container } = render(<MementoEntryRow entry={entryWithStatus(status)} />);
 
       expect(container.querySelectorAll('a, button')).toHaveLength(0);
-      expect(screen.getAllByText('Impôts').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Mémento').length).toBeGreaterThan(0);
     },
   );
 });
 
 describe('SettingsMemento', () => {
+  beforeEach(() => {
+    fromMock.mockReset();
+    fromMock.mockImplementation(() => makeSettingsBuilder());
+  });
+
   it('rend les chapitres fermés par défaut sans exposer les lignes techniques', () => {
     const { container } = render(<SettingsMemento />);
 
@@ -243,6 +301,23 @@ describe('SettingsMemento', () => {
     await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(screen.getByTestId('memento-coverage-ir')).toBeInTheDocument();
+  });
+
+  it('rend les paramètres Impôts depuis le sous-accordéon du mémento', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, 'Paramètres calculateurs');
+
+    expect(await screen.findByText('Registre settings impôts')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /PFU/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Impôt sur la fortune immobilière/i }),
+    ).toBeInTheDocument();
   });
 
   it('n’affiche aucune source externe protégée ni PDF externe', async () => {

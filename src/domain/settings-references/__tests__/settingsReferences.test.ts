@@ -6,13 +6,13 @@ describe('settings-references', () => {
   it('expose le registre canonique et le filtre par page', () => {
     expect(SETTINGS_REFERENCE_CHAIN.length).toBeGreaterThan(0);
 
-    const impotsBindings = listSettingsReferenceBindings('/settings/impots');
+    const impotsBindings = listSettingsReferenceBindings('/settings/memento');
     const comptablesSocietesBindings = listSettingsReferenceBindings(
       '/settings/comptables-societes',
     );
 
     expect(impotsBindings.length).toBeGreaterThan(0);
-    expect(impotsBindings.every((binding) => binding.pagePath === '/settings/impots')).toBe(true);
+    expect(impotsBindings.every((binding) => binding.pagePath === '/settings/memento')).toBe(true);
     expect(comptablesSocietesBindings.map((binding) => binding.claimKey)).toEqual([
       'corporate-tax-current',
     ]);

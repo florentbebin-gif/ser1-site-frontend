@@ -6,12 +6,12 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     key: 'fiscalite-foyer.ir',
     label: 'Impôt sur le revenu du foyer',
     description:
-      'Barème progressif, quotient familial, décote, contributions sur hauts revenus et part IR du PFU administrés par la page Impôts et consommés via la chaîne fiscale.',
+      'Barème progressif, quotient familial, décote, contributions sur hauts revenus et part IR du PFU administrés dans le mémento et consommés via la chaîne fiscale.',
     status: 'couvert',
     statusReason:
-      'Paramètres administrés et sourcés via les claims settings-references de la page Impôts ; simulateur IR actif.',
+      'Paramètres administrés dans la section Fiscalité du foyer, sourcés via settings-references ; simulateur IR actif.',
     priority: 'critique',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'impots.ir.bareme',
       'impots.ir.abattements-et-decote',
@@ -54,7 +54,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     statusReason:
       'Seuls les montants saisis manuellement dans le simulateur IR sont reflétés ; aucun paramètre dédié n’est centralisé dans le registry settings.',
     priority: 'utile',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['boi-ir-rici', 'boi-ir-rici-200'],
@@ -66,12 +66,12 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     key: 'fiscalite-foyer.ifi',
     label: 'IFI',
     description:
-      'Imposition de la fortune immobilière : barème administré par la page Impôts, biens imposables et dettes lus par les analyses patrimoniales.',
+      'Imposition de la fortune immobilière : barème administré dans le mémento, biens imposables et dettes lus par les analyses patrimoniales.',
     status: 'partiel',
     statusReason:
       'Barème courant administré et sourcé ; millésimes encore planifiés côté registry, simulateur IFI non livré et valorisation du démembrement fondée par le barème usufruit commun.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['impots.ifi.bareme', 'impots.ifi.millesimes'],
     claimKeys: ['ifi-current'],
     refIds: [
@@ -94,7 +94,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     statusReason:
       'Aucun claim ni référence repo sur ce périmètre ; taux minimum, retenues à la source et lecture IFI des non-résidents doivent être qualifiés sur une source officielle avant tout affichage opérationnel.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
