@@ -9,12 +9,9 @@ import {
 } from 'react';
 
 import { SettingsIcon } from '@/components/settings/SettingsTitleWithIcon';
-import type {
-  MementoChapter,
-  MementoChapterEditorial,
-  MementoEntry,
-  SimulatorCoverageEntry,
-} from '@/domain/settings-memento';
+import type { MementoChapter, MementoEntry } from '@/domain/settings-memento/types';
+import type { MementoChapterEditorial } from '@/domain/settings-memento/editorial';
+import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 
 import MementoEntryRow from './MementoEntryRow';
 import MementoEditorialRow from './MementoEditorialRow';

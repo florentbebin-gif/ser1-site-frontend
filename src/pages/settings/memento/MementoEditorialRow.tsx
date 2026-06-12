@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import type { MementoChapterEditorial } from '@/domain/settings-memento';
+import type { MementoChapterEditorial } from '@/domain/settings-memento/editorial';
 
 export default function MementoEditorialRow({
   editorial,

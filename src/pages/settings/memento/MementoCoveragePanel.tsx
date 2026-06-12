@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-import type { SimulatorCoverageEntry } from '@/domain/settings-memento';
+import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 import { getSettingsRegistryEntry, type SettingsOwnerPagePath } from '@/domain/settings-registry';
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 import type { SimulatorDefinition, SimulatorLifecycle } from '@/domain/simulators/types';

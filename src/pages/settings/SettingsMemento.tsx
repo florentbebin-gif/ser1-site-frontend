@@ -1,24 +1,25 @@
 import { useMemo, useState, type ReactElement } from 'react';
 
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
+import { MEMENTO_CHAPTERS } from '@/domain/settings-memento/chapters';
+import {
+  MEMENTO_EDITORIAL_BY_CHAPTER,
+  type MementoChapterEditorial,
+} from '@/domain/settings-memento/editorial';
+import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
+import { MEMENTO_USER_INTENTS, chaptersForIntent } from '@/domain/settings-memento/intents';
+import { SIMULATOR_MEMENTO_COVERAGE } from '@/domain/settings-memento/simulatorCoverageData';
+import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 import {
   MEMENTO_BUSINESS_PRIORITY_VALUES,
-  MEMENTO_CHAPTERS,
-  MEMENTO_EDITORIAL_BY_CHAPTER,
-  MEMENTO_ENTRIES,
   MEMENTO_STATUS_VALUES,
-  MEMENTO_USER_INTENTS,
-  SIMULATOR_MEMENTO_COVERAGE,
-  chaptersForIntent,
   type MementoBusinessPriority,
   type MementoChapter,
-  type MementoChapterEditorial,
   type MementoChapterId,
   type MementoEntry,
   type MementoStatus,
   type MementoUserIntent,
-  type SimulatorCoverageEntry,
-} from '@/domain/settings-memento';
+} from '@/domain/settings-memento/types';
 
 import MementoChapterSection from './memento/MementoChapterSection';
 import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './memento/MementoEntryRow';
