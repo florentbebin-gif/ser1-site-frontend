@@ -15,12 +15,7 @@ import {
 } from '../index';
 import type { SettingsRegistryEntry } from '../types';
 
-const CORE_SETTINGS_PAGE_PATHS = new Set([
-  '/settings/impots',
-  '/settings/comptables-societes',
-  '/settings/prelevements',
-  '/settings/dmtg-succession',
-]);
+const CORE_SETTINGS_PAGE_PATHS = new Set(['/settings/memento']);
 
 describe('settings-registry', () => {
   it('valide le contrat transverse du registry', () => {
@@ -116,6 +111,13 @@ describe('settings-registry', () => {
     const orphanOwnerClaims = SETTINGS_REFERENCE_CHAIN.filter((binding) =>
       CORE_SETTINGS_PAGE_PATHS.has(binding.pagePath),
     )
+      // Les claims Base-Contrat sont générés depuis le catalogue et les règles,
+      // puis vérifiés dynamiquement par check:settings-references.
+      // Les claims prévoyance sont portés par les lignes Supabase auditées avec audit:settings-references.
+      .filter(
+        (binding) =>
+          binding.target.kind !== 'base-contrat-rule' && binding.target.kind !== 'prevoyance-db',
+      )
       .filter((binding) => !declaredClaimsByOwner.has(`${binding.pagePath}:${binding.claimKey}`))
       .map((binding) => `${binding.pagePath}:${binding.claimKey}`);
 

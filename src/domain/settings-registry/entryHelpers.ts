@@ -65,7 +65,4 @@ export const plannedValidation = {
   requiredBeforeConsumption: true,
 } as const;
 
-export const ownerImpots: SettingsOwnerPagePath = '/settings/impots';
-export const ownerComptables: SettingsOwnerPagePath = '/settings/comptables-societes';
-export const ownerPrelevements: SettingsOwnerPagePath = '/settings/prelevements';
-export const ownerDmtg: SettingsOwnerPagePath = '/settings/dmtg-succession';
+export const ownerMemento: SettingsOwnerPagePath = '/settings/memento';

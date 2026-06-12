@@ -11,7 +11,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La registry expose déjà PASS, prélèvements sociaux retraite et seuils RFR ; le simulateur retraite reste planifié et aucun modèle générationnel n’est livré.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.ps-retraite',
       'retraite-prevoyance.seuils-rfr',
@@ -20,7 +20,12 @@ export const MEMENTO_RETRAITE_ENTRIES = [
       'retraite-prevoyance.validation-retraite-600-smic',
     ],
     claimKeys: ['retirement-current-brackets', 'retirement-thresholds-current', 'pass-latest'],
-    refIds: ['assurance-retraite-age-taux-plein', 'urssaf-pass-2026', 'ameli-pass-2026'],
+    refIds: [
+      'assurance-retraite-age-taux-plein',
+      'css-l351-3',
+      'urssaf-pass-2026',
+      'ameli-pass-2026',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite'],
   },
@@ -34,10 +39,10 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La source Assurance retraite qualifie le cadrage du régime général ; SER1 ne livre pas encore de moteur de droits salariés.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.pass'],
     claimKeys: ['pass-latest'],
-    refIds: ['assurance-retraite-age-taux-plein'],
+    refIds: ['assurance-retraite-age-taux-plein', 'css-l351-3'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite'],
   },
@@ -51,7 +56,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'Les sources CSS et Assurance retraite qualifient les principaux dispositifs ; aucun moteur multi-carrière n’est livré.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.pass',
       'retraite-prevoyance.cotisations-retraite',
@@ -78,7 +83,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'Les sources Assurance retraite et CSS cadrent le sujet ; SER1 ne calcule pas encore les effets par carrière.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: ['assurance-retraite-age-taux-plein', 'css-l351-1-l351-17'],
@@ -95,7 +100,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La pension de réversion est qualifiée par les sources CSS et Assurance retraite ; le calcul des ressources reste hors lot.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: ['css-l353-1', 'assurance-retraite-pension-reversion'],
@@ -112,7 +117,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La source AGIRC-ARRCO qualifie le principe des points ; les valeurs, tranches et calculs restent hors lot.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: ['agirc-arrco-points-retraite'],
@@ -129,7 +134,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'Les sources sociales du dirigeant et les sources retraite de base et complémentaire sont identifiées ; l’articulation rémunération-droits reste à livrer.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'social-dirigeant.charges-sociales',
       'retraite-prevoyance.cotisations-retraite',
@@ -152,15 +157,20 @@ export const MEMENTO_RETRAITE_ENTRIES = [
       'Droits retraite obligatoires des artisans, commerçants et indépendants rattachés au régime général.',
     status: 'partiel',
     statusReason:
-      'Les sources Service-Public et URSSAF cadrent la retraite de l’entrepreneur individuel ; les règles CSS détaillées restent à qualifier.',
+      'Les sources Service-Public, URSSAF et CSS cadrent la retraite de l’entrepreneur individuel ; le moteur détaillé reste à construire.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.cotisations-retraite',
       'retraite-prevoyance.validation-retraite-600-smic',
     ],
     claimKeys: [],
-    refIds: ['entreprendre-service-public-retraite-ei', 'urssaf-independant-droits-retraite'],
+    refIds: [
+      'entreprendre-service-public-retraite-ei',
+      'urssaf-independant-droits-retraite',
+      'css-l633-1',
+      'css-l635-1',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite', 'remuneration'],
   },
@@ -172,15 +182,21 @@ export const MEMENTO_RETRAITE_ENTRIES = [
       'Socle retraite des professions libérales réglementées, avec régime de base commun et régimes complémentaires par section.',
     status: 'partiel',
     statusReason:
-      'Les sources CNAVPL et Service-Public qualifient le socle ; les articles CSS et chaque section professionnelle restent à qualifier.',
+      'Les sources CNAVPL, Service-Public et CSS qualifient le socle ; chaque section professionnelle reste à modéliser caisse par caisse.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.cotisations-retraite',
       'retraite-prevoyance.validation-retraite-600-smic',
     ],
     claimKeys: [],
-    refIds: ['cnavpl-retraite-liberaux', 'entreprendre-service-public-retraite-ei'],
+    refIds: [
+      'cnavpl-retraite-liberaux',
+      'entreprendre-service-public-retraite-ei',
+      'css-l641-1',
+      'css-l643-1',
+      'css-d643-1',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite', 'remuneration'],
   },
@@ -190,14 +206,20 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     label: 'Caisses santé libérales',
     description:
       'Retraite des professionnels de santé libéraux, à rattacher aux caisses professionnelles concernées.',
-    status: 'a_verifier',
+    status: 'partiel',
     statusReason:
-      'CARMF, CARCDSF, CARPIMKO, CAVP et CARPV doivent être qualifiées caisse par caisse avant statut partiel.',
+      'CARMF, CARCDSF, CARPIMKO, CAVP et CARPV sont sourcées caisse par caisse ; aucun calcul de liquidation par profession n’est livré.',
     priority: 'utile',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
-    refIds: [],
+    refIds: [
+      'carmf-retraite',
+      'carcdsf-regimes-retraite',
+      'carpimko-retraite',
+      'cavp-retraite',
+      'carpv-statuts-retraite-prevoyance',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite', 'remuneration'],
   },
@@ -211,7 +233,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La source CIPAV qualifie l’affiliation et les droits à cadrer ; les règles de liquidation et de réversion restent hors lot.',
     priority: 'utile',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: ['lacipav-affiliation-retraite'],
@@ -228,7 +250,7 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     statusReason:
       'La source MSA qualifie l’entrée retraite agricole ; le détail salarié, exploitant et règles agricoles reste à qualifier.',
     priority: 'utile',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: ['msa-retraite'],
@@ -241,15 +263,43 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     label: 'Autres caisses libérales',
     description:
       'Retraite des professions libérales non santé, dont droit, conseil, assurance et officiers ministériels.',
-    status: 'a_verifier',
+    status: 'partiel',
     statusReason:
-      'CAVEC, CAVAMAC, CNBF, CPRN et autres caisses non santé restent à qualifier caisse par caisse.',
+      'CAVEC, CAVAMAC, CNBF, CPRN et CAVOM sont sourcées ; aucun moteur ne liquide encore les régimes complémentaires par caisse.',
     priority: 'utile',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
-    refIds: [],
+    refIds: [
+      'cavec-retraite-complementaire',
+      'cavamac-retraite',
+      'cnbf-institution-retraite-prevoyance',
+      'cprn-affiliation-obligatoire',
+      'cavom-retraite',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite', 'remuneration'],
+  },
+  {
+    chapterId: 'retraite',
+    key: 'retraite.fonction-publique',
+    label: 'Fonction publique',
+    description:
+      'Retraite des agents publics, à séparer du régime général, des indépendants et des caisses libérales.',
+    status: 'planned',
+    statusReason:
+      'SRE, CNRACL, IRCANTEC et RAFP sont sourcés pour le cadrage ; aucun modèle fonction publique ni réglage dédié n’est livré.',
+    priority: 'utile',
+    ownerPagePath: '/settings/memento',
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [
+      'code-pensions-civiles-militaires-l24',
+      'service-public-retraite-agent-public',
+      'service-public-rafp',
+      'service-public-ircantec-contractuel',
+    ],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['retraite'],
   },
 ] as const satisfies readonly MementoEntry[];

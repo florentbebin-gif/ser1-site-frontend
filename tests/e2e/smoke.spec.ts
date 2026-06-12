@@ -212,9 +212,22 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.settings);
     await expect(page.locator('.settings-page')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
-    await page.getByRole('button', { name: 'Impôts', exact: true }).click();
-    await expect(page).toHaveURL(/\/settings\/impots$/);
-    await expect(page.getByRole('button', { name: 'Impôts', exact: true })).toHaveClass(
+    await expect(page.getByRole('button', { name: 'Impôts', exact: true })).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Comptables & sociétés', exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Référentiel contrats', exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'DMTG & Succession', exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole('button', { name: 'Prévoyance — régimes', exact: true }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Mémento', exact: true }).click();
+    await expect(page).toHaveURL(/\/settings\/memento$/);
+    await expect(page.getByRole('button', { name: 'Mémento', exact: true })).toHaveClass(
       /is-active/,
     );
   });

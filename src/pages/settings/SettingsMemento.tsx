@@ -1,28 +1,34 @@
 import { useMemo, useState, type ReactElement } from 'react';
 
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
-import { SimSegmentedControl } from '@/components/ui/sim';
+import { MEMENTO_CHAPTERS } from '@/domain/settings-memento/chapters';
+import {
+  MEMENTO_EDITORIAL_BY_CHAPTER,
+  type MementoChapterEditorial,
+} from '@/domain/settings-memento/editorial';
+import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
+import { MEMENTO_USER_INTENTS, chaptersForIntent } from '@/domain/settings-memento/intents';
+import { SIMULATOR_MEMENTO_COVERAGE } from '@/domain/settings-memento/simulatorCoverageData';
+import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 import {
   MEMENTO_BUSINESS_PRIORITY_VALUES,
-  MEMENTO_CHAPTERS,
-  MEMENTO_ENTRIES,
   MEMENTO_STATUS_VALUES,
-  MEMENTO_USER_INTENTS,
-  SIMULATOR_MEMENTO_COVERAGE,
-  chaptersForIntent,
   type MementoBusinessPriority,
   type MementoChapter,
   type MementoChapterId,
   type MementoEntry,
   type MementoStatus,
   type MementoUserIntent,
-  type SimulatorCoverageEntry,
-} from '@/domain/settings-memento';
+} from '@/domain/settings-memento/types';
 
 import MementoChapterSection from './memento/MementoChapterSection';
 import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './memento/MementoEntryRow';
+import {
+  getMementoSettingsSection,
+  type MementoSettingsSection,
+  type MementoSettingsSectionId,
+} from './memento/mementoSettingsSections';
 
-type MementoViewMode = 'metier' | 'audit';
 type StatusFilter = 'all' | MementoStatus;
 type ChapterFilter = 'all' | MementoChapterId;
 type PriorityFilter = 'all' | MementoBusinessPriority;
@@ -32,14 +38,27 @@ interface FilteredChapter {
   chapter: MementoChapter;
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
+  settingsSections: readonly MementoSettingsSection[];
+  editorial: MementoChapterEditorial | null;
 }
 
 const MEMENTO_ENTRY_LIST: readonly MementoEntry[] = MEMENTO_ENTRIES;
 const SIMULATOR_COVERAGE_LIST: readonly SimulatorCoverageEntry[] = SIMULATOR_MEMENTO_COVERAGE;
-const MEMENTO_VIEW_OPTIONS = [
-  { value: 'metier', label: 'Vue métier' },
-  { value: 'audit', label: 'Audit coverage' },
-] satisfies { value: MementoViewMode; label: string }[];
+
+const MEMENTO_CHAPTER_SETTINGS_SECTION_IDS: Partial<
+  Record<MementoChapterId, readonly MementoSettingsSectionId[]>
+> = {
+  'fiscalite-foyer': ['impots'],
+  transmission: ['dmtg-succession'],
+  placements: ['base-contrat'],
+  immobilier: ['base-contrat'],
+  retraite: ['prelevements'],
+  'epargne-retraite': ['base-contrat'],
+  prevoyance: ['prevoyance-regimes', 'base-contrat'],
+  societe: ['comptables-societes'],
+  dirigeant: ['prelevements', 'comptables-societes'],
+  'transmission-entreprise': ['comptables-societes', 'base-contrat'],
+};
 
 function normalizeSearchText(value: string): string {
   return value
@@ -88,6 +107,17 @@ function coverageMatchesSearch(entry: SimulatorCoverageEntry, search: string): b
   ).includes(search);
 }
 
+function editorialMatchesSearch(
+  editorial: MementoChapterEditorial | null,
+  search: string,
+): boolean {
+  if (!editorial) return false;
+  if (!search) return true;
+  return normalizeSearchText([editorial.summary, ...editorial.keyPoints].join(' ')).includes(
+    search,
+  );
+}
+
 function entryMatchesFilters(
   entry: MementoEntry,
   chapter: MementoChapter,
@@ -121,8 +151,15 @@ function chapterMatchesFilters(
   return intentChapterIds === null || intentChapterIds.has(chapter.id);
 }
 
+function settingsSectionsForChapter(
+  chapterId: MementoChapterId,
+): readonly MementoSettingsSection[] {
+  return (MEMENTO_CHAPTER_SETTINGS_SECTION_IDS[chapterId] ?? []).map((sectionId) =>
+    getMementoSettingsSection(sectionId),
+  );
+}
+
 function buildFilteredChapters(
-  viewMode: MementoViewMode,
   searchValue: string,
   statusFilter: StatusFilter,
   chapterFilter: ChapterFilter,
@@ -132,59 +169,72 @@ function buildFilteredChapters(
   const search = normalizeSearchText(searchValue);
   const intentChapterIds =
     intentFilter === 'all' ? null : new Set<MementoChapterId>(chaptersForIntent(intentFilter));
+  const hasContentFilter = search !== '' || statusFilter !== 'all' || priorityFilter !== 'all';
 
   return MEMENTO_CHAPTERS.map((chapter) => {
     if (!chapterMatchesFilters(chapter, chapterFilter, intentChapterIds)) {
-      return { chapter, entries: [], coverage: [] };
+      return { chapter, entries: [], coverage: [], settingsSections: [], editorial: null };
     }
 
-    const entries =
-      viewMode === 'metier'
-        ? MEMENTO_ENTRY_LIST.filter(
-            (entry) =>
-              entry.chapterId === chapter.id &&
-              entryMatchesFilters(entry, chapter, search, statusFilter, priorityFilter),
-          )
-        : [];
-    const coverage =
-      viewMode === 'audit'
-        ? SIMULATOR_COVERAGE_LIST.filter(
-            (entry) =>
-              entry.chapterId === chapter.id &&
-              coverageMatchesFilters(entry, chapter, search, statusFilter),
-          )
-        : [];
+    const editorial = MEMENTO_EDITORIAL_BY_CHAPTER.get(chapter.id) ?? null;
+    const entries = MEMENTO_ENTRY_LIST.filter(
+      (entry) =>
+        entry.chapterId === chapter.id &&
+        entryMatchesFilters(entry, chapter, search, statusFilter, priorityFilter),
+    );
+    const coverage = SIMULATOR_COVERAGE_LIST.filter(
+      (entry) =>
+        entry.chapterId === chapter.id &&
+        coverageMatchesFilters(entry, chapter, search, statusFilter),
+    );
+    const settingsSections = settingsSectionsForChapter(chapter.id);
+    const editorialVisible =
+      statusFilter === 'all' &&
+      priorityFilter === 'all' &&
+      (search === '' ||
+        editorialMatchesSearch(editorial, search) ||
+        normalizeSearchText(chapter.label).includes(search));
 
-    return { chapter, entries, coverage };
-  }).filter(({ entries, coverage }) => entries.length + coverage.length > 0);
+    return {
+      chapter,
+      entries,
+      coverage,
+      settingsSections,
+      editorial: editorialVisible ? editorial : null,
+    };
+  }).filter(
+    ({ entries, coverage, settingsSections, editorial }) =>
+      entries.length + coverage.length > 0 ||
+      editorial !== null ||
+      (!hasContentFilter && settingsSections.length > 0),
+  );
 }
 
-function formatVisibleRowCount(count: number): string {
-  return `${count} ligne${count > 1 ? 's' : ''} visible${count > 1 ? 's' : ''}`;
+function formatHeroCount(entryCount: number, coverageCount: number): string {
+  const entryLabel = `${entryCount} entrée${entryCount > 1 ? 's' : ''}`;
+  const coverageLabel = `${coverageCount} contrôle${coverageCount > 1 ? 's' : ''}`;
+  return `${entryLabel} métier · ${coverageLabel}`;
 }
 
 export default function SettingsMemento(): ReactElement {
-  const [viewMode, setViewMode] = useState<MementoViewMode>('metier');
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [chapterFilter, setChapterFilter] = useState<ChapterFilter>('all');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
   const [intentFilter, setIntentFilter] = useState<IntentFilter>('all');
+  const [openChapterId, setOpenChapterId] = useState<MementoChapterId | null>(null);
 
   const filteredChapters = useMemo(
     () =>
-      buildFilteredChapters(
-        viewMode,
-        searchValue,
-        statusFilter,
-        chapterFilter,
-        priorityFilter,
-        intentFilter,
-      ),
-    [chapterFilter, intentFilter, priorityFilter, searchValue, statusFilter, viewMode],
+      buildFilteredChapters(searchValue, statusFilter, chapterFilter, priorityFilter, intentFilter),
+    [chapterFilter, intentFilter, priorityFilter, searchValue, statusFilter],
   );
-  const visibleRowCount = filteredChapters.reduce(
-    (total, section) => total + section.entries.length + section.coverage.length,
+  const visibleEntryCount = filteredChapters.reduce(
+    (total, section) => total + section.entries.length,
+    0,
+  );
+  const visibleCoverageCount = filteredChapters.reduce(
+    (total, section) => total + section.coverage.length,
     0,
   );
 
@@ -199,35 +249,20 @@ export default function SettingsMemento(): ReactElement {
               </SettingsTitleWithIcon>
             </h2>
             <p className="settings-premium-subtitle">
-              Lecture métier par intention et contrôle technique de couverture, sans porter de
-              valeurs fiscales ou sociales.
+              Lecture courte par domaine, raccordée aux paramètres qui alimentent les simulateurs.
+              Les valeurs restent dans les sources centralisées.
             </p>
           </div>
           <div className="settings-memento-hero__meta" aria-live="polite">
-            {formatVisibleRowCount(visibleRowCount)}
+            {formatHeroCount(visibleEntryCount, visibleCoverageCount)}
           </div>
         </div>
       </section>
 
-      <section className="settings-premium-card settings-memento-filters" aria-label="Filtres">
-        <div className="settings-memento-view-switch">
-          <div className="settings-memento-view-switch__text">
-            <span>Lecture</span>
-            <strong>
-              {viewMode === 'metier'
-                ? 'Entrées métier, priorités et rattachements utiles au CGP'
-                : 'Coverage technique, lifecycles et routes propriétaires'}
-            </strong>
-          </div>
-          <SimSegmentedControl<MementoViewMode>
-            value={viewMode}
-            options={MEMENTO_VIEW_OPTIONS}
-            onChange={setViewMode}
-            ariaLabel="Mode de lecture du mémento"
-            size="sm"
-          />
-        </div>
-
+      <section
+        className="settings-premium-card settings-memento-filters"
+        aria-label="Filtres du mémento"
+      >
         <label className="settings-memento-filter" htmlFor="settings-memento-search">
           <span>Recherche mémento</span>
           <input
@@ -271,23 +306,21 @@ export default function SettingsMemento(): ReactElement {
           </select>
         </label>
 
-        {viewMode === 'metier' && (
-          <label className="settings-memento-filter" htmlFor="settings-memento-priority">
-            <span>Priorité métier</span>
-            <select
-              id="settings-memento-priority"
-              value={priorityFilter}
-              onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}
-            >
-              <option value="all">Toutes les priorités</option>
-              {MEMENTO_BUSINESS_PRIORITY_VALUES.map((priority) => (
-                <option key={priority} value={priority}>
-                  {MEMENTO_PRIORITY_LABELS[priority]}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        <label className="settings-memento-filter" htmlFor="settings-memento-priority">
+          <span>Priorité métier</span>
+          <select
+            id="settings-memento-priority"
+            value={priorityFilter}
+            onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}
+          >
+            <option value="all">Toutes les priorités</option>
+            {MEMENTO_BUSINESS_PRIORITY_VALUES.map((priority) => (
+              <option key={priority} value={priority}>
+                {MEMENTO_PRIORITY_LABELS[priority]}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="settings-memento-filter" htmlFor="settings-memento-chapter">
           <span>Chapitre</span>
@@ -314,8 +347,14 @@ export default function SettingsMemento(): ReactElement {
               chapter={section.chapter}
               entries={section.entries}
               coverage={section.coverage}
-              viewMode={viewMode}
-              defaultOpen
+              settingsSections={section.settingsSections}
+              editorial={section.editorial}
+              isOpen={openChapterId === section.chapter.id}
+              onToggle={() =>
+                setOpenChapterId((current) =>
+                  current === section.chapter.id ? null : section.chapter.id,
+                )
+              }
             />
           ))
         ) : (

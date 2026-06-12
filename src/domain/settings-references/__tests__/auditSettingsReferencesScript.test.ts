@@ -104,7 +104,7 @@ function writeAuditRoot(root: string, officialUrl: string) {
     JSON.stringify(
       [
         {
-          pagePath: '/settings/impots',
+          pagePath: '/settings/memento',
           claimKey: 'fixture-http',
           refIds: ['demo-ref'],
           verifiedAt: '2026-01-01',

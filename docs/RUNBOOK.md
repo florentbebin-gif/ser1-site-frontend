@@ -62,7 +62,7 @@ Scripts ponctuels documentés :
 
 - `npm run audit:base-contrat-dmtg` : audit manuel ciblé Base-Contrat/DMTG, hors CI.
 - `npm run check:settings-references` : garde local du chaînage Settings ↔ références juridiques, branché dans `check:static`. Le registre est exhaustif ; le rapport liste les pages représentées, le nombre de bindings déclarés par page et `coverage.byPage[*].declared/expected`. `coverage.mode` doit rester `exhaustive` et `coverage.isExhaustive = true`.
-- `npm run check:memento-coverage` : garde Vitest du mémento patrimonial & social, branchée dans `check:static`. Le check réexécute la taxonomie, la couverture simulateurs, les invariants ownerPagePath ↔ `SETTINGS_ROUTES`, registres settings/références/simulateurs, lifecycles non couverts et route société canonique `/settings/comptables-societes`. En cas d'échec, corriger `src/domain/settings-memento/`, `src/routes/settingsRoutes.ts` ou le registre source concerné ; ne pas ajouter de script `.mjs` parallèle ni de valeur fiscale/sociale dans le mémento.
+- `npm run check:memento-coverage` : garde Vitest du mémento patrimonial & social, branchée dans `check:static`. Le check réexécute la taxonomie, la couverture simulateurs, les invariants ownerPagePath ↔ `SETTINGS_ROUTES`, registres settings/références/simulateurs, lifecycles non couverts et rattachement settings canonique à `/settings/memento`. En cas d'échec, corriger `src/domain/settings-memento/`, `src/routes/settingsRoutes.ts` ou le registre source concerné ; ne pas ajouter de script `.mjs` parallèle ni de valeur fiscale/sociale dans le mémento.
 - `npm run audit:settings-references -- --stale` : audit manuel de fraîcheur du chaînage Settings. Pour la liveness URL, `404`/`410` signifie URL morte et bloque l'audit ; `401`/`403`/`429` signifie URL non vérifiable automatiquement et reste un avertissement. Les timeouts, erreurs DNS et `5xx` sont inconclusifs, pas des preuves d'URL morte.
 - `npm run audit:settings-references -- --stale --with-db` : même audit avec lecture Supabase des sources prévoyance si une URL Supabase et une clé de lecture autorisée sont disponibles, ou avec `SUPABASE_ANON_KEY` + `E2E_EMAIL`/`E2E_PASSWORD` pour une lecture authentifiée. Ajouter `--fetch` force la liveness URL en CI ; ajouter `--write-supabase-report` écrit le dernier rapport dans `reference_audit_reports` avec une clé service role.
 - `npm run audit:css-usage` et `npm run audit:unicode` : diagnostics manuels de nettoyage, hors CI.
@@ -122,7 +122,7 @@ Pour ajouter une entrée mémento :
 
 **Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :
 
-1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements` ou `/settings/dmtg-succession`).
+1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/memento`).
 2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
 ### Sous-step : `check:raw-fiscal-usage`
@@ -642,7 +642,7 @@ Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare
 ### Que faire
 
 1. **Warning seul (notification)** → les résultats affichés sont calculés avec les paramètres fiscaux courants (post-update). Recalculer et re-sauvegarder le dossier pour remettre en cohérence l'identité fiscale stockée.
-2. **Vérifier les paramètres courants** : `/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements` et `/settings/dmtg-succession`.
+2. **Vérifier les paramètres courants** : `/settings/memento`.
 3. **Si recalcul impossible** (dossier archivé) : noter la date de sauvegarde et les paramètres fiscaux en vigueur à cette date pour toute comparaison.
 
 ### Debug
@@ -716,33 +716,33 @@ rg "user_metadata" supabase/migrations --type sql
 
 Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence technique requise — chaque étape est indépendante.
 
-### Étape 1 — Mettre à jour les paramètres Impôts
+### Étape 1 — Mettre à jour la fiscalité du foyer
 
-1. Aller sur `/settings/impots`.
+1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : barème IR, PFU part IR, CEHR/CDHR, IFI.
 3. Enregistrer.
 
-### Étape 1 bis — Mettre à jour les paramètres Comptables & sociétés
+### Étape 1 bis — Mettre à jour les paramètres société
 
-1. Aller sur `/settings/comptables-societes`.
+1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : taux IS, seuil du taux réduit, régime mère-fille, déductibilité CCA/dividendes.
 3. Enregistrer.
 
-### Étape 2 — Mettre à jour les Prélèvements sociaux
+### Étape 2 — Mettre à jour les paramètres sociaux
 
-1. Aller sur `/settings/prelevements`.
+1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : taux PS patrimoine (cas général et régime d'exception), tranches retraite et historique PASS (`pass_history`).
 3. Enregistrer.
 
 ### Étape 3 — Mettre à jour les DMTG / succession
 
-1. Aller sur `/settings/dmtg-succession`.
+1. Aller sur `/settings/memento`.
 2. Vérifier et corriger : barèmes DMTG, abattements, donations et paramètres AV décès.
 3. Enregistrer.
 
 ### Étape 4 — Vérifier les produits "À vérifier"
 
-1. Aller sur `/settings/base-contrat`.
+1. Aller sur `/settings/memento`.
 2. (Admin) Rechercher un produit et ajuster son état **Clôturé / Ouvert** si nécessaire.
    - Une clôture s'accompagne d'une **date** (et d'une note optionnelle).
 
@@ -761,7 +761,7 @@ npm run check:settings-references
 npm run audit:settings-references -- --stale
 ```
 
-5. Si la revue touche `/settings/prevoyance-regimes`, exporter d'abord l'état live en `.cache/`,
+5. Si la revue touche les sources prévoyance du mémento, exporter d'abord l'état live en `.cache/`,
    ajouter une migration idempotente, puis relancer avec les variables Supabase disponibles :
 
 ```powershell
@@ -773,11 +773,10 @@ Le job GitHub Actions hebdomadaire `Settings reference audit` lance cette varian
 une bannière uniquement aux admins connectés et seulement tant que ce rapport n'a pas été acquitté.
 Le navigateur ne relance jamais l'audit et ne contacte jamais directement les URLs Légifrance/BOFiP.
 
-`check:settings-references` est branché dans `check:static`. Les 6 surfaces
-`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements`, `/settings/base-contrat`,
-`/settings/dmtg-succession` et `/settings/prevoyance-regimes` doivent rester à
-`coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
-zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`
+`check:settings-references` est branché dans `check:static`. La surface `/settings/memento` doit
+rester à `coverage.byPage[*].expectedDefined = true`, `complete = true`,
+`coverage.isExhaustive = true` et zéro dette muette. Dans le scénario 2027,
+`npm run audit:settings-references -- --stale --with-db`
 sert à lister les claims périmés ou à vérifier. Pour les références `annual`, le blocage démarre au
 1er février de l'année suivant `verifiedAt` : une attestation 2026 devient donc bloquante le
 2027-02-01. Une liveness `blocked` impose une vérification manuelle Légifrance/BOFiP, mais ne prouve
@@ -796,7 +795,7 @@ garanties/cotisations ; l'audit DB doit refuser toute régression.
 
 ## Base-Contrat — Clôturer / rouvrir un produit
 
-La page `/settings/base-contrat` affiche un **catalogue hardcodé** et permet uniquement (admin) de :
+Le panneau Base-Contrat de `/settings/memento` affiche un **catalogue hardcodé** et permet uniquement (admin) de :
 
 - **Clôturer / rouvrir** un produit avec une date
 - Ajouter une **note admin** optionnelle

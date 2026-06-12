@@ -10,7 +10,7 @@ Dernière mise à jour : 2026-06-12.
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
 | PR 1 — Taxonomie mémento, statuts et gouvernance | `src/domain/settings-memento/` : types, 14 chapitres, validators, garde anti-valeurs                                                                                                                                                                                                                                                                                                | **Livrée** (PR #585, commit `adfde8ee`) |
 | PR 2 — Correspondance simulateurs → mémento      | `simulatorCoverage*` : 33 simulateurs registry + sous-types + ROADMAP-only                                                                                                                                                                                                                                                                                                          | **Livrée** (PR #586, commit `92cd5be6`) |
-| PR 3 — Route `/settings/memento` et hub UI V1    | Route, page hub lecture seule, e2e                                                                                                                                                                                                                                                                                                                                                  | **Livrée** (PR #587, commit `a8117ffb`) |
+| PR 3 — Route `/settings/memento` et UI V1        | Route, première page mémento, e2e                                                                                                                                                                                                                                                                                                                                                   | **Livrée** (PR #587, commit `a8117ffb`) |
 | PR 4 — Coverage adapter et audit mémento         | `coverage.ts`, `check:memento-coverage` branché dans `check:static`                                                                                                                                                                                                                                                                                                                 | **Livrée** (PR #588, commit `744dffb0`) |
 | PR 5 — Socle foyer                               | Premier contenu métier : filiation, régime matrimonial, donations antérieures, budget, actif-passif                                                                                                                                                                                                                                                                                 | **Livrée** (PR #590)                    |
 | PR 6 — Fiscalité foyer                           | IR, IFI, niches, revenus fonciers, LMNP/LMP, PV immobilières                                                                                                                                                                                                                                                                                                                        | **Livrée** (PR #591)                    |
@@ -24,6 +24,17 @@ Dernière mise à jour : 2026-06-12.
 | Lot R6 — Retraite obligatoire                    | Retraite globale, régime général, AGIRC-ARRCO, dirigeant assimilé salarié, SSI, CNAVPL, caisses santé, CIPAV, MSA et autres caisses libérales ; sources Assurance retraite, AGIRC-ARRCO, Service-Public, URSSAF, CNAVPL, CIPAV et MSA qualifiées quand elles existent, sans moteur retraite ni valeurs générationnelles                                                             | **Livrée**                              |
 | Lot R7 — Prévoyance et dispositifs transverses   | Dispositifs transverses retraite, réversion, Base CG retraite documentaire et prévoyance obligatoire ; cartographie caisses via `prevoyance.affiliation-caisses`, sources JSONB prévoyance préservées et audit `audit:settings-references -- --with-db` requis                                                                                                                      | **Livrée**                              |
 | Lot R8 — Épargne retraite et clôture             | PER, potentiel PER, transfert PER, article 83/PERO, Madelin, PERCOL/PERCO, fiscalité de sortie retraite, lexique sourcé et fraîcheur hebdomadaire des références Settings avec rapport Supabase + bannière Home admin dismissible                                                                                                                                                   | **Livrée**                              |
+
+### Clôture M0-M10 — décision finale
+
+- `/settings/memento` est la page unique du mémento utilisateur et des éditeurs fiscal/social.
+- Les éditeurs intégrés écrivent dans les tables Supabase existantes ; les calculateurs lisent
+  toujours par `fiscalSettingsCache`, `useFiscalContext` et `settingsDefaults`.
+- Aucune migration SQL de consolidation n'est nécessaire pour le regroupement des pages.
+- `/settings/base-contrat-retraite` reste séparée, car elle porte la base documentaire des
+  contrats retraite.
+- Les anciennes routes fiscal/social séparées ne sont plus déclarées dans `SETTINGS_ROUTES`.
+- Aucune dette restante identifiée.
 
 ### Exécution par lots
 
@@ -46,52 +57,25 @@ Références officielles restant à qualifier pour des entrées déjà livrées 
 l'entrée. R8 vérifie que ces dettes restent explicites ; les compléments non soldés partent en PR
 métier dédiée plutôt qu'en dette muette.
 
-| Entrée mémento                                                            | Référence à qualifier                                                                                                                         | Priorité                  |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `civil.regime-matrimonial`                                                | C. civ. 515-5 (PACS) ; droit fixe de l'acte de changement de régime (CGI)                                                                     | P1 ; P2                   |
-| `civil.devolution-conjoint-survivant`                                     | C. civ. 734 à 740 (ordres d'héritiers)                                                                                                        | P1                        |
-| `transmission.liberalites`                                                | C. civ. 929 et 930 (RAAR)                                                                                                                     | P1                        |
-| `fiscalite-foyer.niches-fiscales`                                         | CGI 200-0 A (plafonnement global)                                                                                                             | P1                        |
-| `fiscalite-foyer.ifi`                                                     | CGI 979 (plafonnement) ; CGI 974 (passif déductible) ; CGI 972 (part immobilière des contrats)                                                | P1 ; P1 ; P2              |
-| `fiscalite-foyer.non-residents`                                           | CGI 197 A (taux minimum) ; CGI 182 A et 187 (retenues à la source) ; CGI 964 1° (lecture non-résident)                                        | P1                        |
-| `transmission.donation-demembrement`                                      | CGI 790 E et 790 F (donation entre époux)                                                                                                     | P1                        |
-| `transmission.transmission-internationale`                                | CGI 750 ter et BOI-ENR-DMTG-10-10-30 (territorialité) ; lecture non-résident du CGI 990 I                                                     | P1                        |
-| `transmission.succession-dmtg`                                            | Don familial logement (loi de finances)                                                                                                       | P2                        |
-| `transmission.assurance-vie-deces`                                        | Code des assurances L132-13 (primes manifestement exagérées)                                                                                  | P2                        |
-| `placements.enveloppes-titres`                                            | CGI 150-0 D (abattements titres antérieurs au PFU)                                                                                            | P2                        |
-| `immobilier.pv-immobilieres`                                              | CGI 1609 nonies G (taxe sur PVI élevées) ; abattements exceptionnels (loi de finances)                                                        | P1 ; P2                   |
-| `immobilier.non-residents`                                                | CGI 244 bis A ; règles d'affiliation sociale UE                                                                                               | P1                        |
-| `immobilier.sci`                                                          | Translucidité IS/IR (CGI)                                                                                                                     | P1                        |
-| `societe.groupe-mere-fille-qpfc`                                          | CGI 145 et 216 (éligibilité mère-fille, partagé avec holding)                                                                                 | P1                        |
-| `societe.compte-courant-associe`                                          | CGI 39, 1-3° (intérêts de comptes courants)                                                                                                   | P1                        |
-| `societe.holding-apport-cession`                                          | CGI 150-0 B ter (report d'imposition de l'apport-cession)                                                                                     | P1                        |
-| `societe.cession-titres`                                                  | CGI 150-0 D ter (abattement dirigeant partant à la retraite)                                                                                  | P1                        |
-| `societe.valorisation-titres`                                             | Guide DGFiP d'évaluation des entreprises et des titres                                                                                        | P1                        |
-| `societe.epargne-salariale`                                               | Forfait social et titres de services (URSSAF/BOSS)                                                                                            | P1/P2                     |
-| `societe.organigramme`                                                    | Formes sociales (Code de commerce)                                                                                                            | P2                        |
-| `societe.obo`                                                             | Méthode et sources du montage                                                                                                                 | Reportée au jalon société |
-| `dirigeant.charges-sociales-assimile-salarie`                             | CSS L311-3 (périmètre assimilé salarié des mandataires) ; qualification BOSS par mandat                                                       | P1                        |
-| `dirigeant.dividendes-tns` / `dirigeant.charges-sociales-tns`             | CSS L131-6 et doctrine BOSS/URSSAF par forme sociale pour le régime complet des dividendes TNS                                                | P1                        |
-| `dirigeant.puma-csm`                                                      | CSS L380-2 (base légale PUMA/CSM, au-delà de la fiche Service-Public)                                                                         | P1                        |
-| `dirigeant.remuneration` / `dirigeant.charges-sociales-assimile-salarie`  | CGI 231 (taxe sur les salaires, si applicable aux rémunérations ou mandats)                                                                   | P2                        |
-| `dirigeant.charges-sociales-tns` / `dirigeant.charges-sociales-liberales` | Barèmes URSSAF/BOSS de cotisations sociales par régime, hors cartographie caisses prévoyance déjà portée par `prevoyance.affiliation-caisses` | P1                        |
-| `retraite.globale` / `retraite.regime-general`                            | Trimestres assimilés, règles générationnelles et droits multi-régimes au-delà des dispositifs transverses R7                                  | P1                        |
-| `retraite.ssi-artisan-commercant`                                         | CSS L633-1 et L635-1, puis doctrine SSI/URSSAF détaillée du régime complémentaire                                                             | P1                        |
-| `retraite.cnavpl-professions-liberales`                                   | CSS L643-1 à L643-6 et D643-1 à D643-16 ; sections CNAVPL par profession                                                                      | P1                        |
-| `retraite.caisses-sante-liberales`                                        | Sources CARMF, CARCDSF, CARPIMKO, CAVP et CARPV par catégorie retraite                                                                        | P1                        |
-| `retraite.autres-caisses-liberales`                                       | Sources CAVEC, CAVAMAC, CNBF, CPRN/CRN et autres caisses non santé                                                                            | P1                        |
+| Entrée mémento | Référence à qualifier         | Priorité                  |
+| -------------- | ----------------------------- | ------------------------- |
+| `societe.obo`  | Méthode et sources du montage | Reportée au jalon société |
 
 Rappels non négociables (détail en section B) :
 
-- `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul ni une page d'édition unique.
-- Les pages settings existantes restent propriétaires des écritures ; les moteurs restent propriétaires des calculs.
+- `/settings/memento` est le mémento utilisateur et la surface d'édition fiscal/social unique.
+- Les tables settings existantes restent propriétaires des valeurs ; les moteurs restent propriétaires des calculs.
 - La vue métier du mémento est séparée de l'audit coverage technique ; les priorités et intentions orientent la lecture CGP sans remplacer les statuts.
 - Les supports professionnels externes non versionnés peuvent seulement servir d'aide temporaire de cadrage ; ils ne sont jamais cités, référencés, copiés, versionnés, affichés ni utilisés comme sources SER1.
 - La taxonomie mémento ne porte aucun taux, barème, seuil, assiette ni formule.
+- `/settings/base-contrat-retraite` reste séparée car elle porte la base documentaire contrats retraite.
 
 ## A. Diagnostic de la roadmap précédente
 
-La version précédente en 35 PR corrigeait correctement la première version trop découpée : elle gardait `/settings/memento` comme hub, préservait les routes historiques, séparait les propriétaires d'écriture et traitait les supports de cadrage non versionnés comme des aides temporaires. Elle couvrait aussi la fiscalité, les charges sociales, la retraite, la prévoyance, les placements, la transmission et le lexique.
+La version précédente en 35 PR corrigeait correctement la première version trop découpée : elle
+posait `/settings/memento`, séparait temporairement les propriétaires d'écriture et traitait les
+supports de cadrage non versionnés comme des aides temporaires. La clôture M10 a remplacé ce modèle
+transitoire par une page mémento/édition unique pour le fiscal/social.
 
 Le manque principal est plus structurant : le mémento ne doit pas refléter des supports externes non versionnés. Il doit devenir la grille de couverture des simulateurs et sous-types prévus par `docs/ROADMAP.md` et par `src/domain/simulators`. Cela inclut les entrées `planned`, `placeholder`, `internalOnly`, les sous-types non autonomes et les éléments ROADMAP-only comme OBO, prévoyance dirigeant, fiscalité société interne ou succession/liquidité société.
 
@@ -105,23 +89,25 @@ Preuves repo utilisées :
 - `docs/ROADMAP.md:579` à `634` liste la matrice cible des simulateurs foyer et société.
 - `docs/ROADMAP.md:1108` à `1152` fixe les pages settings cibles et les paramètres manquants.
 - `docs/ROADMAP.md:1364` à `1457` cadre F5 : projection comptable, règles société, valorisation, bilans/liasses, tests et interdits.
-- `docs/ARCHITECTURE.md:163` à `216` fixe la chaîne settings et la page propriétaire `/settings/comptables-societes`.
+- `docs/ARCHITECTURE.md:163` à `216` fixe la chaîne settings et la page propriétaire `/settings/memento`.
 - `src/domain/simulators/definitions/*.ts` confirme les `SimulatorDefinition` actuelles.
 
 ## B. Décisions corrigées
 
 - Les supports professionnels externes non versionnés éventuellement consultés pendant le cadrage servent uniquement d'aide temporaire d'inspiration ou de vérification de couverture. Ils ne sont jamais cités, référencés comme source, copiés, reproduits, versionnés, utilisés comme oracle de test, utilisés pour trancher une règle, affichés dans l'UI ou mentionnés comme source SER1.
-- `/settings/memento` reste un hub dédié. Il ne remplace pas immédiatement la redirection actuelle de `/settings`.
+- `/settings/memento` est la surface canonique mémento/édition pour le fiscal, le social, la société,
+  la transmission, la Base-Contrat patrimoniale et la prévoyance.
 - `/settings/memento` sépare la vue métier CGP de l'audit coverage technique.
 - Les priorités métier (`critique`, `structurant`, `utile`, `complementaire`) qualifient l'importance d'une entrée sans remplacer son statut de couverture.
 - Les intentions métier projettent les chapitres existants vers les parcours utilisateur ; elles ne créent pas une taxonomie concurrente.
-- Les anciennes pages settings restent propriétaires des écritures, validations, hooks, caches et sources.
-- `/settings/comptables-societes` devient la page propriétaire des règles société, comptables, IS, valorisation, épargne salariale, apport-cession et PV mobilières.
-- `/settings/prelevements` reste propriétaire des prélèvements sociaux, charges sociales dirigeant, cotisations retraite, PASS/PMSS et assimilé salarié.
-- `/settings/impots` porte IR, IFI, revenus fonciers, LMNP/LMP, PV immobilières et fiscalité foyer.
-- `/settings/dmtg-succession` porte DMTG, succession, donation, Dutreil et assurance-vie décès.
-- `/settings/base-contrat` et `/settings/base-contrat-retraite` restent des référentiels contrats/règles/overrides, pas des formulaires settings plats.
-- `/settings/prevoyance-regimes` porte prévoyance et régimes ; ses sources JSONB ne sont pas écrasées.
+- Les éditeurs intégrés dans le mémento écrivent dans les tables Supabase existantes et ne changent
+  pas la chaîne fiscale.
+- `/settings/memento` devient la page propriétaire des règles société, comptables, IS, valorisation, épargne salariale, apport-cession et PV mobilières.
+- `/settings/memento` reste propriétaire des prélèvements sociaux, charges sociales dirigeant, cotisations retraite, PASS/PMSS et assimilé salarié.
+- `/settings/memento` porte IR, IFI, revenus fonciers, LMNP/LMP, PV immobilières et fiscalité foyer.
+- `/settings/memento` porte DMTG, succession, donation, Dutreil et assurance-vie décès.
+- Les règles et overrides Base-Contrat patrimoniaux sont édités dans `/settings/memento`; `/settings/base-contrat-retraite` reste un référentiel contrats/règles/overrides séparé.
+- `/settings/memento` porte prévoyance et régimes ; ses sources JSONB ne sont pas écrasées.
 - Chaque simulateur ou sous-type prévu doit avoir une entrée mémento.
 - Un simulateur `planned` ne devient jamais actif, routé ou cliquable parce qu'il apparaît dans le mémento.
 - La taxonomie mémento ne contient pas de taux, barèmes, seuils, assiettes ou formules.
@@ -157,7 +143,7 @@ Objectif : créer le contrat du mémento, la route `/settings/memento`, l'audit 
 
 Contenu métier : chapitres, sous-chapitres, statuts, liens settings, liens simulateurs, distinction doctrine/settings/calcul/sources.
 
-Contenu technique : domaine `settings-memento`, route settings, hub UI, adapter coverage, checks, documentation.
+Contenu technique : domaine `settings-memento`, route settings, UI mémento, adapter coverage, checks, documentation.
 
 Nombre cible : 4 PR.
 
@@ -165,7 +151,7 @@ Relève d'une PR : taxonomie, route, coverage adapter, non-régression.
 
 Relève d'un commit : modèle domaine, tables de correspondance, tests, docs.
 
-Critères de sortie : route chargée, anciennes routes intactes, `planned` non cliquables, aucune valeur fiscale/sociale/comptable dans la taxonomie.
+Critères de sortie : route chargée, `planned` non cliquables, aucune valeur fiscale/sociale/comptable dans la taxonomie.
 
 ### Partie 2 — Couverture patrimoniale, fiscale, société et comptabilité
 
@@ -305,9 +291,9 @@ Dépendances : PR 1.
 
 Rollback : retirer le mapping coverage.
 
-### PR 3 — Route `/settings/memento` et hub UI V1
+### PR 3 — Route `/settings/memento` et UI V1
 
-Objectif : créer la page hub sans remplacer `/settings`.
+Objectif : créer la page mémento sans remplacer l'onglet général `/settings`.
 
 Pourquoi c'est une PR : le routing settings et le smoke auth sont sensibles.
 
@@ -316,12 +302,12 @@ Commits recommandés :
 - ajout `SETTINGS_ROUTES`;
 - page `MementoSettings`;
 - recherche/filtres/statuts;
-- liens vers pages propriétaires;
+- liens vers les sections propriétaires;
 - tests route et rendu.
 
 Périmètre inclus : route dédiée, navigation, lecture coverage.
 
-Périmètre exclu : édition intégrée, remplacement de `/settings`, activation de simulateurs planned.
+Périmètre exclu : activation de simulateurs planned.
 
 Fichiers probables : `src/routes/settingsRoutes.ts`, `src/pages/SettingsShell.tsx`, `src/pages/settings/MementoSettings.tsx`, styles settings.
 
@@ -331,7 +317,7 @@ Références à rattacher : affichage des références existantes seulement.
 
 Tests / checks attendus : `check:e2e-auth-pages-coverage`, `test:e2e:auth-pages`, `check:routes-doc-sync`, `npm run check`.
 
-Critères d'acceptation : `/settings/memento` charge ; les routes historiques restent inchangées.
+Critères d'acceptation : `/settings/memento` charge ; la navigation settings reste pilotée par `SETTINGS_ROUTES`.
 
 Risques : régression navigation settings.
 
@@ -355,7 +341,7 @@ Commits recommandés :
 - tests route société au pluriel;
 - documentation runbook.
 
-Périmètre inclus : audit coverage, routes historiques, statut des planned.
+Périmètre inclus : audit coverage, routes settings déclarées, statut des planned.
 
 Périmètre exclu : contenu métier massif.
 
@@ -375,7 +361,7 @@ Garde-fous : statuts bloquants visibles et tests fixtures.
 
 Dépendances : PR 1 à PR 3.
 
-Rollback : retirer le check et conserver la page hub non auditée.
+Rollback : retirer le check et conserver la page mémento non auditée.
 
 ### PR 5 — Socle foyer : filiation, régime matrimonial, donations, budget, actif/passif
 
@@ -417,7 +403,7 @@ Rollback : retirer les entrées socle foyer.
 
 Objectif : couvrir les règles fiscales foyer et les futurs moteurs fiscaux immobiliers.
 
-Pourquoi c'est une PR : même page propriétaire `/settings/impots`, mêmes garde-fous fiscaux.
+Pourquoi c'est une PR : même page propriétaire `/settings/memento`, mêmes garde-fous fiscaux.
 
 Commits recommandés :
 
@@ -434,7 +420,7 @@ Périmètre exclu : moteurs immobiliers, nouvelles valeurs codées.
 
 Fichiers probables : mémento, `settings-references`, registry settings.
 
-Données / settings concernés : `/settings/impots`, `tax_settings`, `fiscality_settings`, `useFiscalContext`.
+Données / settings concernés : `/settings/memento`, `tax_settings`, `fiscality_settings`, `useFiscalContext`.
 
 Références à rattacher : CGI, BOFiP, Legifrance, Service-public.
 
@@ -470,7 +456,7 @@ Périmètre exclu : activation moteur donation, refonte DMTG.
 
 Fichiers probables : mémento, `settings-references`, tests DMTG.
 
-Données / settings concernés : `/settings/dmtg-succession`, tables DMTG existantes.
+Données / settings concernés : `/settings/memento`, tables DMTG existantes.
 
 Références à rattacher : Code civil, CGI, BOFiP, Legifrance.
 
@@ -506,7 +492,7 @@ Périmètre exclu : moteur produit universel, nouvelle page settings.
 
 Fichiers probables : mémento, domaine Base-Contrat, références.
 
-Données / settings concernés : `/settings/base-contrat`, `/settings/base-contrat-retraite`, `base_contrat_overrides`.
+Données / settings concernés : `/settings/memento`, `/settings/base-contrat-retraite`, `base_contrat_overrides`.
 
 Références à rattacher : CGI, BOFiP, Code monétaire et financier, AMF si nécessaire.
 
@@ -542,7 +528,7 @@ Périmètre exclu : moteur immobilier complet.
 
 Fichiers probables : mémento, références, tests coverage.
 
-Données / settings concernés : `/settings/impots`, `/settings/base-contrat`, dossier patrimonial.
+Données / settings concernés : `/settings/memento`, dossier patrimonial.
 
 Références à rattacher : CGI, BOFiP, Code civil, Code de la consommation, Service-public.
 
@@ -578,7 +564,7 @@ Périmètre exclu : moteur holding, moteur valorisation, page bilan exhaustive.
 
 Fichiers probables : mémento, settings registry, docs architecture si contrat évolue.
 
-Données / settings concernés : `/settings/comptables-societes`, dossier société futur F5.
+Données / settings concernés : `/settings/memento`, dossier société futur F5.
 
 Références à rattacher : Code de commerce, Legifrance, doctrine comptable institutionnelle pertinente.
 
@@ -614,7 +600,7 @@ Périmètre exclu : comptabilité générale complète, liasse déclarative, val
 
 Fichiers probables : mémento, registry settings, `settings-references`.
 
-Données / settings concernés : `/settings/comptables-societes`, `comptables-societes.is`, futurs packs F5.
+Données / settings concernés : `/settings/memento`, `comptables-societes.is`, futurs packs F5.
 
 Références à rattacher : Code de commerce, CGI, BOFiP, ANC ou doctrine institutionnelle pertinente.
 
@@ -650,7 +636,7 @@ Périmètre exclu : moteur OBO, valorisation opposable, conseil automatique.
 
 Fichiers probables : mémento, `settings-references`, registry settings.
 
-Données / settings concernés : `/settings/comptables-societes`, `/settings/dmtg-succession`.
+Données / settings concernés : `/settings/memento`.
 
 Références à rattacher : CGI, BOFiP, Code de commerce, Legifrance.
 
@@ -721,7 +707,7 @@ Périmètre exclu : nouveaux moteurs.
 
 Fichiers probables : scripts coverage, tests, docs.
 
-Données / settings concernés : `/settings/comptables-societes`, `/settings/prelevements`, registry.
+Données / settings concernés : `/settings/memento`, registry.
 
 Références à rattacher : sources officielles par claim si claim prêt.
 
@@ -751,7 +737,7 @@ Périmètre exclu : parsing Excel, DB, goldens.
 
 Fichiers probables : `src/domain/social-contributions/*`, registry, tests.
 
-Données / settings concernés : `/settings/prelevements`, `social-dirigeant`.
+Données / settings concernés : `/settings/memento`, `social-dirigeant`.
 
 Références à rattacher : CSS, BOSS, URSSAF, caisses, Code du travail.
 
@@ -811,7 +797,7 @@ Périmètre exclu : mandataires sociaux, retraite AGIRC-ARRCO détaillée.
 
 Fichiers probables : domaine social, références, tests.
 
-Données / settings concernés : `/settings/prelevements`, PASS/PMSS si consommé.
+Données / settings concernés : `/settings/memento`, PASS/PMSS si consommé.
 
 Références à rattacher : URSSAF, BOSS, CSS, Code du travail.
 
@@ -841,7 +827,7 @@ Périmètre exclu : libéraux, MSA.
 
 Fichiers probables : domaine social TNS, références, tests.
 
-Données / settings concernés : `/settings/prelevements`.
+Données / settings concernés : `/settings/memento`.
 
 Références à rattacher : URSSAF, CSS, SSI, Service-public.
 
@@ -1051,7 +1037,7 @@ Périmètre exclu : bulletin de paie complet, DSN, exhaustivité caisse par cais
 
 Fichiers probables : domaine social, registry `social-dirigeant`, tests.
 
-Données / settings concernés : `/settings/prelevements`, `ps_settings.socialDirigeant`.
+Données / settings concernés : `/settings/memento`, `ps_settings.socialDirigeant`.
 
 Références à rattacher : URSSAF, BOSS, CSS, Code de commerce selon statut.
 
@@ -1201,7 +1187,7 @@ Périmètre exclu : arbitrage rémunération/dividendes complet.
 
 Fichiers probables : domaine retraite, social dirigeant, tests.
 
-Données / settings concernés : `/settings/prelevements`, `social-dirigeant`, `retraite-prevoyance`.
+Données / settings concernés : `/settings/memento`, `social-dirigeant`, `retraite-prevoyance`.
 
 Références à rattacher : URSSAF, CSS, Assurance retraite, AGIRC-ARRCO.
 
@@ -1309,7 +1295,7 @@ Rollback : retirer caisse par commit.
 
 ### PR 34 — Dispositifs transverses retraite, Base CG retraite et prévoyance obligatoire
 
-Statut : livrée par le lot R7, avec mémento lecture seule, références transverses retraite, Base CG retraite documentaire et audit DB prévoyance.
+Statut : livrée par le lot R7, avec grille mémento, références transverses retraite, Base CG retraite documentaire et audit DB prévoyance.
 
 Objectif : couvrir carrière longue, retraite progressive, cumul, réversion, décote/surcote et prévoyance.
 
@@ -1323,7 +1309,7 @@ Périmètre exclu : écrasement JSONB, calcul multi-carrières complet.
 
 Fichiers probables : domaine retraite, prévoyance, références, tests.
 
-Données / settings concernés : `/settings/prevoyance-regimes`, `/settings/base-contrat-retraite`.
+Données / settings concernés : `/settings/memento`, `/settings/base-contrat-retraite`.
 
 Références à rattacher : Assurance retraite, CSS, Code du travail, caisses, Service-public.
 
@@ -1357,7 +1343,7 @@ Périmètre exclu : fiscalité de sortie détaillée, activation moteur épargne
 
 Fichiers probables : domaines PER/Base-Contrat retraite, registry, références.
 
-Données / settings concernés : `/settings/base-contrat-retraite`, `/settings/comptables-societes`, PASS.
+Données / settings concernés : `/settings/base-contrat-retraite`, `/settings/memento`, PASS.
 
 Références à rattacher : CGI, BOFiP, Code du travail, BOSS, URSSAF, Service-public.
 
@@ -1390,7 +1376,7 @@ Périmètre exclu : refonte moteur IR.
 
 Fichiers probables : domaines retraite/PER, `settings-references`, tests.
 
-Données / settings concernés : `/settings/impots`, `/settings/prelevements`, PER.
+Données / settings concernés : `/settings/memento`, PER.
 
 Références à rattacher : CGI, BOFiP, Assurance retraite, Service-public.
 
@@ -1476,88 +1462,88 @@ Rollback : annuler uniquement la redirection, la bannière ou l'audit trop stric
 
 ## E. Tableau simulateurs → mémento
 
-| Simulateur / sous-type                                        | Statut roadmap            | Chapitre mémento                             | Page settings propriétaire                                                    | Règles/settings nécessaires                              | Sources officielles attendues                      | PR cible        | Statut mémento attendu   |
-| ------------------------------------------------------------- | ------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------- | --------------- | ------------------------ |
-| Filiation familiale (`filiation` / ROADMAP `foyer-filiation`) | planned                   | Foyer / Socle dossier                        | Aucune page settings                                                          | Modèle dossier famille                                   | Code civil si règle civile                         | PR 5            | planned                  |
-| Régime matrimonial (`regime-matrimonial`)                     | planned                   | Civil / Régimes matrimoniaux                 | `/settings/dmtg-succession` si règles DMTG liées                              | Clauses, masses, protection conjoint                     | Code civil, Service-public                         | PR 5            | planned                  |
-| Donations antérieures (`donations-anterieures`)               | planned                   | Transmission / Donations antérieures         | `/settings/dmtg-succession`                                                   | Rappel fiscal, abattements, historique                   | CGI, BOFiP, Code civil                             | PR 5, PR 7      | planned                  |
-| Actif/passif interne (`actif-passif`)                         | internalOnly              | Patrimoine / Synthèse actif-passif           | Aucune page settings directe                                                  | Actifs, passifs, PP/US/NP                                | Code civil, CGI selon usage                        | PR 5            | internalOnly             |
-| Budget & capacité d'épargne (`budget`)                        | planned                   | Foyer / Budget                               | Aucune page settings                                                          | Revenus, charges, capacité                               | Non calcul fiscal ; sources dossier                | PR 5            | planned                  |
-| Fiscalité IR (`ir`)                                           | active                    | Fiscalité foyer / IR                         | `/settings/impots`                                                            | Barème IR, quotient, décote, PFU, CEHR/CDHR              | CGI, BOFiP                                         | PR 6            | couvert                  |
-| IFI (`ifi`)                                                   | planned                   | Fiscalité foyer / IFI                        | `/settings/impots`                                                            | Barème, seuil, dettes, biens imposables                  | CGI, BOFiP                                         | PR 6            | planned/partiel          |
-| Retraite globale (`retraite`)                                 | planned                   | Retraite / Retraite globale                  | `/settings/prelevements`                                                      | PS retraite, PASS, cotisations, droits                   | Assurance retraite, CSS, AGIRC-ARRCO, caisses      | PR 27-34        | planned                  |
-| PER hub (`per`)                                               | hub                       | Épargne retraite / PER                       | `/settings/base-contrat-retraite`, `/settings/impots`                         | PER individuel, PASS, IR                                 | CGI, BOFiP, CMF                                    | PR 35           | couvert                  |
-| PER potentiel (`per-potentiel`)                               | active                    | Épargne retraite / Potentiel PER             | `/settings/base-contrat-retraite`, `/settings/impots`                         | Plafonds, PASS, IR                                       | CGI, BOFiP                                         | PR 35           | couvert                  |
-| PER transfert (`per-transfert`)                               | active                    | Épargne retraite / Transfert PER             | `/settings/base-contrat-retraite`                                             | Contrats retraite, PS retraite, PASS                     | CMF, CGI, BOFiP                                    | PR 35           | couvert                  |
-| Placement & allocation (`placement`)                          | active                    | Placements / Allocation                      | `/settings/base-contrat`                                                      | AV/capitalisation, PFU, PS, DMTG                         | CGI, BOFiP, AMF/CMF                                | PR 8            | couvert                  |
-| Assurance-vie / capitalisation                                | sous-type                 | Placements / Assurance-vie et capitalisation | `/settings/base-contrat`, `/settings/dmtg-succession`                         | Fiscalité vie/décès, rachat, transmission                | CGI, BOFiP, Code assurances                        | PR 8            | partiel/couvert          |
-| PEA / CTO                                                     | sous-type                 | Placements / Enveloppes titres               | `/settings/base-contrat`, `/settings/impots`                                  | PFU, PS, régimes PEA/CTO                                 | CGI, BOFiP, AMF                                    | PR 8            | partiel                  |
-| SCPI (`scpi`)                                                 | planned                   | Immobilier / SCPI                            | `/settings/base-contrat`, `/settings/impots`                                  | Revenus fonciers, IFI, détention                         | CGI, BOFiP, AMF                                    | PR 8, PR 9      | planned                  |
-| Crédit & garanties (`credit`)                                 | active                    | Immobilier / Crédit                          | Aucune page settings initiale                                                 | Échéancier, assurance, garanties                         | Code consommation, Code assurances                 | PR 9            | couvert                  |
-| Investissement locatif                                        | planned                   | Immobilier / Investissement locatif          | `/settings/impots`                                                            | IR, PS, revenus fonciers, LMNP                           | CGI, BOFiP                                         | PR 9            | planned                  |
-| Revenus fonciers                                              | planned                   | Immobilier / Revenus fonciers                | `/settings/impots`                                                            | Micro-foncier, réel, déficit                             | CGI, BOFiP                                         | PR 6            | planned                  |
-| LMNP / LMP                                                    | planned                   | Immobilier / Location meublée                | `/settings/impots`                                                            | Régimes, seuils, amortissements si moteur                | CGI, BOFiP                                         | PR 6            | planned                  |
-| SCI & mode de détention                                       | planned                   | Immobilier / SCI                             | `/settings/dmtg-succession`, `/settings/comptables-societes` si société       | Détention, transmission, fiscalité                       | Code civil, CGI, Code commerce                     | PR 9            | planned                  |
-| Plus-values immobilières                                      | planned                   | Immobilier / PV immobilières                 | `/settings/impots`                                                            | Abattements durée, PS                                    | CGI, BOFiP                                         | PR 6            | planned                  |
-| Vendre / conserver / réemployer                               | planned                   | Arbitrage / Réemploi                         | `/settings/impots`, `/settings/base-contrat`, `/settings/comptables-societes` | Fiscalité sortie, enveloppes, cession titres             | CGI, BOFiP                                         | PR 9, PR 12     | planned                  |
-| Prévoyance (`prevoyance`)                                     | active                    | Prévoyance / Protection familiale            | `/settings/prevoyance-regimes`                                                | Régimes, maintien, garanties                             | CSS, Code assurances, caisses                      | PR 34           | partiel/couvert          |
-| Succession & liquidité (`succession`)                         | active                    | Transmission / Succession                    | `/settings/dmtg-succession`                                                   | DMTG, AV décès, démembrement                             | Code civil, CGI, BOFiP                             | PR 7            | couvert                  |
-| Donation & démembrement                                       | planned                   | Transmission / Donation                      | `/settings/dmtg-succession`                                                   | DMTG, Dutreil, IFI si utile                              | Code civil, CGI, BOFiP                             | PR 7            | planned                  |
-| Organigramme société                                          | planned                   | Société / Organigramme                       | `/settings/comptables-societes`                                               | Formes, associés, liens capitalistiques                  | Code commerce, Legifrance                          | PR 10           | planned                  |
-| Valorisation titres                                           | planned                   | Société / Valorisation                       | `/settings/comptables-societes`                                               | Méthodes, bilans, quote-part                             | Code commerce, doctrine comptable, BOFiP si fiscal | PR 12           | planned                  |
-| Projection comptable                                          | planned                   | Société / Projection comptable               | `/settings/comptables-societes`                                               | Résultat, réserves, distribution, IS                     | Code commerce, CGI, ANC                            | PR 11           | planned                  |
-| Trésorerie société                                            | active                    | Société / Trésorerie                         | `/settings/comptables-societes`, `/settings/prelevements`                     | IS, mère-fille/QPFC, charges sociales dirigeant          | CGI, BOFiP, URSSAF                                 | PR 10-12, PR 25 | partiel/couvert          |
-| Placement trésorerie intégré                                  | sous-type                 | Société / Trésorerie                         | `/settings/comptables-societes`, `/settings/base-contrat`                     | Allocation société, produits éligibles                   | CGI, BOFiP, AMF                                    | PR 11, PR 12    | partiel                  |
-| CCA                                                           | sous-type                 | Société / Sortie de capitaux                 | `/settings/comptables-societes`                                               | CCA, intérêts, remboursement                             | Code commerce, CGI, BOFiP                          | PR 11           | planned                  |
-| Filiales                                                      | sous-type                 | Société / Groupe                             | `/settings/comptables-societes`                                               | Liens, mère-fille, dividendes                            | Code commerce, CGI, BOFiP                          | PR 10, PR 11    | planned                  |
-| Emprunts société                                              | sous-type                 | Société / Financement                        | `/settings/comptables-societes`                                               | Dettes, intérêts, immobilisations                        | Code commerce, doctrine comptable                  | PR 11           | planned                  |
-| Rémunération dirigeant                                        | planned                   | Dirigeant / Rémunération                     | `/settings/prelevements`, `/settings/comptables-societes`, `/settings/impots` | IR, dividendes, charges sociales, retraite               | URSSAF, BOSS, CSS, CGI                             | PR 25, PR 30    | planned                  |
-| Épargne salariale                                             | placeholder               | Société / Épargne salariale                  | `/settings/comptables-societes`                                               | Participation, intéressement, abondement, forfait social | Code travail, BOSS, URSSAF                         | PR 10-12, PR 35 | partiel puis compléments |
-| Cession de titres société                                     | planned                   | Société / Cession                            | `/settings/comptables-societes`, `/settings/impots`                           | PV mobilières, PFU, PS, apport-cession                   | CGI, BOFiP                                         | PR 12           | planned                  |
-| Sortie de capitaux / CCA                                      | planned                   | Dirigeant / Sortie de capitaux               | `/settings/comptables-societes`, `/settings/prelevements`                     | Dividendes, CCA, PUMA/CSM, PS                            | CGI, BOFiP, URSSAF, CSS                            | PR 11, PR 25    | planned                  |
-| Holding / apport-cession                                      | planned                   | Société / Holding                            | `/settings/comptables-societes`                                               | Mère-fille, QPFC, apport-cession, PV                     | CGI, BOFiP, Code commerce                          | PR 12           | planned                  |
-| OBO                                                           | planned ROADMAP-only      | Société / OBO                                | `/settings/comptables-societes`                                               | Valorisation, financement, cession, holding              | Code commerce, CGI, BOFiP                          | PR 12           | planned/a_verifier       |
-| Fiscalité société                                             | internalOnly ROADMAP-only | Société / Fiscalité société                  | `/settings/comptables-societes`                                               | IS, distribution, QPFC, PV titres                        | CGI, BOFiP                                         | PR 10-12        | internalOnly             |
-| Pacte Dutreil                                                 | planned                   | Transmission entreprise / Dutreil            | `/settings/dmtg-succession`, `/settings/comptables-societes`                  | Éligibilité, engagements, titres                         | CGI, BOFiP, Code commerce                          | PR 7, PR 12     | planned                  |
-| Prévoyance dirigeant                                          | planned ROADMAP-only      | Dirigeant / Prévoyance                       | `/settings/prevoyance-regimes`, `/settings/prelevements`                      | Statut dirigeant, garanties, cotisations                 | CSS, caisses, Code assurances                      | PR 34           | planned                  |
-| Donation & démembrement société                               | planned ROADMAP-only      | Transmission entreprise / Donation titres    | `/settings/dmtg-succession`, `/settings/comptables-societes`                  | DMTG, valeur titres, démembrement                        | Code civil, CGI, BOFiP                             | PR 7, PR 12     | planned                  |
-| Succession & liquidité société                                | planned ROADMAP-only      | Transmission entreprise / Liquidité          | `/settings/dmtg-succession`, `/settings/comptables-societes`                  | Valeur titres, liquidité, DMTG                           | Code civil, CGI, BOFiP                             | PR 7, PR 12     | planned                  |
+| Simulateur / sous-type                                        | Statut roadmap            | Chapitre mémento                             | Page settings propriétaire                             | Règles/settings nécessaires                              | Sources officielles attendues                      | PR cible        | Statut mémento attendu   |
+| ------------------------------------------------------------- | ------------------------- | -------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------- | --------------- | ------------------------ |
+| Filiation familiale (`filiation` / ROADMAP `foyer-filiation`) | planned                   | Foyer / Socle dossier                        | Aucune page settings                                   | Modèle dossier famille                                   | Code civil si règle civile                         | PR 5            | planned                  |
+| Régime matrimonial (`regime-matrimonial`)                     | planned                   | Civil / Régimes matrimoniaux                 | `/settings/memento` si règles DMTG liées               | Clauses, masses, protection conjoint                     | Code civil, Service-public                         | PR 5            | planned                  |
+| Donations antérieures (`donations-anterieures`)               | planned                   | Transmission / Donations antérieures         | `/settings/memento`                                    | Rappel fiscal, abattements, historique                   | CGI, BOFiP, Code civil                             | PR 5, PR 7      | planned                  |
+| Actif/passif interne (`actif-passif`)                         | internalOnly              | Patrimoine / Synthèse actif-passif           | Aucune page settings directe                           | Actifs, passifs, PP/US/NP                                | Code civil, CGI selon usage                        | PR 5            | internalOnly             |
+| Budget & capacité d'épargne (`budget`)                        | planned                   | Foyer / Budget                               | Aucune page settings                                   | Revenus, charges, capacité                               | Non calcul fiscal ; sources dossier                | PR 5            | planned                  |
+| Fiscalité IR (`ir`)                                           | active                    | Fiscalité foyer / IR                         | `/settings/memento`                                    | Barème IR, quotient, décote, PFU, CEHR/CDHR              | CGI, BOFiP                                         | PR 6            | couvert                  |
+| IFI (`ifi`)                                                   | planned                   | Fiscalité foyer / IFI                        | `/settings/memento`                                    | Barème, seuil, dettes, biens imposables                  | CGI, BOFiP                                         | PR 6            | planned/partiel          |
+| Retraite globale (`retraite`)                                 | planned                   | Retraite / Retraite globale                  | `/settings/memento`                                    | PS retraite, PASS, cotisations, droits                   | Assurance retraite, CSS, AGIRC-ARRCO, caisses      | PR 27-34        | planned                  |
+| PER hub (`per`)                                               | hub                       | Épargne retraite / PER                       | `/settings/base-contrat-retraite`, `/settings/memento` | PER individuel, PASS, IR                                 | CGI, BOFiP, CMF                                    | PR 35           | couvert                  |
+| PER potentiel (`per-potentiel`)                               | active                    | Épargne retraite / Potentiel PER             | `/settings/base-contrat-retraite`, `/settings/memento` | Plafonds, PASS, IR                                       | CGI, BOFiP                                         | PR 35           | couvert                  |
+| PER transfert (`per-transfert`)                               | active                    | Épargne retraite / Transfert PER             | `/settings/base-contrat-retraite`                      | Contrats retraite, PS retraite, PASS                     | CMF, CGI, BOFiP                                    | PR 35           | couvert                  |
+| Placement & allocation (`placement`)                          | active                    | Placements / Allocation                      | `/settings/memento`                                    | AV/capitalisation, PFU, PS, DMTG                         | CGI, BOFiP, AMF/CMF                                | PR 8            | couvert                  |
+| Assurance-vie / capitalisation                                | sous-type                 | Placements / Assurance-vie et capitalisation | `/settings/memento`                                    | Fiscalité vie/décès, rachat, transmission                | CGI, BOFiP, Code assurances                        | PR 8            | partiel/couvert          |
+| PEA / CTO                                                     | sous-type                 | Placements / Enveloppes titres               | `/settings/memento`                                    | PFU, PS, régimes PEA/CTO                                 | CGI, BOFiP, AMF                                    | PR 8            | partiel                  |
+| SCPI (`scpi`)                                                 | planned                   | Immobilier / SCPI                            | `/settings/memento`                                    | Revenus fonciers, IFI, détention                         | CGI, BOFiP, AMF                                    | PR 8, PR 9      | planned                  |
+| Crédit & garanties (`credit`)                                 | active                    | Immobilier / Crédit                          | Aucune page settings initiale                          | Échéancier, assurance, garanties                         | Code consommation, Code assurances                 | PR 9            | couvert                  |
+| Investissement locatif                                        | planned                   | Immobilier / Investissement locatif          | `/settings/memento`                                    | IR, PS, revenus fonciers, LMNP                           | CGI, BOFiP                                         | PR 9            | planned                  |
+| Revenus fonciers                                              | planned                   | Immobilier / Revenus fonciers                | `/settings/memento`                                    | Micro-foncier, réel, déficit                             | CGI, BOFiP                                         | PR 6            | planned                  |
+| LMNP / LMP                                                    | planned                   | Immobilier / Location meublée                | `/settings/memento`                                    | Régimes, seuils, amortissements si moteur                | CGI, BOFiP                                         | PR 6            | planned                  |
+| SCI & mode de détention                                       | planned                   | Immobilier / SCI                             | `/settings/memento` si société                         | Détention, transmission, fiscalité                       | Code civil, CGI, Code commerce                     | PR 9            | planned                  |
+| Plus-values immobilières                                      | planned                   | Immobilier / PV immobilières                 | `/settings/memento`                                    | Abattements durée, PS                                    | CGI, BOFiP                                         | PR 6            | planned                  |
+| Vendre / conserver / réemployer                               | planned                   | Arbitrage / Réemploi                         | `/settings/memento`                                    | Fiscalité sortie, enveloppes, cession titres             | CGI, BOFiP                                         | PR 9, PR 12     | planned                  |
+| Prévoyance (`prevoyance`)                                     | active                    | Prévoyance / Protection familiale            | `/settings/memento`                                    | Régimes, maintien, garanties                             | CSS, Code assurances, caisses                      | PR 34           | partiel/couvert          |
+| Succession & liquidité (`succession`)                         | active                    | Transmission / Succession                    | `/settings/memento`                                    | DMTG, AV décès, démembrement                             | Code civil, CGI, BOFiP                             | PR 7            | couvert                  |
+| Donation & démembrement                                       | planned                   | Transmission / Donation                      | `/settings/memento`                                    | DMTG, Dutreil, IFI si utile                              | Code civil, CGI, BOFiP                             | PR 7            | planned                  |
+| Organigramme société                                          | planned                   | Société / Organigramme                       | `/settings/memento`                                    | Formes, associés, liens capitalistiques                  | Code commerce, Legifrance                          | PR 10           | planned                  |
+| Valorisation titres                                           | planned                   | Société / Valorisation                       | `/settings/memento`                                    | Méthodes, bilans, quote-part                             | Code commerce, doctrine comptable, BOFiP si fiscal | PR 12           | planned                  |
+| Projection comptable                                          | planned                   | Société / Projection comptable               | `/settings/memento`                                    | Résultat, réserves, distribution, IS                     | Code commerce, CGI, ANC                            | PR 11           | planned                  |
+| Trésorerie société                                            | active                    | Société / Trésorerie                         | `/settings/memento`                                    | IS, mère-fille/QPFC, charges sociales dirigeant          | CGI, BOFiP, URSSAF                                 | PR 10-12, PR 25 | partiel/couvert          |
+| Placement trésorerie intégré                                  | sous-type                 | Société / Trésorerie                         | `/settings/memento`                                    | Allocation société, produits éligibles                   | CGI, BOFiP, AMF                                    | PR 11, PR 12    | partiel                  |
+| CCA                                                           | sous-type                 | Société / Sortie de capitaux                 | `/settings/memento`                                    | CCA, intérêts, remboursement                             | Code commerce, CGI, BOFiP                          | PR 11           | planned                  |
+| Filiales                                                      | sous-type                 | Société / Groupe                             | `/settings/memento`                                    | Liens, mère-fille, dividendes                            | Code commerce, CGI, BOFiP                          | PR 10, PR 11    | planned                  |
+| Emprunts société                                              | sous-type                 | Société / Financement                        | `/settings/memento`                                    | Dettes, intérêts, immobilisations                        | Code commerce, doctrine comptable                  | PR 11           | planned                  |
+| Rémunération dirigeant                                        | planned                   | Dirigeant / Rémunération                     | `/settings/memento`                                    | IR, dividendes, charges sociales, retraite               | URSSAF, BOSS, CSS, CGI                             | PR 25, PR 30    | planned                  |
+| Épargne salariale                                             | placeholder               | Société / Épargne salariale                  | `/settings/memento`                                    | Participation, intéressement, abondement, forfait social | Code travail, BOSS, URSSAF                         | PR 10-12, PR 35 | partiel puis compléments |
+| Cession de titres société                                     | planned                   | Société / Cession                            | `/settings/memento`                                    | PV mobilières, PFU, PS, apport-cession                   | CGI, BOFiP                                         | PR 12           | planned                  |
+| Sortie de capitaux / CCA                                      | planned                   | Dirigeant / Sortie de capitaux               | `/settings/memento`                                    | Dividendes, CCA, PUMA/CSM, PS                            | CGI, BOFiP, URSSAF, CSS                            | PR 11, PR 25    | planned                  |
+| Holding / apport-cession                                      | planned                   | Société / Holding                            | `/settings/memento`                                    | Mère-fille, QPFC, apport-cession, PV                     | CGI, BOFiP, Code commerce                          | PR 12           | planned                  |
+| OBO                                                           | planned ROADMAP-only      | Société / OBO                                | `/settings/memento`                                    | Valorisation, financement, cession, holding              | Code commerce, CGI, BOFiP                          | PR 12           | planned/a_verifier       |
+| Fiscalité société                                             | internalOnly ROADMAP-only | Société / Fiscalité société                  | `/settings/memento`                                    | IS, distribution, QPFC, PV titres                        | CGI, BOFiP                                         | PR 10-12        | internalOnly             |
+| Pacte Dutreil                                                 | planned                   | Transmission entreprise / Dutreil            | `/settings/memento`                                    | Éligibilité, engagements, titres                         | CGI, BOFiP, Code commerce                          | PR 7, PR 12     | planned                  |
+| Prévoyance dirigeant                                          | planned ROADMAP-only      | Dirigeant / Prévoyance                       | `/settings/memento`                                    | Statut dirigeant, garanties, cotisations                 | CSS, caisses, Code assurances                      | PR 34           | planned                  |
+| Donation & démembrement société                               | planned ROADMAP-only      | Transmission entreprise / Donation titres    | `/settings/memento`                                    | DMTG, valeur titres, démembrement                        | Code civil, CGI, BOFiP                             | PR 7, PR 12     | planned                  |
+| Succession & liquidité société                                | planned ROADMAP-only      | Transmission entreprise / Liquidité          | `/settings/memento`                                    | Valeur titres, liquidité, DMTG                           | Code civil, CGI, BOFiP                             | PR 7, PR 12     | planned                  |
 
 ## F. Tableau spécifique société / comptabilité
 
-| Sujet société/comptable              | Simulateurs consommateurs                                               | Page propriétaire                                            | Settings/règles nécessaires                              | Sources attendues                        | PR cible        | Statut                   |
-| ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- | ---------------------------------------- | --------------- | ------------------------ |
-| IS                                   | `tresorerie-societe`, `projection-comptable`, `cession-titres`          | `/settings/comptables-societes`                              | Taux réduit/normal, seuils, assiette                     | CGI, BOFiP                               | PR 10-11        | partiel/couvert          |
-| QPFC                                 | `tresorerie-societe`, `holding`, `cession-titres`                       | `/settings/comptables-societes`                              | Quote-part frais et charges, mère-fille                  | CGI, BOFiP                               | PR 11-12        | partiel                  |
-| Mère-fille                           | `tresorerie-societe`, `holding`                                         | `/settings/comptables-societes`                              | Conditions, QPFC, dividendes filiales                    | CGI, BOFiP                               | PR 11-12        | partiel                  |
-| Réserves                             | `projection-comptable`, `sortie-capitaux`, `tresorerie-societe`         | `/settings/comptables-societes`                              | Réserve légale, réserves distribuables                   | Code commerce, doctrine comptable        | PR 11           | planned                  |
-| Résultat distribuable                | `projection-comptable`, `sortie-capitaux`                               | `/settings/comptables-societes`                              | Résultat, report, réserves, distribution                 | Code commerce                            | PR 11           | planned                  |
-| Dividendes                           | `remuneration`, `sortie-capitaux`, `tresorerie-societe`                 | `/settings/comptables-societes`, `/settings/prelevements`    | Régime fiscal, social TNS si applicable                  | CGI, BOFiP, URSSAF                       | PR 11, PR 25    | partiel                  |
-| CCA                                  | `tresorerie-societe`, `sortie-capitaux`                                 | `/settings/comptables-societes`                              | Apports, remboursement, intérêts                         | Code commerce, CGI, BOFiP                | PR 11           | planned                  |
-| Capitaux propres                     | `projection-comptable`, `valorisation-titres`                           | `/settings/comptables-societes`                              | Capital, réserves, résultat, report                      | Code commerce, doctrine comptable        | PR 11           | planned                  |
-| Primes                               | `projection-comptable`, `valorisation-titres`                           | `/settings/comptables-societes`                              | Primes d'émission/fusion/apport si consommées            | Code commerce, doctrine comptable        | PR 11           | planned                  |
-| Emprunts société                     | `tresorerie-societe`, `projection-comptable`, OBO                       | `/settings/comptables-societes`                              | Encours, intérêts, échéancier, actif financé             | Code commerce, doctrine comptable        | PR 11-12        | planned                  |
-| Immobilisations                      | `projection-comptable`, `valorisation-titres`                           | `/settings/comptables-societes`                              | Immobilisations, amortissements si moteur                | Doctrine comptable, ANC                  | PR 11           | planned                  |
-| Immobilier détenu                    | `valorisation-titres`, `ifi`, `sci`, `tresorerie-societe`               | `/settings/comptables-societes`, `/settings/impots`          | Détention société, IFI, fiscalité société                | CGI, BOFiP, Code commerce                | PR 9-11         | planned                  |
-| Formes de société                    | `organigramme-societe`, `holding`, `pacte-dutreil`                      | `/settings/comptables-societes`                              | SARL/SAS/SCI/holding, statuts utiles                     | Code commerce, Code civil                | PR 10           | planned                  |
-| Organigramme                         | `organigramme-societe`, `holding`, `cession-titres`, `pacte-dutreil`    | `/settings/comptables-societes`                              | Liens, associés, participations                          | Code commerce                            | PR 10           | planned                  |
-| Liens capitalistiques                | `organigramme-societe`, `holding`, `valorisation-titres`                | `/settings/comptables-societes`                              | Détention directe/indirecte, contrôle                    | Code commerce                            | PR 10           | planned                  |
-| Valorisation titres                  | `valorisation-titres`, `cession-titres`, `pacte-dutreil`                | `/settings/comptables-societes`                              | Méthodes simples, quote-part, bilans                     | Doctrine comptable, BOFiP si fiscal      | PR 12           | planned                  |
-| Holding                              | `holding`, `cession-titres`, `tresorerie-societe`                       | `/settings/comptables-societes`                              | Mère-fille, QPFC, structure, réemploi                    | CGI, BOFiP, Code commerce                | PR 12           | planned                  |
-| Apport-cession                       | `holding`, `cession-titres`                                             | `/settings/comptables-societes`                              | Report/sursis, réemploi, délais                          | CGI, BOFiP                               | PR 12           | planned                  |
-| Cession de titres                    | `cession-titres`, `arbitrage-reemploi`, `holding`                       | `/settings/comptables-societes`, `/settings/impots`          | PV mobilières, PFU, abattements si applicables           | CGI, BOFiP                               | PR 12           | planned                  |
-| OBO                                  | OBO ROADMAP-only, `holding`, `valorisation-titres`                      | `/settings/comptables-societes`                              | Valeur, financement, cash-out, structure                 | Code commerce, CGI, BOFiP                | PR 12           | planned/a_verifier       |
-| Dutreil                              | `pacte-dutreil`, donation société, succession société                   | `/settings/dmtg-succession`, `/settings/comptables-societes` | Exonération, engagements, activité, titres               | CGI, BOFiP, Code commerce                | PR 7, PR 12     | planned                  |
-| Épargne salariale                    | `epargne-salariale`, `remuneration`, `projection-comptable`, `retraite` | `/settings/comptables-societes`                              | Intéressement, participation, abondement, forfait social | Code travail, BOSS, URSSAF               | PR 10-12, PR 35 | partiel puis compléments |
-| Sortie de capitaux                   | `sortie-capitaux`, `remuneration`, `tresorerie-societe`                 | `/settings/comptables-societes`, `/settings/prelevements`    | Dividendes, CCA, rémunération, PS/PUMA                   | CGI, BOFiP, URSSAF, CSS                  | PR 11, PR 25    | planned                  |
-| Bilans/liasses comme sources dossier | `projection-comptable`, `valorisation-titres`, `tresorerie-societe`     | Pas une page settings exhaustive                             | Source evidence/dossier, adapters futurs                 | Doctrine comptable, documents entreprise | PR 10-11        | planned                  |
+| Sujet société/comptable              | Simulateurs consommateurs                                               | Page propriétaire                | Settings/règles nécessaires                              | Sources attendues                        | PR cible        | Statut                   |
+| ------------------------------------ | ----------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------- | ---------------------------------------- | --------------- | ------------------------ |
+| IS                                   | `tresorerie-societe`, `projection-comptable`, `cession-titres`          | `/settings/memento`              | Taux réduit/normal, seuils, assiette                     | CGI, BOFiP                               | PR 10-11        | partiel/couvert          |
+| QPFC                                 | `tresorerie-societe`, `holding`, `cession-titres`                       | `/settings/memento`              | Quote-part frais et charges, mère-fille                  | CGI, BOFiP                               | PR 11-12        | partiel                  |
+| Mère-fille                           | `tresorerie-societe`, `holding`                                         | `/settings/memento`              | Conditions, QPFC, dividendes filiales                    | CGI, BOFiP                               | PR 11-12        | partiel                  |
+| Réserves                             | `projection-comptable`, `sortie-capitaux`, `tresorerie-societe`         | `/settings/memento`              | Réserve légale, réserves distribuables                   | Code commerce, doctrine comptable        | PR 11           | planned                  |
+| Résultat distribuable                | `projection-comptable`, `sortie-capitaux`                               | `/settings/memento`              | Résultat, report, réserves, distribution                 | Code commerce                            | PR 11           | planned                  |
+| Dividendes                           | `remuneration`, `sortie-capitaux`, `tresorerie-societe`                 | `/settings/memento`              | Régime fiscal, social TNS si applicable                  | CGI, BOFiP, URSSAF                       | PR 11, PR 25    | partiel                  |
+| CCA                                  | `tresorerie-societe`, `sortie-capitaux`                                 | `/settings/memento`              | Apports, remboursement, intérêts                         | Code commerce, CGI, BOFiP                | PR 11           | planned                  |
+| Capitaux propres                     | `projection-comptable`, `valorisation-titres`                           | `/settings/memento`              | Capital, réserves, résultat, report                      | Code commerce, doctrine comptable        | PR 11           | planned                  |
+| Primes                               | `projection-comptable`, `valorisation-titres`                           | `/settings/memento`              | Primes d'émission/fusion/apport si consommées            | Code commerce, doctrine comptable        | PR 11           | planned                  |
+| Emprunts société                     | `tresorerie-societe`, `projection-comptable`, OBO                       | `/settings/memento`              | Encours, intérêts, échéancier, actif financé             | Code commerce, doctrine comptable        | PR 11-12        | planned                  |
+| Immobilisations                      | `projection-comptable`, `valorisation-titres`                           | `/settings/memento`              | Immobilisations, amortissements si moteur                | Doctrine comptable, ANC                  | PR 11           | planned                  |
+| Immobilier détenu                    | `valorisation-titres`, `ifi`, `sci`, `tresorerie-societe`               | `/settings/memento`              | Détention société, IFI, fiscalité société                | CGI, BOFiP, Code commerce                | PR 9-11         | planned                  |
+| Formes de société                    | `organigramme-societe`, `holding`, `pacte-dutreil`                      | `/settings/memento`              | SARL/SAS/SCI/holding, statuts utiles                     | Code commerce, Code civil                | PR 10           | planned                  |
+| Organigramme                         | `organigramme-societe`, `holding`, `cession-titres`, `pacte-dutreil`    | `/settings/memento`              | Liens, associés, participations                          | Code commerce                            | PR 10           | planned                  |
+| Liens capitalistiques                | `organigramme-societe`, `holding`, `valorisation-titres`                | `/settings/memento`              | Détention directe/indirecte, contrôle                    | Code commerce                            | PR 10           | planned                  |
+| Valorisation titres                  | `valorisation-titres`, `cession-titres`, `pacte-dutreil`                | `/settings/memento`              | Méthodes simples, quote-part, bilans                     | Doctrine comptable, BOFiP si fiscal      | PR 12           | planned                  |
+| Holding                              | `holding`, `cession-titres`, `tresorerie-societe`                       | `/settings/memento`              | Mère-fille, QPFC, structure, réemploi                    | CGI, BOFiP, Code commerce                | PR 12           | planned                  |
+| Apport-cession                       | `holding`, `cession-titres`                                             | `/settings/memento`              | Report/sursis, réemploi, délais                          | CGI, BOFiP                               | PR 12           | planned                  |
+| Cession de titres                    | `cession-titres`, `arbitrage-reemploi`, `holding`                       | `/settings/memento`              | PV mobilières, PFU, abattements si applicables           | CGI, BOFiP                               | PR 12           | planned                  |
+| OBO                                  | OBO ROADMAP-only, `holding`, `valorisation-titres`                      | `/settings/memento`              | Valeur, financement, cash-out, structure                 | Code commerce, CGI, BOFiP                | PR 12           | planned/a_verifier       |
+| Dutreil                              | `pacte-dutreil`, donation société, succession société                   | `/settings/memento`              | Exonération, engagements, activité, titres               | CGI, BOFiP, Code commerce                | PR 7, PR 12     | planned                  |
+| Épargne salariale                    | `epargne-salariale`, `remuneration`, `projection-comptable`, `retraite` | `/settings/memento`              | Intéressement, participation, abondement, forfait social | Code travail, BOSS, URSSAF               | PR 10-12, PR 35 | partiel puis compléments |
+| Sortie de capitaux                   | `sortie-capitaux`, `remuneration`, `tresorerie-societe`                 | `/settings/memento`              | Dividendes, CCA, rémunération, PS/PUMA                   | CGI, BOFiP, URSSAF, CSS                  | PR 11, PR 25    | planned                  |
+| Bilans/liasses comme sources dossier | `projection-comptable`, `valorisation-titres`, `tresorerie-societe`     | Pas une page settings exhaustive | Source evidence/dossier, adapters futurs                 | Doctrine comptable, documents entreprise | PR 10-11        | planned                  |
 
 ## G. Tableau ancien découpage / nouveau découpage
 
 | Ancien découpage 35 PR       | Nouveau rattachement | Changement                                                                     |
 | ---------------------------- | -------------------- | ------------------------------------------------------------------------------ |
 | Taxonomie seule              | PR 1 + PR 2          | Ajout mapping simulateurs dès le socle                                         |
-| Route/hub UI                 | PR 3                 | Conservé                                                                       |
+| Route/UI mémento             | PR 3                 | Conservé                                                                       |
 | Coverage/audit               | PR 4                 | Renforcé avec non-régression routes et planned non cliquables                  |
 | Civil/foyer dispersé         | PR 5                 | Regroupé comme socle dossier foyer                                             |
 | Fiscal foyer                 | PR 6                 | Renforcé avec moteurs fiscaux immobiliers de ROADMAP                           |
@@ -1582,15 +1568,14 @@ Ordre :
 
 1. PR 1 — Taxonomie mémento, statuts et gouvernance.
 2. PR 2 — Correspondance simulateurs ROADMAP vers mémento.
-3. PR 3 — Route `/settings/memento` et hub UI V1.
+3. PR 3 — Route `/settings/memento` et UI V1.
 4. PR 4 — Coverage adapter, audit mémento et non-régression settings.
 
 Critères de sortie :
 
 - `/settings/memento` existe et charge.
 - `/settings` conserve son comportement actuel.
-- Les routes historiques restent intactes.
-- `/settings/comptables-societes` est la seule route société canonique.
+- `/settings/memento` est la seule route settings fiscal/social canonique.
 - La taxonomie ne contient aucune valeur fiscale, sociale ou comptable.
 - Tous les simulateurs et sous-types de la section E sont représentés.
 - Les `planned` ne sont pas cliquables comme des simulateurs actifs.
@@ -1601,14 +1586,14 @@ Check-list avant implémentation :
 
 - lire `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/METIER.md`, `docs/ROADMAP.md`, `docs/RUNBOOK.md`, `.github/CONTRIBUTING.md`;
 - vérifier `git status`;
-- prouver `SETTINGS_ROUTES` et `/settings/comptables-societes`;
+- prouver `SETTINGS_ROUTES` et `/settings/memento`;
 - prouver `src/domain/simulators` et la matrice `docs/ROADMAP.md`;
 - vérifier les scripts npm existants avant de les citer;
 - définir un contrat de PR avec hors-scope clair;
 - prévoir `check:e2e-auth-pages-coverage`, `test:e2e:auth-pages`, `check:settings-references`, `check:settings-registry`, `check:fiscal-hardcode`, `npm run check`.
 
-Prompt archivé ayant servi à l'exécution PR 8 (PR #594) :
+Prompt archivé ayant servi à l'exécution PR 8 (PR #594), relu après consolidation M6 pour pointer vers la surface propriétaire actuelle :
 
 ```text
-Implémente uniquement la PR 8 de docs/MEMENTO_ROADMAP.md : placements, Base-Contrat et sous-types enveloppes (allocation, assurance-vie/capitalisation, PEA/CTO, SCPI). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec /settings/base-contrat comme page propriétaire quand le rattachement vient du catalogue, et /settings/impots ou /settings/dmtg-succession seulement si la section PR8 le justifie. Les raccords Base-Contrat doivent réutiliser les claimKeys et références existants, sans créer de référentiel artificiel, sans retoucher SCPI hors PR8 et sans activer de simulateur planned. Aucun hardcode fiscal/social/comptable. Lance check:memento-coverage, check:fiscal-hardcode, check:raw-fiscal-usage, check:settings-references, check:settings-registry, check:legal-references puis npm run check avant commit.
+Implémente uniquement la PR 8 de docs/MEMENTO_ROADMAP.md : placements, Base-Contrat et sous-types enveloppes (allocation, assurance-vie/capitalisation, PEA/CTO, SCPI). Respecte AGENTS.md, lis docs/ARCHITECTURE.md, docs/METIER.md, docs/ROADMAP.md, docs/RUNBOOK.md et .github/CONTRIBUTING.md. Les entrées passent par MEMENTO_ENTRIES dans src/domain/settings-memento/ avec /settings/memento comme page propriétaire. Les raccords Base-Contrat doivent réutiliser les claimKeys et références existants, sans créer de référentiel artificiel, sans retoucher SCPI hors PR8 et sans activer de simulateur planned. Aucun hardcode fiscal/social/comptable. Lance check:memento-coverage, check:fiscal-hardcode, check:raw-fiscal-usage, check:settings-references, check:settings-registry, check:legal-references puis npm run check avant commit.
 ```

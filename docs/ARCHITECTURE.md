@@ -132,7 +132,7 @@ canonique lisible par Node ; il relie chaque claim Settings à une cible contrô
 - `settings-default` : chemin de fallback dans `DEFAULT_TAX_SETTINGS`, `DEFAULT_PS_SETTINGS` ou
   `DEFAULT_FISCALITY_SETTINGS` ;
 - `pass-history` : millésime `public.pass_history` (`year` ou `latest`) ;
-- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/base-contrat` ;
+- `base-contrat-rule` : produit, audience, phase et bloc exposé par `/settings/memento` ;
 - `prevoyance-db` : table/code/jsonPath des sources JSONB prévoyance.
 
 Chaque binding porte `pagePath`, `sectionKey`, `claimKey`, `target`, `refIds`, `verifiedAt` et
@@ -142,10 +142,9 @@ notes non génériques, les `pagePath` déclarés, les chemins Settings/PASS et 
 par page. Il est branché dans `check:static` et son rapport doit rester en
 `coverage.mode = "exhaustive"` avec `coverage.isExhaustive = true`. `coverage.byPage` expose pour
 chaque surface le nombre de bindings déclarés (`declared`) et le nombre de claims attendus
-(`expected`). Les 6 surfaces cibles doivent rester complètes sans claim manquant ou surnuméraire :
-`/settings/impots`, `/settings/comptables-societes`, `/settings/prelevements`, `/settings/base-contrat`,
-`/settings/dmtg-succession`, `/settings/prevoyance-regimes`. La cible Base-Contrat est dynamique :
-son attendu est recalculé depuis `CATALOG` + `getRules()`.
+(`expected`). Les surfaces cibles déclarées doivent rester complètes sans claim manquant ou
+surnuméraire : `/settings/memento`. La part Base-Contrat du mémento est dynamique : son attendu est
+recalculé depuis `CATALOG` + `getRules()`.
 
 L'audit `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
 liveness URL hors CI et la lecture des sources prévoyance en base. Ajouter `--fetch` force la
@@ -205,17 +204,17 @@ peuvent pas déclarer de consommation d'un setting `planned`; les consommateurs 
 dans `SETTINGS_REGISTRY.consumerSimulatorIds`.
 
 Cas F4d : `social-dirigeant.charges-sociales` est `partial`. Seul le seuil social des dividendes
-TNS est sourcé, éditable sur `/settings/prelevements` et consommé par `tresorerie-societe`.
+TNS est sourcé, éditable sur `/settings/memento` et consommé par `tresorerie-societe`.
 Rémunération TNS, rémunération assimilé salarié, tranches TA/TB/TC et Madelin restent à compléter
 avant tout passage `ready`.
 
 Le cadrage des futurs packs société est dans `docs/ROADMAP.md` § “Fiches de cadrage des packs
-settings société”. `/settings/comptables-societes` est la page propriétaire des paramètres société,
-projection comptable, règles société, valorisation et épargne salariale. `/settings/prelevements`
-reste la page propriétaire des charges sociales dirigeant et cotisations retraite. Ces pages
-consomment la chaîne standard `Supabase` -> `fiscalSettingsCache.ts` -> `useFiscalContext.ts` ->
-`settingsDefaults.ts` dès qu'une valeur devient prête ; le registry ne stocke pas de valeurs
-révisables inventées et un setting `planned` ne peut pas être consommé par un simulateur actif.
+settings société”. `/settings/memento` porte les éditeurs migrés des paramètres société, projection
+comptable, règles société, valorisation, épargne salariale, charges sociales dirigeant et
+cotisations retraite. Ces éditeurs consomment la chaîne standard `Supabase` ->
+`fiscalSettingsCache.ts` -> `useFiscalContext.ts` -> `settingsDefaults.ts` dès qu'une valeur devient
+prête ; le registry ne stocke pas de valeurs révisables inventées et un setting `planned` ne peut
+pas être consommé par un simulateur actif.
 
 Garde-fous :
 
@@ -227,11 +226,12 @@ Garde-fous :
 
 ### Mémento patrimonial & social — `src/domain/settings-memento/`
 
-Le mémento patrimonial & social vit dans `src/domain/settings-memento/`. Il sert de grille de
-couverture métier en lecture seule entre doctrine, pages Settings propriétaires, simulateurs,
-chaînage Settings et références officielles. Il ne porte aucune valeur fiscale, sociale ou
-comptable révisable, ne crée aucune écriture et ne remplace ni `settings-registry`, ni
-`settings-references`, ni les moteurs.
+Le mémento patrimonial & social vit dans `src/domain/settings-memento/`. Le domaine sert de grille
+de couverture métier entre doctrine, page Settings propriétaire, simulateurs, chaînage Settings et
+références officielles. Il ne porte aucune valeur fiscale, sociale ou comptable révisable et ne
+remplace ni `settings-registry`, ni `settings-references`, ni les moteurs. La page
+`/settings/memento` rend cette grille et accueille les éditeurs qui écrivent dans les tables
+Supabase settings existantes.
 
 Les statuts canoniques sont :
 
@@ -251,8 +251,9 @@ taxonomie.
 
 La page `/settings/memento` expose deux lectures distinctes de la même source TypeScript :
 
-- vue métier : entrées mémento, intentions, priorités, statut, page propriétaire, simulateurs liés
-  et disponibilité des références officielles ;
+- vue métier : entrées mémento, intentions, priorités, statut, section propriétaire, simulateurs
+  liés et disponibilité des références officielles ;
+- édition settings : accordéons d'administration écrivant dans les tables Supabase existantes ;
 - audit coverage : lignes `SIMULATOR_MEMENTO_COVERAGE`, routes propriétaires, lifecycles, statuts
   techniques et notes utiles aux checks.
 
@@ -675,7 +676,7 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 Source de vérité : `src/domain/base-contrat/` (catalogue + règles).
 Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note + statut de revue juridique).
 
-UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
+UI : le panneau Base-Contrat de `/settings/memento` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
 
 ### Base CG retraite
 
@@ -745,19 +746,13 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ### Pages settings existantes
 
-| Route                             | Composant                    | Table Supabase                                                                                   | Périmètre                                                                                          |
-| --------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `/settings`                       | `SettingsGeneral`            | —                                                                                                | Généraux (placeholder)                                                                             |
-| `/settings/memento`               | `SettingsMemento`            | —                                                                                                | Hub lecture seule du mémento patrimonial & social                                                  |
-| `/settings/impots`                | `SettingsImpots`             | `tax_settings`                                                                                   | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IFI                                                     |
-| `/settings/comptables-societes`   | `SettingsComptablesSocietes` | `tax_settings`                                                                                   | IS, régime mère-fille, déductibilité CCA/dividendes                                                |
-| `/settings/prelevements`          | `SettingsPrelevements`       | `ps_settings`                                                                                    | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
-| `/settings/base-contrat`          | `BaseContrat`                | `base_contrat_overrides`                                                                         | Référentiel produits (read-only 3 colonnes + toggles admin)                                        |
-| `/settings/base-contrat-retraite` | `BaseCgRetraite`             | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                              |
-| `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`          | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                             |
-| `/settings/design-system`         | `SettingsDesignSystem`       | —                                                                                                | Audit visuel interne admin                                                                         |
-| `/settings/comptes`               | `SettingsComptes`            | `profiles`                                                                                       | Comptes utilisateurs par cabinet (admin only)                                                      |
-| `/settings/dmtg-succession`       | `SettingsDmtgSuccession`     | `tax_settings`, `fiscality_settings`                                                             | Éditeur unique DMTG successions + donations + AV décès                                             |
+| Route                             | Composant              | Table Supabase                                                                                                                                                        | Périmètre                                                                                                                 |
+| --------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `/settings`                       | `SettingsGeneral`      | —                                                                                                                                                                     | Généraux (placeholder)                                                                                                    |
+| `/settings/memento`               | `SettingsMemento`      | `tax_settings`, `ps_settings`, `fiscality_settings`, `pass_history`, `base_contrat_overrides`, `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings` | Mémento utilisateur et éditeurs migrés : fiscalité foyer, société, prélèvements sociaux, DMTG, Base-Contrat et prévoyance |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite`       | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops)                                                                      | Base CG retraite canonique Supabase + documents admin                                                                     |
+| `/settings/design-system`         | `SettingsDesignSystem` | —                                                                                                                                                                     | Audit visuel interne admin                                                                                                |
+| `/settings/comptes`               | `SettingsComptes`      | `profiles`                                                                                                                                                            | Comptes utilisateurs par cabinet (admin only)                                                                             |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
@@ -891,7 +886,7 @@ Le référentiel Base-Contrat reste pur côté domaine :
 
 - `src/domain/base-contrat/rules/fiscalLabels.ts` construit des libellés fiscaux à partir d'un contexte fourni.
 - `getRules(productId, audience, context?)` rend les placeholders fiscaux avec ces libellés.
-- `src/pages/settings/BaseContrat.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
+- `src/pages/settings/BaseContrat/BaseContratSettingsPanel.tsx` est le seul point qui branche `useFiscalContext()` sur ce rendu.
 
 Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabase ni les hooks applicatifs.
 
@@ -1064,7 +1059,8 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.
 - Si une page sensible est `adminOnly` en front, verifier aussi l'enforcement backend/RLS.
-- Si une route settings remplace une ancienne route, documenter le mapping de migration et vérifier l'absence de redirect runtime non voulu.
+- Si une route settings est ajoutée ou retirée, mettre à jour `SETTINGS_ROUTES`, les tests de
+  couverture auth et la documentation des routes déclarées.
 
 ### 3) Organiser une feature de simulateur
 

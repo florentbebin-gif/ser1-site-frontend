@@ -4,7 +4,7 @@ import type {
   MementoBusinessPriority,
   MementoEntry,
   MementoStatus,
-} from '@/domain/settings-memento';
+} from '@/domain/settings-memento/types';
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 
 export const MEMENTO_STATUS_LABELS: Record<MementoStatus, string> = {
@@ -30,13 +30,8 @@ const STATUS_WITHOUT_OWNER_LINK = new Set<MementoStatus>([
 ]);
 
 const MEMENTO_OWNER_PAGE_LABELS: Record<NonNullable<MementoEntry['ownerPagePath']>, string> = {
-  '/settings/impots': 'Impôts',
-  '/settings/comptables-societes': 'Comptables & sociétés',
-  '/settings/prelevements': 'Paramètres sociaux',
-  '/settings/dmtg-succession': 'DMTG & Succession',
-  '/settings/base-contrat': 'Référentiel contrats',
+  '/settings/memento': 'Mémento',
   '/settings/base-contrat-retraite': 'Base CG retraite',
-  '/settings/prevoyance-regimes': 'Prévoyance - régimes',
 };
 
 export function canRenderMementoOwnerLink(status: MementoStatus): boolean {

@@ -44,7 +44,7 @@ Ce document est la roadmap V2 canonique pour construire le parcours complet Audi
 13. Les exports existants restent non régressifs si un refactor les impacte.
 14. Aucun legacy durable n'est autorisé : pas d'ancienne Home concurrente, pas d'ancienne roadmap concurrente après validation de la V2, pas de double registry, pas de fallback métier non testé.
 15. Toute dette découverte est traitée dans la PR ou inscrite dans le bilan avec `fichier:ligne`, preuve, raison du report et PR cible. Une dette découverte ne peut pas rester muette.
-16. Les paramètres fiscaux et sociaux d'un simulateur passent toujours par la chaîne settings (`settingsDefaults → Supabase → fiscalSettingsCache → useFiscalContext`). On **enrichit une page Settings existante** plutôt que d'en créer une nouvelle : l'IFI, par exemple, s'ajoute à `settings/impots`, jamais sur une page dédiée. Une nouvelle page Settings doit être justifiée par un domaine réellement distinct.
+16. Les paramètres fiscaux et sociaux d'un simulateur passent toujours par la chaîne settings (`settingsDefaults → Supabase → fiscalSettingsCache → useFiscalContext`). On **enrichit une page Settings existante** plutôt que d'en créer une nouvelle : l'IFI, par exemple, s'ajoute à `/settings/memento`, jamais sur une page dédiée. Une nouvelle page Settings doit être justifiée par un domaine réellement distinct.
 
 ## Objectif des surfaces
 
@@ -1088,11 +1088,11 @@ Critère de PR moteur :
 
 ## Couverture des settings (fondation fiscale)
 
-Les fondations settings transverses sont posées : V2-06bis a câblé l'IFI, le CDHR et
-la migration IS vers `/settings/comptables-societes`, puis F0.5 a ajouté le registry
-settings fiscal/métier avec statuts `ready`, `partial` et `planned`. Les moteurs futurs
-ne sont toutefois pas débloqués tant que leurs packs de paramètres révisables ne passent
-pas de l'inventaire `planned` à un contrat prêt, sourcé et consommé par la chaîne settings.
+Les fondations settings transverses sont posées. `/settings/memento` est la surface unique pour
+le mémento utilisateur et l'édition des paramètres fiscaux, sociaux, société, transmission,
+Base-Contrat patrimoniale et prévoyance. Les écritures restent faites dans les tables Supabase
+existantes ; les calculateurs continuent de lire exclusivement par la chaîne
+`Supabase -> fiscalSettingsCache -> useFiscalContext -> settingsDefaults`.
 
 Écarts restants :
 
@@ -1105,51 +1105,40 @@ pas de l'inventaire `planned` à un contrat prêt, sourcé et consommé par la c
 
 Règle (principe 16) : **enrichir une page existante** avant d'en créer une nouvelle.
 
-### Pages settings cibles (décision actualisée 2026-06-08)
+### Page settings cible (décision actualisée 2026-06-12)
 
-- **Pages existantes enrichies** :
-  - `settings/impots` ← IFI, CDHR, PV immobilières, revenus fonciers (micro-foncier), LMNP/LMP.
-  - `settings/prelevements` ← charges sociales du dirigeant (TNS/salarié, TA/TB/TC, Madelin), cotisations retraite (barèmes de constitution des droits).
-  - `settings/dmtg-succession` ← pacte Dutreil (exonération, durées d'engagement).
-  - `settings/comptables-societes` ← projection comptable, règles société, valorisation,
-    apport-cession/PV mobilières et épargne salariale.
-- **Nouvelle page déjà créée (1)** :
-  - **Comptables & sociétés** : page créée avec l'IS migré. Les règles société détaillées,
-    la projection comptable, les valorisations et l'épargne salariale restent à enrichir
-    avec F5 et les PR moteurs concernées.
-- **Décision Épargne salariale** : ne pas créer de page `/settings/epargne-salariale`.
-  L'épargne salariale est un futur accordéon / une future section de
-  `/settings/comptables-societes`, car elle dépend de la structure employeur, des effectifs,
-  de la masse salariale, du statut du dirigeant et des dispositifs collectifs.
-- **Migration réalisée** : la section **IS** (`corporateTax`) a quitté `settings/impots`
-  pour **Comptables & sociétés** (déplacement, pas duplication ; chaîne
-  `settingsDefaults` + `useFiscalContext` + `settings-references` reportée).
-
-**Total : 1 nouvelle page durable déjà créée** (`/settings/comptables-societes`) ; tout le reste
-enrichit une page existante (principe 16).
+- `/settings/memento` porte tous les réglages fiscaux et sociaux de la roadmap mémento : IR, IFI,
+  PFU, CEHR/CDHR, DMTG, prélèvements sociaux, PASS, règles société, Base-Contrat patrimoniale et
+  prévoyance.
+- `/settings/base-contrat-retraite` reste séparée : c'est la base documentaire des contrats
+  retraite, pas une page de mémento fiscal/social.
+- Aucune migration SQL de consolidation n'est requise pour cette décision : les tables sources
+  restent les mêmes, seuls les éditeurs ont été regroupés.
+- Toute future extension fiscal/social de la roadmap enrichit `/settings/memento` ou reste attachée
+  à sa PR moteur si le contrat métier n'est pas prêt.
 
 ### État de couverture (constaté le 2026-06-08)
 
-| Paramètre                                                                                            | Défaut        | Page Settings                                                              | useFiscalContext | Moteur consommateur                                                                                                           | Action                                                                                        |
-| ---------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Barème IR, décote, quotient, abat. 10 %, DOM                                                         | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | —                                                                                             |
-| PFU                                                                                                  | ✅            | ✅ Impôts                                                                  | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
-| CEHR                                                                                                 | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | —                                                                                             |
-| CDHR                                                                                                 | ✅            | ✅ Impôts                                                                  | ✅               | `ir`                                                                                                                          | Livré V2-06bis                                                                                |
-| IS                                                                                                   | ✅            | ✅ Comptables & sociétés                                                   | ✅               | `tresorerie-societe`, `cession-titres`                                                                                        | Livré V2-06bis ; page à enrichir avec F5                                                      |
-| DMTG / donation                                                                                      | ✅            | ✅ Impôts + DMTG                                                           | ✅               | `succession`                                                                                                                  | —                                                                                             |
-| PS patrimoine / retraite / seuils RFR                                                                | ✅            | ✅ Prélèvements                                                            | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
-| PASS                                                                                                 | ✅            | ✅ Prélèvements                                                            | ✅               | `per`, `retraite`                                                                                                             | —                                                                                             |
-| **IFI** (seuil, abatt. RP, barème)                                                                   | ✅            | ✅ Impôts                                                                  | ✅               | `ifi`                                                                                                                         | Livré V2-06bis ; millésimes et pilote IFI restent à traiter                                   |
-| **PV immobilières** (abattements durée IR 22 ans / PS 30 ans)                                        | ❌            | ❌                                                                         | ❌               | `plus-values-immobilieres`                                                                                                    | Ajouter à `settings/impots`                                                                   |
-| **Revenus fonciers** (micro-foncier, abattement 30 %)                                                | ❌            | ❌                                                                         | ❌               | `revenus-fonciers`                                                                                                            | Ajouter à `settings/impots`                                                                   |
-| **LMNP/LMP** (seuils micro-BIC, abattements)                                                         | ❌            | ❌                                                                         | ❌               | `lmnp-lmp`                                                                                                                    | Ajouter à `settings/impots`                                                                   |
-| **Pacte Dutreil** (exonération 75 %, durées d'engagement)                                            | ❌            | ❌                                                                         | ❌               | `pacte-dutreil`                                                                                                               | Ajouter à `settings/dmtg-succession`                                                          |
-| **Charges sociales dirigeant** (TNS/salarié, TA/TB/TC, Madelin)                                      | ⚠️ partiel    | ✅ `/settings/prelevements`                                                | ✅ partiel       | `tresorerie-societe`, `remuneration-dirigeant`, `retraite-globale`, `projection-comptable` si impact documenté                | F4d : bloc partiel ; rémunération, TA/TB/TC et Madelin à compléter avant passage `ready`      |
-| **Cotisations retraite** (barèmes de constitution des droits)                                        | ❌            | ❌                                                                         | ❌               | `retraite-globale`                                                                                                            | **Ajouter un bloc à `settings/prelevements`**                                                 |
-| **Règles comptables & sociétés** (mère-fille, réserves, dividendes, formes de société, valorisation) | ⚠️ inventorié | ⚠️ `/settings/comptables-societes`                                         | ❌               | `projection-comptable`, `valorisation-titres`, `tresorerie-societe`, `holding`, `cession-titres`                              | Enrichir `/settings/comptables-societes` avec F5                                              |
-| **Apport-cession / PV mobilières** (régime report, réemploi, abattement dirigeant)                   | ⚠️ inventorié | ⚠️ `/settings/comptables-societes` ou page existante imposée par le moteur | ❌               | `cession-titres`, `holding`                                                                                                   | Décision finale avec les moteurs `cession-titres` / `holding` ; ne pas créer de nouvelle page |
-| **Épargne salariale** (participation, intéressement, PPV, abondement, règles société)                | ❌            | ❌ `/settings/comptables-societes` à enrichir                              | ❌               | `epargne-salariale`, `remuneration-dirigeant`, `projection-comptable`, `tresorerie-societe`, `retraite-globale` si lien cadré | Ajouter un accordéon Épargne salariale à Comptables & sociétés ; pas de page dédiée           |
+| Paramètre                                                                                            | Défaut        | Page Settings                                                  | useFiscalContext | Moteur consommateur                                                                                                           | Action                                                                                        |
+| ---------------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Barème IR, décote, quotient, abat. 10 %, DOM                                                         | ✅            | ✅ Mémento                                                     | ✅               | `ir`                                                                                                                          | —                                                                                             |
+| PFU                                                                                                  | ✅            | ✅ Mémento                                                     | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
+| CEHR                                                                                                 | ✅            | ✅ Mémento                                                     | ✅               | `ir`                                                                                                                          | —                                                                                             |
+| CDHR                                                                                                 | ✅            | ✅ Mémento                                                     | ✅               | `ir`                                                                                                                          | Livré V2-06bis                                                                                |
+| IS                                                                                                   | ✅            | ✅ Mémento                                                     | ✅               | `tresorerie-societe`, `cession-titres`                                                                                        | Livré V2-06bis ; section à enrichir avec F5                                                   |
+| DMTG / donation                                                                                      | ✅            | ✅ Mémento                                                     | ✅               | `succession`                                                                                                                  | —                                                                                             |
+| PS patrimoine / retraite / seuils RFR                                                                | ✅            | ✅ Mémento                                                     | ✅               | `ir`, `placement`                                                                                                             | —                                                                                             |
+| PASS                                                                                                 | ✅            | ✅ Mémento                                                     | ✅               | `per`, `retraite`                                                                                                             | —                                                                                             |
+| **IFI** (seuil, abatt. RP, barème)                                                                   | ✅            | ✅ Mémento                                                     | ✅               | `ifi`                                                                                                                         | Livré V2-06bis ; millésimes et pilote IFI restent à traiter                                   |
+| **PV immobilières** (abattements durée IR 22 ans / PS 30 ans)                                        | ❌            | ❌                                                             | ❌               | `plus-values-immobilieres`                                                                                                    | Ajouter à `/settings/memento`                                                                 |
+| **Revenus fonciers** (micro-foncier, abattement 30 %)                                                | ❌            | ❌                                                             | ❌               | `revenus-fonciers`                                                                                                            | Ajouter à `/settings/memento`                                                                 |
+| **LMNP/LMP** (seuils micro-BIC, abattements)                                                         | ❌            | ❌                                                             | ❌               | `lmnp-lmp`                                                                                                                    | Ajouter à `/settings/memento`                                                                 |
+| **Pacte Dutreil** (exonération 75 %, durées d'engagement)                                            | ❌            | ❌                                                             | ❌               | `pacte-dutreil`                                                                                                               | Ajouter à `/settings/memento`                                                                 |
+| **Charges sociales dirigeant** (TNS/salarié, TA/TB/TC, Madelin)                                      | ⚠️ partiel    | ✅ `/settings/memento`                                         | ✅ partiel       | `tresorerie-societe`, `remuneration-dirigeant`, `retraite-globale`, `projection-comptable` si impact documenté                | F4d : bloc partiel ; rémunération, TA/TB/TC et Madelin à compléter avant passage `ready`      |
+| **Cotisations retraite** (barèmes de constitution des droits)                                        | ❌            | ❌                                                             | ❌               | `retraite-globale`                                                                                                            | **Ajouter un bloc à `/settings/memento`**                                                     |
+| **Règles comptables & sociétés** (mère-fille, réserves, dividendes, formes de société, valorisation) | ⚠️ inventorié | ⚠️ `/settings/memento`                                         | ❌               | `projection-comptable`, `valorisation-titres`, `tresorerie-societe`, `holding`, `cession-titres`                              | Enrichir `/settings/memento` avec F5                                                          |
+| **Apport-cession / PV mobilières** (régime report, réemploi, abattement dirigeant)                   | ⚠️ inventorié | ⚠️ `/settings/memento` ou page existante imposée par le moteur | ❌               | `cession-titres`, `holding`                                                                                                   | Décision finale avec les moteurs `cession-titres` / `holding` ; ne pas créer de nouvelle page |
+| **Épargne salariale** (participation, intéressement, PPV, abondement, règles société)                | ❌            | ❌ `/settings/memento` à enrichir                              | ❌               | `epargne-salariale`, `remuneration-dirigeant`, `projection-comptable`, `tresorerie-societe`, `retraite-globale` si lien cadré | Ajouter une section au mémento ; pas de page dédiée                                           |
 
 ### Critère de sortie
 
@@ -1157,8 +1146,9 @@ enrichit une page existante (principe 16).
 - Tout nouveau paramètre est rattaché à une **référence juridique** (`legal-references` + chaînage `settings-references`).
 - Le garde-fou `check:fiscal-hardcode` reste vert.
 - Aucune page dédiée Épargne salariale n'est créée : le domaine société est porté par
-  `/settings/comptables-societes`, et tout le reste enrichit une page existante (principe 16).
-- Le déplacement de l'IS vers Comptables & sociétés ne laisse **aucune** référence orpheline dans `settings-references`.
+  `/settings/memento`, et tout le reste enrichit une page existante (principe 16).
+- La consolidation des éditeurs dans `/settings/memento` ne laisse **aucune** référence orpheline
+  dans `settings-references`.
 - Les paramètres `planned` du registry settings ne sont pas affichés comme prêts ni consommables
   par un simulateur actif tant que la PR moteur n'a pas livré les valeurs, références, tests et
   adapters correspondants.
@@ -1177,7 +1167,7 @@ Centraliser les paramètres sociaux nécessaires aux moteurs rémunération, soc
 hardcode social dans les moteurs, l'UI ou les exports.
 
 Page Settings propriétaire :
-`/settings/prelevements`, bloc “Charges sociales dirigeant”.
+`/settings/memento`, bloc “Charges sociales dirigeant”.
 
 Famille registry :
 `social-dirigeant`.
@@ -1262,7 +1252,7 @@ Cadrer les paramètres nécessaires au futur moteur ou parcours Épargne salaria
 Settings dédiée et sans coder le moteur maintenant.
 
 Décision Settings :
-L'épargne salariale est un accordéon / une section de `/settings/comptables-societes`. Elle ne crée
+L'épargne salariale est un accordéon / une section de `/settings/memento`. Elle ne crée
 pas de page `/settings/epargne-salariale`.
 
 Justification :
@@ -1326,7 +1316,7 @@ Hors-scope V1 :
 Contrat ready :
 
 - clés registry déclarées ;
-- page propriétaire `/settings/comptables-societes` ;
+- page propriétaire `/settings/memento` ;
 - accordéon “Épargne salariale” documenté ;
 - références juridiques officielles par claim ;
 - `settings-references` complet ;
@@ -1369,7 +1359,7 @@ dividendes, aux valorisations et aux futures lectures de bilans, sans coder F5 n
 associés dans cette PR.
 
 Page Settings propriétaire :
-`/settings/comptables-societes`.
+`/settings/memento`.
 
 Famille registry :
 `comptables-societes`.
@@ -1478,11 +1468,12 @@ Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre
 - PR 6 Fiscalité foyer — livrée (PR #591) ;
 - PR6b UX mémento et gouvernance sources — livrée ;
 - PR 7 Transmission — livrée ;
-- PR 8 Placements et Base-Contrat — prochaine PR métier.
+- PR 8 Placements et Base-Contrat — livrée (PR #594) ;
+- lots R5 à R8 et clôture M0-M10 — livrés, décisions finales dans `docs/MEMENTO_ROADMAP.md`.
 
-Rappels : `/settings/memento` est un hub de lecture et de connaissance, pas une source de calcul
-ni une page d'édition unique ; la vue métier est séparée de l'audit coverage, les pages settings
-existantes restent propriétaires des écritures et les moteurs restent propriétaires des calculs.
+Rappels : `/settings/memento` est le mémento utilisateur et la surface d'édition fiscal/social
+unique ; la vue métier reste séparée de l'audit coverage, et les moteurs restent propriétaires des
+calculs.
 Le détail PR par PR vit uniquement dans `docs/MEMENTO_ROADMAP.md`.
 
 ## Ordre ferme de construction des moteurs
@@ -1603,7 +1594,7 @@ Légende : ✅ Fait · ⚠️ Partiel · ❌ À faire.
 | V2-04        | Références juridiques listables    | ✅ Fait    | `legal-references` + chantier `settings-references` (444 bindings, gate `check:settings-references`).                                     |
 | V2-05        | Découpage Succession               | ✅ Fait    | Refactor comportement neutre (commits de découpage god-files).                                                                            |
 | V2-06        | Découpage Trésorerie société       | ✅ Fait    | Refactor comportement neutre (découpage PER/trésorerie).                                                                                  |
-| **V2-06bis** | **Compléter les fondations**       | ✅ Fait    | PR #575 : registry `tags`, câblage IFI/CDHR, libellés canoniques, page Comptables & sociétés et migration IS.                             |
+| **V2-06bis** | **Compléter les fondations**       | ✅ Fait    | PR #575 : registry `tags`, câblage IFI/CDHR, libellés canoniques et IS raccordé à la chaîne settings.                                     |
 | Garde-fous   | Contrats simulateurs               | ✅ Fait    | PR #576 : règles AGENTS/skill, template de contrat simulateur, arrêt si absence de rattachement au dossier central.                       |
 | F0.5         | Socle settings registry            | ✅ Fait    | PR #577 : registry settings fiscal/métier, `settingsKeys`, statuts `ready`/`partial`/`planned`, garde `check:settings-registry`.          |
 | V2-07 / F1   | Socle dossier Audit                | ✅ Fait    | PR #578 : `DossierPatrimonial` central, persistance `dossiers_patrimoniaux`, RLS, save/load/list, hydratation Audit local-first et tests. |
@@ -1865,22 +1856,25 @@ bilan de PR ; les paramètres détaillés non livrés restent volontairement att
 Changements :
 
 - **Registry** : ajouter le champ `tags` (`SimulatorDomainTag` + `SimulatorIntentTag`) à toutes les `SimulatorDefinition`, avec un check de complétude (aucune entrée sans tags). Aligner les libellés canoniques (`shortLabel`/`fullLabel`) listés au § Registry et chainage.
-- **Settings — câblage de l'existant** : créer la section **IFI** sur `settings/impots` (le barème existe déjà dans `settingsDefaults.ts`), l'exposer dans `useFiscalContext` et la chaîner dans `settings-references`. Idem **CDHR** (exposer la section, vérifier `useFiscalContext`).
-- **Settings — nouvelle page « Comptables & sociétés » + migration IS** : créer la page, y **déplacer** l'IS (`corporateTax`) depuis `settings/impots` (déplacement, pas duplication), sans laisser de référence orpheline dans `settings-references`. Cette page est justifiée dès maintenant car l'IS est réel et `tresorerie-societe` est actif.
-- **Hors périmètre (reporté aux PR moteurs)** : les paramètres propres à un moteur non encore ouvert (PV immo, fonciers, LMNP, Dutreil, charges sociales dirigeant, cotisations retraite, règles société détaillées et dispositifs d'épargne salariale comme section de `/settings/comptables-societes`) restent attachés à la PR du moteur concerné. Ils sont seulement **documentés** dans la table de couverture.
+- **Settings — câblage de l'existant** : créer la section **IFI** sur `/settings/memento` (le barème existe déjà dans `settingsDefaults.ts`), l'exposer dans `useFiscalContext` et la chaîner dans `settings-references`. Idem **CDHR** (exposer la section, vérifier `useFiscalContext`).
+- **Settings — section société dans le mémento** : raccorder l'IS (`corporateTax`) à la section
+  société de `/settings/memento`, sans duplication et sans laisser de référence orpheline dans
+  `settings-references`.
+- **Hors périmètre (reporté aux PR moteurs)** : les paramètres propres à un moteur non encore ouvert (PV immo, fonciers, LMNP, Dutreil, charges sociales dirigeant, cotisations retraite, règles société détaillées et dispositifs d'épargne salariale comme section de `/settings/memento`) restent attachés à la PR du moteur concerné. Ils sont seulement **documentés** dans la table de couverture.
 
 Tests :
 
 - Test registry : chaque `SimulatorDefinition` a des `tags` ; libellés canoniques présents.
 - Tests settings IFI/CDHR : valeurs lues via `useFiscalContext`, pas en dur.
-- Tests migration IS : `corporateTax` accessible depuis la nouvelle page, ancien chemin Impôts retiré, `check:settings-references` vert (aucune référence orpheline).
+- Tests IS : `corporateTax` accessible depuis `/settings/memento`, `check:settings-references`
+  vert (aucune référence orpheline).
 - `npm run check` (dont `check:fiscal-hardcode`, `check:legal-references`, `check:settings-references`).
 
 Critères de sortie :
 
 - `SimulatorDefinition.tags` obligatoire et testé ; libellés alignés doc↔code.
 - IFI et CDHR éditables en Settings et consommés via la chaîne fiscale.
-- Page Comptables & sociétés en place avec l'IS migré, sans régression ni référence orpheline.
+- Section société du mémento en place avec l'IS, sans régression ni référence orpheline.
 - Aucune autre page Settings créée à ce stade (principe 16).
 
 ### PR V2-07 / F1 - Socle dossier Audit — ✅ Fait

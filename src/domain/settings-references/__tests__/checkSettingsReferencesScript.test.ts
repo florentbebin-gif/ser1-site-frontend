@@ -77,7 +77,7 @@ function validReference(overrides: Record<string, unknown> = {}) {
 
 function validBinding(overrides: Record<string, unknown> = {}) {
   return {
-    pagePath: '/settings/impots',
+    pagePath: '/settings/memento',
     sectionKey: 'income-tax',
     sectionLabel: 'Impôt sur le revenu',
     category: 'valeur-fiscale',
@@ -99,7 +99,7 @@ function validBinding(overrides: Record<string, unknown> = {}) {
 
 function validBaseContratBinding(audience: 'pp' | 'pm', overrides: Record<string, unknown> = {}) {
   return validBinding({
-    pagePath: '/settings/base-contrat',
+    pagePath: '/settings/memento',
     sectionKey: 'assurance-epargne',
     category: 'deces-transmission',
     claimKey: `capitalisation-succession-active-${audience}`,
@@ -133,7 +133,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
 
   bindings.push(
     validBinding({
-      pagePath: '/settings/comptables-societes',
+      pagePath: '/settings/memento',
       sectionKey: 'comptables-societes-fixture',
       claimKey: 'comptables-societes-fixture-0',
       claimLabel: 'Claim Comptables & sociétés 0',
@@ -148,7 +148,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
   for (let index = 0; index < 5; index += 1) {
     bindings.push(
       validBinding({
-        pagePath: '/settings/prelevements',
+        pagePath: '/settings/memento',
         sectionKey: 'prelevements-fixture',
         claimKey: `prelevements-fixture-${index}`,
         claimLabel: `Claim prélèvements ${index}`,
@@ -169,7 +169,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
   for (let index = 0; index < 7; index += 1) {
     bindings.push(
       validBinding({
-        pagePath: '/settings/dmtg-succession',
+        pagePath: '/settings/memento',
         sectionKey: 'dmtg-fixture',
         category: index % 2 === 0 ? 'valeur-fiscale' : 'regle-civile',
         claimKey: `dmtg-fixture-${index}`,
@@ -190,7 +190,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
     for (const category of PREVOYANCE_CATEGORIES) {
       bindings.push(
         validBinding({
-          pagePath: '/settings/prevoyance-regimes',
+          pagePath: '/settings/memento',
           sectionKey: `prevoyance-${code}`,
           category: category === 'deces' ? 'deces-transmission' : category,
           claimKey: `${code}-${category}`,
@@ -208,7 +208,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
 
   bindings.push(
     validBinding({
-      pagePath: '/settings/prevoyance-regimes',
+      pagePath: '/settings/memento',
       sectionKey: 'prevoyance-maintien-employeur',
       category: 'maintien-employeur',
       claimKey: 'maintien-employeur',
@@ -369,32 +369,11 @@ describe('check-settings-references', () => {
     expect(report.coverage.isExhaustive).toBe(true);
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
-      '/settings/base-contrat': 2,
-      '/settings/comptables-societes': 1,
-      '/settings/dmtg-succession': 7,
-      '/settings/impots': 10,
-      '/settings/prelevements': 5,
-      '/settings/prevoyance-regimes': 69,
+      '/settings/memento': 94,
     });
-    expect(report.coverage.byPage['/settings/impots']).toEqual({
-      expected: 10,
-      declared: 10,
-      expectedDefined: true,
-      complete: true,
-      missing: 0,
-      extra: 0,
-    });
-    expect(report.coverage.byPage['/settings/comptables-societes']).toEqual({
-      expected: 1,
-      declared: 1,
-      expectedDefined: true,
-      complete: true,
-      missing: 0,
-      extra: 0,
-    });
-    expect(report.coverage.byPage['/settings/base-contrat']).toEqual({
-      expected: 2,
-      declared: 2,
+    expect(report.coverage.byPage['/settings/memento']).toEqual({
+      expected: 94,
+      declared: 94,
       expectedDefined: true,
       complete: true,
       missing: 0,

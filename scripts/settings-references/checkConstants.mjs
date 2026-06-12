@@ -1,19 +1,7 @@
-export const SETTINGS_PAGES = new Set([
-  '/settings/impots',
-  '/settings/comptables-societes',
-  '/settings/prelevements',
-  '/settings/base-contrat',
-  '/settings/dmtg-succession',
-  '/settings/prevoyance-regimes',
-]);
+export const SETTINGS_PAGES = new Set(['/settings/memento']);
 
 export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = {
-  '/settings/impots': 10,
-  '/settings/comptables-societes': 1,
-  '/settings/prelevements': 5,
-  '/settings/base-contrat': null,
-  '/settings/dmtg-succession': 7,
-  '/settings/prevoyance-regimes': 69,
+  '/settings/memento': 92,
 };
 
 export const CATEGORIES = new Set([

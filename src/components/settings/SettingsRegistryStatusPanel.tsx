@@ -2,6 +2,8 @@ import type { ReactElement } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import {
   listSettingsForOwnerPage,
+  type SettingRegistryKey,
+  type SettingsFamilyId,
   type SettingsOwnerPagePath,
   type SettingsRegistryEntry,
   type SettingsRegistryStatus,
@@ -27,17 +29,15 @@ const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; pl
 };
 
 const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
-  '/settings/impots': 'Registre settings impôts',
-  '/settings/comptables-societes': 'Registre settings comptables & sociétés',
-  '/settings/prelevements': 'Registre settings paramètres sociaux',
-  '/settings/base-contrat': 'Registre settings référentiel contrats',
+  '/settings/memento': 'Registre settings mémento',
   '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',
-  '/settings/dmtg-succession': 'Registre settings DMTG & Succession',
-  '/settings/prevoyance-regimes': 'Registre settings Prévoyance — régimes',
 };
 
 interface SettingsRegistryStatusPanelProps {
   ownerPage: SettingsOwnerPagePath;
+  families?: readonly SettingsFamilyId[];
+  settingKeys?: readonly SettingRegistryKey[];
+  title?: string;
 }
 
 function RegistryIcon(): ReactElement {
@@ -98,18 +98,29 @@ function SettingsRegistryItem({ entry }: { entry: SettingsRegistryEntry }): Reac
 
 export function SettingsRegistryStatusPanel({
   ownerPage,
+  families,
+  settingKeys,
+  title,
 }: SettingsRegistryStatusPanelProps): ReactElement | null {
   const { isAdmin } = useUserRole();
   if (!isAdmin) return null;
 
-  const entries = listSettingsForOwnerPage(ownerPage);
+  const ownerEntries = listSettingsForOwnerPage(ownerPage);
+  const familyEntries =
+    families && families.length > 0
+      ? ownerEntries.filter((entry) => families.includes(entry.family))
+      : ownerEntries;
+  const allowedSettingKeys = settingKeys ? new Set<string>(settingKeys) : null;
+  const entries = allowedSettingKeys
+    ? familyEntries.filter((entry) => allowedSettingKeys.has(entry.key))
+    : familyEntries;
   if (entries.length === 0) return null;
 
   const groupedEntries = groupByStatus(entries);
 
   return (
     <SettingsSectionCard
-      title={OWNER_PAGE_TITLES[ownerPage]}
+      title={title ?? OWNER_PAGE_TITLES[ownerPage]}
       subtitle="Lecture propriétaire des paramètres déclarés, avec séparation des statuts prêts, partiels et planifiés."
       icon={<RegistryIcon />}
       collapsible

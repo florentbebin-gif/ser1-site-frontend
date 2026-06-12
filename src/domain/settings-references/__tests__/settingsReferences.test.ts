@@ -6,26 +6,27 @@ describe('settings-references', () => {
   it('expose le registre canonique et le filtre par page', () => {
     expect(SETTINGS_REFERENCE_CHAIN.length).toBeGreaterThan(0);
 
-    const impotsBindings = listSettingsReferenceBindings('/settings/impots');
-    const comptablesSocietesBindings = listSettingsReferenceBindings(
-      '/settings/comptables-societes',
-    );
+    const mementoBindings = listSettingsReferenceBindings('/settings/memento');
 
-    expect(impotsBindings.length).toBeGreaterThan(0);
-    expect(impotsBindings.every((binding) => binding.pagePath === '/settings/impots')).toBe(true);
-    expect(comptablesSocietesBindings.map((binding) => binding.claimKey)).toEqual([
-      'corporate-tax-current',
-    ]);
+    expect(mementoBindings.length).toBeGreaterThan(0);
+    expect(mementoBindings.every((binding) => binding.pagePath === '/settings/memento')).toBe(true);
+    expect(mementoBindings.map((binding) => binding.claimKey)).toEqual(
+      expect.arrayContaining([
+        'income-tax-scale-current',
+        'corporate-tax-current',
+        'dmtg-fiscal-values-current',
+      ]),
+    );
   });
 
-  it('chaîne les claims charges sociales dirigeant de la page prélèvements', () => {
-    const prelevementsBindings = listSettingsReferenceBindings('/settings/prelevements');
+  it('chaîne les claims charges sociales dirigeant de la page mémento', () => {
+    const mementoBindings = listSettingsReferenceBindings('/settings/memento');
 
-    expect(prelevementsBindings.map((binding) => binding.claimKey)).toEqual(
+    expect(mementoBindings.map((binding) => binding.claimKey)).toEqual(
       expect.arrayContaining(['social-dirigeant-dividendes-tns']),
     );
     expect(
-      prelevementsBindings.find((binding) => binding.claimKey === 'social-dirigeant-dividendes-tns')
+      mementoBindings.find((binding) => binding.claimKey === 'social-dirigeant-dividendes-tns')
         ?.target,
     ).toEqual({
       kind: 'settings-default',

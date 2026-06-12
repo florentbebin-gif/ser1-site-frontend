@@ -10,6 +10,11 @@ export {
 } from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
 export {
+  MEMENTO_EDITORIAL,
+  MEMENTO_EDITORIAL_BY_CHAPTER,
+  type MementoChapterEditorial,
+} from './editorial';
+export {
   MEMENTO_LEXICON_SENSITIVITY_VALUES,
   MEMENTO_LEXICON_STATUS_VALUES,
   MEMENTO_LEXICON_TERMS,
@@ -28,6 +33,7 @@ export {
 } from './entriesEpargneRetraite';
 export {
   PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
+  PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS,
   PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
   PREVOYANCE_REGIME_CLAIMS,
 } from './entriesPrevoyance';

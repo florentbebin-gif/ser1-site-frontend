@@ -11,10 +11,18 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Paramètres DMTG administrés et sourcés via les claims settings-references ; simulateur succession actif.',
     priority: 'critique',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['transmission.dmtg-succession'],
     claimKeys: ['dmtg-fiscal-values-current', 'dmtg-conjoint-pacs-exoneration-cgi-796-0-bis'],
-    refIds: ['cgi-777', 'cgi-779', 'code-civil-720', 'code-civil-912', 'code-civil-913'],
+    refIds: [
+      'cgi-777',
+      'cgi-779',
+      'cgi-790-h',
+      'cgi-790-i',
+      'code-civil-720',
+      'code-civil-912',
+      'code-civil-913',
+    ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['succession'],
   },
@@ -23,15 +31,15 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission.assurance-vie-deces',
     label: 'Assurance-vie au décès',
     description:
-      'Régimes décès de l’assurance-vie rattachés à la page DMTG, séparés de l’angle enveloppe et rachat porté par Base-Contrat.',
+      'Régimes décès de l’assurance-vie rattachés au mémento, séparés de l’angle enveloppe et rachat porté par Base-Contrat.',
     status: 'couvert',
     statusReason:
       'Paramètres décès administrés et sourcés via les claims settings-references ; lecture consommée par le simulateur succession actif.',
     priority: 'critique',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['transmission.assurance-vie-deces'],
     claimKeys: ['assurance-vie-990i-757b'],
-    refIds: ['cgi-990-i', 'cgi-757-b', 'boi-enr-dmtg-10-10-20-20'],
+    refIds: ['cgi-990-i', 'cgi-757-b', 'boi-enr-dmtg-10-10-20-20', 'code-assurances-l132-13'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['succession'],
   },
@@ -45,7 +53,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Simulateur donation et démembrement planifié ; les claims DMTG existent mais le moteur dédié n’est pas livré et le barème de la donation entre époux n’est pas administré dans les paramètres DMTG.',
     priority: 'critique',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'donation-rappel-fiscal-15-ans',
@@ -59,6 +67,8 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
       'cgi-790-g',
       'cgi-669',
       'cgi-777',
+      'cgi-790-e',
+      'cgi-790-f',
       'cgi-796-0-bis',
       'code-civil-894',
       'code-civil-1075',
@@ -75,9 +85,9 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
       'Donations graduelles et résiduelles, legs universels, à titre universel ou particuliers et renonciation anticipée à l’action en réduction, en appui des scénarios successoraux.',
     status: 'partiel',
     statusReason:
-      'Référentiel libéralités affiché en lecture seule sur la page DMTG & Succession avec les références civiles existantes ; la renonciation anticipée à l’action en réduction reste à sourcer.',
+      'Référentiel libéralités affiché en lecture seule dans le mémento avec les références civiles existantes ; la renonciation anticipée à l’action en réduction reste à sourcer.',
     priority: 'utile',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [
@@ -86,6 +96,8 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
       'code-civil-1010',
       'code-civil-1048',
       'code-civil-1057',
+      'code-civil-929',
+      'code-civil-930',
     ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['succession'],
@@ -96,14 +108,14 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     label: 'Transmission internationale',
     description:
       'Successions, donations et assurance-vie en présence d’un élément d’extranéité : territorialité des droits et règles propres aux non-résidents, sous réserve des conventions fiscales.',
-    status: 'a_verifier',
+    status: 'partiel',
     statusReason:
-      'Aucun claim ni référence repo sur la territorialité des droits de mutation et l’assurance-vie des non-résidents ; les règles doivent être qualifiées sur une source officielle avant tout affichage opérationnel.',
+      'Territorialité des droits de mutation sourcée par le CGI et le BOFiP ; conventions fiscales et cas fins non couverts.',
     priority: 'critique',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
-    refIds: [],
+    refIds: ['cgi-750-ter', 'boi-enr-dmtg-10-10-30', 'cgi-990-i'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['succession'],
   },
@@ -117,7 +129,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Simulateur Pacte Dutreil planifié ; le registry settings identifie le besoin sans activer de moteur dédié.',
     priority: 'structurant',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['transmission.dutreil'],
     claimKeys: [],
     refIds: ['base-source-art-787-b-cgi-pacte-dutreil'],
@@ -134,7 +146,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Dispositif fondé par l’annexe au CGI et la doctrine BOFiP référencées ; aucun paramètre administré ni calcul, conditions fines à qualifier avant tout moteur.',
     priority: 'critique',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['cgi-ann3-397-a', 'cgi-ann3-404-ga', 'boi-enr-dg-50-20-50'],
@@ -151,7 +163,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Variante société ROADMAP-only ; la valorisation et le modèle société relèvent du jalon société avant calcul.',
     priority: 'structurant',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [
@@ -175,7 +187,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     statusReason:
       'Variante société ROADMAP-only ; le calcul dépend du futur modèle société, des titres et des besoins de liquidité.',
     priority: 'structurant',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [

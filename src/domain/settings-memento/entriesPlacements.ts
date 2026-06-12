@@ -11,7 +11,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     statusReason:
       'Simulateur placement actif ; les enveloppes comparées sont documentées par les claims Base-Contrat, la fiscalité transverse étant portée par l’entrée dédiée aux prélèvements sociaux et au PFU.',
     priority: 'critique',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'base-contrat-assurance-vie-pp-constitution-versements',
@@ -32,7 +32,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     statusReason:
       'Taux administrés et sourcés via les claims settings-references des pages Prélèvements et Impôts ; la part sociale du PFU est composée depuis les prélèvements sociaux.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['impots.ps-patrimoine', 'impots.pfu.part-ir'],
     claimKeys: ['patrimony-current', 'pfu-ir-current'],
     refIds: [
@@ -50,12 +50,12 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.assurance-vie-capitalisation',
     label: 'Assurance-vie et contrats de capitalisation',
     description:
-      'Enveloppes vie et capitalisation du catalogue Base-Contrat : versements, rachats selon l’ancienneté du contrat et transmissibilité, l’angle décès restant porté par la page DMTG & Succession.',
+      'Enveloppes vie et capitalisation du catalogue Base-Contrat : versements, rachats selon l’ancienneté du contrat et transmissibilité, l’angle décès restant porté par le mémento.',
     status: 'partiel',
     statusReason:
       'Claims Base-Contrat de constitution, de rachat et de transmission présents ; le pack placement complet reste partiel dans le registry settings.',
     priority: 'critique',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['placements.assurance-vie-capitalisation'],
     claimKeys: [
       'base-contrat-assurance-vie-pp-constitution-versements',
@@ -83,9 +83,9 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
       'Sous-types titres du simulateur placement : éligibilité et versements des plans, retraits selon la maturité du plan et imposition des revenus et cessions du compte-titres.',
     status: 'partiel',
     statusReason:
-      'Claims Base-Contrat des plans et du compte-titres présents ; les abattements de détention des titres acquis avant la réforme du prélèvement forfaitaire restent à qualifier.',
+      'Claims Base-Contrat des plans et du compte-titres présents ; les abattements de détention antérieurs au PFU sont sourcés mais le pack placement complet reste partiel dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'base-contrat-pea-pp-constitution-versements-et-titres-eligibles',
@@ -103,6 +103,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
       'base-source-art-150-0-a-ii-2-cgi-pea',
       'base-source-art-200-a-cgi-pfu',
       'cgi-150-0-a',
+      'cgi-150-0-d',
       'boi-rppm-pvbmi-30-20',
     ],
     coverageSources: ['cadrage-externe'],
@@ -118,7 +119,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     statusReason:
       'Produits sourcés bloc par bloc via les claims settings-references du catalogue Base-Contrat ; couverture de lecture sans moteur dédié.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'base-contrat-livret-a-pp-constitution-versements-et-plafonds',

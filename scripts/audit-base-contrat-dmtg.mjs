@@ -40,9 +40,8 @@ const CONSUMER_PATTERNS = [
     regex: /\b(FiscalProfile|getEnvelopeCatalogId|buildFiscalProfile|emptyFiscalProfile)\b/,
   },
   {
-    key: 'route base-contrat',
-    regex:
-      /href="\/settings\/base-contrat"|path:\s*'base-contrat'|urlPath:\s*'\/settings\/base-contrat'|startsWith\('\/settings\/base-contrat'\)/,
+    key: 'surface memento base-contrat',
+    regex: /BaseContratSettingsPanel|targetSectionKey:\s*'base-contrat'|id:\s*'base-contrat'/,
   },
   { key: 'base_contrat_overrides', regex: /base_contrat_overrides|baseContratOverridesCache/ },
 ];

@@ -1,5 +1,5 @@
 import type { SettingsRegistryEntry } from './types';
-import { completeSource, currentJsonb, ownerPrelevements, settingsDefault } from './entryHelpers';
+import { completeSource, currentJsonb, ownerMemento, settingsDefault } from './entryHelpers';
 
 export const SETTINGS_SOCIAL_DIRIGEANT_REGISTRY = [
   {
@@ -27,7 +27,7 @@ export const SETTINGS_SOCIAL_DIRIGEANT_REGISTRY = [
       ],
       requiredBeforeConsumption: true,
     },
-    ownerSettingsPage: ownerPrelevements,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['tresorerie-societe', 'remuneration', 'retraite', 'sortie-capitaux'],
     status: 'partial',
     statusReason:

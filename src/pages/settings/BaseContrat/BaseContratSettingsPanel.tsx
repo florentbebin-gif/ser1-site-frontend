@@ -1,7 +1,7 @@
 /**
- * BaseContrat - Référentiel contrats.
+ * BaseContratSettingsPanel - Référentiel contrats.
  *
- * Page /settings/base-contrat.
+ * Panneau /settings/memento.
  * Catalogue hardcode (domain/base-contrat/catalog.ts) + overrides Supabase.
  * Règles fiscales lues via domain/base-contrat/rules/.
  * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
@@ -9,13 +9,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
-import { UserInfoBanner } from '@/components/UserInfoBanner';
 import SettingsTitleWithIcon, {
   type SettingsTitleIconName,
 } from '@/components/settings/SettingsTitleWithIcon';
 import { SimSegmentedControl } from '@/components/ui/sim';
 import '@/styles/sim/segmented.css';
-import './styles/base-contrat.css';
+import '../styles/base-contrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
 import {
@@ -36,9 +35,9 @@ import {
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
-import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
-import { OverrideModal, ReviewStatusDetails } from './BaseContratOverrideControls';
-import { RuleSourcesList } from './BaseContratRuleSources';
+import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from '../baseContratLabels';
+import { OverrideModal, ReviewStatusDetails } from '../BaseContratOverrideControls';
+import { RuleSourcesList } from '../BaseContratRuleSources';
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -209,7 +208,7 @@ function getFamilyIcon(famille: string): SettingsTitleIconName {
   return FAMILY_ICON_BY_NAME[famille] ?? 'sparkles';
 }
 
-export default function BaseContrat() {
+export default function BaseContratSettingsPanel() {
   const { isAdmin } = useUserRole();
   const { fiscalContext } = useFiscalContext();
   const { overrides, loading, reload } = useOverrides();
@@ -287,8 +286,6 @@ export default function BaseContrat() {
 
   return (
     <div className="base-contrat-page">
-      <UserInfoBanner />
-
       <div className="settings-stack settings-stack--spacious">
         <section className="settings-premium-card base-contrat-header-card">
           <div className="settings-reference-header">

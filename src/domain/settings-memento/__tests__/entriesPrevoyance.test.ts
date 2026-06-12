@@ -7,6 +7,7 @@ import {
   MEMENTO_ENTRIES,
   getCoverageForSimulator,
   PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
+  PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS,
   PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
   PREVOYANCE_REGIME_CLAIMS,
 } from '../index';
@@ -34,7 +35,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
       expect(entry, `entrée manquante : ${key}`).toBeDefined();
       expect(entry!.chapterId, key).toBe('prevoyance');
       expect(entry!.status, key).toBe(R7_PREVOYANCE_EXPECTED_STATUSES[key]);
-      expect(entry!.ownerPagePath, key).toBe('/settings/prevoyance-regimes');
+      expect(entry!.ownerPagePath, key).toBe('/settings/memento');
       expect(entry!.registryKeys, key).toContain('retraite-prevoyance.prevoyance-garanties');
     }
   });
@@ -49,6 +50,35 @@ describe('settings-memento — prévoyance obligatoire', () => {
       'base-source-boss-prevoyance-tns',
     ]);
     expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
+  });
+
+  it('rattache les contrats assurantiels aux règles Base-Contrat prévoyance', () => {
+    const entry = entryByKey.get('prevoyance.contrats-assurantiels');
+
+    expect(entry).toBeDefined();
+    expect(entry!.chapterId).toBe('prevoyance');
+    expect(entry!.status).toBe('partiel');
+    expect(entry!.ownerPagePath).toBe('/settings/memento');
+    expect(entry!.claimKeys).toEqual(PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS);
+    expect(entry!.refIds).toEqual([
+      'base-source-service-public-assurance-deces',
+      'base-source-service-public-pension-d-invalidite',
+      'base-source-boss-prevoyance-tns',
+      'base-source-art-158-6-cgi-rentes-viageres-a-titre-onereux',
+      'cgi-757-b',
+      'cgi-990-i',
+    ]);
+    expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
+
+    for (const claimKey of PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS) {
+      const binding = bindingsByClaimKey.get(claimKey);
+
+      expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
+      expect(binding!.pagePath, claimKey).toBe('/settings/memento');
+      expect(binding!.sectionKey, claimKey).toBe('assurance-prevoyance');
+      expect(binding!.target.kind, claimKey).toBe('base-contrat-rule');
+      expect(binding!.refIds.length, claimKey).toBeGreaterThan(0);
+    }
   });
 
   it('verrouille la cartographie des caisses attendue par R7', () => {
@@ -68,7 +98,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
       const binding = bindingsByClaimKey.get(claimKey);
 
       expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
-      expect(binding!.pagePath, claimKey).toBe('/settings/prevoyance-regimes');
+      expect(binding!.pagePath, claimKey).toBe('/settings/memento');
       expect(binding!.target.kind, claimKey).toBe('prevoyance-db');
       expect(binding!.refIds, claimKey).toEqual([]);
       expect(binding!.noRefReason, claimKey).toContain(

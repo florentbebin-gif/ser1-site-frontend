@@ -15,7 +15,7 @@ import {
 import type { MementoChapter, MementoEntry } from './types';
 import { validateMementoTaxonomy } from './validators';
 
-const CANONICAL_SOCIETY_SETTINGS_PATH = '/settings/comptables-societes';
+const MEMENTO_SETTINGS_PATH = '/settings/memento';
 const SINGULAR_SOCIETY_SETTINGS_PATH = '/settings/comptables-societe';
 const SOURCE_MISSING_ALLOWED_STATUSES = new Set([
   'planned',
@@ -75,7 +75,7 @@ export interface MementoCoverageReport {
   referencedChapterIds: readonly string[];
   unreferencedChapterIds: readonly string[];
   settingsRoutes: {
-    hasCanonicalSocietyPath: boolean;
+    hasMementoPath: boolean;
     hasSingularSocietyPath: boolean;
     unknownOwnerPagePaths: readonly string[];
   };
@@ -219,30 +219,26 @@ function validateChapterReferences(
   return { referencedChapterIds, unreferencedChapterIds };
 }
 
-function validateCanonicalSocietyRoute(
+function validateSettingsRouteInvariants(
   input: ResolvedMementoCoverageInput,
   errors: string[],
 ): void {
   const knownPaths = new Set(input.knownSettingsUrlPaths);
 
-  if (!knownPaths.has(CANONICAL_SOCIETY_SETTINGS_PATH)) {
-    errors.push('SETTINGS_ROUTES: /settings/comptables-societes doit rester déclarée.');
+  if (!knownPaths.has(MEMENTO_SETTINGS_PATH)) {
+    errors.push('SETTINGS_ROUTES: /settings/memento doit rester déclarée.');
   }
 
   for (const path of knownPaths) {
-    if (path === CANONICAL_SOCIETY_SETTINGS_PATH) continue;
     if (path.startsWith(SINGULAR_SOCIETY_SETTINGS_PATH)) {
-      errors.push(`SETTINGS_ROUTES: route société non canonique détectée (${path}).`);
+      errors.push(`SETTINGS_ROUTES: route société historique détectée (${path}).`);
     }
   }
 
   for (const entry of input.entries) {
     if (entry.ownerPagePath === null) continue;
-    if (entry.ownerPagePath === CANONICAL_SOCIETY_SETTINGS_PATH) continue;
     if (entry.ownerPagePath.startsWith(SINGULAR_SOCIETY_SETTINGS_PATH)) {
-      errors.push(
-        `${entry.key}: ownerPagePath société doit utiliser /settings/comptables-societes.`,
-      );
+      errors.push(`${entry.key}: ownerPagePath société historique interdit.`);
     }
   }
 }
@@ -270,7 +266,7 @@ export function buildMementoCoverageReport(input: MementoCoverageInput): Memento
     resolvedInput,
     errors,
   );
-  validateCanonicalSocietyRoute(resolvedInput, errors);
+  validateSettingsRouteInvariants(resolvedInput, errors);
 
   return {
     ok: errors.length === 0,
@@ -286,13 +282,9 @@ export function buildMementoCoverageReport(input: MementoCoverageInput): Memento
     referencedChapterIds,
     unreferencedChapterIds,
     settingsRoutes: {
-      hasCanonicalSocietyPath: resolvedInput.knownSettingsUrlPaths.includes(
-        CANONICAL_SOCIETY_SETTINGS_PATH,
-      ),
-      hasSingularSocietyPath: resolvedInput.knownSettingsUrlPaths.some(
-        (path) =>
-          path !== CANONICAL_SOCIETY_SETTINGS_PATH &&
-          path.startsWith(SINGULAR_SOCIETY_SETTINGS_PATH),
+      hasMementoPath: resolvedInput.knownSettingsUrlPaths.includes(MEMENTO_SETTINGS_PATH),
+      hasSingularSocietyPath: resolvedInput.knownSettingsUrlPaths.some((path) =>
+        path.startsWith(SINGULAR_SOCIETY_SETTINGS_PATH),
       ),
       unknownOwnerPagePaths,
     },

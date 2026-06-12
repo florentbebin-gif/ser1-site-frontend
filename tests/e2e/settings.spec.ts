@@ -33,7 +33,11 @@ test.describe('Settings', () => {
     // The key in SETTINGS_ROUTES is 'general', label is 'Généraux'.
     await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Mémento' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Impôts' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Impôts' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Comptables & sociétés' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Référentiel contrats' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'DMTG & Succession' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Prévoyance — régimes' })).toHaveCount(0);
 
     // Check if the content area loads (active component)
     // The 'Généraux' tab renders the Settings component which usually has some content.
@@ -44,15 +48,14 @@ test.describe('Settings', () => {
   test('navigation entre les onglets', async ({ page }) => {
     await page.goto(ROUTES.settings);
 
-    // Click on "Impôts" tab
-    await page.getByRole('button', { name: 'Impôts' }).click();
+    // Click on "Mémento" tab
+    await page.getByRole('button', { name: 'Mémento' }).click();
 
     // URL should update
-    await expect(page).toHaveURL(/.*\/settings\/impots/);
+    await expect(page).toHaveURL(/.*\/settings\/memento/);
 
-    // Content should update (we can check for specific content of SettingsImpots if known,
-    // or just that the tab is active)
-    await expect(page.getByRole('button', { name: 'Impôts' })).toHaveClass(/is-active/);
+    await expect(page.getByRole('button', { name: 'Mémento' })).toHaveClass(/is-active/);
+    await expect(page.getByRole('heading', { name: 'Mémento patrimonial & social' })).toBeVisible();
 
     // Go back to "Généraux"
     await page.getByRole('button', { name: 'Généraux' }).click();

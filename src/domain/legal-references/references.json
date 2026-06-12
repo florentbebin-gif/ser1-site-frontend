@@ -24,6 +24,17 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "cgi-200-0-a",
+    "label": "CGI art. 200-0 A — plafonnement global des avantages fiscaux",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053543258",
+    "articleOrSection": "Art. 200-0 A",
+    "scope": "Plafonnement global des avantages fiscaux accordés au titre de l'impôt sur le revenu.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-223-sexies",
     "label": "CGI art. 223 sexies — contribution exceptionnelle sur les hauts revenus",
     "sourceType": "CGI",
@@ -91,6 +102,17 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "cgi-145",
+    "label": "CGI art. 145 — régime fiscal des sociétés mères",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051203497",
+    "articleOrSection": "Art. 145",
+    "scope": "Conditions d'application du régime fiscal des sociétés mères et filiales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-150-0-a",
     "label": "CGI art. 150-0 A — plus-values mobilières",
     "sourceType": "CGI",
@@ -100,6 +122,61 @@
     "volatility": "lawChange",
     "relatedSimulatorIds": ["placement"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "cgi-150-0-b-ter",
+    "label": "CGI art. 150-0 B ter — report d'imposition apport-cession",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053542872",
+    "articleOrSection": "Art. 150-0 B ter",
+    "scope": "Report d'imposition applicable à certains apports de titres à une société contrôlée par l'apporteur.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-150-0-d",
+    "label": "CGI art. 150-0 D — abattements sur titres",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218045",
+    "articleOrSection": "Art. 150-0 D",
+    "scope": "Modalités de calcul des gains nets de cession de valeurs mobilières, dont abattements de durée de détention lorsque le régime les maintient.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-150-0-d-ter",
+    "label": "CGI art. 150-0 D ter — abattement dirigeant retraite",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036427840",
+    "articleOrSection": "Art. 150-0 D ter",
+    "scope": "Abattement fixe applicable sous conditions aux dirigeants de PME partant à la retraite lors de la cession de leurs titres.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-680",
+    "label": "CGI art. 680 — droit fixe des actes innomés",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000027729145",
+    "articleOrSection": "Art. 680",
+    "scope": "Droit fixe applicable aux actes non exonérés, non tarifés par un autre article et non soumis à une imposition proportionnelle ou progressive.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-750-ter",
+    "label": "CGI art. 750 ter — territorialité des DMTG",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024453202",
+    "articleOrSection": "Art. 750 ter",
+    "scope": "Règles de territorialité des droits de mutation à titre gratuit selon le domicile fiscal et la situation des biens.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "cgi-990-i",
@@ -138,6 +215,17 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "code-civil-734-740",
+    "label": "Code civil art. 734 à 740 — ordres d'héritiers",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006070721/LEGISCTA000006165515/",
+    "articleOrSection": "Art. 734 à 740",
+    "scope": "Ordres d'héritiers et dévolution aux collatéraux ordinaires en l'absence de conjoint successible.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "code-civil-265",
     "label": "Code civil art. 265 — effets du divorce sur les avantages matrimoniaux",
     "sourceType": "Code civil",
@@ -147,6 +235,17 @@
     "volatility": "stable",
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-civil-515-5",
+    "label": "Code civil art. 515-5 — régime patrimonial du PACS",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021330223",
+    "articleOrSection": "Art. 515-5",
+    "scope": "Régime patrimonial légal du pacte civil de solidarité et présomption d'indivision entre partenaires.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-civil-578",
@@ -235,6 +334,28 @@
     "volatility": "stable",
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-civil-929",
+    "label": "Code civil art. 929 — renonciation anticipée à l'action en réduction",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006433772",
+    "articleOrSection": "Art. 929",
+    "scope": "Possibilité pour un héritier réservataire présomptif de renoncer par anticipation à exercer une action en réduction.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-civil-930",
+    "label": "Code civil art. 930 — forme de la renonciation anticipée",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006433774",
+    "articleOrSection": "Art. 930",
+    "scope": "Forme authentique et conditions de validité de la renonciation anticipée à l'action en réduction.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-civil-1002",
@@ -483,6 +604,28 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-790-e",
+    "label": "CGI art. 790 E — donation entre époux",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292592",
+    "articleOrSection": "Art. 790 E",
+    "scope": "Abattement applicable aux donations entre époux pour la liquidation des droits de mutation à titre gratuit entre vifs.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-790-f",
+    "label": "CGI art. 790 F — donation entre partenaires PACS",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292590",
+    "articleOrSection": "Art. 790 F",
+    "scope": "Abattement applicable aux donations entre partenaires liés par un pacte civil de solidarité.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-790-g",
     "label": "CGI art. 790 G — don familial de sommes d'argent",
     "sourceType": "CGI",
@@ -493,6 +636,28 @@
     "relatedSimulatorIds": ["succession"],
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "cgi-790-h",
+    "label": "CGI art. 790 H — don familial immobilier",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000029997561",
+    "articleOrSection": "Art. 790 H",
+    "scope": "Dispositif fiscal de donation familiale rattaché aux biens immobiliers selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-790-i",
+    "label": "CGI art. 790 I — don familial logement",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000029997583",
+    "articleOrSection": "Art. 790 I",
+    "scope": "Dispositif fiscal de donation familiale rattaché au logement selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "cgi-38",
@@ -614,6 +779,17 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "boi-enr-dmtg-10-10-30",
+    "label": "BOFiP BOI-ENR-DMTG-10-10-30 — territorialité DMTG",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/3543-PGP.html/identifiant=BOI-ENR-DMTG-10-10-30-20120912",
+    "articleOrSection": "BOI-ENR-DMTG-10-10-30",
+    "scope": "Doctrine administrative relative aux règles de territorialité des droits de mutation à titre gratuit.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "boi-tcas-aut-60",
     "label": "BOFiP BOI-TCAS-AUT-60 — prélèvement assurance-vie 990 I",
     "sourceType": "BOFiP",
@@ -664,6 +840,94 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-197-a",
+    "label": "CGI art. 197 A — taux minimum des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037985917",
+    "articleOrSection": "Art. 197 A",
+    "scope": "Calcul minimum de l'impôt sur le revenu dû par les contribuables non domiciliés en France percevant des revenus de source française.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-182-a",
+    "label": "CGI art. 182 A — retenue à la source des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051765171",
+    "articleOrSection": "Art. 182 A",
+    "scope": "Retenue à la source sur certains traitements, salaires, pensions et rentes de source française versés à des non-résidents.",
+    "volatility": "annual",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-187",
+    "label": "CGI art. 187 — retenues à la source sur revenus distribués",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218440",
+    "articleOrSection": "Art. 187",
+    "scope": "Taux de retenue à la source applicables à certains revenus distribués payés à des bénéficiaires situés hors de France.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-8",
+    "label": "CGI art. 8 — sociétés de personnes et translucidité fiscale",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025842591",
+    "articleOrSection": "Art. 8",
+    "scope": "Imposition des associés de sociétés de personnes et sociétés civiles relevant du régime de translucidité fiscale.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-206",
+    "label": "CGI art. 206 — sociétés passibles de l'IS",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051765059",
+    "articleOrSection": "Art. 206",
+    "scope": "Assujettissement à l'impôt sur les sociétés, dont situations de sociétés civiles exerçant certaines activités ou optant pour l'IS.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-216",
+    "label": "CGI art. 216 — produits de participations et QPFC",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048831340",
+    "articleOrSection": "Art. 216",
+    "scope": "Déduction des produits de participations dans le régime mère-fille et quote-part de frais et charges.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-39",
+    "label": "CGI art. 39 — charges déductibles et intérêts",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053542680",
+    "articleOrSection": "Art. 39",
+    "scope": "Détermination du bénéfice imposable, dont conditions de déduction de certains intérêts servis aux associés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-231",
+    "label": "CGI art. 231 — taxe sur les salaires",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051764961",
+    "articleOrSection": "Art. 231",
+    "scope": "Champ et assiette de la taxe sur les salaires due par certains employeurs.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements", "comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-158",
     "label": "CGI art. 158 — revenu net global et abattements",
     "sourceType": "CGI",
@@ -699,6 +963,28 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-972",
+    "label": "CGI art. 972 — contrats rachetables et IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036385019",
+    "articleOrSection": "Art. 972",
+    "scope": "Intégration à l'IFI de la fraction immobilière des contrats rachetables et contrats de capitalisation.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-974",
+    "label": "CGI art. 974 — passif déductible IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037988599",
+    "articleOrSection": "Art. 974",
+    "scope": "Dettes déductibles de l'assiette de l'impôt sur la fortune immobilière.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-977",
     "label": "CGI art. 977 — tarif IFI",
     "sourceType": "CGI",
@@ -708,6 +994,50 @@
     "volatility": "lawChange",
     "relatedSettings": ["impots"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "cgi-979",
+    "label": "CGI art. 979 — plafonnement IFI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036385045",
+    "articleOrSection": "Art. 979",
+    "scope": "Mécanisme de plafonnement de l'impôt sur la fortune immobilière.",
+    "volatility": "lawChange",
+    "relatedSettings": ["impots"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-150-ve",
+    "label": "CGI art. 150 VE — abattement exceptionnel PVI",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053544979",
+    "articleOrSection": "Art. 150 VE",
+    "scope": "Abattement exceptionnel applicable à certaines plus-values immobilières selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-244-bis-a",
+    "label": "CGI art. 244 bis A — PVI des non-résidents",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048806274",
+    "articleOrSection": "Art. 244 bis A",
+    "scope": "Prélèvement applicable à certaines plus-values immobilières de source française réalisées par des non-résidents.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-1609-nonies-g",
+    "label": "CGI art. 1609 nonies G — taxe sur les PVI élevées",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048806252",
+    "articleOrSection": "Art. 1609 nonies G",
+    "scope": "Taxe additionnelle applicable aux plus-values immobilières élevées.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "service-public-ps-revenus-capital-2026",
@@ -732,6 +1062,39 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "urssaf-forfait-social",
+    "label": "URSSAF — forfait social",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/employeur/cotisations/liste-cotisations/forfait-social.html",
+    "articleOrSection": "Forfait social",
+    "scope": "Contribution patronale due sur certaines sommes d'épargne salariale et autres éléments exclus des cotisations sociales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "urssaf-cotisations-independants",
+    "label": "URSSAF — cotisations des indépendants",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/independant/comprendre-payer-cotisations/comprendre-vos-cotisations.html",
+    "articleOrSection": "Comprendre vos cotisations",
+    "scope": "Principes de calcul des cotisations et contributions sociales des travailleurs indépendants.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "urssaf-taux-cotisations-ac-plnr",
+    "label": "URSSAF — taux de cotisations indépendants",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/outils-documentation/taux-baremes/taux-cotisations-ac-plnr.html",
+    "articleOrSection": "Taux de cotisations",
+    "scope": "Taux et barèmes des cotisations des artisans, commerçants et professions libérales non réglementées.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "urssaf-dividendes-tns-cotisations-sociales",
     "label": "URSSAF mon-entreprise — dividendes TNS soumis aux cotisations sociales",
     "sourceType": "Autre source officielle",
@@ -742,6 +1105,39 @@
     "relatedSimulatorIds": ["tresorerie-societe"],
     "relatedSettings": ["prelevements"],
     "lastCheckedAt": "2026-06-08"
+  },
+  {
+    "id": "css-l311-3",
+    "label": "CSS art. L311-3 — assimilés salariés",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000046805349",
+    "articleOrSection": "Art. L311-3",
+    "scope": "Personnes rattachées au régime général de sécurité sociale, dont certains mandataires et dirigeants assimilés salariés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l131-6",
+    "label": "CSS art. L131-6 — assiette sociale des indépendants",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000048683707",
+    "articleOrSection": "Art. L131-6",
+    "scope": "Assiette des cotisations de sécurité sociale dues par les travailleurs indépendants non agricoles.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l380-2",
+    "label": "CSS art. L380-2 — contribution subsidiaire maladie",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037947779",
+    "articleOrSection": "Art. L380-2",
+    "scope": "Cotisation annuelle due au titre de la protection universelle maladie lorsque les conditions légales sont réunies.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "urssaf-assimile-salarie-dirigeant",
@@ -761,6 +1157,17 @@
     "officialUrl": "https://boss.gouv.fr/portail/accueil/regles-dassujettissement/assiette-generale.html",
     "articleOrSection": "Assiette générale",
     "scope": "Règles générales d'assujettissement des salariés et assimilés salariés aux cotisations sociales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boss-epargne-salariale",
+    "label": "BOSS — épargne salariale",
+    "sourceType": "BOSS",
+    "officialUrl": "https://boss.gouv.fr/portail/accueil/autres-elements-de-remuneration/epargne-salariale.html",
+    "articleOrSection": "Épargne salariale",
+    "scope": "Doctrine sociale relative aux sommes d'épargne salariale, dont forfait social lorsque celui-ci est dû.",
     "volatility": "lawChange",
     "relatedSettings": ["prelevements"],
     "lastCheckedAt": "2026-06-12"
@@ -854,6 +1261,18 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "code-assurances-l132-13",
+    "label": "Code des assurances art. L132-13 — primes manifestement exagérées",
+    "sourceType": "Code des assurances",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006793016",
+    "articleOrSection": "Art. L132-13",
+    "scope": "Rapport successoral et réduction des capitaux décès, avec exception pour les primes manifestement exagérées.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "relatedCatalogProducts": ["assurance_vie", "prevoyance_individuelle_deces"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "code-travail-l3312-1",
     "label": "Code du travail art. L3312-1 — intéressement",
     "sourceType": "Code du travail",
@@ -874,6 +1293,17 @@
     "volatility": "lawChange",
     "relatedSimulatorIds": ["epargne-salariale"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-travail-l3332-15",
+    "label": "Code du travail art. L3332-15 — affectation des sommes du PEE",
+    "sourceType": "Code du travail",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051218281",
+    "articleOrSection": "Art. L3332-15",
+    "scope": "Supports dans lesquels les sommes recueillies par un plan d'épargne d'entreprise peuvent être affectées.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "boi-ir-liq-20-20-30",
@@ -1177,7 +1607,7 @@
     "id": "base-source-art-779-cgi-abattements-dmtg",
     "label": "Art. 779 CGI — abattements DMTG",
     "sourceType": "CGI",
-    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292566",
     "articleOrSection": "Art. 779 CGI",
     "scope": "Source officielle utilisée par les règles Base-Contrat pour Contrat de capitalisation, LDDS, LEP, Livret A.",
     "volatility": "lawChange",
@@ -1978,6 +2408,39 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "boi-rfpi-pvi-20-20",
+    "label": "BOFiP BOI-RFPI-PVI-20-20 — plus-value imposable",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/292-PGP.html/identifiant=BOI-RFPI-PVI-20-20-20230718",
+    "articleOrSection": "BOI-RFPI-PVI-20-20",
+    "scope": "Détermination de la plus-value immobilière imposable, dont abattements de durée de détention et abattements exceptionnels.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boi-rfpi-pvinr-20-20",
+    "label": "BOFiP BOI-RFPI-PVINR-20-20 — prélèvements sociaux non-résidents",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/7508-PGP.html/identifiant=BOI-RFPI-PVINR-20-20-20220629",
+    "articleOrSection": "BOI-RFPI-PVINR-20-20",
+    "scope": "Prélèvements sociaux applicables aux plus-values immobilières des non-résidents et cas d'affiliation à un régime étranger de sécurité sociale.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements", "base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boi-rfpi-champ-30-20",
+    "label": "BOFiP BOI-RFPI-CHAMP-30-20 — sociétés immobilières",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/1237-PGP.html/identifiant=BOI-RFPI-CHAMP-30-20-20121008",
+    "articleOrSection": "BOI-RFPI-CHAMP-30-20",
+    "scope": "Régime des revenus fonciers perçus par l'intermédiaire de sociétés immobilières non soumises à l'impôt sur les sociétés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "boi-bic-champ-40",
     "label": "BOFiP BOI-BIC-CHAMP-40 — location meublée",
     "sourceType": "BOFiP",
@@ -2048,6 +2511,61 @@
     "relatedSettings": ["base-contrat"],
     "relatedCatalogProducts": ["tontine_pp"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "impots-guide-evaluation-entreprises-titres",
+    "label": "DGFiP — guide de l'évaluation des entreprises et des titres",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.impots.gouv.fr/lien-fichedescriptive4166pdf",
+    "articleOrSection": "Guide de l'évaluation",
+    "scope": "Guide administratif des principes et méthodes d'évaluation des entreprises et titres de sociétés non cotés.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg", "comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l210-1",
+    "label": "Code de commerce art. L210-1 — caractère commercial des sociétés",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006222344",
+    "articleOrSection": "Art. L210-1",
+    "scope": "Détermination du caractère commercial d'une société par sa forme ou par son objet.",
+    "volatility": "stable",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l223-1",
+    "label": "Code de commerce art. L223-1 — SARL",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000019291708",
+    "articleOrSection": "Art. L223-1",
+    "scope": "Définition légale de la société à responsabilité limitée.",
+    "volatility": "stable",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l225-1",
+    "label": "Code de commerce art. L225-1 — SA",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042339625",
+    "articleOrSection": "Art. L225-1",
+    "scope": "Définition légale de la société anonyme.",
+    "volatility": "stable",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-commerce-l227-1",
+    "label": "Code de commerce art. L227-1 — SAS",
+    "sourceType": "Code de commerce",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038799575/",
+    "articleOrSection": "Art. L227-1",
+    "scope": "Définition légale de la société par actions simplifiée.",
+    "volatility": "stable",
+    "relatedSettings": ["comptables-societes"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-commerce-l232-10",
@@ -2288,6 +2806,226 @@
     "officialUrl": "https://www.lassuranceretraite.fr/portail-info/home/retraite/retraite-reversion-veuvage/pension-reversion.html",
     "articleOrSection": "Droits en cas de décès",
     "scope": "Cadrage officiel de la pension de réversion au régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l351-3",
+    "label": "Code de la sécurité sociale art. L351-3 — périodes assimilées",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047453382",
+    "articleOrSection": "Art. L351-3",
+    "scope": "Périodes assimilées prises en compte pour l'ouverture du droit à pension du régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l633-1",
+    "label": "Code de la sécurité sociale art. L633-1 — cotisations vieillesse des indépendants",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037062182",
+    "articleOrSection": "Art. L633-1",
+    "scope": "Assiette des cotisations d'assurance vieillesse des travailleurs indépendants artisans, industriels et commerçants.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l635-1",
+    "label": "Code de la sécurité sociale art. L635-1 — retraite complémentaire des indépendants",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037062054",
+    "articleOrSection": "Art. L635-1",
+    "scope": "Régime complémentaire obligatoire d'assurance vieillesse des travailleurs indépendants.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l641-1",
+    "label": "Code de la sécurité sociale art. L641-1 — organisation CNAVPL",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036391505",
+    "articleOrSection": "Art. L641-1",
+    "scope": "Organisation autonome d'assurance vieillesse des professions libérales et sections professionnelles.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l643-1",
+    "label": "Code de la sécurité sociale art. L643-1 — pension CNAVPL",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021537907",
+    "articleOrSection": "Art. L643-1",
+    "scope": "Calcul de la pension du régime d'assurance vieillesse de base des professions libérales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-d643-1",
+    "label": "Code de la sécurité sociale art. D643-1 — paramètres du régime CNAVPL",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049904642",
+    "articleOrSection": "Art. D643-1",
+    "scope": "Dispositions réglementaires du régime de base des professions libérales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "carmf-retraite",
+    "label": "CARMF — retraite des médecins libéraux",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.carmf.fr/page.php?page=cdrom%2Fretr%2Fretr-age.htm",
+    "articleOrSection": "Retraite",
+    "scope": "Régimes retraite des médecins affiliés à la CARMF.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "carcdsf-regimes-retraite",
+    "label": "CARCDSF — régimes de retraite",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.carcdsf.fr/retraite/quels-regimes-composent-ma-retraite",
+    "articleOrSection": "Quels régimes composent ma retraite ?",
+    "scope": "Régimes obligatoires de retraite des chirurgiens-dentistes et sages-femmes.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "carpimko-retraite",
+    "label": "CARPIMKO — retraite des auxiliaires médicaux",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.carpimko.com/je-prepare-ma-retraite/comprendre-mes-regimes-de-retraite/a-quel-age-prendre-ma-retraite",
+    "articleOrSection": "À quel âge prendre ma retraite",
+    "scope": "Cadre retraite des affiliés CARPIMKO.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cavp-retraite",
+    "label": "CAVP — retraite des pharmaciens libéraux",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cavp.fr/votre-profil/pharmacien-en-activite/vos-cotisations-regime-vieillesse-base",
+    "articleOrSection": "Votre cotisation au régime vieillesse de base",
+    "scope": "Régime vieillesse de base des pharmaciens libéraux affiliés à la CAVP.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "carpv-statuts-retraite-prevoyance",
+    "label": "CARPV — statuts retraite et prévoyance",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.carpv.fr/wp-content/uploads/2026/01/STATUT_20211019_0244_0007.pdf",
+    "articleOrSection": "Statuts de la section professionnelle",
+    "scope": "Missions retraite et prévoyance de la section professionnelle des vétérinaires.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cavec-retraite-complementaire",
+    "label": "CAVEC — retraite complémentaire",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cavec.fr/decouvrir-la-cavec/des-regimes-retraite-prevoyance-adaptes-a-la-profession/la-retraite-complementaire-un-regime-adapte-solide-et-efficace/",
+    "articleOrSection": "La retraite complémentaire",
+    "scope": "Régime de retraite complémentaire des experts-comptables et commissaires aux comptes.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cavamac-retraite",
+    "label": "CAVAMAC — retraite des agents généraux d'assurance",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cavamac.fr/",
+    "articleOrSection": "Tout comprendre sur votre retraite d'agent d'assurance",
+    "scope": "Régime retraite des agents généraux d'assurance affiliés à la CAVAMAC.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cnbf-institution-retraite-prevoyance",
+    "label": "CNBF — retraite et prévoyance des avocats",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cnbf.fr/",
+    "articleOrSection": "Institution",
+    "scope": "Gestion de la retraite et de la prévoyance des avocats par la CNBF.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cprn-affiliation-obligatoire",
+    "label": "CPRN — affiliation obligatoire des notaires",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://cprn.fr/mes-demarches-en-detail/mon-affiliation-obligatoire/",
+    "articleOrSection": "Mon affiliation obligatoire",
+    "scope": "Affiliation obligatoire des notaires libéraux aux régimes de base, complémentaire et invalidité-décès.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cavom-retraite",
+    "label": "CAVOM — retraite des officiers ministériels",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cavom.fr/",
+    "articleOrSection": "Vos droits — retraite",
+    "scope": "Retraite des officiers ministériels, officiers publics et compagnies judiciaires.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-pensions-civiles-militaires-l24",
+    "label": "Code des pensions civiles et militaires art. L24 — liquidation",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047452804",
+    "articleOrSection": "Art. L24",
+    "scope": "Conditions de liquidation des pensions civiles et militaires de retraite.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "service-public-retraite-agent-public",
+    "label": "Service-Public — retraite d'un agent public",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/N379",
+    "articleOrSection": "Retraite d'un agent public",
+    "scope": "Principales règles de retraite des fonctionnaires et contractuels des trois fonctions publiques.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "service-public-rafp",
+    "label": "Service-Public — retraite additionnelle d'un fonctionnaire",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F12387",
+    "articleOrSection": "Retraite complémentaire d'un fonctionnaire",
+    "scope": "Règles principales de la retraite additionnelle de la fonction publique.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "service-public-ircantec-contractuel",
+    "label": "Service-Public — retraite complémentaire d'un contractuel public",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F12390",
+    "articleOrSection": "Retraite complémentaire d'un contractuel de la fonction publique",
+    "scope": "Régime de retraite complémentaire par points des agents contractuels publics.",
     "volatility": "lawChange",
     "relatedSettings": ["prelevements"],
     "lastCheckedAt": "2026-06-12"

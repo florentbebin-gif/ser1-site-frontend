@@ -23,12 +23,12 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.revenus-fonciers',
     label: 'Revenus fonciers',
     description:
-      'Location nue du foyer : micro-foncier, régime réel, intérêts d’emprunt et déficit foncier rattachés à la page Impôts.',
+      'Location nue du foyer : micro-foncier, régime réel, intérêts d’emprunt et déficit foncier rattachés au mémento.',
     status: 'planned',
     statusReason:
       'Moteur revenus fonciers planifié ; le paramètre micro-foncier reste planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.revenus-fonciers.micro-foncier'],
     claimKeys: [],
     refIds: [
@@ -48,7 +48,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Moteur location meublée planifié ; les régimes restent planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.lmnp-lmp.regimes'],
     claimKeys: [],
     refIds: ['boi-bic-champ-40', 'base-source-urssaf-lmp-cotisations-sociales'],
@@ -63,15 +63,18 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
       'Cession immobilière des particuliers : durée de détention, exonérations et prélèvements sociaux. Le régime relève de l’article 150 U du CGI.',
     status: 'planned',
     statusReason:
-      'Moteur plus-values immobilières planifié ; le paramètre de durée de détention reste planned dans le registry settings.',
+      'Moteur plus-values immobilières planifié ; surtaxe et abattements exceptionnels sont sourcés, mais le paramètre de durée de détention reste planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.pv-immobilieres.abattements-duree'],
     claimKeys: [],
     refIds: [
       'base-source-art-150-u-cgi-plus-values-immobilieres',
+      'cgi-150-ve',
+      'cgi-1609-nonies-g',
       'boi-rfpi-pvi-10',
       'boi-rfpi-pvi-20',
+      'boi-rfpi-pvi-20-20',
     ],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['plus-values-immobilieres'],
@@ -86,7 +89,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Enveloppe documentée en lecture par les claims Base-Contrat pour les détentions physique et morale ; le simulateur SCPI et son pack fiscal dédié restent planifiés dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.scpi.regime'],
     claimKeys: [
       'base-contrat-parts-scpi-pp-pp-constitution-souscription-et-revenus',
@@ -115,7 +118,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Simulateur investissement locatif planifié ; les régimes fonciers et meublés consommés restent planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.revenus-fonciers.micro-foncier', 'immobilier.lmnp-lmp.regimes'],
     claimKeys: [],
     refIds: ['base-source-art-28-cgi-revenus-fonciers'],
@@ -132,7 +135,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Dispositifs sourcés un par un via les claims du catalogue Base-Contrat ; aucun moteur ni paramètre administré, les conditions fines restent à qualifier avant tout calcul.',
     priority: 'utile',
-    ownerPagePath: '/settings/base-contrat',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [
       'base-contrat-censi-bouvard-pp-constitution-reduction-ou-deduction-d-ir',
@@ -183,12 +186,12 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
       'Détention immobilière via une société civile : choix du mode de détention, fonctionnement et transmission des parts.',
     status: 'planned',
     statusReason:
-      'Simulateur SCI planifié ; les règles de détention, de translucidité fiscale et de transmission de parts restent à qualifier avec le socle société.',
+      'Simulateur SCI planifié ; la translucidité IR/IS est sourcée, mais les règles opérationnelles de détention et de transmission de parts restent hors moteur.',
     priority: 'structurant',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
-    refIds: ['code-civil-1075'],
+    refIds: ['code-civil-1075', 'cgi-8', 'cgi-206', 'boi-rfpi-champ-30-20'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['sci'],
   },
@@ -198,14 +201,14 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     label: 'Immobilier des non-résidents',
     description:
       'Cessions et revenus immobiliers de source française des non-résidents, dépendants de l’affiliation sociale et des conventions fiscales.',
-    status: 'a_verifier',
+    status: 'partiel',
     statusReason:
-      'Aucun claim ni référence repo sur ce périmètre ; les règles doivent être qualifiées sur une source officielle avant tout affichage opérationnel.',
+      'Prélèvement sur plus-values immobilières françaises et prélèvements sociaux sourcés ; conventions fiscales et situations d’affiliation restent non couvertes.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
-    refIds: [],
+    refIds: ['cgi-244-bis-a', 'boi-rfpi-pvinr-20-20'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['plus-values-immobilieres'],
   },
@@ -219,7 +222,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Simulateur arbitrage et réemploi planifié ; les régimes de cession sont référencés mais le moteur de comparaison reste à construire.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['cgi-150-0-a', 'base-source-art-150-u-cgi-plus-values-immobilieres'],
