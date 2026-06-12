@@ -88,7 +88,7 @@ describe('settings-memento — épargne retraite', () => {
     const entry = entryByKey.get('epargne-retraite.fiscalite-sortie-retraite');
 
     expect(entry).toBeDefined();
-    expect(entry!.ownerPagePath).toBe('/settings/prelevements');
+    expect(entry!.ownerPagePath).toBe('/settings/memento');
     expect(entry!.registryKeys).toEqual([
       'impots.ir.abattements-et-decote',
       'retraite-prevoyance.ps-retraite',

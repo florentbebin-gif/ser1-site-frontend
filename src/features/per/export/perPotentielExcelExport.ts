@@ -277,7 +277,7 @@ function buildHypothesesSheet(state: PerPotentielExcelState): XlsxSheet {
     [h('Hypothese'), h('Reference')],
     [
       txt(
-        'Historique PASS runtime lu via public.pass_history et administre dans Settings > Prelevements.',
+        'Historique PASS runtime lu via public.pass_history et administré dans Settings > Mémento.',
       ),
       txt('Chaine fiscale du repo'),
     ],

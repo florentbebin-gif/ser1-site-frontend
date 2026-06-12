@@ -31,7 +31,6 @@ export type SettingsMillesime = `${number}` | 'a-renseigner-avant-codage';
 
 export type SettingsOwnerPagePath =
   | '/settings/memento'
-  | '/settings/prelevements'
   | '/settings/dmtg-succession'
   | '/settings/base-contrat'
   | '/settings/base-contrat-retraite'

@@ -18,13 +18,6 @@ describe('settings-memento — placements et enveloppes', () => {
     keyof typeof R1_EXPECTED_STATUSES
   >;
 
-  // La part IR du PFU est administrée dans le mémento, mais le taux global
-  // est composé avec la part sociale portée par la page Prélèvements : l'entrée
-  // mémento garde Prélèvements comme propriétaire de preuve.
-  const CROSS_PAGE_CLAIM_EXCEPTIONS = new Set([
-    'placements.ps-pfu-revenus-capital::pfu-ir-current',
-  ]);
-
   it('déclare les cinq entrées du lot placements avec leurs statuts attendus', () => {
     for (const key of R1_KEYS) {
       const entry = entryByKey.get(key);
@@ -39,14 +32,14 @@ describe('settings-memento — placements et enveloppes', () => {
       const entry = entryByKey.get(key);
       const expectedOwner =
         key === 'placements.ps-pfu-revenus-capital'
-          ? '/settings/prelevements'
+          ? '/settings/memento'
           : '/settings/base-contrat';
 
       expect(entry!.ownerPagePath, key).toBe(expectedOwner);
     }
   });
 
-  it('aligne chaque claim sur la page propriétaire de son entrée, hors exception documentée', () => {
+  it('aligne chaque claim sur la page propriétaire de son entrée', () => {
     const bindingsByClaimKey = new Map(
       SETTINGS_REFERENCE_CHAIN.map((binding) => [binding.claimKey, binding]),
     );
@@ -55,8 +48,6 @@ describe('settings-memento — placements et enveloppes', () => {
       const entry = entryByKey.get(key);
 
       for (const claimKey of entry!.claimKeys) {
-        if (CROSS_PAGE_CLAIM_EXCEPTIONS.has(`${key}::${claimKey}`)) continue;
-
         const binding = bindingsByClaimKey.get(claimKey);
 
         expect(binding, `${key}: claim inconnu ${claimKey}`).toBeDefined();

@@ -28,6 +28,7 @@ const ComptablesSocietesSettingsPanel = lazy(
   () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
 );
 const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
+const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
 
 type MementoSubSectionId = 'lecture' | 'parametres' | 'couverture';
 
@@ -266,6 +267,17 @@ function SettingsSectionContent({
         <SettingsSourceRow section={section} />
         <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
           <ComptablesSocietesSettingsPanel />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (section.id === 'prelevements' && chapter.id === 'retraite') {
+    return (
+      <div className="settings-memento-settings-editor">
+        <SettingsSourceRow section={section} />
+        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
+          <PrelevementsSettingsPanel />
         </Suspense>
       </div>
     );

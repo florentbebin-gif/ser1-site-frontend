@@ -32,7 +32,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     statusReason:
       'Taux administrés et sourcés via les claims settings-references des pages Prélèvements et Impôts ; la part sociale du PFU est composée depuis les prélèvements sociaux.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['impots.ps-patrimoine', 'impots.pfu.part-ir'],
     claimKeys: ['patrimony-current', 'pfu-ir-current'],
     refIds: [

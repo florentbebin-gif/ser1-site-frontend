@@ -15,14 +15,14 @@ describe('settings-references', () => {
     );
   });
 
-  it('chaîne les claims charges sociales dirigeant de la page prélèvements', () => {
-    const prelevementsBindings = listSettingsReferenceBindings('/settings/prelevements');
+  it('chaîne les claims charges sociales dirigeant de la page mémento', () => {
+    const mementoBindings = listSettingsReferenceBindings('/settings/memento');
 
-    expect(prelevementsBindings.map((binding) => binding.claimKey)).toEqual(
+    expect(mementoBindings.map((binding) => binding.claimKey)).toEqual(
       expect.arrayContaining(['social-dirigeant-dividendes-tns']),
     );
     expect(
-      prelevementsBindings.find((binding) => binding.claimKey === 'social-dirigeant-dividendes-tns')
+      mementoBindings.find((binding) => binding.claimKey === 'social-dirigeant-dividendes-tns')
         ?.target,
     ).toEqual({
       kind: 'settings-default',

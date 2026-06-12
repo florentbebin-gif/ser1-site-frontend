@@ -11,7 +11,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Le seuil social des dividendes TNS est sourcé et administré sur Prélèvements ; le futur moteur rémunération doit encore qualifier le régime complet dividendes.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['social-dirigeant.charges-sociales', 'comptables-societes.dividendes'],
     claimKeys: ['social-dirigeant-dividendes-tns'],
     refIds: [
@@ -33,7 +33,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Simulateur rémunération planifié ; les sources assimilé salarié sont identifiées mais aucun modèle social, retraite ou arbitrage IR n’est livré.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'social-dirigeant.charges-sociales',
       'comptables-societes.dividendes',
@@ -55,7 +55,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Sources URSSAF et BOSS qualifiées pour le cadrage ; aucune grille de cotisations ni consommation moteur n’est ouverte.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['social-dirigeant.charges-sociales'],
     claimKeys: [],
     refIds: ['urssaf-assimile-salarie-dirigeant', 'boss-assiette-generale'],
@@ -72,7 +72,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Le seuil social des dividendes TNS et la référence Madelin existante donnent un socle partiel ; les cotisations par caisse restent à qualifier.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['social-dirigeant.charges-sociales'],
     claimKeys: ['social-dirigeant-dividendes-tns'],
     refIds: ['urssaf-dividendes-tns-cotisations-sociales', 'cgi-154-bis'],
@@ -89,7 +89,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Caisses libérales inventoriées côté prévoyance et retraite ; aucun modèle social par caisse n’est livré dans ce lot.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['social-dirigeant.charges-sociales', 'retraite-prevoyance.cotisations-retraite'],
     claimKeys: [],
     refIds: [],
@@ -106,7 +106,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'La source PUMA est qualifiée ; la contribution subsidiaire maladie reste à cadrer avant tout paramètre ou alerte moteur.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['social-dirigeant.puma-csm'],
     claimKeys: [],
     refIds: ['service-public-puma'],
@@ -140,7 +140,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Les dividendes TNS et les prélèvements sociaux disposent déjà de sources qualifiées ; le moteur sortie de capitaux reste planifié.',
     priority: 'critique',
-    ownerPagePath: '/settings/prelevements',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'social-dirigeant.charges-sociales',
       'social-dirigeant.puma-csm',

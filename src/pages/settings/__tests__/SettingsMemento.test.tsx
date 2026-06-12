@@ -24,6 +24,7 @@ import {
 } from '../memento/mementoSettingsSections';
 
 const fromMock = vi.hoisted(() => vi.fn());
+const rpcMock = vi.hoisted(() => vi.fn());
 
 const ENTRY_COUVERTE: MementoEntry = {
   chapterId: 'fiscalite-foyer',
@@ -49,6 +50,7 @@ function makeSettingsBuilder() {
   const builder = {} as {
     select: () => typeof builder;
     eq: () => typeof builder;
+    order: () => Promise<typeof listResult>;
     maybeSingle: () => Promise<typeof singleResult>;
     upsert: () => Promise<typeof writeResult>;
     then: PromiseLike<typeof listResult>['then'];
@@ -56,6 +58,7 @@ function makeSettingsBuilder() {
 
   builder.select = vi.fn(() => builder);
   builder.eq = vi.fn(() => builder);
+  builder.order = vi.fn(() => Promise.resolve(listResult));
   builder.maybeSingle = vi.fn(() => Promise.resolve(singleResult));
   builder.upsert = vi.fn(() => Promise.resolve(writeResult));
   builder.then = (onFulfilled, onRejected) =>
@@ -76,6 +79,7 @@ vi.mock('@/auth/useUserRole', () => ({
 vi.mock('@/supabaseClient', () => ({
   supabase: {
     from: fromMock,
+    rpc: rpcMock,
   },
 }));
 
@@ -138,13 +142,16 @@ describe('route settings mémento', () => {
     expect(getActiveSettingsKey('/settings/memento')).toBe('memento');
     expect(getActiveSettingsKey('/settings/impots')).toBe('memento');
     expect(getActiveSettingsKey('/settings/comptables-societes')).toBe('memento');
+    expect(getActiveSettingsKey('/settings/prelevements')).toBe('memento');
     expect(isDeclaredSettingsPath('/settings/impots')).toBe(false);
     expect(isDeclaredSettingsPath('/settings/comptables-societes')).toBe(false);
+    expect(isDeclaredSettingsPath('/settings/prelevements')).toBe(false);
     expect(isDeclaredSettingsPath('/settings/memento-old')).toBe(false);
     expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/impots')).toBe(false);
     expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/comptables-societes')).toBe(
       false,
     );
+    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/prelevements')).toBe(false);
   });
 });
 
@@ -185,9 +192,10 @@ describe('contrat de migration settings vers mémento', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
     expect(routePaths).not.toContain('/settings/impots');
     expect(routePaths).not.toContain('/settings/comptables-societes');
+    expect(routePaths).not.toContain('/settings/prelevements');
 
     for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS.filter(
-      (candidate) => !['impots', 'comptables-societes'].includes(candidate.id),
+      (candidate) => !['impots', 'comptables-societes', 'prelevements'].includes(candidate.id),
     )) {
       expect(routePaths, section.id).toContain(section.legacyPagePath);
     }
@@ -256,6 +264,8 @@ describe('SettingsMemento', () => {
   beforeEach(() => {
     fromMock.mockReset();
     fromMock.mockImplementation(() => makeSettingsBuilder());
+    rpcMock.mockReset();
+    rpcMock.mockResolvedValue({ data: null, error: null });
   });
 
   it('rend les chapitres fermés par défaut sans exposer les lignes techniques', () => {
@@ -341,6 +351,27 @@ describe('SettingsMemento', () => {
       'aria-expanded',
       'false',
     );
+  });
+
+  it('rend les paramètres Prélèvements sociaux depuis le chapitre Retraite', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openChapter(user, 'Retraite');
+    await openSubAccordion(user, 'Paramètres calculateurs');
+
+    expect(await screen.findByText('Registre settings paramètres sociaux')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Historique du PASS/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: /Charges sociales dirigeant/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(
+      screen.getByRole('button', { name: /Prélèvements sociaux - pensions de retraite/i }),
+    ).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('n’affiche aucune source externe protégée ni PDF externe', async () => {

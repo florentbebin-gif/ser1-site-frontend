@@ -5,7 +5,7 @@ export const SETTINGS_FAMILIES = [
     id: 'impots',
     label: 'Impôts',
     description: 'Paramètres IR, PFU, contributions hauts revenus et IFI portés par tax_settings.',
-    ownerPages: ['/settings/memento', '/settings/prelevements'],
+    ownerPages: ['/settings/memento'],
     status: 'ready',
   },
   {
@@ -33,21 +33,21 @@ export const SETTINGS_FAMILIES = [
     id: 'retraite-prevoyance',
     label: 'Retraite & prévoyance',
     description: 'PASS, cotisations retraite, validation des droits et paramètres prévoyance.',
-    ownerPages: ['/settings/prelevements', '/settings/prevoyance-regimes'],
+    ownerPages: ['/settings/memento', '/settings/prevoyance-regimes'],
     status: 'partial',
   },
   {
     id: 'placements',
     label: 'Placements',
     description: 'Règles par enveloppe financière et dispositifs de placement patrimonial.',
-    ownerPages: ['/settings/dmtg-succession', '/settings/base-contrat', '/settings/prelevements'],
+    ownerPages: ['/settings/dmtg-succession', '/settings/base-contrat', '/settings/memento'],
     status: 'partial',
   },
   {
     id: 'social-dirigeant',
     label: 'Social dirigeant',
     description: 'Charges sociales, PUMA/CSM et paramètres sociaux propres au dirigeant.',
-    ownerPages: ['/settings/prelevements'],
+    ownerPages: ['/settings/memento'],
     status: 'planned',
   },
 ] as const satisfies readonly SettingsFamilyDefinition[];

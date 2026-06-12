@@ -55,11 +55,11 @@ describe('settings-memento — retraite obligatoire', () => {
     }
   });
 
-  it('rattache toutes les entrées retraite à Prélèvements', () => {
+  it('rattache toutes les entrées retraite au mémento', () => {
     for (const key of RETRAITE_KEYS) {
       const entry = entryByKey.get(key);
 
-      expect(entry!.ownerPagePath, key).toBe('/settings/prelevements');
+      expect(entry!.ownerPagePath, key).toBe('/settings/memento');
     }
   });
 
@@ -102,7 +102,7 @@ describe('settings-memento — retraite obligatoire', () => {
     expect(entry!.claimKeys).toEqual(['pass-latest']);
   });
 
-  it('aligne les claims retraite existants sur la page Prélèvements', () => {
+  it('aligne les claims retraite existants sur le mémento', () => {
     const bindingsByClaimKey = new Map(
       SETTINGS_REFERENCE_CHAIN.map((binding) => [binding.claimKey, binding]),
     );
@@ -115,7 +115,7 @@ describe('settings-memento — retraite obligatoire', () => {
       const binding = bindingsByClaimKey.get(claimKey);
 
       expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
-      expect(binding!.pagePath).toBe('/settings/prelevements');
+      expect(binding!.pagePath).toBe('/settings/memento');
     }
   });
 

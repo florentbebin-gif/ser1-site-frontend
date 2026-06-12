@@ -15,11 +15,7 @@ import {
 } from '../index';
 import type { SettingsRegistryEntry } from '../types';
 
-const CORE_SETTINGS_PAGE_PATHS = new Set([
-  '/settings/memento',
-  '/settings/prelevements',
-  '/settings/dmtg-succession',
-]);
+const CORE_SETTINGS_PAGE_PATHS = new Set(['/settings/memento', '/settings/dmtg-succession']);
 
 describe('settings-registry', () => {
   it('valide le contrat transverse du registry', () => {
