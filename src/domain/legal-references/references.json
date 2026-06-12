@@ -2214,5 +2214,82 @@
     "volatility": "lawChange",
     "relatedSettings": ["prelevements"],
     "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l351-1-l351-17",
+    "label": "Code de la sécurité sociale — pensions de retraite",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006073189/LEGISCTA000006156096/",
+    "articleOrSection": "Art. L351-1 à L351-17",
+    "scope": "Ouverture du droit, liquidation et calcul des pensions de retraite du régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l161-22",
+    "label": "Code de la sécurité sociale art. L161-22 — cumul emploi-retraite",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047453712",
+    "articleOrSection": "Art. L161-22",
+    "scope": "Règles de reprise ou poursuite d’activité après liquidation d’une pension de vieillesse.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "css-l353-1",
+    "label": "Code de la sécurité sociale art. L353-1 — pension de réversion",
+    "sourceType": "Code de la sécurité sociale",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047453693",
+    "articleOrSection": "Art. L353-1",
+    "scope": "Droit du conjoint survivant à une pension de réversion sous conditions d’âge et de ressources.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "assurance-retraite-carriere-longue",
+    "label": "Assurance retraite — carrière longue",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lassuranceretraite.fr/portail-info/portail-info/home/actif/je-souhaite-partir-plus-tot/carriere-longue-retraite.html",
+    "articleOrSection": "J’ai une carrière longue",
+    "scope": "Cadrage officiel du départ anticipé pour carrière longue au régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "assurance-retraite-retraite-progressive",
+    "label": "Assurance retraite — retraite progressive",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lassuranceretraite.fr/portail-info/home/actif/je-souhaite-partir-plus-tot/retraite-progressive.html",
+    "articleOrSection": "Retraite progressive",
+    "scope": "Cadrage officiel de la retraite progressive au régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "assurance-retraite-cumul-emploi-retraite",
+    "label": "Assurance retraite — cumul emploi-retraite",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lassuranceretraite.fr/portail-info/home/actif/montant-retraite/cumuler-emploi-retraite.html",
+    "articleOrSection": "Cumuler emploi et retraite",
+    "scope": "Cadrage officiel du cumul emploi-retraite et des droits liés à la reprise d’activité.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "assurance-retraite-pension-reversion",
+    "label": "Assurance retraite — pension de réversion",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lassuranceretraite.fr/portail-info/home/retraite/retraite-reversion-veuvage/pension-reversion.html",
+    "articleOrSection": "Droits en cas de décès",
+    "scope": "Cadrage officiel de la pension de réversion au régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
   }
 ]

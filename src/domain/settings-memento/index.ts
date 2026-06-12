@@ -9,6 +9,11 @@ export {
   type MementoCoverageValidationResult,
 } from './coverage';
 export { MEMENTO_ENTRIES } from './entries';
+export {
+  PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
+  PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
+  PREVOYANCE_REGIME_CLAIMS,
+} from './entriesPrevoyance';
 export { MEMENTO_USER_INTENTS, chaptersForIntent, type MementoIntentDefinition } from './intents';
 export {
   ROADMAP_ONLY_SIMULATOR_IDS,

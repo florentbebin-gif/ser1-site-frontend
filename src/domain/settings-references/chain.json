@@ -324,7 +324,7 @@
       "jsonPath": "sources.references"
     },
     "refIds": [],
-    "noRefReason": "Les sources probantes sont portées dans la ligne Supabase prevoyance_maintien_employeur_settings et doivent être auditées avec audit:settings-references --with-db.",
+    "noRefReason": "Les sources probantes sont portées dans la ligne Supabase prevoyance_maintien_employeur_settings et doivent être auditées avec npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -7439,7 +7439,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7457,7 +7457,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7475,7 +7475,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7493,7 +7493,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Salarié secteur privé — CPAM (salarie-cpam, caisse CPAM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7511,7 +7511,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7529,7 +7529,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7547,7 +7547,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7565,7 +7565,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Salarié agricole — MSA (salarie-msa, caisse MSA salariés) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7583,7 +7583,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7601,7 +7601,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7619,7 +7619,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7637,7 +7637,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Artisan / commerçant — SSI (ssi-artisan-commercant, caisse SSI) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7655,7 +7655,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7673,7 +7673,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7691,7 +7691,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7709,7 +7709,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Profession libérale — socle CNAVPL (cnavpl, caisse CNAVPL) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7727,7 +7727,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7745,7 +7745,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7763,7 +7763,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7781,7 +7781,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Profession libérale réglementée — CIPAV (cipav, caisse CIPAV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7799,7 +7799,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7817,7 +7817,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7835,7 +7835,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7853,7 +7853,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Auxiliaire médical — CARPIMKO (carpimko, caisse CARPIMKO) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7871,7 +7871,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7889,7 +7889,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7907,7 +7907,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7925,7 +7925,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Médecin — CARMF (carmf, caisse CARMF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7943,7 +7943,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7961,7 +7961,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7979,7 +7979,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -7997,7 +7997,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Chirurgien-dentiste — CARCDSF (carcdsf-dentiste, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8015,7 +8015,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8033,7 +8033,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8051,7 +8051,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8069,7 +8069,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Sage-femme — CARCDSF (carcdsf-sagefemme, caisse CARCDSF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8087,7 +8087,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8105,7 +8105,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8123,7 +8123,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8141,7 +8141,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Pharmacien — CAVP (cavp, caisse CAVP) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8159,7 +8159,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8177,7 +8177,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8195,7 +8195,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8213,7 +8213,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Vétérinaire — CARPV (carpv, caisse CARPV) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8231,7 +8231,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8249,7 +8249,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8267,7 +8267,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8285,7 +8285,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Expert-comptable — CAVEC (cavec, caisse CAVEC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8303,7 +8303,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8321,7 +8321,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8339,7 +8339,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8357,7 +8357,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Notaire — CPRN (cprn, caisse CPRN) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8375,7 +8375,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8393,7 +8393,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8411,7 +8411,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8429,7 +8429,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Officier ministériel — CAVOM (cavom, caisse CAVOM) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8447,7 +8447,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8465,7 +8465,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8483,7 +8483,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8501,7 +8501,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Agent général d'assurance — CAVAMAC (cavamac, caisse CAVAMAC) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8519,7 +8519,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8537,7 +8537,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8555,7 +8555,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8573,7 +8573,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Avocat — CNBF (cnbf, caisse CNBF) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8591,7 +8591,7 @@
       "jsonPath": "sources.references[arret]"
     },
     "refIds": [],
-    "noRefReason": "Les sources arrêt de travail du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources arrêt de travail du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8609,7 +8609,7 @@
       "jsonPath": "sources.references[invalidite]"
     },
     "refIds": [],
-    "noRefReason": "Les sources invalidité du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources invalidité du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8627,7 +8627,7 @@
       "jsonPath": "sources.references[deces]"
     },
     "refIds": [],
-    "noRefReason": "Les sources décès du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources décès du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
@@ -8645,7 +8645,7 @@
       "jsonPath": "sources.references[cotisations]"
     },
     "refIds": [],
-    "noRefReason": "Les sources cotisations du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par audit:settings-references --with-db.",
+    "noRefReason": "Les sources cotisations du régime Exploitant agricole — MSA AMEXA (msa-exploitant, caisse MSA AMEXA) sont portées dans la ligne Supabase prevoyance_regime_settings et contrôlées par npm run audit:settings-references -- --with-db.",
     "verifiedAt": "2026-06-06",
     "volatility": "annual"
   },
