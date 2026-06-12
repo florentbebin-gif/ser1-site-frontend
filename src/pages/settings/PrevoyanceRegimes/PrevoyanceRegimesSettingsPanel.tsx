@@ -1,6 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
-import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import type {
@@ -12,8 +11,6 @@ import type {
 import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
 import { EditModal, type EditorTarget } from '../PrevoyanceRegimesEditModal';
 import '../styles/prevoyance-regimes.css';
-
-const PREVOYANCE_SETTING_KEYS = ['retraite-prevoyance.prevoyance-garanties'] as const;
 
 function formatEuro(value: number): string {
   return new Intl.NumberFormat('fr-FR', {
@@ -332,12 +329,6 @@ export default function PrevoyanceRegimesSettingsPanel() {
 
   return (
     <div className="prevoyance-settings-page">
-      <SettingsRegistryStatusPanel
-        ownerPage="/settings/memento"
-        settingKeys={PREVOYANCE_SETTING_KEYS}
-        title="Registre settings prévoyance"
-      />
-
       <div className="settings-stack settings-stack--spacious">
         <section className="settings-premium-card prevoyance-settings-header-card">
           <div className="settings-reference-header">

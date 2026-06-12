@@ -93,7 +93,7 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Identifier le régime avant de parler de liquidation.',
       'Séparer âge, durée, points, réversion et départ anticipé.',
-      'Garder la fonction publique en absent tant que les sources qualifiées manquent.',
+      'Suivre la fonction publique comme chantier prévu tant qu’aucun simulateur ne l’exploite.',
     ],
   },
   {

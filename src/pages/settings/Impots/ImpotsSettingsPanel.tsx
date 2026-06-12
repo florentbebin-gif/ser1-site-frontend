@@ -4,7 +4,6 @@ import { useUserRole } from '@/auth/useUserRole';
 import '../styles/impots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
-import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { validateImpotsSettings, isValid } from '../validators/dmtgValidators';
@@ -252,12 +251,6 @@ export default function ImpotsSettingsPanel() {
 
   return (
     <div className="settings-stack">
-      <SettingsRegistryStatusPanel
-        ownerPage="/settings/memento"
-        families={['impots', 'immobilier']}
-        title="Registre settings impôts"
-      />
-
       <div className="fisc-accordion">
         <ImpotsBaremeSection
           incomeTax={incomeTax}

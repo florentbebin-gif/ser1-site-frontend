@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
-import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { broadcastInvalidation, invalidate } from '@/utils/cache/fiscalSettingsCache';
 import ComptablesSocietesISSection from './ComptablesSocietesISSection';
@@ -159,12 +158,6 @@ export default function ComptablesSocietesSettingsPanel() {
 
   return (
     <div className="settings-stack">
-      <SettingsRegistryStatusPanel
-        ownerPage="/settings/memento"
-        families={['comptables-societes']}
-        title="Registre settings comptables & sociétés"
-      />
-
       <div className="fisc-accordion">
         <ComptablesSocietesISSection
           corporateTax={settings.corporateTax}
