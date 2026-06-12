@@ -33,9 +33,10 @@ describe('SettingsComptes garde admin', () => {
     expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'comptes')).toBe(false);
   });
 
-  it('affiche la route Prévoyance régimes aux non-admins en consultation', () => {
+  it('affiche le mémento aux non-admins en consultation', () => {
+    expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'memento')).toBe(true);
     expect(getVisibleSettingsRoutes(false).some((route) => route.key === 'prevoyanceRegimes')).toBe(
-      true,
+      false,
     );
   });
 

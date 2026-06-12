@@ -15,7 +15,6 @@ const SettingsGeneral = lazy(() => import('../pages/settings/SettingsGeneral'));
 const SettingsMemento = lazy(() => import('../pages/settings/SettingsMemento'));
 const SettingsBaseCgRetraite = lazy(() => import('../pages/settings/BaseCgRetraite'));
 const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
-const SettingsPrevoyanceRegimes = lazy(() => import('../pages/settings/PrevoyanceRegimes'));
 const SettingsDesignSystem = lazy(() => import('../pages/settings/SettingsDesignSystem'));
 
 export interface SettingsRouteEntry {
@@ -50,13 +49,6 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     component: SettingsBaseCgRetraite,
   },
   {
-    key: 'prevoyanceRegimes',
-    label: 'Prévoyance — régimes',
-    path: 'prevoyance-regimes',
-    urlPath: '/settings/prevoyance-regimes',
-    component: SettingsPrevoyanceRegimes,
-  },
-  {
     key: 'designSystem',
     label: 'Design system',
     path: 'design-system',
@@ -77,7 +69,6 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
 export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/memento')) return 'memento';
   if (pathname.startsWith('/settings/base-contrat-retraite')) return 'baseCgRetraite';
-  if (pathname.startsWith('/settings/prevoyance-regimes')) return 'prevoyanceRegimes';
   if (pathname.startsWith('/settings/design-system')) return 'designSystem';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   if (pathname.startsWith('/settings/')) return 'memento';

@@ -118,7 +118,7 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     statusReason:
       'Le simulateur prévoyance est actif et les sources générales sont qualifiées ; le besoin familial reste à relier au dossier central.',
     priority: 'critique',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
     claimKeys: [],
     refIds: [
@@ -138,9 +138,9 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
       'Maintien de salaire légal et conventionnel à distinguer des garanties complémentaires de prévoyance.',
     status: 'partiel',
     statusReason:
-      'La ligne Supabase dédiée porte les sources vérifiées ; le mémento n’écrase pas les JSONB de la page propriétaire.',
+      'La ligne Supabase dédiée porte les sources vérifiées ; le mémento édite ces JSONB sans les dupliquer.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
     claimKeys: PREVOYANCE_MAINTIEN_EMPLOYEUR_CLAIMS,
     refIds: [],
@@ -157,7 +157,7 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     statusReason:
       'Les claims DB couvrent les catégories attendues ; le calcul des garanties reste propriétaire du simulateur prévoyance.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
     claimKeys: PREVOYANCE_SALARIE_CLAIMS,
     refIds: [],
@@ -174,7 +174,7 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     statusReason:
       'Les sources par régime sont auditées en base ; le futur modèle dirigeant ne consomme pas encore ces barèmes.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.prevoyance-garanties',
       'retraite-prevoyance.cotisations-retraite',
@@ -195,7 +195,7 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     statusReason:
       'Les claims DB qualifient les caisses par catégorie ; le moteur charges sociales libérales reste planifié.',
     priority: 'critique',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: [
       'retraite-prevoyance.prevoyance-garanties',
       'retraite-prevoyance.cotisations-retraite',

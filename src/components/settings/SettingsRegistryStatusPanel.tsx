@@ -31,7 +31,6 @@ const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; pl
 const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
   '/settings/memento': 'Registre settings mémento',
   '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',
-  '/settings/prevoyance-regimes': 'Registre settings Prévoyance — régimes',
 };
 
 interface SettingsRegistryStatusPanelProps {

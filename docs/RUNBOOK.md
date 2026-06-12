@@ -761,7 +761,7 @@ npm run check:settings-references
 npm run audit:settings-references -- --stale
 ```
 
-5. Si la revue touche `/settings/prevoyance-regimes`, exporter d'abord l'état live en `.cache/`,
+5. Si la revue touche les sources prévoyance du mémento, exporter d'abord l'état live en `.cache/`,
    ajouter une migration idempotente, puis relancer avec les variables Supabase disponibles :
 
 ```powershell
@@ -773,10 +773,10 @@ Le job GitHub Actions hebdomadaire `Settings reference audit` lance cette varian
 une bannière uniquement aux admins connectés et seulement tant que ce rapport n'a pas été acquitté.
 Le navigateur ne relance jamais l'audit et ne contacte jamais directement les URLs Légifrance/BOFiP.
 
-`check:settings-references` est branché dans `check:static`. Les surfaces
-`/settings/memento` et `/settings/prevoyance-regimes` doivent rester à
-`coverage.byPage[*].expectedDefined = true`, `complete = true`, `coverage.isExhaustive = true` et
-zéro dette muette. Dans le scénario 2027, `npm run audit:settings-references -- --stale --with-db`
+`check:settings-references` est branché dans `check:static`. La surface `/settings/memento` doit
+rester à `coverage.byPage[*].expectedDefined = true`, `complete = true`,
+`coverage.isExhaustive = true` et zéro dette muette. Dans le scénario 2027,
+`npm run audit:settings-references -- --stale --with-db`
 sert à lister les claims périmés ou à vérifier. Pour les références `annual`, le blocage démarre au
 1er février de l'année suivant `verifiedAt` : une attestation 2026 devient donc bloquante le
 2027-02-01. Une liveness `blocked` impose une vérification manuelle Légifrance/BOFiP, mais ne prouve

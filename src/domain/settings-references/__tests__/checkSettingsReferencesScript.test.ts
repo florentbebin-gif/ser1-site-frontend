@@ -190,7 +190,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
     for (const category of PREVOYANCE_CATEGORIES) {
       bindings.push(
         validBinding({
-          pagePath: '/settings/prevoyance-regimes',
+          pagePath: '/settings/memento',
           sectionKey: `prevoyance-${code}`,
           category: category === 'deces' ? 'deces-transmission' : category,
           claimKey: `${code}-${category}`,
@@ -208,7 +208,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
 
   bindings.push(
     validBinding({
-      pagePath: '/settings/prevoyance-regimes',
+      pagePath: '/settings/memento',
       sectionKey: 'prevoyance-maintien-employeur',
       category: 'maintien-employeur',
       claimKey: 'maintien-employeur',
@@ -369,12 +369,11 @@ describe('check-settings-references', () => {
     expect(report.coverage.isExhaustive).toBe(true);
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
-      '/settings/memento': 25,
-      '/settings/prevoyance-regimes': 69,
+      '/settings/memento': 94,
     });
     expect(report.coverage.byPage['/settings/memento']).toEqual({
-      expected: 25,
-      declared: 25,
+      expected: 94,
+      declared: 94,
       expectedDefined: true,
       complete: true,
       missing: 0,

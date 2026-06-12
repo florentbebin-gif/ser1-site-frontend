@@ -36,7 +36,7 @@ describe('settings-memento — dirigeant et social', () => {
       const entry = entryByKey.get(key);
       const expectedOwner =
         key === 'dirigeant.prevoyance'
-          ? '/settings/prevoyance-regimes'
+          ? '/settings/memento'
           : key === 'dirigeant.micro-social'
             ? null
             : '/settings/memento';

@@ -113,7 +113,11 @@ describe('settings-registry', () => {
     )
       // Les claims Base-Contrat sont générés depuis le catalogue et les règles,
       // puis vérifiés dynamiquement par check:settings-references.
-      .filter((binding) => binding.target.kind !== 'base-contrat-rule')
+      // Les claims prévoyance sont portés par les lignes Supabase auditées avec audit:settings-references.
+      .filter(
+        (binding) =>
+          binding.target.kind !== 'base-contrat-rule' && binding.target.kind !== 'prevoyance-db',
+      )
       .filter((binding) => !declaredClaimsByOwner.has(`${binding.pagePath}:${binding.claimKey}`))
       .map((binding) => `${binding.pagePath}:${binding.claimKey}`);
 

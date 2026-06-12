@@ -1,8 +1,7 @@
-export const SETTINGS_PAGES = new Set(['/settings/memento', '/settings/prevoyance-regimes']);
+export const SETTINGS_PAGES = new Set(['/settings/memento']);
 
 export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = {
-  '/settings/memento': 23,
-  '/settings/prevoyance-regimes': 69,
+  '/settings/memento': 92,
 };
 
 export const CATEGORIES = new Set([
