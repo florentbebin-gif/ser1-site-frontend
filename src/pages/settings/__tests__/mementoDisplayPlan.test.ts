@@ -6,6 +6,8 @@ import { MEMENTO_LEXICON_TERMS } from '@/domain/settings-memento/lexicon';
 import {
   buildMementoDisplayPlan,
   MEMENTO_DISPLAY_PARTS,
+  MEMENTO_LEXICON_PRUDENCE_LABELS,
+  MEMENTO_PRUDENCE_LABELS,
   resolveMementoEntryPartId,
 } from '../memento/mementoDisplayPlan';
 
@@ -40,6 +42,16 @@ describe('mementoDisplayPlan', () => {
     expect(entryKeys).toHaveLength(MEMENTO_ENTRIES.length);
     expect(new Set(entryKeys).size).toBe(MEMENTO_ENTRIES.length);
     expect(new Set(entryKeys)).toEqual(new Set(MEMENTO_ENTRIES.map((entry) => entry.key)));
+  });
+
+  it('garde les titres, descriptions et libellés prudence sans chiffre', () => {
+    const displayTexts = MEMENTO_DISPLAY_PARTS.flatMap((part) => [part.title, part.description]);
+    const prudenceTexts = [
+      ...Object.values(MEMENTO_PRUDENCE_LABELS),
+      ...Object.values(MEMENTO_LEXICON_PRUDENCE_LABELS),
+    ].filter((value): value is string => value !== null);
+
+    expect([...displayTexts, ...prudenceTexts].filter((text) => /\d/.test(text))).toEqual([]);
   });
 
   it('déplace seulement la présentation des entrées transverses', () => {

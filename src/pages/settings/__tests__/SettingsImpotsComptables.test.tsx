@@ -163,15 +163,6 @@ describe('ImpotsSettingsPanel', () => {
     expect(screen.queryByText('Registre settings impôts')).not.toBeInTheDocument();
     expect(screen.queryByText('IFI - millésimes historiques')).not.toBeInTheDocument();
   });
-
-  it('masque le registre settings aux utilisateurs non-admin', async () => {
-    isAdmin = false;
-
-    render(<ImpotsSettingsPanel />);
-
-    await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i });
-    expect(screen.queryByText(/Registre settings/i)).not.toBeInTheDocument();
-  });
 });
 
 describe('ComptablesSocietesSettingsPanel', () => {

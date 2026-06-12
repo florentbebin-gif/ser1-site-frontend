@@ -34,6 +34,17 @@ export interface MementoSettingsSection {
   registrySettingKeys: readonly SettingRegistryKey[];
 }
 
+export const MEMENTO_SETTINGS_SOURCE_LABELS = {
+  tax_settings: 'Tax settings',
+  ps_settings: 'Paramètres sociaux',
+  fiscality_settings: 'Fiscalité structurée',
+  pass_history: 'Historique PASS',
+  base_contrat_catalog: 'Catalogue contrats',
+  base_contrat_overrides: 'Overrides contrats',
+  prevoyance_regime_settings: 'Régimes prévoyance',
+  prevoyance_maintien_employeur_settings: 'Maintien employeur',
+} as const satisfies Record<MementoSettingsDataSource, string>;
+
 export const MEMENTO_SETTINGS_SECTIONS = [
   {
     id: 'impots',

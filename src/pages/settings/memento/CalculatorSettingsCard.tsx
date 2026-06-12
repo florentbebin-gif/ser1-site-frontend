@@ -1,6 +1,9 @@
 import { Suspense, type ComponentType, type LazyExoticComponent, type ReactElement } from 'react';
 
-import type { MementoSettingsSection } from './mementoSettingsSections';
+import {
+  MEMENTO_SETTINGS_SOURCE_LABELS,
+  type MementoSettingsSection,
+} from './mementoSettingsSections';
 
 interface CalculatorSettingsCardProps {
   section: MementoSettingsSection;
@@ -8,17 +11,6 @@ interface CalculatorSettingsCardProps {
   isOpen: boolean;
   onToggle: () => void;
 }
-
-const SETTINGS_SOURCE_LABELS = {
-  tax_settings: 'Tax settings',
-  ps_settings: 'Paramètres sociaux',
-  fiscality_settings: 'Fiscalité structurée',
-  pass_history: 'Historique PASS',
-  base_contrat_catalog: 'Catalogue contrats',
-  base_contrat_overrides: 'Overrides contrats',
-  prevoyance_regime_settings: 'Régimes prévoyance',
-  prevoyance_maintien_employeur_settings: 'Maintien employeur',
-} as const satisfies Record<MementoSettingsSection['readSources'][number], string>;
 
 export default function CalculatorSettingsCard({
   section,
@@ -50,10 +42,10 @@ export default function CalculatorSettingsCard({
 
       <div className="settings-memento-calculator-card__sources" aria-label="Sources settings">
         {section.readSources.map((source) => (
-          <span key={`read-${source}`}>Lecture : {SETTINGS_SOURCE_LABELS[source]}</span>
+          <span key={`read-${source}`}>Lecture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
         ))}
         {section.writeSources.map((source) => (
-          <span key={`write-${source}`}>Écriture : {SETTINGS_SOURCE_LABELS[source]}</span>
+          <span key={`write-${source}`}>Écriture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
         ))}
       </div>
 

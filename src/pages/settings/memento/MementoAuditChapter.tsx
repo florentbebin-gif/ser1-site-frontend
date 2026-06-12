@@ -13,7 +13,10 @@ import type { MementoChapter, MementoEntry } from '@/domain/settings-memento/typ
 import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 
 import MementoEntryRow from './MementoEntryRow';
-import type { MementoSettingsSection } from './mementoSettingsSections';
+import {
+  MEMENTO_SETTINGS_SOURCE_LABELS,
+  type MementoSettingsSection,
+} from './mementoSettingsSections';
 
 const LazyMementoCoveragePanel = lazy(() => import('./MementoCoveragePanel'));
 
@@ -37,17 +40,6 @@ interface MementoSubAccordionProps {
   setOpenSubSection: (nextSection: MementoAuditSubSectionId | null) => void;
   children: ReactNode;
 }
-
-const SETTINGS_SOURCE_LABELS = {
-  tax_settings: 'Tax settings',
-  ps_settings: 'Paramètres sociaux',
-  fiscality_settings: 'Fiscalité structurée',
-  pass_history: 'Historique PASS',
-  base_contrat_catalog: 'Catalogue contrats',
-  base_contrat_overrides: 'Overrides contrats',
-  prevoyance_regime_settings: 'Régimes prévoyance',
-  prevoyance_maintien_employeur_settings: 'Maintien employeur',
-} as const satisfies Record<MementoSettingsSection['readSources'][number], string>;
 
 function ChapterIcon(): ReactElement {
   return (
@@ -84,10 +76,10 @@ function SettingsSourceRow({ section }: { section: MementoSettingsSection }): Re
         </p>
         <div className="settings-memento-row__facts" aria-label="Sources settings">
           {section.readSources.map((source) => (
-            <span key={`read-${source}`}>Lecture : {SETTINGS_SOURCE_LABELS[source]}</span>
+            <span key={`read-${source}`}>Lecture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
           ))}
           {section.writeSources.map((source) => (
-            <span key={`write-${source}`}>Écriture : {SETTINGS_SOURCE_LABELS[source]}</span>
+            <span key={`write-${source}`}>Écriture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
           ))}
         </div>
       </div>
