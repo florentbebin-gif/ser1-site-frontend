@@ -1,12 +1,14 @@
-import type { SettingsOwnerPagePath } from '@/domain/settings-registry';
 import type { SettingsReferenceBinding } from '@/domain/settings-references';
 
 export const MEMENTO_SETTINGS_TARGET_PATH = '/settings/memento' as const;
 
-export type MementoMigratedSettingsPagePath = Exclude<
-  SettingsOwnerPagePath,
-  '/settings/base-contrat-retraite'
->;
+export type MementoMigratedSettingsPagePath =
+  | '/settings/impots'
+  | '/settings/comptables-societes'
+  | '/settings/prelevements'
+  | '/settings/dmtg-succession'
+  | '/settings/base-contrat'
+  | '/settings/prevoyance-regimes';
 
 export type MementoSettingsSectionId =
   | 'impots'

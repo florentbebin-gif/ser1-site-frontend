@@ -1,20 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './styles/impots.css';
+import '../styles/impots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
-import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import { validateImpotsSettings, isValid } from './validators/dmtgValidators';
+import { validateImpotsSettings, isValid } from '../validators/dmtgValidators';
 
-import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
-import ImpotsAbattementDomSection from './Impots/ImpotsAbattementDomSection';
-import ImpotsPfuSection from './Impots/ImpotsPfuSection';
-import ImpotsCehrSection from './Impots/ImpotsCehrSection';
-import ImpotsIfiSection from './Impots/ImpotsIfiSection';
+import ImpotsBaremeSection from './ImpotsBaremeSection';
+import ImpotsAbattementDomSection from './ImpotsAbattementDomSection';
+import ImpotsPfuSection from './ImpotsPfuSection';
+import ImpotsCehrSection from './ImpotsCehrSection';
+import ImpotsIfiSection from './ImpotsIfiSection';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -91,7 +90,7 @@ function mergeTaxSettings(base: TaxSettings, nextData: Partial<TaxSettings>): Ta
   };
 }
 
-export default function SettingsImpots() {
+export default function ImpotsSettingsPanel() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
@@ -252,9 +251,12 @@ export default function SettingsImpots() {
   const { incomeTax, pfu, cehr, cdhr, ifi } = settings;
 
   return (
-    <div className="settings-stack settings-stack--offset">
-      <UserInfoBanner />
-      <SettingsRegistryStatusPanel ownerPage="/settings/impots" />
+    <div className="settings-stack">
+      <SettingsRegistryStatusPanel
+        ownerPage="/settings/memento"
+        families={['impots', 'immobilier']}
+        title="Registre settings impôts"
+      />
 
       <div className="fisc-accordion">
         <ImpotsBaremeSection

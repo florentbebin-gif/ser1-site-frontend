@@ -77,7 +77,7 @@ function validReference(overrides: Record<string, unknown> = {}) {
 
 function validBinding(overrides: Record<string, unknown> = {}) {
   return {
-    pagePath: '/settings/impots',
+    pagePath: '/settings/memento',
     sectionKey: 'income-tax',
     sectionLabel: 'Impôt sur le revenu',
     category: 'valeur-fiscale',
@@ -372,11 +372,11 @@ describe('check-settings-references', () => {
       '/settings/base-contrat': 2,
       '/settings/comptables-societes': 1,
       '/settings/dmtg-succession': 7,
-      '/settings/impots': 10,
+      '/settings/memento': 10,
       '/settings/prelevements': 5,
       '/settings/prevoyance-regimes': 69,
     });
-    expect(report.coverage.byPage['/settings/impots']).toEqual({
+    expect(report.coverage.byPage['/settings/memento']).toEqual({
       expected: 10,
       declared: 10,
       expectedDefined: true,

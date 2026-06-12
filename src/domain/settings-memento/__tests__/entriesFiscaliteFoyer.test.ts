@@ -34,12 +34,12 @@ describe('settings-memento — fiscalité foyer', () => {
     expect(entry!.relatedSimulatorIds).toEqual(['ifi']);
   });
 
-  it('rattache chaque entrée fiscalité foyer à la page propriétaire Impôts', () => {
+  it('rattache chaque entrée fiscalité foyer à la page propriétaire mémento', () => {
     for (const key of FISCALITE_FOYER_KEYS) {
       const entry = entryByKey.get(key);
 
       expect(entry).toBeDefined();
-      expect(entry!.ownerPagePath).toBe('/settings/impots');
+      expect(entry!.ownerPagePath).toBe('/settings/memento');
     }
   });
 

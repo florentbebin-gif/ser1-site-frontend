@@ -10,6 +10,7 @@ import { getSettingsRegistryEntry, type SettingsOwnerPagePath } from '@/domain/s
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 import type { SimulatorDefinition, SimulatorLifecycle } from '@/domain/simulators/types';
 
+import ImpotsSettingsPanel from '../Impots/ImpotsSettingsPanel';
 import MementoEntryRow, {
   canRenderMementoOwnerLink,
   MEMENTO_STATUS_LABELS,
@@ -229,6 +230,21 @@ function SettingsSourceRow({
   );
 }
 
+function SettingsSectionContent({
+  section,
+}: {
+  section: MementoSettingsMigrationSection;
+}): ReactElement {
+  if (section.id !== 'impots') return <SettingsSourceRow section={section} />;
+
+  return (
+    <div className="settings-memento-settings-editor">
+      <SettingsSourceRow section={section} />
+      <ImpotsSettingsPanel />
+    </div>
+  );
+}
+
 function MementoSubAccordion({
   id,
   title,
@@ -358,7 +374,7 @@ export default function MementoChapterSection({
             {settingsSections.length > 0 ? (
               <div className="settings-memento-section__rows">
                 {settingsSections.map((section) => (
-                  <SettingsSourceRow key={section.id} section={section} />
+                  <SettingsSectionContent key={section.id} section={section} />
                 ))}
               </div>
             ) : (

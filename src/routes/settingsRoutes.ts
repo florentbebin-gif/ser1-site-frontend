@@ -13,7 +13,6 @@ import { lazy, type ComponentType } from 'react';
 
 const SettingsGeneral = lazy(() => import('../pages/settings/SettingsGeneral'));
 const SettingsMemento = lazy(() => import('../pages/settings/SettingsMemento'));
-const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
 const SettingsComptablesSocietes = lazy(
   () => import('../pages/settings/SettingsComptablesSocietes'),
 );
@@ -48,13 +47,6 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
     path: 'memento',
     urlPath: '/settings/memento',
     component: SettingsMemento,
-  },
-  {
-    key: 'impots',
-    label: 'Imp\u00f4ts',
-    path: 'impots',
-    urlPath: '/settings/impots',
-    component: SettingsImpots,
   },
   {
     key: 'comptablesSocietes',
@@ -118,7 +110,6 @@ export const SETTINGS_ROUTES: SettingsRouteEntry[] = [
 
 export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/memento')) return 'memento';
-  if (pathname.startsWith('/settings/impots')) return 'impots';
   if (pathname.startsWith('/settings/comptables-societes')) return 'comptablesSocietes';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats';
@@ -128,9 +119,20 @@ export function getActiveSettingsKey(pathname: string): string {
   if (pathname.startsWith('/settings/prevoyance-regimes')) return 'prevoyanceRegimes';
   if (pathname.startsWith('/settings/design-system')) return 'designSystem';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
+  if (pathname.startsWith('/settings/')) return 'memento';
   return 'general';
 }
 
 export function getVisibleSettingsRoutes(isAdmin: boolean) {
   return SETTINGS_ROUTES.filter((route) => !route.adminOnly || isAdmin);
+}
+
+export function isDeclaredSettingsPath(pathname: string): boolean {
+  if (pathname === '/settings') return true;
+
+  return SETTINGS_ROUTES.some(
+    (route) =>
+      route.urlPath !== '/settings' &&
+      (pathname === route.urlPath || pathname.startsWith(`${route.urlPath}/`)),
+  );
 }

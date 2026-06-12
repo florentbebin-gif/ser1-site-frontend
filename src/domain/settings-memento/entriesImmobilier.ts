@@ -23,12 +23,12 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.revenus-fonciers',
     label: 'Revenus fonciers',
     description:
-      'Location nue du foyer : micro-foncier, régime réel, intérêts d’emprunt et déficit foncier rattachés à la page Impôts.',
+      'Location nue du foyer : micro-foncier, régime réel, intérêts d’emprunt et déficit foncier rattachés au mémento.',
     status: 'planned',
     statusReason:
       'Moteur revenus fonciers planifié ; le paramètre micro-foncier reste planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.revenus-fonciers.micro-foncier'],
     claimKeys: [],
     refIds: [
@@ -48,7 +48,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Moteur location meublée planifié ; les régimes restent planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.lmnp-lmp.regimes'],
     claimKeys: [],
     refIds: ['boi-bic-champ-40', 'base-source-urssaf-lmp-cotisations-sociales'],
@@ -65,7 +65,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Moteur plus-values immobilières planifié ; le paramètre de durée de détention reste planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.pv-immobilieres.abattements-duree'],
     claimKeys: [],
     refIds: [
@@ -115,7 +115,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Simulateur investissement locatif planifié ; les régimes fonciers et meublés consommés restent planned dans le registry settings.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['immobilier.revenus-fonciers.micro-foncier', 'immobilier.lmnp-lmp.regimes'],
     claimKeys: [],
     refIds: ['base-source-art-28-cgi-revenus-fonciers'],
@@ -202,7 +202,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Aucun claim ni référence repo sur ce périmètre ; les règles doivent être qualifiées sur une source officielle avant tout affichage opérationnel.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: [],
@@ -219,7 +219,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Simulateur arbitrage et réemploi planifié ; les régimes de cession sont référencés mais le moteur de comparaison reste à construire.',
     priority: 'structurant',
-    ownerPagePath: '/settings/impots',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['cgi-150-0-a', 'base-source-art-150-u-cgi-plus-values-immobilieres'],

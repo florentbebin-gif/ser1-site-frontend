@@ -18,7 +18,7 @@ describe('settings-memento — placements et enveloppes', () => {
     keyof typeof R1_EXPECTED_STATUSES
   >;
 
-  // La part IR du PFU est administrée sur la page Impôts, mais le taux global
+  // La part IR du PFU est administrée dans le mémento, mais le taux global
   // est composé avec la part sociale portée par la page Prélèvements : l'entrée
   // mémento garde Prélèvements comme propriétaire de preuve.
   const CROSS_PAGE_CLAIM_EXCEPTIONS = new Set([

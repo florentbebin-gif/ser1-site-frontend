@@ -206,6 +206,13 @@
   gap: 8px;
 }
 
+.settings-memento-settings-editor {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .settings-memento-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(160px, auto);

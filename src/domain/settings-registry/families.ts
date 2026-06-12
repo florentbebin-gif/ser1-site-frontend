@@ -5,7 +5,7 @@ export const SETTINGS_FAMILIES = [
     id: 'impots',
     label: 'Impôts',
     description: 'Paramètres IR, PFU, contributions hauts revenus et IFI portés par tax_settings.',
-    ownerPages: ['/settings/impots', '/settings/prelevements'],
+    ownerPages: ['/settings/memento', '/settings/prelevements'],
     status: 'ready',
   },
   {
@@ -19,7 +19,7 @@ export const SETTINGS_FAMILIES = [
     id: 'immobilier',
     label: 'Immobilier',
     description: 'Paramètres révisables des revenus, plus-values et régimes immobiliers futurs.',
-    ownerPages: ['/settings/impots'],
+    ownerPages: ['/settings/memento'],
     status: 'planned',
   },
   {

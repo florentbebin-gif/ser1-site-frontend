@@ -5,7 +5,7 @@
  *   - fiscality_settings (V2 format) → DEFAULT_FISCALITY_SETTINGS
  *
  * Utilisé comme fallback quand Supabase ne répond pas, ET comme état initial
- * des pages Settings (SettingsImpots, SettingsPrelevements, BaseContrat).
+ * des pages Settings (Mémento, SettingsPrelevements, BaseContrat).
  *
  * ⚠️  Ne jamais dupliquer ces objets ailleurs — toujours importer depuis ce fichier.
  */
