@@ -139,19 +139,17 @@ describe('route settings mémento', () => {
     expect(route?.adminOnly).toBeUndefined();
     expect(mementoIndex).toBe(generalIndex + 1);
     expect(getVisibleSettingsRoutes(false).some((entry) => entry.key === 'memento')).toBe(true);
-    expect(getActiveSettingsKey('/settings/memento')).toBe('memento');
-    expect(getActiveSettingsKey('/settings/impots')).toBe('memento');
-    expect(getActiveSettingsKey('/settings/comptables-societes')).toBe('memento');
-    expect(getActiveSettingsKey('/settings/prelevements')).toBe('memento');
-    expect(isDeclaredSettingsPath('/settings/impots')).toBe(false);
-    expect(isDeclaredSettingsPath('/settings/comptables-societes')).toBe(false);
-    expect(isDeclaredSettingsPath('/settings/prelevements')).toBe(false);
     expect(isDeclaredSettingsPath('/settings/memento-old')).toBe(false);
-    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/impots')).toBe(false);
-    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/comptables-societes')).toBe(
-      false,
-    );
-    expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === '/settings/prelevements')).toBe(false);
+    for (const migratedPath of [
+      '/settings/impots',
+      '/settings/comptables-societes',
+      '/settings/prelevements',
+      '/settings/dmtg-succession',
+    ]) {
+      expect(getActiveSettingsKey(migratedPath)).toBe('memento');
+      expect(isDeclaredSettingsPath(migratedPath)).toBe(false);
+      expect(SETTINGS_ROUTES.some((entry) => entry.urlPath === migratedPath)).toBe(false);
+    }
   });
 });
 
@@ -193,9 +191,13 @@ describe('contrat de migration settings vers mémento', () => {
     expect(routePaths).not.toContain('/settings/impots');
     expect(routePaths).not.toContain('/settings/comptables-societes');
     expect(routePaths).not.toContain('/settings/prelevements');
+    expect(routePaths).not.toContain('/settings/dmtg-succession');
 
     for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS.filter(
-      (candidate) => !['impots', 'comptables-societes', 'prelevements'].includes(candidate.id),
+      (candidate) =>
+        !['impots', 'comptables-societes', 'prelevements', 'dmtg-succession'].includes(
+          candidate.id,
+        ),
     )) {
       expect(routePaths, section.id).toContain(section.legacyPagePath);
     }
@@ -374,6 +376,26 @@ describe('SettingsMemento', () => {
     ).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('rend les paramètres DMTG & succession depuis le chapitre Transmission', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openChapter(user, 'Transmission');
+    await openSubAccordion(user, 'Paramètres calculateurs');
+
+    await screen.findByText('Registre settings DMTG & Succession', {}, { timeout: 5_000 });
+    for (const sectionName of [
+      /Droits de mutation à titre gratuit/i,
+      /Assurance-vie décès/i,
+      /Libéralités/i,
+    ]) {
+      expect(screen.getByRole('button', { name: sectionName })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+    }
+  });
+
   it('n’affiche aucune source externe protégée ni PDF externe', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
@@ -399,7 +421,7 @@ describe('SettingsMemento', () => {
     expect(row).not.toBeNull();
     expect(within(row).queryAllByRole('link')).toHaveLength(0);
     expect(within(row).queryAllByRole('button')).toHaveLength(0);
-    expect(within(row).getAllByText('DMTG & Succession').length).toBeGreaterThan(0);
+    expect(within(row).getAllByText('Mémento').length).toBeGreaterThan(0);
   });
 
   it('ne rend pas de liens sur les lignes planned, internalOnly ou placeholder', async () => {

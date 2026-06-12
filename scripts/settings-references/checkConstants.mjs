@@ -1,14 +1,12 @@
 export const SETTINGS_PAGES = new Set([
   '/settings/memento',
   '/settings/base-contrat',
-  '/settings/dmtg-succession',
   '/settings/prevoyance-regimes',
 ]);
 
 export const COVERAGE_EXPECTED_CLAIMS_BY_PAGE = {
-  '/settings/memento': 16,
+  '/settings/memento': 23,
   '/settings/base-contrat': null,
-  '/settings/dmtg-succession': 7,
   '/settings/prevoyance-regimes': 69,
 };
 

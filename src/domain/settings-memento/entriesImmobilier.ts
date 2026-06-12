@@ -185,7 +185,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     statusReason:
       'Simulateur SCI planifié ; les règles de détention, de translucidité fiscale et de transmission de parts restent à qualifier avec le socle société.',
     priority: 'structurant',
-    ownerPagePath: '/settings/dmtg-succession',
+    ownerPagePath: '/settings/memento',
     registryKeys: [],
     claimKeys: [],
     refIds: ['code-civil-1075'],

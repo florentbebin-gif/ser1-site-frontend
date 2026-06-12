@@ -169,7 +169,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "donations",
     "sectionLabel": "Donations et rapport civil",
     "category": "regle-civile",
@@ -186,7 +186,7 @@
     "volatility": "stable"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "droits-mutation",
     "sectionLabel": "Droits de mutation à titre gratuit",
     "category": "valeur-fiscale",
@@ -203,7 +203,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "assurance-vie-deces",
     "sectionLabel": "Assurance-vie décès",
     "category": "deces-transmission",
@@ -220,7 +220,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "droits-mutation",
     "sectionLabel": "Droits de mutation à titre gratuit",
     "category": "deces-transmission",
@@ -237,7 +237,7 @@
     "volatility": "lawChange"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "donations",
     "sectionLabel": "Donations et rapport civil",
     "category": "valeur-fiscale",
@@ -7409,7 +7409,7 @@
     "volatility": "annual"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "donations",
     "sectionLabel": "Donations et rapport fiscal",
     "category": "valeur-fiscale",
@@ -8650,7 +8650,7 @@
     "volatility": "annual"
   },
   {
-    "pagePath": "/settings/dmtg-succession",
+    "pagePath": "/settings/memento",
     "sectionKey": "liberalites",
     "sectionLabel": "Libéralités démembrées",
     "category": "deces-transmission",

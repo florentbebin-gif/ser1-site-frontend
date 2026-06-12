@@ -26,7 +26,7 @@ export const SETTINGS_FAMILIES = [
     id: 'transmission',
     label: 'Transmission',
     description: 'Paramètres DMTG, donations, assurance-vie décès et futurs régimes Dutreil.',
-    ownerPages: ['/settings/dmtg-succession'],
+    ownerPages: ['/settings/memento'],
     status: 'partial',
   },
   {
@@ -40,7 +40,7 @@ export const SETTINGS_FAMILIES = [
     id: 'placements',
     label: 'Placements',
     description: 'Règles par enveloppe financière et dispositifs de placement patrimonial.',
-    ownerPages: ['/settings/dmtg-succession', '/settings/base-contrat', '/settings/memento'],
+    ownerPages: ['/settings/base-contrat', '/settings/memento'],
     status: 'partial',
   },
   {

@@ -169,7 +169,7 @@ function completeBindings(baseBindingOverrides: Record<string, unknown> = {}) {
   for (let index = 0; index < 7; index += 1) {
     bindings.push(
       validBinding({
-        pagePath: '/settings/dmtg-succession',
+        pagePath: '/settings/memento',
         sectionKey: 'dmtg-fixture',
         category: index % 2 === 0 ? 'valeur-fiscale' : 'regle-civile',
         claimKey: `dmtg-fixture-${index}`,
@@ -370,13 +370,12 @@ describe('check-settings-references', () => {
     expect(report.coverage.expectedClaimsDefined).toBe(true);
     expect(report.coverage.bindingsByPage).toEqual({
       '/settings/base-contrat': 2,
-      '/settings/dmtg-succession': 7,
-      '/settings/memento': 16,
+      '/settings/memento': 23,
       '/settings/prevoyance-regimes': 69,
     });
     expect(report.coverage.byPage['/settings/memento']).toEqual({
-      expected: 16,
-      declared: 16,
+      expected: 23,
+      declared: 23,
       expectedDefined: true,
       complete: true,
       missing: 0,

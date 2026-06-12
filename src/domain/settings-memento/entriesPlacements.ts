@@ -50,7 +50,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.assurance-vie-capitalisation',
     label: 'Assurance-vie et contrats de capitalisation',
     description:
-      'Enveloppes vie et capitalisation du catalogue Base-Contrat : versements, rachats selon l’ancienneté du contrat et transmissibilité, l’angle décès restant porté par la page DMTG & Succession.',
+      'Enveloppes vie et capitalisation du catalogue Base-Contrat : versements, rachats selon l’ancienneté du contrat et transmissibilité, l’angle décès restant porté par le mémento.',
     status: 'partiel',
     statusReason:
       'Claims Base-Contrat de constitution, de rachat et de transmission présents ; le pack placement complet reste partiel dans le registry settings.',

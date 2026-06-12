@@ -1,5 +1,5 @@
 import type { SettingsRegistryEntry } from './types';
-import { ownerDmtg, ownerMemento, plannedValidation, sourceToComplete } from './entryHelpers';
+import { ownerMemento, plannedValidation, sourceToComplete } from './entryHelpers';
 
 export const SETTINGS_PLANNED_REGISTRY = [
   {
@@ -158,7 +158,7 @@ export const SETTINGS_PLANNED_REGISTRY = [
     defaultValue: null,
     currentValue: null,
     validation: plannedValidation,
-    ownerSettingsPage: ownerDmtg,
+    ownerSettingsPage: ownerMemento,
     consumerSimulatorIds: ['pacte-dutreil', 'donation-demembrement'],
     status: 'planned',
     statusReason: 'Inventaire nécessaire, sans exonération ni durée inventée.',

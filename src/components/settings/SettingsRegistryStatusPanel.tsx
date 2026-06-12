@@ -32,7 +32,6 @@ const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
   '/settings/memento': 'Registre settings mémento',
   '/settings/base-contrat': 'Registre settings référentiel contrats',
   '/settings/base-contrat-retraite': 'Registre settings Base CG retraite',
-  '/settings/dmtg-succession': 'Registre settings DMTG & Succession',
   '/settings/prevoyance-regimes': 'Registre settings Prévoyance — régimes',
 };
 
