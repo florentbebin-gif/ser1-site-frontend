@@ -10,59 +10,36 @@ import {
 
 import { SettingsIcon } from '@/components/settings/SettingsTitleWithIcon';
 import type { MementoChapter, MementoEntry } from '@/domain/settings-memento/types';
-import type { MementoChapterEditorial } from '@/domain/settings-memento/editorial';
 import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
 
 import MementoEntryRow from './MementoEntryRow';
-import MementoEditorialRow from './MementoEditorialRow';
-import type { MementoSettingsSection } from './mementoSettingsSections';
+import {
+  MEMENTO_SETTINGS_SOURCE_LABELS,
+  type MementoSettingsSection,
+} from './mementoSettingsSections';
 
-const ComptablesSocietesSettingsPanel = lazy(
-  () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
-);
-const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
-const DmtgSuccessionSettingsPanel = lazy(
-  () => import('../DmtgSuccession/DmtgSuccessionSettingsPanel'),
-);
-const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
-const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
-const PrevoyanceRegimesSettingsPanel = lazy(
-  () => import('../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel'),
-);
 const LazyMementoCoveragePanel = lazy(() => import('./MementoCoveragePanel'));
 
-type MementoSubSectionId = 'lecture' | 'parametres' | 'couverture';
+type MementoAuditSubSectionId = 'entrees' | 'sources' | 'couverture';
 
-interface MementoChapterSectionProps {
+interface MementoAuditChapterProps {
   chapter: MementoChapter;
   entries: readonly MementoEntry[];
   coverage: readonly SimulatorCoverageEntry[];
   settingsSections: readonly MementoSettingsSection[];
-  editorial: MementoChapterEditorial | null;
   isOpen: boolean;
   onToggle: () => void;
 }
 
 interface MementoSubAccordionProps {
-  id: MementoSubSectionId;
+  id: MementoAuditSubSectionId;
   title: string;
   summary: string;
   count: number;
-  openSubSection: MementoSubSectionId | null;
-  setOpenSubSection: (nextSection: MementoSubSectionId | null) => void;
+  openSubSection: MementoAuditSubSectionId | null;
+  setOpenSubSection: (nextSection: MementoAuditSubSectionId | null) => void;
   children: ReactNode;
 }
-
-const SETTINGS_SOURCE_LABELS = {
-  tax_settings: 'Tax settings',
-  ps_settings: 'Paramètres sociaux',
-  fiscality_settings: 'Fiscalité structurée',
-  pass_history: 'Historique PASS',
-  base_contrat_catalog: 'Catalogue contrats',
-  base_contrat_overrides: 'Overrides contrats',
-  prevoyance_regime_settings: 'Régimes prévoyance',
-  prevoyance_maintien_employeur_settings: 'Maintien employeur',
-} as const satisfies Record<MementoSettingsSection['readSources'][number], string>;
 
 function ChapterIcon(): ReactElement {
   return (
@@ -99,10 +76,10 @@ function SettingsSourceRow({ section }: { section: MementoSettingsSection }): Re
         </p>
         <div className="settings-memento-row__facts" aria-label="Sources settings">
           {section.readSources.map((source) => (
-            <span key={`read-${source}`}>Lecture : {SETTINGS_SOURCE_LABELS[source]}</span>
+            <span key={`read-${source}`}>Lecture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
           ))}
           {section.writeSources.map((source) => (
-            <span key={`write-${source}`}>Écriture : {SETTINGS_SOURCE_LABELS[source]}</span>
+            <span key={`write-${source}`}>Écriture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
           ))}
         </div>
       </div>
@@ -112,82 +89,6 @@ function SettingsSourceRow({ section }: { section: MementoSettingsSection }): Re
       </div>
     </article>
   );
-}
-
-function SettingsSectionContent({
-  chapter,
-  section,
-}: {
-  chapter: MementoChapter;
-  section: MementoSettingsSection;
-}): ReactElement {
-  if (section.id === 'impots' && chapter.id === 'fiscalite-foyer') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <ImpotsSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  if (section.id === 'comptables-societes' && chapter.id === 'societe') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <ComptablesSocietesSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  if (section.id === 'prelevements' && chapter.id === 'retraite') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <PrelevementsSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  if (section.id === 'dmtg-succession' && chapter.id === 'transmission') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <DmtgSuccessionSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  if (section.id === 'base-contrat' && chapter.id === 'placements') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <BaseContratSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  if (section.id === 'prevoyance-regimes' && chapter.id === 'prevoyance') {
-    return (
-      <div className="settings-memento-settings-editor">
-        <SettingsSourceRow section={section} />
-        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
-          <PrevoyanceRegimesSettingsPanel />
-        </Suspense>
-      </div>
-    );
-  }
-
-  return <SettingsSourceRow section={section} />;
 }
 
 function MementoSubAccordion({
@@ -236,17 +137,16 @@ function MementoSubAccordion({
   );
 }
 
-export default function MementoChapterSection({
+export default function MementoAuditChapter({
   chapter,
   entries,
   coverage,
   settingsSections,
-  editorial,
   isOpen,
   onToggle,
-}: MementoChapterSectionProps): ReactElement {
+}: MementoAuditChapterProps): ReactElement {
   const generatedId = useId();
-  const [openSubSection, setOpenSubSection] = useState<MementoSubSectionId | null>(null);
+  const [openSubSection, setOpenSubSection] = useState<MementoAuditSubSectionId | null>(null);
   const buttonId = `${generatedId}-chapter-button`;
   const panelId = `${generatedId}-chapter-panel`;
 
@@ -291,29 +191,28 @@ export default function MementoChapterSection({
           aria-labelledby={buttonId}
         >
           <MementoSubAccordion
-            id="lecture"
-            title="Lecture métier"
-            summary="Synthèse courte, statut et rattachement utile au CGP."
-            count={entries.length + (editorial ? 1 : 0)}
+            id="entrees"
+            title="Entrées techniques"
+            summary="Statuts, priorités, pages propriétaires et simulateurs rattachés."
+            count={entries.length}
             openSubSection={openSubSection}
             setOpenSubSection={setOpenSubSection}
           >
-            {entries.length > 0 || editorial ? (
+            {entries.length > 0 ? (
               <div className="settings-memento-section__rows">
-                {editorial ? <MementoEditorialRow editorial={editorial} /> : null}
                 {entries.map((entry) => (
                   <MementoEntryRow key={entry.key} entry={entry} />
                 ))}
               </div>
             ) : (
-              <p className="settings-memento-empty">Aucune entrée métier filtrée.</p>
+              <p className="settings-memento-empty">Aucune entrée technique filtrée.</p>
             )}
           </MementoSubAccordion>
 
           <MementoSubAccordion
-            id="parametres"
-            title="Paramètres calculateurs"
-            summary="Sources qui restent consommées par les simulateurs."
+            id="sources"
+            title="Sources settings"
+            summary="Tables lues et écrites par les panneaux calculateurs."
             count={settingsSections.length}
             openSubSection={openSubSection}
             setOpenSubSection={setOpenSubSection}
@@ -321,11 +220,11 @@ export default function MementoChapterSection({
             {settingsSections.length > 0 ? (
               <div className="settings-memento-section__rows">
                 {settingsSections.map((section) => (
-                  <SettingsSectionContent key={section.id} chapter={chapter} section={section} />
+                  <SettingsSourceRow key={section.id} section={section} />
                 ))}
               </div>
             ) : (
-              <p className="settings-memento-empty">Aucun paramètre settings rattaché.</p>
+              <p className="settings-memento-empty">Aucune source settings rattachée.</p>
             )}
           </MementoSubAccordion>
 

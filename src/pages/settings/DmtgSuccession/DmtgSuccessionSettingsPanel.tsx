@@ -4,8 +4,6 @@ import { useUserRole } from '@/auth/useUserRole';
 import '../styles/impots.css';
 import '../styles/dmtg.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
-import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
-import type { SettingRegistryKey } from '@/domain/settings-registry';
 
 import {
   DEFAULT_ASSURANCE_VIE_RULES,
@@ -67,13 +65,6 @@ type NestedRecord = Record<string, unknown>;
 interface SettingsRow<T> {
   data: Partial<T> | null;
 }
-
-const DMTG_REGISTRY_KEYS = [
-  'transmission.dmtg-succession',
-  'transmission.assurance-vie-deces',
-  'placements.assurance-vie-capitalisation',
-  'transmission.dutreil',
-] as const satisfies readonly SettingRegistryKey[];
 
 export default function DmtgSuccessionSettingsPanel() {
   const { isAdmin } = useUserRole();
@@ -348,12 +339,6 @@ export default function DmtgSuccessionSettingsPanel() {
 
   return (
     <div className="settings-stack">
-      <SettingsRegistryStatusPanel
-        ownerPage="/settings/memento"
-        settingKeys={DMTG_REGISTRY_KEYS}
-        title="Registre settings DMTG & Succession"
-      />
-
       <div className="fisc-accordion">
         <ImpotsDmtgSection
           dmtg={dmtg}

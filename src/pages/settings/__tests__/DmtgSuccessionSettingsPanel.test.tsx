@@ -133,24 +133,13 @@ describe('DmtgSuccessionSettingsPanel', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('expose le registre settings transmission et placements en lecture seule', async () => {
-    const user = userEvent.setup();
-
+  it('ne monte plus le registre settings dans le panel calculateur', async () => {
     render(<DmtgSuccessionSettingsPanel />);
 
-    await screen.findByText('Registre settings DMTG & Succession');
-    expect(screen.queryByText('Partiel')).not.toBeInTheDocument();
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /Afficher la section Registre settings DMTG & Succession/i,
-      }),
-    );
-
-    expect(screen.getByText('Partiel')).toBeInTheDocument();
-    expect(screen.getByText('Planifié')).toBeInTheDocument();
-    expect(screen.getByText('Pacte Dutreil')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Pacte Dutreil/i })).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText('Registre settings DMTG & Succession')).not.toBeInTheDocument();
   });
 
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {

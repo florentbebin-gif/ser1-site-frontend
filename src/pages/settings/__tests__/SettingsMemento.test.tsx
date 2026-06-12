@@ -5,8 +5,10 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { UserRoleState } from '@/auth/useUserRole';
 import type { MementoEntry, MementoStatus } from '@/domain/settings-memento';
 import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
+import { listSettingsForOwnerPage } from '@/domain/settings-registry';
 import {
   getActiveSettingsKey,
   isDeclaredSettingsPath,
@@ -23,6 +25,7 @@ import {
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
 
+let isAdmin = true;
 const fromMock = vi.hoisted(() => vi.fn());
 const rpcMock = vi.hoisted(() => vi.fn());
 
@@ -68,10 +71,10 @@ function makeSettingsBuilder() {
 }
 
 vi.mock('@/auth/useUserRole', () => ({
-  useUserRole: () => ({
-    role: 'admin',
+  useUserRole: (): UserRoleState => ({
+    role: isAdmin ? 'admin' : 'user',
     user: null,
-    isAdmin: true,
+    isAdmin,
     isLoading: false,
   }),
 }));
@@ -96,30 +99,54 @@ const entryWithStatus = (status: MementoStatus): MementoEntry => ({
   statusReason: 'Contenu planifié, aucune page propriétaire active.',
 });
 
-function getChapterButton(label: string): HTMLElement {
+async function openInternalTab(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
+  await user.click(screen.getByRole('tab', { name }));
+}
+
+function findButtonByClass(className: string, label: string): HTMLButtonElement {
   const button = screen
     .getAllByRole('button')
     .find(
-      (candidate) =>
-        candidate.classList.contains('settings-memento-chapter__header') &&
-        candidate.textContent?.trim().startsWith(`${label} (`),
+      (candidate): candidate is HTMLButtonElement =>
+        candidate instanceof HTMLButtonElement &&
+        candidate.classList.contains(className) &&
+        candidate.textContent?.includes(label) === true,
     );
 
-  if (!button) {
-    throw new Error(`Chapitre mémento introuvable : ${label}`);
-  }
+  if (!button) throw new Error(`Bouton introuvable : ${label}`);
   return button;
 }
 
-async function openChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = getChapterButton(label);
+async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = findButtonByClass('settings-memento-part__header', label);
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
-async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = screen.getByRole('button', { name: new RegExp(label, 'i') });
+async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = findButtonByClass('settings-memento-read-chapter__header', label);
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
+}
+
+async function openAuditChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = findButtonByClass('settings-memento-chapter__header', label);
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
+}
+
+async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = findButtonByClass('settings-memento-calculator-card__header', label);
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
+}
+
+async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
+  const button = screen.getByRole('button', { name });
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
@@ -206,6 +233,23 @@ describe('contrat des sections settings du mémento', () => {
       expect(count, section.id).toBe(section.expectedSettingsReferenceClaims);
     }
   });
+
+  it('couvre chaque entrée registry mémento dans une seule section audit', () => {
+    const registryEntries = listSettingsForOwnerPage('/settings/memento');
+    const sectionByKey = new Map<string, string[]>();
+
+    for (const section of MEMENTO_SETTINGS_SECTIONS) {
+      for (const key of section.registrySettingKeys) {
+        sectionByKey.set(key, [...(sectionByKey.get(key) ?? []), section.id]);
+      }
+    }
+
+    expect(registryEntries).toHaveLength(31);
+    for (const entry of registryEntries) {
+      expect(sectionByKey.get(entry.key), entry.key).toHaveLength(1);
+    }
+    expect(sectionByKey.get('impots.ps-patrimoine')).toEqual(['prelevements']);
+  });
 });
 
 describe('MementoEntryRow', () => {
@@ -231,201 +275,135 @@ describe('MementoEntryRow', () => {
 
 describe('SettingsMemento', () => {
   beforeEach(() => {
+    isAdmin = true;
     fromMock.mockReset();
     fromMock.mockImplementation(() => makeSettingsBuilder());
     rpcMock.mockReset();
     rpcMock.mockResolvedValue({ data: null, error: null });
   });
 
-  it('rend les chapitres fermés par défaut sans exposer les lignes techniques', () => {
-    const { container } = render(<SettingsMemento />);
+  it('ouvre la vue Lire par défaut avec les trois onglets admin', () => {
+    render(<SettingsMemento />);
 
     expect(
       screen.getByRole('heading', { name: 'Mémento patrimonial & social' }),
     ).toBeInTheDocument();
-    expect(getChapterButton('Foyer')).toHaveAttribute('aria-expanded', 'false');
-    expect(getChapterButton('Fiscalité foyer')).toHaveAttribute('aria-expanded', 'false');
-    expect(container.querySelectorAll('.settings-memento-chapter__header').length).toBeGreaterThan(
-      0,
+    expect(screen.getByRole('tab', { name: /Lire le mémento/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
     );
-    for (const button of container.querySelectorAll('.settings-memento-chapter__header')) {
-      expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('tab', { name: /Paramètres calculateurs/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Audit & sources/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lire le mémento' })).toBeInTheDocument();
+  });
+
+  it('masque l’onglet audit aux non-admins', () => {
+    isAdmin = false;
+
+    render(<SettingsMemento />);
+
+    expect(screen.getAllByRole('tab')).toHaveLength(2);
+    expect(screen.queryByRole('tab', { name: /Audit & sources/i })).not.toBeInTheDocument();
+  });
+
+  it('pilote les onglets au clavier', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    const lire = screen.getByRole('tab', { name: /Lire le mémento/i });
+    lire.focus();
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('tab', { name: /Paramètres calculateurs/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+
+    await user.keyboard('{End}');
+    expect(screen.getByRole('tab', { name: /Audit & sources/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
+  it('garde les parties de lecture fermées par défaut sans métadonnées techniques', () => {
+    render(<SettingsMemento />);
+
+    for (const button of screen.getAllByRole('button', { expanded: false })) {
+      expect(button.className).toContain('settings-memento-part__header');
     }
-    expect(screen.queryByRole('button', { name: /Lecture métier/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Page propriétaire')).not.toBeInTheDocument();
+    expect(screen.queryByText('/settings/memento')).not.toBeInTheDocument();
+    expect(screen.queryByText('coverageSources')).not.toBeInTheDocument();
+    expect(screen.queryByText('Couverture simulateurs')).not.toBeInTheDocument();
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
   });
 
-  it('ouvre un chapitre puis un sous-accordéon au clavier', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    const foyer = getChapterButton('Foyer');
-    foyer.focus();
-    await user.keyboard('{Enter}');
-
-    expect(foyer).toHaveAttribute('aria-expanded', 'true');
-    const lecture = screen.getByRole('button', { name: /Lecture métier/i });
-    expect(lecture).toHaveAttribute('aria-expanded', 'false');
-
-    lecture.focus();
-    await user.keyboard('{Enter}');
-
-    expect(lecture).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText('À retenir')).toBeInTheDocument();
-    expect(screen.getByText(/Le foyer donne le point de départ du conseil/i)).toBeInTheDocument();
-    expect(screen.getByText('Filiation et branches familiales')).toBeInTheDocument();
-  });
-
-  it('rend la couverture simulateurs seulement sur demande', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openChapter(user, 'Fiscalité foyer');
-
-    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
-
-    await openSubAccordion(user, 'Couverture simulateurs');
-
-    expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
-  });
-
-  it('rend les paramètres Impôts depuis le sous-accordéon du mémento', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openChapter(user, 'Fiscalité foyer');
-    await openSubAccordion(user, 'Paramètres calculateurs');
-
-    expect(await screen.findByText('Registre settings impôts')).toBeInTheDocument();
-    expect(
-      await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /PFU/i })).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Impôt sur la fortune immobilière/i }),
-    ).toBeInTheDocument();
-  });
-
-  it('rend les paramètres Comptables & sociétés depuis le chapitre Société', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openChapter(user, 'Société');
-    await openSubAccordion(user, 'Paramètres calculateurs');
-
-    expect(await screen.findByText('Registre settings comptables & sociétés')).toBeInTheDocument();
-    expect(
-      await screen.findByRole('button', { name: /Impôt sur les sociétés/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Impôt sur les sociétés/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-  });
-
-  it('rend les paramètres Prélèvements sociaux depuis le chapitre Retraite', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openChapter(user, 'Retraite');
-    await openSubAccordion(user, 'Paramètres calculateurs');
-
-    expect(await screen.findByText('Registre settings paramètres sociaux')).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /Historique du PASS/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-    expect(screen.getByRole('button', { name: /Charges sociales dirigeant/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-    expect(
-      screen.getByRole('button', { name: /Prélèvements sociaux - pensions de retraite/i }),
-    ).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  it('rend les paramètres DMTG & succession depuis le chapitre Transmission', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openChapter(user, 'Transmission');
-    await openSubAccordion(user, 'Paramètres calculateurs');
-
-    await screen.findByText('Registre settings DMTG & Succession', {}, { timeout: 5_000 });
-    for (const sectionName of [
-      /Droits de mutation à titre gratuit/i,
-      /Assurance-vie décès/i,
-      /Libéralités/i,
-    ]) {
-      expect(screen.getByRole('button', { name: sectionName })).toHaveAttribute(
-        'aria-expanded',
-        'false',
-      );
-    }
-  });
-
-  it('n’affiche aucune source externe protégée ni PDF externe', async () => {
+  it('rend le mémento lisible avec sources officielles sans IDs bruts', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
-    await openChapter(user, 'Fiscalité foyer');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    await openReadPart(user, 'Fiscalité');
+    await openReadChapter(user, 'Fiscalité foyer');
 
+    expect(screen.getByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
+    expect(screen.getAllByText('Sources officielles').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link').some((link) => link.getAttribute('href'))).toBe(true);
+    expect(container).not.toHaveTextContent(/claimKeys|ownerPagePath|coverageSources|cgi-/i);
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('affiche les entrées métier planifiées sans lien actif après ouverture', async () => {
+  it('rend le lexique dans la partie dédiée', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openChapter(user, 'Transmission');
-    await openSubAccordion(user, 'Lecture métier');
+    await openReadPart(user, 'Lexique');
 
-    const row = screen
-      .getAllByText('Donations antérieures')
-      .map((node) => node.closest('article'))
-      .find((article): article is HTMLElement => article !== null) as HTMLElement;
-
-    expect(row).not.toBeNull();
-    expect(within(row).queryAllByRole('link')).toHaveLength(0);
-    expect(within(row).queryAllByRole('button')).toHaveLength(0);
-    expect(within(row).getAllByText('Mémento').length).toBeGreaterThan(0);
+    expect(screen.getByText('PER')).toBeInTheDocument();
+    expect(screen.getByText('PER individuel')).toBeInTheDocument();
   });
 
-  it('ne rend pas de liens sur les lignes planned, internalOnly ou placeholder', async () => {
+  it('ne monte les panels calculateurs qu’après ouverture d’une carte', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openChapter(user, 'Foyer');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
 
-    const filiation = await screen.findByTestId('memento-coverage-filiation');
-    expect(within(filiation).queryAllByRole('link')).toHaveLength(0);
-    expect(within(filiation).queryAllByRole('button')).toHaveLength(0);
+    await openInternalTab(user, /Paramètres calculateurs/i);
+    expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
 
-    await openChapter(user, 'Patrimoine');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    await openCalculatorCard(user, 'Fiscalité du foyer');
 
-    const actifPassif = await screen.findByTestId('memento-coverage-actif-passif');
-    expect(within(actifPassif).queryAllByRole('link')).toHaveLength(0);
-    expect(within(actifPassif).queryAllByRole('button')).toHaveLength(0);
-
-    await openChapter(user, 'Société');
-    await openSubAccordion(user, 'Couverture simulateurs');
-
-    const epargneSalariale = await screen.findByTestId('memento-coverage-epargne-salariale');
-    expect(within(epargneSalariale).queryAllByRole('link')).toHaveLength(0);
-    expect(within(epargneSalariale).queryAllByRole('button')).toHaveLength(0);
+    expect(
+      await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i }),
+    ).toBeInTheDocument();
   });
 
-  it('filtre la vue métier par intention et priorité', async () => {
+  it('rend audit, entrées techniques et couverture seulement dans la vue audit', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
+    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
+
+    await openInternalTab(user, /Audit & sources/i);
+    await openAuditChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, /Entrées techniques/);
+
+    expect(screen.getAllByText('Priorité critique').length).toBeGreaterThan(0);
+    expect(screen.getByText('Registre settings Fiscalité du foyer')).toBeInTheDocument();
+
+    await openSubAccordion(user, /Couverture simulateurs/);
+    expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
+  });
+
+  it('filtre l’audit par intention, priorité, recherche, statut et chapitre', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openInternalTab(user, /Audit & sources/i);
     await user.selectOptions(screen.getByLabelText('Intention métier'), 'verifier-fiscalite');
-    await openChapter(user, 'Fiscalité foyer');
-    await openSubAccordion(user, 'Lecture métier');
+    await openAuditChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, /Entrées techniques/);
 
     expect(screen.getByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
     expect(
@@ -436,33 +414,47 @@ describe('SettingsMemento', () => {
 
     expect(screen.getByText('Niches fiscales et réductions d’impôt')).toBeInTheDocument();
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
-  });
 
-  it('filtre la couverture simulateurs par recherche, statut et chapitre', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
+    await user.selectOptions(screen.getByLabelText('Priorité métier'), 'all');
+    await user.selectOptions(screen.getByLabelText('Intention métier'), 'all');
     await user.type(screen.getByLabelText('Recherche mémento'), 'cession');
-    await openChapter(user, 'Société');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    await openAuditChapter(user, 'Société');
+    await openSubAccordion(user, /Couverture simulateurs/);
 
     expect(await screen.findByTestId('memento-coverage-cession-titres')).toBeInTheDocument();
-    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
 
     await user.clear(screen.getByLabelText('Recherche mémento'));
     await user.selectOptions(screen.getByLabelText('Statut'), 'couvert');
-    await openChapter(user, 'Fiscalité foyer');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    await openAuditChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, /Couverture simulateurs/);
 
     expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
-    expect(screen.queryByTestId('memento-coverage-filiation')).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('Statut'), 'all');
     await user.selectOptions(screen.getByLabelText('Chapitre'), 'societe');
-    await openChapter(user, 'Société');
-    await openSubAccordion(user, 'Couverture simulateurs');
+    await openAuditChapter(user, 'Société');
+    await openSubAccordion(user, /Couverture simulateurs/);
 
     expect(await screen.findByTestId('memento-coverage-organigramme-societe')).toBeInTheDocument();
-    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
+  });
+
+  it('ne rend pas de liens sur les lignes coverage planned, internalOnly ou placeholder', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openInternalTab(user, /Audit & sources/i);
+    await openAuditChapter(user, 'Foyer');
+    await openSubAccordion(user, /Couverture simulateurs/);
+
+    const filiation = await screen.findByTestId('memento-coverage-filiation');
+    expect(within(filiation).queryAllByRole('link')).toHaveLength(0);
+    expect(within(filiation).queryAllByRole('button')).toHaveLength(0);
+
+    await openAuditChapter(user, 'Patrimoine');
+    await openSubAccordion(user, /Couverture simulateurs/);
+
+    const actifPassif = await screen.findByTestId('memento-coverage-actif-passif');
+    expect(within(actifPassif).queryAllByRole('link')).toHaveLength(0);
+    expect(within(actifPassif).queryAllByRole('button')).toHaveLength(0);
   });
 });

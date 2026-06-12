@@ -1,4 +1,5 @@
 import type { SettingsReferenceBinding } from '@/domain/settings-references';
+import type { SettingRegistryKey } from '@/domain/settings-registry';
 
 export const MEMENTO_SETTINGS_TARGET_PATH = '/settings/memento' as const;
 
@@ -29,7 +30,20 @@ export interface MementoSettingsSection {
   readSources: readonly MementoSettingsDataSource[];
   writeSources: readonly MementoSettingsDataSource[];
   expectedSettingsReferenceClaims: number;
+  shortDescription: string;
+  registrySettingKeys: readonly SettingRegistryKey[];
 }
+
+export const MEMENTO_SETTINGS_SOURCE_LABELS = {
+  tax_settings: 'Tax settings',
+  ps_settings: 'Paramètres sociaux',
+  fiscality_settings: 'Fiscalité structurée',
+  pass_history: 'Historique PASS',
+  base_contrat_catalog: 'Catalogue contrats',
+  base_contrat_overrides: 'Overrides contrats',
+  prevoyance_regime_settings: 'Régimes prévoyance',
+  prevoyance_maintien_employeur_settings: 'Maintien employeur',
+} as const satisfies Record<MementoSettingsDataSource, string>;
 
 export const MEMENTO_SETTINGS_SECTIONS = [
   {
@@ -41,6 +55,21 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['tax_settings', 'ps_settings'],
     writeSources: ['tax_settings'],
     expectedSettingsReferenceClaims: 10,
+    shortDescription:
+      'Barème IR, PFU, contributions haut revenu, IFI et repères immobiliers centralisés.',
+    registrySettingKeys: [
+      'impots.ir.bareme',
+      'impots.ir.abattements-et-decote',
+      'impots.pfu.part-ir',
+      'impots.cehr',
+      'impots.cdhr',
+      'impots.ifi.bareme',
+      'impots.ifi.millesimes',
+      'immobilier.pv-immobilieres.abattements-duree',
+      'immobilier.revenus-fonciers.micro-foncier',
+      'immobilier.lmnp-lmp.regimes',
+      'immobilier.scpi.regime',
+    ],
   },
   {
     id: 'comptables-societes',
@@ -51,6 +80,15 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['tax_settings'],
     writeSources: ['tax_settings'],
     expectedSettingsReferenceClaims: 1,
+    shortDescription:
+      'Impôt sur les sociétés et repères société qui alimentent les scénarios dirigeants.',
+    registrySettingKeys: [
+      'comptables-societes.is',
+      'comptables-societes.mere-fille-qpfc',
+      'comptables-societes.pv-mobilieres',
+      'comptables-societes.dividendes',
+      'comptables-societes.holding-apport-cession',
+    ],
   },
   {
     id: 'prelevements',
@@ -67,6 +105,19 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['ps_settings', 'tax_settings', 'pass_history'],
     writeSources: ['ps_settings', 'pass_history'],
     expectedSettingsReferenceClaims: 5,
+    shortDescription: 'Prélèvements sociaux, PASS, retraite et charges sociales dirigeant.',
+    registrySettingKeys: [
+      'impots.ps-patrimoine',
+      'retraite-prevoyance.ps-retraite',
+      'retraite-prevoyance.seuils-rfr',
+      'retraite-prevoyance.pass',
+      'placements.per-individuel',
+      'social-dirigeant.charges-sociales',
+      'retraite-prevoyance.cotisations-retraite',
+      'retraite-prevoyance.validation-retraite-600-smic',
+      'social-dirigeant.puma-csm',
+      'placements.epargne-salariale',
+    ],
   },
   {
     id: 'dmtg-succession',
@@ -77,6 +128,13 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['tax_settings', 'fiscality_settings'],
     writeSources: ['tax_settings', 'fiscality_settings'],
     expectedSettingsReferenceClaims: 7,
+    shortDescription: 'DMTG, donations, assurance-vie décès et règles civiles de transmission.',
+    registrySettingKeys: [
+      'transmission.dmtg-succession',
+      'transmission.assurance-vie-deces',
+      'placements.assurance-vie-capitalisation',
+      'transmission.dutreil',
+    ],
   },
   {
     id: 'base-contrat',
@@ -100,6 +158,8 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['base_contrat_catalog', 'base_contrat_overrides'],
     writeSources: ['base_contrat_overrides'],
     expectedSettingsReferenceClaims: 352,
+    shortDescription: 'Catalogue patrimonial et overrides administrés à la demande.',
+    registrySettingKeys: [],
   },
   {
     id: 'prevoyance-regimes',
@@ -129,6 +189,8 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['prevoyance_regime_settings', 'prevoyance_maintien_employeur_settings'],
     writeSources: ['prevoyance_regime_settings', 'prevoyance_maintien_employeur_settings'],
     expectedSettingsReferenceClaims: 69,
+    shortDescription: 'Régimes obligatoires, maintien employeur et garanties prévoyance.',
+    registrySettingKeys: ['retraite-prevoyance.prevoyance-garanties'],
   },
 ] as const satisfies readonly MementoSettingsSection[];
 

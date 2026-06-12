@@ -156,31 +156,12 @@ describe('ImpotsSettingsPanel', () => {
     expect(screen.getByText('Paramètres impôts enregistrés.')).toBeInTheDocument();
   });
 
-  it('expose le registre settings prêt, partiel et planifié en lecture seule', async () => {
-    const user = userEvent.setup();
-
-    render(<ImpotsSettingsPanel />);
-
-    await screen.findByText('Registre settings impôts');
-    expect(screen.queryByText('Prêt')).not.toBeInTheDocument();
-
-    await user.click(
-      screen.getByRole('button', { name: /Afficher la section Registre settings impôts/i }),
-    );
-
-    expect(screen.getByText('Prêt')).toBeInTheDocument();
-    expect(screen.getByText('Planifié')).toBeInTheDocument();
-    expect(screen.getByText('IFI - millésimes historiques')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /IFI - millésimes historiques/i })).toBeNull();
-  });
-
-  it('masque le registre settings aux utilisateurs non-admin', async () => {
-    isAdmin = false;
-
+  it('ne monte plus le registre settings dans le panel calculateur', async () => {
     render(<ImpotsSettingsPanel />);
 
     await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i });
-    expect(screen.queryByText(/Registre settings/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Registre settings impôts')).not.toBeInTheDocument();
+    expect(screen.queryByText('IFI - millésimes historiques')).not.toBeInTheDocument();
   });
 });
 
@@ -228,23 +209,11 @@ describe('ComptablesSocietesSettingsPanel', () => {
     expect(screen.getByText('Paramètres comptables et sociétés enregistrés.')).toBeInTheDocument();
   });
 
-  it('expose les settings partiels et planifiés côté société en lecture seule', async () => {
-    const user = userEvent.setup();
-
+  it('ne monte plus le registre settings dans le panel calculateur', async () => {
     render(<ComptablesSocietesSettingsPanel />);
 
-    await screen.findByText('Registre settings comptables & sociétés');
-    expect(screen.queryByText('Partiel')).not.toBeInTheDocument();
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /Afficher la section Registre settings comptables & sociétés/i,
-      }),
-    );
-
-    expect(screen.getByText('Partiel')).toBeInTheDocument();
-    expect(screen.getByText('Planifié')).toBeInTheDocument();
-    expect(screen.getByText('Dividendes')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Dividendes/i })).toBeNull();
+    await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
+    expect(screen.queryByText('Registre settings comptables & sociétés')).not.toBeInTheDocument();
+    expect(screen.queryByText('Dividendes')).not.toBeInTheDocument();
   });
 });

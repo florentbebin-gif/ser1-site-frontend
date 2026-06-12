@@ -4,9 +4,7 @@ import { useUserRole } from '@/auth/useUserRole';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
-import { SettingsRegistryStatusPanel } from '@/components/settings/SettingsRegistryStatusPanel';
 import { usePassHistory } from '@/hooks/settings/usePassHistory';
-import type { SettingRegistryKey } from '@/domain/settings-registry';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import { validatePrelevementsSettings, isValid } from '../validators/dmtgValidators';
@@ -39,19 +37,6 @@ interface PsSettingsRow {
 interface TaxSettingsRow {
   data: Partial<TaxSettings> | null;
 }
-
-const PRELEVEMENTS_REGISTRY_KEYS = [
-  'impots.ps-patrimoine',
-  'retraite-prevoyance.ps-retraite',
-  'retraite-prevoyance.seuils-rfr',
-  'retraite-prevoyance.pass',
-  'placements.per-individuel',
-  'social-dirigeant.charges-sociales',
-  'retraite-prevoyance.cotisations-retraite',
-  'retraite-prevoyance.validation-retraite-600-smic',
-  'social-dirigeant.puma-csm',
-  'placements.epargne-salariale',
-] as const satisfies readonly SettingRegistryKey[];
 
 function derivePsYearLabel(irLabel: string | undefined, fallbackLabel: string): string {
   if (!irLabel) return fallbackLabel;
@@ -294,12 +279,6 @@ export default function PrelevementsSettingsPanel() {
 
   return (
     <div className="settings-stack">
-      <SettingsRegistryStatusPanel
-        ownerPage="/settings/memento"
-        settingKeys={PRELEVEMENTS_REGISTRY_KEYS}
-        title="Registre settings paramètres sociaux"
-      />
-
       {error && (
         <div className="settings-feedback-message settings-feedback-message--error">{error}</div>
       )}

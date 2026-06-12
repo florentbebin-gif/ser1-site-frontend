@@ -30,30 +30,32 @@ vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   upsertBaseContratOverride: vi.fn(() => Promise.resolve()),
 }));
 
-async function openChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = screen
-    .getAllByRole('button')
-    .find(
-      (candidate) =>
-        candidate.classList.contains('settings-memento-chapter__header') &&
-        candidate.textContent?.trim().startsWith(`${label} (`),
-    );
+async function openInternalTab(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
+  await user.click(screen.getByRole('tab', { name }));
+}
 
-  if (!button) throw new Error(`Chapitre mémento introuvable : ${label}`);
+async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const buttons = await screen.findAllByRole('button');
+  const button = buttons.find(
+    (candidate): candidate is HTMLButtonElement =>
+      candidate instanceof HTMLButtonElement &&
+      candidate.classList.contains('settings-memento-calculator-card__header') &&
+      candidate.textContent?.includes(label) === true,
+  );
+
+  if (!button) throw new Error(`Carte paramètres introuvable : ${label}`);
   await user.click(button);
 }
 
-async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, label: string) {
-  await user.click(screen.getByRole('button', { name: new RegExp(label, 'i') }));
-}
-
 describe('SettingsMemento — Base-Contrat', () => {
-  it('rend le référentiel contrats depuis le chapitre Placements', async () => {
+  it('rend le référentiel contrats depuis la vue paramètres calculateurs', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openChapter(user, 'Placements');
-    await openSubAccordion(user, 'Paramètres calculateurs');
+    expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
+
+    await openInternalTab(user, /Paramètres calculateurs/i);
+    await openCalculatorCard(user, 'Référentiel contrats');
 
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),

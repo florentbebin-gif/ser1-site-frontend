@@ -35,6 +35,7 @@ test.describe('Settings', () => {
     await expect(page.getByRole('button', { name: 'Mémento' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Impôts' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Comptables & sociétés' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Paramètres sociaux' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Référentiel contrats' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'DMTG & Succession' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Prévoyance — régimes' })).toHaveCount(0);

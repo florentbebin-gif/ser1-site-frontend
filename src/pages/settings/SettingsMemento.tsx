@@ -1,242 +1,23 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { Suspense, lazy, useEffect, useState, type ReactElement } from 'react';
 
+import { useUserRole } from '@/auth/useUserRole';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
-import { MEMENTO_CHAPTERS } from '@/domain/settings-memento/chapters';
-import {
-  MEMENTO_EDITORIAL_BY_CHAPTER,
-  type MementoChapterEditorial,
-} from '@/domain/settings-memento/editorial';
-import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
-import { MEMENTO_USER_INTENTS, chaptersForIntent } from '@/domain/settings-memento/intents';
-import { SIMULATOR_MEMENTO_COVERAGE } from '@/domain/settings-memento/simulatorCoverageData';
-import type { SimulatorCoverageEntry } from '@/domain/settings-memento/simulatorCoverage';
-import {
-  MEMENTO_BUSINESS_PRIORITY_VALUES,
-  MEMENTO_STATUS_VALUES,
-  type MementoBusinessPriority,
-  type MementoChapter,
-  type MementoChapterId,
-  type MementoEntry,
-  type MementoStatus,
-  type MementoUserIntent,
-} from '@/domain/settings-memento/types';
 
-import MementoChapterSection from './memento/MementoChapterSection';
-import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './memento/MementoEntryRow';
-import {
-  getMementoSettingsSection,
-  type MementoSettingsSection,
-  type MementoSettingsSectionId,
-} from './memento/mementoSettingsSections';
+import MementoReadView from './memento/MementoReadView';
+import MementoViewTabs, { type MementoViewId } from './memento/MementoViewTabs';
 
-type StatusFilter = 'all' | MementoStatus;
-type ChapterFilter = 'all' | MementoChapterId;
-type PriorityFilter = 'all' | MementoBusinessPriority;
-type IntentFilter = 'all' | MementoUserIntent;
-
-interface FilteredChapter {
-  chapter: MementoChapter;
-  entries: readonly MementoEntry[];
-  coverage: readonly SimulatorCoverageEntry[];
-  settingsSections: readonly MementoSettingsSection[];
-  editorial: MementoChapterEditorial | null;
-}
-
-const MEMENTO_ENTRY_LIST: readonly MementoEntry[] = MEMENTO_ENTRIES;
-const SIMULATOR_COVERAGE_LIST: readonly SimulatorCoverageEntry[] = SIMULATOR_MEMENTO_COVERAGE;
-
-const MEMENTO_CHAPTER_SETTINGS_SECTION_IDS: Partial<
-  Record<MementoChapterId, readonly MementoSettingsSectionId[]>
-> = {
-  'fiscalite-foyer': ['impots'],
-  transmission: ['dmtg-succession'],
-  placements: ['base-contrat'],
-  immobilier: ['base-contrat'],
-  retraite: ['prelevements'],
-  'epargne-retraite': ['base-contrat'],
-  prevoyance: ['prevoyance-regimes', 'base-contrat'],
-  societe: ['comptables-societes'],
-  dirigeant: ['prelevements', 'comptables-societes'],
-  'transmission-entreprise': ['comptables-societes', 'base-contrat'],
-};
-
-function normalizeSearchText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
-function coverageTargetSearchText(entry: SimulatorCoverageEntry): string {
-  switch (entry.target.kind) {
-    case 'registry':
-      return entry.target.simulatorId;
-    case 'subtype':
-      return `${entry.target.parentSimulatorId} ${entry.target.subtypeLabel}`;
-    case 'roadmap-only':
-      return `${entry.target.roadmapId} ${entry.target.roadmapLabel}`;
-  }
-}
-
-function entryMatchesSearch(entry: MementoEntry, search: string): boolean {
-  if (!search) return true;
-  return normalizeSearchText(
-    [
-      entry.key,
-      entry.label,
-      entry.description,
-      entry.priority,
-      entry.status,
-      entry.statusReason,
-      entry.ownerPagePath ?? '',
-      ...entry.relatedSimulatorIds,
-    ].join(' '),
-  ).includes(search);
-}
-
-function coverageMatchesSearch(entry: SimulatorCoverageEntry, search: string): boolean {
-  if (!search) return true;
-  return normalizeSearchText(
-    [
-      entry.sectionLabel,
-      entry.expectedStatus,
-      entry.note ?? '',
-      coverageTargetSearchText(entry),
-    ].join(' '),
-  ).includes(search);
-}
-
-function editorialMatchesSearch(
-  editorial: MementoChapterEditorial | null,
-  search: string,
-): boolean {
-  if (!editorial) return false;
-  if (!search) return true;
-  return normalizeSearchText([editorial.summary, ...editorial.keyPoints].join(' ')).includes(
-    search,
-  );
-}
-
-function entryMatchesFilters(
-  entry: MementoEntry,
-  chapter: MementoChapter,
-  search: string,
-  statusFilter: StatusFilter,
-  priorityFilter: PriorityFilter,
-): boolean {
-  if (statusFilter !== 'all' && entry.status !== statusFilter) return false;
-  if (priorityFilter !== 'all' && entry.priority !== priorityFilter) return false;
-  return entryMatchesSearch(entry, search) || normalizeSearchText(chapter.label).includes(search);
-}
-
-function coverageMatchesFilters(
-  entry: SimulatorCoverageEntry,
-  chapter: MementoChapter,
-  search: string,
-  statusFilter: StatusFilter,
-): boolean {
-  if (statusFilter !== 'all' && entry.expectedStatus !== statusFilter) return false;
-  return (
-    coverageMatchesSearch(entry, search) || normalizeSearchText(chapter.label).includes(search)
-  );
-}
-
-function chapterMatchesFilters(
-  chapter: MementoChapter,
-  chapterFilter: ChapterFilter,
-  intentChapterIds: ReadonlySet<MementoChapterId> | null,
-): boolean {
-  if (chapterFilter !== 'all' && chapter.id !== chapterFilter) return false;
-  return intentChapterIds === null || intentChapterIds.has(chapter.id);
-}
-
-function settingsSectionsForChapter(
-  chapterId: MementoChapterId,
-): readonly MementoSettingsSection[] {
-  return (MEMENTO_CHAPTER_SETTINGS_SECTION_IDS[chapterId] ?? []).map((sectionId) =>
-    getMementoSettingsSection(sectionId),
-  );
-}
-
-function buildFilteredChapters(
-  searchValue: string,
-  statusFilter: StatusFilter,
-  chapterFilter: ChapterFilter,
-  priorityFilter: PriorityFilter,
-  intentFilter: IntentFilter,
-): FilteredChapter[] {
-  const search = normalizeSearchText(searchValue);
-  const intentChapterIds =
-    intentFilter === 'all' ? null : new Set<MementoChapterId>(chaptersForIntent(intentFilter));
-  const hasContentFilter = search !== '' || statusFilter !== 'all' || priorityFilter !== 'all';
-
-  return MEMENTO_CHAPTERS.map((chapter) => {
-    if (!chapterMatchesFilters(chapter, chapterFilter, intentChapterIds)) {
-      return { chapter, entries: [], coverage: [], settingsSections: [], editorial: null };
-    }
-
-    const editorial = MEMENTO_EDITORIAL_BY_CHAPTER.get(chapter.id) ?? null;
-    const entries = MEMENTO_ENTRY_LIST.filter(
-      (entry) =>
-        entry.chapterId === chapter.id &&
-        entryMatchesFilters(entry, chapter, search, statusFilter, priorityFilter),
-    );
-    const coverage = SIMULATOR_COVERAGE_LIST.filter(
-      (entry) =>
-        entry.chapterId === chapter.id &&
-        coverageMatchesFilters(entry, chapter, search, statusFilter),
-    );
-    const settingsSections = settingsSectionsForChapter(chapter.id);
-    const editorialVisible =
-      statusFilter === 'all' &&
-      priorityFilter === 'all' &&
-      (search === '' ||
-        editorialMatchesSearch(editorial, search) ||
-        normalizeSearchText(chapter.label).includes(search));
-
-    return {
-      chapter,
-      entries,
-      coverage,
-      settingsSections,
-      editorial: editorialVisible ? editorial : null,
-    };
-  }).filter(
-    ({ entries, coverage, settingsSections, editorial }) =>
-      entries.length + coverage.length > 0 ||
-      editorial !== null ||
-      (!hasContentFilter && settingsSections.length > 0),
-  );
-}
-
-function formatHeroCount(entryCount: number, coverageCount: number): string {
-  const entryLabel = `${entryCount} entrée${entryCount > 1 ? 's' : ''}`;
-  const coverageLabel = `${coverageCount} contrôle${coverageCount > 1 ? 's' : ''}`;
-  return `${entryLabel} métier · ${coverageLabel}`;
-}
+const MementoCalculatorSettingsView = lazy(() => import('./memento/MementoCalculatorSettingsView'));
+const MementoAuditView = lazy(() => import('./memento/MementoAuditView'));
 
 export default function SettingsMemento(): ReactElement {
-  const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [chapterFilter, setChapterFilter] = useState<ChapterFilter>('all');
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [intentFilter, setIntentFilter] = useState<IntentFilter>('all');
-  const [openChapterId, setOpenChapterId] = useState<MementoChapterId | null>(null);
+  const { isAdmin } = useUserRole();
+  const [activeView, setActiveView] = useState<MementoViewId>('lire');
 
-  const filteredChapters = useMemo(
-    () =>
-      buildFilteredChapters(searchValue, statusFilter, chapterFilter, priorityFilter, intentFilter),
-    [chapterFilter, intentFilter, priorityFilter, searchValue, statusFilter],
-  );
-  const visibleEntryCount = filteredChapters.reduce(
-    (total, section) => total + section.entries.length,
-    0,
-  );
-  const visibleCoverageCount = filteredChapters.reduce(
-    (total, section) => total + section.coverage.length,
-    0,
-  );
+  useEffect(() => {
+    if (!isAdmin && activeView === 'audit') {
+      setActiveView('lire');
+    }
+  }, [activeView, isAdmin]);
 
   return (
     <div className="settings-page settings-memento-page" data-testid="settings-memento">
@@ -249,120 +30,35 @@ export default function SettingsMemento(): ReactElement {
               </SettingsTitleWithIcon>
             </h2>
             <p className="settings-premium-subtitle">
-              Lecture courte par domaine, raccordée aux paramètres qui alimentent les simulateurs.
-              Les valeurs restent dans les sources centralisées.
+              Lecture patrimoniale, paramètres calculateurs et audit des sources restent séparés
+              pour garder le conseil lisible.
             </p>
-          </div>
-          <div className="settings-memento-hero__meta" aria-live="polite">
-            {formatHeroCount(visibleEntryCount, visibleCoverageCount)}
           </div>
         </div>
       </section>
 
+      <MementoViewTabs activeView={activeView} showAudit={isAdmin} onChange={setActiveView} />
+
       <section
-        className="settings-premium-card settings-memento-filters"
-        aria-label="Filtres du mémento"
+        id={`settings-memento-panel-${activeView}`}
+        role="tabpanel"
+        aria-labelledby={`settings-memento-tab-${activeView}`}
+        className="settings-memento-active-view"
       >
-        <label className="settings-memento-filter" htmlFor="settings-memento-search">
-          <span>Recherche mémento</span>
-          <input
-            id="settings-memento-search"
-            type="search"
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Chapitre, page, statut..."
-          />
-        </label>
-
-        <label className="settings-memento-filter" htmlFor="settings-memento-intent">
-          <span>Intention métier</span>
-          <select
-            id="settings-memento-intent"
-            value={intentFilter}
-            onChange={(event) => setIntentFilter(event.target.value as IntentFilter)}
+        {activeView === 'lire' ? <MementoReadView /> : null}
+        {activeView === 'parametres' ? (
+          <Suspense
+            fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}
           >
-            <option value="all">Toutes les intentions</option>
-            {MEMENTO_USER_INTENTS.map((intent) => (
-              <option key={intent.id} value={intent.id}>
-                {intent.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="settings-memento-filter" htmlFor="settings-memento-status">
-          <span>Statut</span>
-          <select
-            id="settings-memento-status"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-          >
-            <option value="all">Tous les statuts</option>
-            {MEMENTO_STATUS_VALUES.map((status) => (
-              <option key={status} value={status}>
-                {MEMENTO_STATUS_LABELS[status]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="settings-memento-filter" htmlFor="settings-memento-priority">
-          <span>Priorité métier</span>
-          <select
-            id="settings-memento-priority"
-            value={priorityFilter}
-            onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}
-          >
-            <option value="all">Toutes les priorités</option>
-            {MEMENTO_BUSINESS_PRIORITY_VALUES.map((priority) => (
-              <option key={priority} value={priority}>
-                {MEMENTO_PRIORITY_LABELS[priority]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="settings-memento-filter" htmlFor="settings-memento-chapter">
-          <span>Chapitre</span>
-          <select
-            id="settings-memento-chapter"
-            value={chapterFilter}
-            onChange={(event) => setChapterFilter(event.target.value as ChapterFilter)}
-          >
-            <option value="all">Tous les chapitres</option>
-            {MEMENTO_CHAPTERS.map((chapter) => (
-              <option key={chapter.id} value={chapter.id}>
-                {chapter.label}
-              </option>
-            ))}
-          </select>
-        </label>
+            <MementoCalculatorSettingsView />
+          </Suspense>
+        ) : null}
+        {activeView === 'audit' && isAdmin ? (
+          <Suspense fallback={<p className="settings-memento-empty">Chargement de l’audit...</p>}>
+            <MementoAuditView />
+          </Suspense>
+        ) : null}
       </section>
-
-      <div className="settings-stack settings-memento-stack">
-        {filteredChapters.length > 0 ? (
-          filteredChapters.map((section) => (
-            <MementoChapterSection
-              key={section.chapter.id}
-              chapter={section.chapter}
-              entries={section.entries}
-              coverage={section.coverage}
-              settingsSections={section.settingsSections}
-              editorial={section.editorial}
-              isOpen={openChapterId === section.chapter.id}
-              onToggle={() =>
-                setOpenChapterId((current) =>
-                  current === section.chapter.id ? null : section.chapter.id,
-                )
-              }
-            />
-          ))
-        ) : (
-          <section className="settings-premium-card settings-memento-empty">
-            Aucun chapitre ne correspond aux filtres.
-          </section>
-        )}
-      </div>
     </div>
   );
 }
