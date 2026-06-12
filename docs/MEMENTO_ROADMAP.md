@@ -57,26 +57,14 @@ Références officielles restant à qualifier pour des entrées déjà livrées 
 l'entrée. R8 vérifie que ces dettes restent explicites ; les compléments non soldés partent en PR
 métier dédiée plutôt qu'en dette muette.
 
-| Entrée mémento                                                            | Référence à qualifier                                                                                                                         | Priorité                  |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `societe.groupe-mere-fille-qpfc`                                          | CGI 145 et 216 (éligibilité mère-fille, partagé avec holding)                                                                                 | P1                        |
-| `societe.compte-courant-associe`                                          | CGI 39, 1-3° (intérêts de comptes courants)                                                                                                   | P1                        |
-| `societe.holding-apport-cession`                                          | CGI 150-0 B ter (report d'imposition de l'apport-cession)                                                                                     | P1                        |
-| `societe.cession-titres`                                                  | CGI 150-0 D ter (abattement dirigeant partant à la retraite)                                                                                  | P1                        |
-| `societe.valorisation-titres`                                             | Guide DGFiP d'évaluation des entreprises et des titres                                                                                        | P1                        |
-| `societe.epargne-salariale`                                               | Forfait social et titres de services (URSSAF/BOSS)                                                                                            | P1/P2                     |
-| `societe.organigramme`                                                    | Formes sociales (Code de commerce)                                                                                                            | P2                        |
-| `societe.obo`                                                             | Méthode et sources du montage                                                                                                                 | Reportée au jalon société |
-| `dirigeant.charges-sociales-assimile-salarie`                             | CSS L311-3 (périmètre assimilé salarié des mandataires) ; qualification BOSS par mandat                                                       | P1                        |
-| `dirigeant.dividendes-tns` / `dirigeant.charges-sociales-tns`             | CSS L131-6 et doctrine BOSS/URSSAF par forme sociale pour le régime complet des dividendes TNS                                                | P1                        |
-| `dirigeant.puma-csm`                                                      | CSS L380-2 (base légale PUMA/CSM, au-delà de la fiche Service-Public)                                                                         | P1                        |
-| `dirigeant.remuneration` / `dirigeant.charges-sociales-assimile-salarie`  | CGI 231 (taxe sur les salaires, si applicable aux rémunérations ou mandats)                                                                   | P2                        |
-| `dirigeant.charges-sociales-tns` / `dirigeant.charges-sociales-liberales` | Barèmes URSSAF/BOSS de cotisations sociales par régime, hors cartographie caisses prévoyance déjà portée par `prevoyance.affiliation-caisses` | P1                        |
-| `retraite.globale` / `retraite.regime-general`                            | Trimestres assimilés, règles générationnelles et droits multi-régimes au-delà des dispositifs transverses R7                                  | P1                        |
-| `retraite.ssi-artisan-commercant`                                         | CSS L633-1 et L635-1, puis doctrine SSI/URSSAF détaillée du régime complémentaire                                                             | P1                        |
-| `retraite.cnavpl-professions-liberales`                                   | CSS L643-1 à L643-6 et D643-1 à D643-16 ; sections CNAVPL par profession                                                                      | P1                        |
-| `retraite.caisses-sante-liberales`                                        | Sources CARMF, CARCDSF, CARPIMKO, CAVP et CARPV par catégorie retraite                                                                        | P1                        |
-| `retraite.autres-caisses-liberales`                                       | Sources CAVEC, CAVAMAC, CNBF, CPRN/CRN et autres caisses non santé                                                                            | P1                        |
+| Entrée mémento                                 | Référence à qualifier                                                                                        | Priorité                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `societe.obo`                                  | Méthode et sources du montage                                                                                | Reportée au jalon société |
+| `retraite.globale` / `retraite.regime-general` | Trimestres assimilés, règles générationnelles et droits multi-régimes au-delà des dispositifs transverses R7 | P1                        |
+| `retraite.ssi-artisan-commercant`              | CSS L633-1 et L635-1, puis doctrine SSI/URSSAF détaillée du régime complémentaire                            | P1                        |
+| `retraite.cnavpl-professions-liberales`        | CSS L643-1 à L643-6 et D643-1 à D643-16 ; sections CNAVPL par profession                                     | P1                        |
+| `retraite.caisses-sante-liberales`             | Sources CARMF, CARCDSF, CARPIMKO, CAVP et CARPV par catégorie retraite                                       | P1                        |
+| `retraite.autres-caisses-liberales`            | Sources CAVEC, CAVAMAC, CNBF, CPRN/CRN et autres caisses non santé                                           | P1                        |
 
 Rappels non négociables (détail en section B) :
 

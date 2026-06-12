@@ -130,6 +130,42 @@ describe('settings-memento — société et comptabilité', () => {
     }
   });
 
+  it('source les sujets société retirés du backlog S3', () => {
+    expect(entryByKey.get('societe.groupe-mere-fille-qpfc')!.refIds).toEqual(
+      expect.arrayContaining(['cgi-145', 'cgi-216']),
+    );
+    expect(entryByKey.get('societe.compte-courant-associe')!.refIds).toContain('cgi-39');
+    expect(entryByKey.get('societe.holding-apport-cession')!.refIds).toEqual(['cgi-150-0-b-ter']);
+    expect(entryByKey.get('societe.cession-titres')!.refIds).toContain('cgi-150-0-d-ter');
+    expect(entryByKey.get('societe.valorisation-titres')!.refIds).toContain(
+      'impots-guide-evaluation-entreprises-titres',
+    );
+  });
+
+  it('source les formes sociales de l’organigramme sans activer le simulateur', () => {
+    const entry = entryByKey.get('societe.organigramme');
+
+    expect(entry!.status).toBe('planned');
+    expect(entry!.refIds).toEqual([
+      'code-commerce-l210-1',
+      'code-commerce-l223-1',
+      'code-commerce-l225-1',
+      'code-commerce-l227-1',
+    ]);
+  });
+
+  it('complète les sources sociales de l’épargne salariale', () => {
+    const entry = entryByKey.get('societe.epargne-salariale');
+
+    expect(entry!.refIds).toEqual(
+      expect.arrayContaining([
+        'boss-epargne-salariale',
+        'urssaf-forfait-social',
+        'code-travail-l3332-15',
+      ]),
+    );
+  });
+
   it('garde OBO en attente de qualification sans source affichée', () => {
     const entry = entryByKey.get('societe.obo');
 

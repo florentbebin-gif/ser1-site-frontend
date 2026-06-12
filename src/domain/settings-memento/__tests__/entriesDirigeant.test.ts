@@ -62,15 +62,34 @@ describe('settings-memento — dirigeant et social', () => {
 
       expect(entry!.claimKeys).toEqual(['social-dirigeant-dividendes-tns']);
       expect(entry!.refIds).toContain('urssaf-dividendes-tns-cotisations-sociales');
+      expect(entry!.refIds).toContain('css-l131-6');
     }
   });
 
   it('qualifie seulement les sources sociales déjà vérifiées', () => {
     expect(entryByKey.get('dirigeant.remuneration')!.refIds).toEqual([
+      'css-l311-3',
+      'cgi-231',
       'urssaf-assimile-salarie-dirigeant',
       'boss-assiette-generale',
     ]);
-    expect(entryByKey.get('dirigeant.puma-csm')!.refIds).toEqual(['service-public-puma']);
+    expect(entryByKey.get('dirigeant.charges-sociales-assimile-salarie')!.refIds).toEqual([
+      'css-l311-3',
+      'cgi-231',
+      'urssaf-assimile-salarie-dirigeant',
+      'boss-assiette-generale',
+    ]);
+    expect(entryByKey.get('dirigeant.puma-csm')!.refIds).toEqual([
+      'service-public-puma',
+      'css-l380-2',
+    ]);
+    expect(entryByKey.get('dirigeant.charges-sociales-tns')!.refIds).toEqual(
+      expect.arrayContaining([
+        'urssaf-cotisations-independants',
+        'urssaf-taux-cotisations-ac-plnr',
+        'css-l131-6',
+      ]),
+    );
   });
 
   it('garde le micro-social hors cible sans propriétaire ni source', () => {
@@ -85,13 +104,16 @@ describe('settings-memento — dirigeant et social', () => {
     expect(entry!.statusReason).toContain('Hors cible initiale');
   });
 
-  it('laisse les régimes libéraux sans source transversale artificielle', () => {
+  it('garde les régimes libéraux sans moteur malgré les sources URSSAF transverses', () => {
     const entry = entryByKey.get('dirigeant.charges-sociales-liberales');
 
     expect(entry!.status).toBe('planned');
     expect(entry!.claimKeys).toEqual([]);
-    expect(entry!.refIds).toEqual([]);
-    expect(entry!.statusReason).toContain('Caisses libérales');
+    expect(entry!.refIds).toEqual([
+      'urssaf-cotisations-independants',
+      'urssaf-taux-cotisations-ac-plnr',
+    ]);
+    expect(entry!.statusReason).toContain('sans modèle social par caisse');
   });
 
   it('ne marque aucun sujet dirigeant/social comme couvert ou bloqué', () => {
