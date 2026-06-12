@@ -252,4 +252,21 @@ export const MEMENTO_RETRAITE_ENTRIES = [
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['retraite', 'remuneration'],
   },
+  {
+    chapterId: 'retraite',
+    key: 'retraite.fonction-publique',
+    label: 'Fonction publique',
+    description:
+      'Retraite des agents publics, à séparer du régime général, des indépendants et des caisses libérales.',
+    status: 'absent',
+    statusReason:
+      'SRE, CNRACL, IRCANTEC et RAFP sont identifiés mais aucune page propriétaire ni source qualifiée SER1 ne porte encore ce périmètre.',
+    priority: 'utile',
+    ownerPagePath: null,
+    registryKeys: [],
+    claimKeys: [],
+    refIds: [],
+    coverageSources: [],
+    relatedSimulatorIds: ['retraite'],
+  },
 ] as const satisfies readonly MementoEntry[];

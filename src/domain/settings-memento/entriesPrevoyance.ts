@@ -97,6 +97,16 @@ export const PREVOYANCE_REGIME_CLAIMS = [
   ...PREVOYANCE_AFFILIATION_CAISSES_CLAIMS,
 ] as const;
 
+export const PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS = [
+  'base-contrat-prevoyance-individuelle-deces-pp-constitution-cotisations',
+  'base-contrat-prevoyance-individuelle-deces-pp-sortie-sans-objet-contrat-de-risque-pur',
+  'base-contrat-prevoyance-individuelle-deces-pp-deces-capital-verse-aux-beneficiaires',
+  'base-contrat-prevoyance-individuelle-itt-invalidite-pp-constitution-cotisations',
+  'base-contrat-prevoyance-individuelle-itt-invalidite-pp-sortie-indemnites-journalieres-ij-en-cas-de-sinistre',
+  'base-contrat-prevoyance-individuelle-itt-invalidite-pp-sortie-rente-d-invalidite',
+  'base-contrat-prevoyance-individuelle-itt-invalidite-pp-deces-sans-objet-couverture-deces-distincte',
+] as const;
+
 export const MEMENTO_PREVOYANCE_ENTRIES = [
   {
     chapterId: 'prevoyance',
@@ -195,5 +205,22 @@ export const MEMENTO_PREVOYANCE_ENTRIES = [
     refIds: [],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['prevoyance', 'remuneration', 'retraite'],
+  },
+  {
+    chapterId: 'prevoyance',
+    key: 'prevoyance.contrats-assurantiels',
+    label: 'Contrats de prévoyance assurantiels',
+    description:
+      'Contrats décès, arrêt de travail et invalidité du catalogue Base-Contrat, distincts des régimes obligatoires.',
+    status: 'partiel',
+    statusReason:
+      'Les claims Base-Contrat existent pour les blocs assurantiels ; les garanties restent portées par les règles de contrat et leurs overrides.',
+    priority: 'structurant',
+    ownerPagePath: '/settings/base-contrat',
+    registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
+    claimKeys: PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS,
+    refIds: [],
+    coverageSources: ['cadrage-externe'],
+    relatedSimulatorIds: ['prevoyance'],
   },
 ] as const satisfies readonly MementoEntry[];
