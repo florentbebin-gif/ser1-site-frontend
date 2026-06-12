@@ -46,6 +46,35 @@ const entryWithStatus = (status: MementoStatus): MementoEntry => ({
   statusReason: 'Contenu planifié, aucune page propriétaire active.',
 });
 
+function getChapterButton(label: string): HTMLElement {
+  const button = screen
+    .getAllByRole('button')
+    .find(
+      (candidate) =>
+        candidate.classList.contains('settings-memento-chapter__header') &&
+        candidate.textContent?.trim().startsWith(`${label} (`),
+    );
+
+  if (!button) {
+    throw new Error(`Chapitre mémento introuvable : ${label}`);
+  }
+  return button;
+}
+
+async function openChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = getChapterButton(label);
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
+}
+
+async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = screen.getByRole('button', { name: new RegExp(label, 'i') });
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
+}
+
 describe('route settings mémento', () => {
   it('expose l’onglet mémento à tous les utilisateurs', () => {
     const route = SETTINGS_ROUTES.find((entry) => entry.key === 'memento');
@@ -165,44 +194,73 @@ describe('MementoEntryRow', () => {
 });
 
 describe('SettingsMemento', () => {
-  it('rend la vue métier par défaut sans exposer l’audit coverage en premier', () => {
-    render(<SettingsMemento />);
+  it('rend les chapitres fermés par défaut sans exposer les lignes techniques', () => {
+    const { container } = render(<SettingsMemento />);
 
     expect(
       screen.getByRole('heading', { name: 'Mémento patrimonial & social' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Vue métier' })).toHaveAttribute(
-      'aria-checked',
-      'true',
+    expect(getChapterButton('Foyer')).toHaveAttribute('aria-expanded', 'false');
+    expect(getChapterButton('Fiscalité foyer')).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelectorAll('.settings-memento-chapter__header').length).toBeGreaterThan(
+      0,
     );
-    expect(screen.getAllByText('Priorité critique').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Références officielles à qualifier').length).toBeGreaterThan(0);
+    for (const button of container.querySelectorAll('.settings-memento-chapter__header')) {
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+    }
+    expect(screen.queryByRole('button', { name: /Lecture métier/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
   });
 
-  it('rend la vue audit coverage sur demande', async () => {
+  it('ouvre un chapitre puis un sous-accordéon au clavier', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await user.click(screen.getByRole('radio', { name: 'Audit coverage' }));
+    const foyer = getChapterButton('Foyer');
+    foyer.focus();
+    await user.keyboard('{Enter}');
+
+    expect(foyer).toHaveAttribute('aria-expanded', 'true');
+    const lecture = screen.getByRole('button', { name: /Lecture métier/i });
+    expect(lecture).toHaveAttribute('aria-expanded', 'false');
+
+    lecture.focus();
+    await user.keyboard('{Enter}');
+
+    expect(lecture).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Filiation et branches familiales')).toBeInTheDocument();
+  });
+
+  it('rend la couverture simulateurs seulement sur demande', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openChapter(user, 'Fiscalité foyer');
+
+    expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
+
+    await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(screen.getByTestId('memento-coverage-ir')).toBeInTheDocument();
-    expect(screen.getByTestId('memento-coverage-filiation')).toBeInTheDocument();
-    expect(screen.getByTestId('memento-coverage-actif-passif')).toBeInTheDocument();
-    expect(screen.getByTestId('memento-coverage-epargne-salariale')).toBeInTheDocument();
   });
 
   it('n’affiche aucune source externe protégée ni PDF externe', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
-    await user.click(screen.getByRole('radio', { name: 'Audit coverage' }));
+    await openChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('affiche les entrées métier planifiées du socle foyer sans lien actif', () => {
+  it('affiche les entrées métier planifiées sans lien actif après ouverture', async () => {
+    const user = userEvent.setup();
     render(<SettingsMemento />);
+
+    await openChapter(user, 'Transmission');
+    await openSubAccordion(user, 'Lecture métier');
 
     const row = screen
       .getAllByText('Donations antérieures')
@@ -219,17 +277,26 @@ describe('SettingsMemento', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await user.click(screen.getByRole('radio', { name: 'Audit coverage' }));
+    await openChapter(user, 'Foyer');
+    await openSubAccordion(user, 'Couverture simulateurs');
 
-    for (const testId of [
-      'memento-coverage-filiation',
-      'memento-coverage-actif-passif',
-      'memento-coverage-epargne-salariale',
-    ]) {
-      const row = screen.getByTestId(testId);
-      expect(within(row).queryAllByRole('link')).toHaveLength(0);
-      expect(within(row).queryAllByRole('button')).toHaveLength(0);
-    }
+    const filiation = screen.getByTestId('memento-coverage-filiation');
+    expect(within(filiation).queryAllByRole('link')).toHaveLength(0);
+    expect(within(filiation).queryAllByRole('button')).toHaveLength(0);
+
+    await openChapter(user, 'Patrimoine');
+    await openSubAccordion(user, 'Couverture simulateurs');
+
+    const actifPassif = screen.getByTestId('memento-coverage-actif-passif');
+    expect(within(actifPassif).queryAllByRole('link')).toHaveLength(0);
+    expect(within(actifPassif).queryAllByRole('button')).toHaveLength(0);
+
+    await openChapter(user, 'Société');
+    await openSubAccordion(user, 'Couverture simulateurs');
+
+    const epargneSalariale = screen.getByTestId('memento-coverage-epargne-salariale');
+    expect(within(epargneSalariale).queryAllByRole('link')).toHaveLength(0);
+    expect(within(epargneSalariale).queryAllByRole('button')).toHaveLength(0);
   });
 
   it('filtre la vue métier par intention et priorité', async () => {
@@ -237,6 +304,8 @@ describe('SettingsMemento', () => {
     render(<SettingsMemento />);
 
     await user.selectOptions(screen.getByLabelText('Intention métier'), 'verifier-fiscalite');
+    await openChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, 'Lecture métier');
 
     expect(screen.getByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
     expect(
@@ -249,24 +318,29 @@ describe('SettingsMemento', () => {
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
   });
 
-  it('filtre la vue audit coverage par recherche, statut et chapitre', async () => {
+  it('filtre la couverture simulateurs par recherche, statut et chapitre', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await user.click(screen.getByRole('radio', { name: 'Audit coverage' }));
     await user.type(screen.getByLabelText('Recherche mémento'), 'cession');
+    await openChapter(user, 'Société');
+    await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(screen.getByTestId('memento-coverage-cession-titres')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
 
     await user.clear(screen.getByLabelText('Recherche mémento'));
     await user.selectOptions(screen.getByLabelText('Statut'), 'couvert');
+    await openChapter(user, 'Fiscalité foyer');
+    await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(screen.getByTestId('memento-coverage-ir')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-filiation')).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('Statut'), 'all');
     await user.selectOptions(screen.getByLabelText('Chapitre'), 'societe');
+    await openChapter(user, 'Société');
+    await openSubAccordion(user, 'Couverture simulateurs');
 
     expect(screen.getByTestId('memento-coverage-organigramme-societe')).toBeInTheDocument();
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
