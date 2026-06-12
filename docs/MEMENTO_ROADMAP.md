@@ -57,14 +57,9 @@ Références officielles restant à qualifier pour des entrées déjà livrées 
 l'entrée. R8 vérifie que ces dettes restent explicites ; les compléments non soldés partent en PR
 métier dédiée plutôt qu'en dette muette.
 
-| Entrée mémento                                 | Référence à qualifier                                                                                        | Priorité                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------- |
-| `societe.obo`                                  | Méthode et sources du montage                                                                                | Reportée au jalon société |
-| `retraite.globale` / `retraite.regime-general` | Trimestres assimilés, règles générationnelles et droits multi-régimes au-delà des dispositifs transverses R7 | P1                        |
-| `retraite.ssi-artisan-commercant`              | CSS L633-1 et L635-1, puis doctrine SSI/URSSAF détaillée du régime complémentaire                            | P1                        |
-| `retraite.cnavpl-professions-liberales`        | CSS L643-1 à L643-6 et D643-1 à D643-16 ; sections CNAVPL par profession                                     | P1                        |
-| `retraite.caisses-sante-liberales`             | Sources CARMF, CARCDSF, CARPIMKO, CAVP et CARPV par catégorie retraite                                       | P1                        |
-| `retraite.autres-caisses-liberales`            | Sources CAVEC, CAVAMAC, CNBF, CPRN/CRN et autres caisses non santé                                           | P1                        |
+| Entrée mémento | Référence à qualifier         | Priorité                  |
+| -------------- | ----------------------------- | ------------------------- |
+| `societe.obo`  | Méthode et sources du montage | Reportée au jalon société |
 
 Rappels non négociables (détail en section B) :
 
