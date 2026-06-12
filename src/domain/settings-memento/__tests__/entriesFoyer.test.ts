@@ -79,9 +79,19 @@ describe('settings-memento — foyer, civil et patrimoine', () => {
 
     expect(entry!.status).toBe('partiel');
     expect(entry!.relatedSimulatorIds).toEqual(['regime-matrimonial']);
+    expect(entry!.refIds).toContain('code-civil-515-5');
     expect(entry!.refIds).toContain('code-civil-1515');
     expect(entry!.refIds).toContain('code-civil-1527');
+    expect(entry!.refIds).toContain('cgi-680');
     expect(entry!.refIds).toContain('cgi-796-0-bis');
+  });
+
+  it('source les ordres successoraux complets pour la dévolution hors conjoint', () => {
+    const entry = entryByKey.get('civil.devolution-conjoint-survivant');
+
+    expect(entry!.status).toBe('partiel');
+    expect(entry!.refIds).toContain('code-civil-734-740');
+    expect(entry!.statusReason).toContain('scénarios déjà exposés');
   });
 
   it('aligne chaque entrée du lot sur le chapitre couvert par son simulateur, hors exceptions documentées', () => {

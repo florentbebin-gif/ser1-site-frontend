@@ -24,7 +24,7 @@ describe('settings-memento — transmission', () => {
     expect(entryByKey.get('transmission.assurance-vie-deces')?.status).toBe('couvert');
     expect(entryByKey.get('transmission.donation-demembrement')?.status).toBe('planned');
     expect(entryByKey.get('transmission.liberalites')?.status).toBe('partiel');
-    expect(entryByKey.get('transmission.transmission-internationale')?.status).toBe('a_verifier');
+    expect(entryByKey.get('transmission.transmission-internationale')?.status).toBe('partiel');
     expect(entryByKey.get('transmission-entreprise.pacte-dutreil')?.status).toBe('planned');
     expect(entryByKey.get('transmission-entreprise.paiement-differe-fractionne')?.status).toBe(
       'partiel',
@@ -40,11 +40,12 @@ describe('settings-memento — transmission', () => {
     expect(entry!.relatedSimulatorIds).toEqual(['pacte-dutreil']);
   });
 
-  it('garde la transmission internationale en attente de qualification sans source affichée', () => {
+  it('rattache la transmission internationale aux sources de territorialité qualifiées', () => {
     const entry = entryByKey.get('transmission.transmission-internationale');
 
     expect(entry!.claimKeys).toEqual([]);
-    expect(entry!.refIds).toEqual([]);
+    expect(entry!.refIds).toEqual(['cgi-750-ter', 'boi-enr-dmtg-10-10-30', 'cgi-990-i']);
+    expect(entry!.statusReason).toContain('conventions fiscales');
   });
 
   it('trace l’absence du barème de donation entre époux sur l’entrée donation et démembrement', () => {
@@ -52,7 +53,18 @@ describe('settings-memento — transmission', () => {
 
     expect(entry!.claimKeys).toContain('dmtg-conjoint-pacs-exoneration-cgi-796-0-bis');
     expect(entry!.refIds).toContain('cgi-796-0-bis');
+    expect(entry!.refIds).toContain('cgi-790-e');
+    expect(entry!.refIds).toContain('cgi-790-f');
     expect(entry!.statusReason).toContain('donation entre époux');
+  });
+
+  it('complète les sources succession et assurance-vie décès sans changer les claims settings', () => {
+    expect(entryByKey.get('transmission.succession-dmtg')!.refIds).toEqual(
+      expect.arrayContaining(['cgi-790-h', 'cgi-790-i']),
+    );
+    expect(entryByKey.get('transmission.assurance-vie-deces')!.refIds).toContain(
+      'code-assurances-l132-13',
+    );
   });
 
   it('rattache toutes les entrées transmission au mémento', () => {

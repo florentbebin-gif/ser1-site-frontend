@@ -102,6 +102,28 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "cgi-680",
+    "label": "CGI art. 680 — droit fixe des actes innomés",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000027729145",
+    "articleOrSection": "Art. 680",
+    "scope": "Droit fixe applicable aux actes non exonérés, non tarifés par un autre article et non soumis à une imposition proportionnelle ou progressive.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-750-ter",
+    "label": "CGI art. 750 ter — territorialité des DMTG",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024453202",
+    "articleOrSection": "Art. 750 ter",
+    "scope": "Règles de territorialité des droits de mutation à titre gratuit selon le domicile fiscal et la situation des biens.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-990-i",
     "label": "CGI art. 990 I — capitaux décès assurance-vie",
     "sourceType": "CGI",
@@ -138,6 +160,17 @@
     "lastCheckedAt": "2026-06-05"
   },
   {
+    "id": "code-civil-734-740",
+    "label": "Code civil art. 734 à 740 — ordres d'héritiers",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006070721/LEGISCTA000006165515/",
+    "articleOrSection": "Art. 734 à 740",
+    "scope": "Ordres d'héritiers et dévolution aux collatéraux ordinaires en l'absence de conjoint successible.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "code-civil-265",
     "label": "Code civil art. 265 — effets du divorce sur les avantages matrimoniaux",
     "sourceType": "Code civil",
@@ -147,6 +180,17 @@
     "volatility": "stable",
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-civil-515-5",
+    "label": "Code civil art. 515-5 — régime patrimonial du PACS",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000021330223",
+    "articleOrSection": "Art. 515-5",
+    "scope": "Régime patrimonial légal du pacte civil de solidarité et présomption d'indivision entre partenaires.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-civil-578",
@@ -235,6 +279,28 @@
     "volatility": "stable",
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-civil-929",
+    "label": "Code civil art. 929 — renonciation anticipée à l'action en réduction",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006433772",
+    "articleOrSection": "Art. 929",
+    "scope": "Possibilité pour un héritier réservataire présomptif de renoncer par anticipation à exercer une action en réduction.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "code-civil-930",
+    "label": "Code civil art. 930 — forme de la renonciation anticipée",
+    "sourceType": "Code civil",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006433774",
+    "articleOrSection": "Art. 930",
+    "scope": "Forme authentique et conditions de validité de la renonciation anticipée à l'action en réduction.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-civil-1002",
@@ -483,6 +549,28 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "cgi-790-e",
+    "label": "CGI art. 790 E — donation entre époux",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292592",
+    "articleOrSection": "Art. 790 E",
+    "scope": "Abattement applicable aux donations entre époux pour la liquidation des droits de mutation à titre gratuit entre vifs.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-790-f",
+    "label": "CGI art. 790 F — donation entre partenaires PACS",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000026292590",
+    "articleOrSection": "Art. 790 F",
+    "scope": "Abattement applicable aux donations entre partenaires liés par un pacte civil de solidarité.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "cgi-790-g",
     "label": "CGI art. 790 G — don familial de sommes d'argent",
     "sourceType": "CGI",
@@ -493,6 +581,28 @@
     "relatedSimulatorIds": ["succession"],
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "cgi-790-h",
+    "label": "CGI art. 790 H — don familial immobilier",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000029997561",
+    "articleOrSection": "Art. 790 H",
+    "scope": "Dispositif fiscal de donation familiale rattaché aux biens immobiliers selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cgi-790-i",
+    "label": "CGI art. 790 I — don familial logement",
+    "sourceType": "CGI",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000029997583",
+    "articleOrSection": "Art. 790 I",
+    "scope": "Dispositif fiscal de donation familiale rattaché au logement selon les conditions prévues par le texte.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "cgi-38",
@@ -612,6 +722,17 @@
     "relatedSimulatorIds": ["succession"],
     "relatedSettings": ["dmtg", "base-contrat"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "boi-enr-dmtg-10-10-30",
+    "label": "BOFiP BOI-ENR-DMTG-10-10-30 — territorialité DMTG",
+    "sourceType": "BOFiP",
+    "officialUrl": "https://bofip.impots.gouv.fr/bofip/3543-PGP.html/identifiant=BOI-ENR-DMTG-10-10-30-20120912",
+    "articleOrSection": "BOI-ENR-DMTG-10-10-30",
+    "scope": "Doctrine administrative relative aux règles de territorialité des droits de mutation à titre gratuit.",
+    "volatility": "lawChange",
+    "relatedSettings": ["dmtg"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "boi-tcas-aut-60",
@@ -852,6 +973,18 @@
     "volatility": "stable",
     "relatedSimulatorIds": ["prevoyance"],
     "lastCheckedAt": "2026-06-05"
+  },
+  {
+    "id": "code-assurances-l132-13",
+    "label": "Code des assurances art. L132-13 — primes manifestement exagérées",
+    "sourceType": "Code des assurances",
+    "officialUrl": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006793016",
+    "articleOrSection": "Art. L132-13",
+    "scope": "Rapport successoral et réduction des capitaux décès, avec exception pour les primes manifestement exagérées.",
+    "volatility": "stable",
+    "relatedSettings": ["dmtg"],
+    "relatedCatalogProducts": ["assurance_vie", "prevoyance_individuelle_deces"],
+    "lastCheckedAt": "2026-06-12"
   },
   {
     "id": "code-travail-l3312-1",
