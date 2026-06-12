@@ -2136,5 +2136,83 @@
     "volatility": "lawChange",
     "relatedSettings": ["dmtg"],
     "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "assurance-retraite-age-taux-plein",
+    "label": "L'Assurance retraite — âge de départ et taux plein",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lassuranceretraite.fr/portail-info/home/actif/age-depart/age-depart-retraite.html",
+    "articleOrSection": "À quel âge vais-je partir ?",
+    "scope": "Âge de départ, taux plein, durée d'assurance, décote et surcote du régime général.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "agirc-arrco-points-retraite",
+    "label": "AGIRC-ARRCO — points de retraite complémentaire",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.agirc-arrco.fr/particuliers/ma-retraite/comprendre-ma-retraite/points-de-retraite-comment-sont-ils-obtenus/",
+    "articleOrSection": "Points de retraite",
+    "scope": "Constitution des droits de retraite complémentaire des salariés par points.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12",
+    "notes": "Page officielle vivante mais protégée par filtrage automatisé ; vérification navigateur requise lors des audits de fraîcheur."
+  },
+  {
+    "id": "entreprendre-service-public-retraite-ei",
+    "label": "Entreprendre Service-Public — retraite de l'entrepreneur individuel",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://entreprendre.service-public.gouv.fr/vosdroits/F33841",
+    "articleOrSection": "Régime de retraite de l'entrepreneur individuel",
+    "scope": "Régime de retraite des entrepreneurs individuels, artisans, commerçants et professions libérales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "urssaf-independant-droits-retraite",
+    "label": "URSSAF — droits retraite des indépendants",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/independant/connaitre-vos-droits/droits-independants-retraite.html",
+    "articleOrSection": "Indépendant : vos droits retraite",
+    "scope": "Droits retraite ouverts par les cotisations des travailleurs indépendants.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "cnavpl-retraite-liberaux",
+    "label": "CNAVPL — retraite des professions libérales",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.cnavpl.fr/regime-de-base/",
+    "articleOrSection": "Régime de base par points",
+    "scope": "Régime de base et organisation retraite des professions libérales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "lacipav-affiliation-retraite",
+    "label": "La CIPAV — affiliation et droits retraite",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.lacipav.fr/qui-est-assure-a-la-cipav",
+    "articleOrSection": "Qui est assuré à la CIPAV ?",
+    "scope": "Affiliation CIPAV et accès aux droits retraite des professionnels concernés.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "msa-retraite",
+    "label": "MSA — retraite agricole",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.msa.fr/lfp/retraite",
+    "articleOrSection": "Retraite, retraités",
+    "scope": "Information retraite des salariés, exploitants et retraités du régime agricole.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
   }
 ]
