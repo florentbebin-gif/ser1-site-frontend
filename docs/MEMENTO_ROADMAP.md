@@ -20,13 +20,14 @@ Dernière mise à jour : 2026-06-12.
 | PR 9 — Immobilier patrimonial                    | Crédit, investissement locatif, SCI, SCPI, dispositifs fiscaux, non-résidents, arbitrage/réemploi                                                                                                                                                                                                                                                                                   | **Livrée**                                                                                                             |
 | PR 13 — International prudent                    | Entrées non-résidents IR/IFI et transmission internationale en `a_verifier`, rattachées aux chapitres existants ; compléments civil (dévolution, réserve, libéralités) et socle démembrement                                                                                                                                                                                        | **Livrée**                                                                                                             |
 | PR 10 à PR 12 — Société et comptabilité          | Grille mémento : IS, mère-fille/QPFC, CCA, résultat distribuable et réserves, capitaux propres, bilans/liasses, primes, emprunts, immobilisations, immobilier détenu, trésorerie, organigramme, projection, valorisation, cession, holding/apport-cession, OBO, épargne salariale partielle, paiement différé/fractionné ; références Code de commerce et CGI annexe III qualifiées | **Livrée**                                                                                                             |
+| Lot R5 — Dirigeant et social                     | Dividendes TNS, rémunération dirigeant, charges sociales assimilé salarié/TNS/libérales, PUMA/CSM, sortie de capitaux et prévoyance dirigeant ; micro-social maintenu absent par décision V5 ; sources URSSAF/BOSS/Service-Public qualifiées quand elles existent, sans moteur social ni valeurs nouvelles                                                                          | **Livrée**                                                                                                             |
 | PR 14 à PR 38                                    | Voir section D                                                                                                                                                                                                                                                                                                                                                                      | Re-cadrées : grille mémento couverte par les lots R5 à R8, chantiers moteurs hors grille (voir « Exécution par lots ») |
 
 ### Exécution par lots
 
 Depuis la PR 8, le contenu de la grille mémento est livré par lots thématiques contractualisés en
 pré-implémentation : R1 placements = PR 8 (#594), R2 immobilier = PR 9 (#595), R3
-civil/international = PR 13 (#596), R4 société/comptabilité = PR 10 à 12, puis R5 dirigeant/social,
+civil/international = PR 13 (#596), R4 société/comptabilité = PR 10 à 12, R5 dirigeant/social,
 R6 retraite obligatoire, R7 prévoyance (audit `--with-db` requis), R8 épargne retraite et clôture.
 Les lots R5 à R8 remplacent les PR 14 à 38 pour le périmètre grille mémento ; les chantiers moteurs
 des parties 3 à 5 (modèle charges sociales, pipeline Excel/OCR, domaine retraite, goldens sociaux)
@@ -42,30 +43,35 @@ Références officielles restant à qualifier pour des entrées déjà livrées 
 `src/domain/legal-references/references.json` avec URL officielle vérifiée puis le rattacher à
 l'entrée. À solder au fil des lots, au plus tard à l'audit de clôture R8.
 
-| Entrée mémento                             | Référence à qualifier                                                                                  | Priorité                  |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------- |
-| `civil.regime-matrimonial`                 | C. civ. 515-5 (PACS) ; droit fixe de l'acte de changement de régime (CGI)                              | P1 ; P2                   |
-| `civil.devolution-conjoint-survivant`      | C. civ. 734 à 740 (ordres d'héritiers)                                                                 | P1                        |
-| `transmission.liberalites`                 | C. civ. 929 et 930 (RAAR)                                                                              | P1                        |
-| `fiscalite-foyer.niches-fiscales`          | CGI 200-0 A (plafonnement global)                                                                      | P1                        |
-| `fiscalite-foyer.ifi`                      | CGI 979 (plafonnement) ; CGI 974 (passif déductible) ; CGI 972 (part immobilière des contrats)         | P1 ; P1 ; P2              |
-| `fiscalite-foyer.non-residents`            | CGI 197 A (taux minimum) ; CGI 182 A et 187 (retenues à la source) ; CGI 964 1° (lecture non-résident) | P1                        |
-| `transmission.donation-demembrement`       | CGI 790 E et 790 F (donation entre époux)                                                              | P1                        |
-| `transmission.transmission-internationale` | CGI 750 ter et BOI-ENR-DMTG-10-10-30 (territorialité) ; lecture non-résident du CGI 990 I              | P1                        |
-| `transmission.succession-dmtg`             | Don familial logement (loi de finances)                                                                | P2                        |
-| `transmission.assurance-vie-deces`         | Code des assurances L132-13 (primes manifestement exagérées)                                           | P2                        |
-| `placements.enveloppes-titres`             | CGI 150-0 D (abattements titres antérieurs au PFU)                                                     | P2                        |
-| `immobilier.pv-immobilieres`               | CGI 1609 nonies G (taxe sur PVI élevées) ; abattements exceptionnels (loi de finances)                 | P1 ; P2                   |
-| `immobilier.non-residents`                 | CGI 244 bis A ; règles d'affiliation sociale UE                                                        | P1                        |
-| `immobilier.sci`                           | Translucidité IS/IR (CGI)                                                                              | P1                        |
-| `societe.groupe-mere-fille-qpfc`           | CGI 145 et 216 (éligibilité mère-fille, partagé avec holding)                                          | P1                        |
-| `societe.compte-courant-associe`           | CGI 39, 1-3° (intérêts de comptes courants)                                                            | P1                        |
-| `societe.holding-apport-cession`           | CGI 150-0 B ter (report d'imposition de l'apport-cession)                                              | P1                        |
-| `societe.cession-titres`                   | CGI 150-0 D ter (abattement dirigeant partant à la retraite)                                           | P1                        |
-| `societe.valorisation-titres`              | Guide DGFiP d'évaluation des entreprises et des titres                                                 | P1                        |
-| `societe.epargne-salariale`                | Forfait social et titres de services (URSSAF/BOSS)                                                     | P1/P2                     |
-| `societe.organigramme`                     | Formes sociales (Code de commerce)                                                                     | P2                        |
-| `societe.obo`                              | Méthode et sources du montage                                                                          | Reportée au jalon société |
+| Entrée mémento                                                            | Référence à qualifier                                                                                           | Priorité                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `civil.regime-matrimonial`                                                | C. civ. 515-5 (PACS) ; droit fixe de l'acte de changement de régime (CGI)                                       | P1 ; P2                   |
+| `civil.devolution-conjoint-survivant`                                     | C. civ. 734 à 740 (ordres d'héritiers)                                                                          | P1                        |
+| `transmission.liberalites`                                                | C. civ. 929 et 930 (RAAR)                                                                                       | P1                        |
+| `fiscalite-foyer.niches-fiscales`                                         | CGI 200-0 A (plafonnement global)                                                                               | P1                        |
+| `fiscalite-foyer.ifi`                                                     | CGI 979 (plafonnement) ; CGI 974 (passif déductible) ; CGI 972 (part immobilière des contrats)                  | P1 ; P1 ; P2              |
+| `fiscalite-foyer.non-residents`                                           | CGI 197 A (taux minimum) ; CGI 182 A et 187 (retenues à la source) ; CGI 964 1° (lecture non-résident)          | P1                        |
+| `transmission.donation-demembrement`                                      | CGI 790 E et 790 F (donation entre époux)                                                                       | P1                        |
+| `transmission.transmission-internationale`                                | CGI 750 ter et BOI-ENR-DMTG-10-10-30 (territorialité) ; lecture non-résident du CGI 990 I                       | P1                        |
+| `transmission.succession-dmtg`                                            | Don familial logement (loi de finances)                                                                         | P2                        |
+| `transmission.assurance-vie-deces`                                        | Code des assurances L132-13 (primes manifestement exagérées)                                                    | P2                        |
+| `placements.enveloppes-titres`                                            | CGI 150-0 D (abattements titres antérieurs au PFU)                                                              | P2                        |
+| `immobilier.pv-immobilieres`                                              | CGI 1609 nonies G (taxe sur PVI élevées) ; abattements exceptionnels (loi de finances)                          | P1 ; P2                   |
+| `immobilier.non-residents`                                                | CGI 244 bis A ; règles d'affiliation sociale UE                                                                 | P1                        |
+| `immobilier.sci`                                                          | Translucidité IS/IR (CGI)                                                                                       | P1                        |
+| `societe.groupe-mere-fille-qpfc`                                          | CGI 145 et 216 (éligibilité mère-fille, partagé avec holding)                                                   | P1                        |
+| `societe.compte-courant-associe`                                          | CGI 39, 1-3° (intérêts de comptes courants)                                                                     | P1                        |
+| `societe.holding-apport-cession`                                          | CGI 150-0 B ter (report d'imposition de l'apport-cession)                                                       | P1                        |
+| `societe.cession-titres`                                                  | CGI 150-0 D ter (abattement dirigeant partant à la retraite)                                                    | P1                        |
+| `societe.valorisation-titres`                                             | Guide DGFiP d'évaluation des entreprises et des titres                                                          | P1                        |
+| `societe.epargne-salariale`                                               | Forfait social et titres de services (URSSAF/BOSS)                                                              | P1/P2                     |
+| `societe.organigramme`                                                    | Formes sociales (Code de commerce)                                                                              | P2                        |
+| `societe.obo`                                                             | Méthode et sources du montage                                                                                   | Reportée au jalon société |
+| `dirigeant.charges-sociales-assimile-salarie`                             | CSS L311-3 (périmètre assimilé salarié des mandataires) ; qualification BOSS par mandat                         | P1                        |
+| `dirigeant.dividendes-tns` / `dirigeant.charges-sociales-tns`             | CSS L131-6 et doctrine BOSS/URSSAF par forme sociale pour le régime complet des dividendes TNS                  | P1                        |
+| `dirigeant.puma-csm`                                                      | CSS L380-2 (base légale PUMA/CSM, au-delà de la fiche Service-Public)                                           | P1                        |
+| `dirigeant.remuneration` / `dirigeant.charges-sociales-assimile-salarie`  | CGI 231 (taxe sur les salaires, si applicable aux rémunérations ou mandats)                                     | P2                        |
+| `dirigeant.charges-sociales-tns` / `dirigeant.charges-sociales-liberales` | Barèmes URSSAF/BOSS et caisses par régime ; cartographie à reprendre en R7 via `prevoyance.affiliation-caisses` | P1 / R7                   |
 
 Rappels non négociables (détail en section B) :
 
@@ -1413,35 +1419,35 @@ Dépendances : PR 1, PR 3.
 
 Rollback : retirer lexique.
 
-### PR 38 — Audit final, couverture simulateurs et bascule optionnelle `/settings`
+### PR 38 — Audit final, fraîcheur des références et bascule optionnelle `/settings`
 
-Objectif : valider la couverture complète et décider si `/settings/memento` devient l'entrée principale.
+Objectif : valider la couverture complète, installer la fraîcheur périodique des références Settings et décider si `/settings/memento` devient l'entrée principale.
 
 Pourquoi c'est une PR : fermeture du chantier, avec impact potentiel routing.
 
-Commits recommandés : audit coverage final, tableau dettes, E2E, docs finales, bascule `/settings` optionnelle.
+Commits recommandés : audit coverage final, tableau dettes, fraîcheur périodique des références, stockage Supabase du dernier rapport, bannière admin Home dismissible, E2E, docs finales, bascule `/settings` optionnelle.
 
-Périmètre inclus : tous domaines, tous simulateurs, sous-types, settings propriétaires.
+Périmètre inclus : tous domaines, tous simulateurs, sous-types, settings propriétaires ; audit périodique `audit:settings-references -- --stale --with-db` avec fetch URL explicite ; tables Supabase `reference_audit_reports` et acquittements admin ; bannière Home visible seulement pour les admins quand le dernier rapport demande une action.
 
 Périmètre exclu : nouveaux contenus métier.
 
-Fichiers probables : scripts audit, tests E2E, docs structurantes.
+Fichiers probables : scripts audit, workflow qualité, migrations Supabase, Home, hook lecture admin, tests E2E, docs structurantes.
 
-Données / settings concernés : tous domaines mémento.
+Données / settings concernés : tous domaines mémento ; rapport JSONB du dernier audit de références ; acquittement par admin et par rapport.
 
 Références à rattacher : toutes sources consolidées.
 
-Tests / checks attendus : `npm run check`, `test:e2e:auth-pages`, `audit:settings-references -- --with-db`, checks fiscal/social/registry.
+Tests / checks attendus : `npm run check`, `test:e2e:auth-pages`, `audit:settings-references -- --stale --with-db`, `check:supabase-rls`, `check:supabase-migrations`, checks fiscal/social/registry.
 
-Critères d'acceptation : aucun simulateur prévu n'est absent silencieusement.
+Critères d'acceptation : aucun simulateur prévu n'est absent silencieusement ; un rapport non OK apparaît sur la Home admin une seule fois par rapport tant qu'il n'est pas acquitté ; aucun message n'est affiché quand le rapport est OK ; l'audit n'est jamais exécuté dans le navigateur.
 
-Risques : bascule `/settings` prématurée.
+Risques : bascule `/settings` prématurée ; alerte admin trop bruyante ; écriture Supabase depuis GitHub Actions mal isolée.
 
-Garde-fous : bascule seulement si coverage et E2E verts.
+Garde-fous : bascule seulement si coverage et E2E verts ; le job planifié produit le rapport, l'app le lit seulement ; écriture Supabase par service role, lecture RLS admin, acquittement admin tracé.
 
 Dépendances : PR 1 à PR 37.
 
-Rollback : annuler uniquement la redirection ou l'audit trop strict.
+Rollback : annuler uniquement la redirection, la bannière ou l'audit trop strict ; conserver les tables si elles portent déjà des rapports historiques utiles.
 
 ## E. Tableau simulateurs → mémento
 
