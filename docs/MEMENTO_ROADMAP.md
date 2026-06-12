@@ -20,13 +20,14 @@ Dernière mise à jour : 2026-06-12.
 | PR 9 — Immobilier patrimonial                    | Crédit, investissement locatif, SCI, SCPI, dispositifs fiscaux, non-résidents, arbitrage/réemploi                                                                                                                                                                                                                                                                                   | **Livrée**                                                                                                             |
 | PR 13 — International prudent                    | Entrées non-résidents IR/IFI et transmission internationale en `a_verifier`, rattachées aux chapitres existants ; compléments civil (dévolution, réserve, libéralités) et socle démembrement                                                                                                                                                                                        | **Livrée**                                                                                                             |
 | PR 10 à PR 12 — Société et comptabilité          | Grille mémento : IS, mère-fille/QPFC, CCA, résultat distribuable et réserves, capitaux propres, bilans/liasses, primes, emprunts, immobilisations, immobilier détenu, trésorerie, organigramme, projection, valorisation, cession, holding/apport-cession, OBO, épargne salariale partielle, paiement différé/fractionné ; références Code de commerce et CGI annexe III qualifiées | **Livrée**                                                                                                             |
+| Lot R5 — Dirigeant et social                     | Dividendes TNS, rémunération dirigeant, charges sociales assimilé salarié/TNS/libérales, PUMA/CSM, micro-social, sortie de capitaux et prévoyance dirigeant ; sources URSSAF/BOSS/Service-Public qualifiées quand elles existent, sans moteur social ni valeurs nouvelles                                                                                                           | **Livrée**                                                                                                             |
 | PR 14 à PR 38                                    | Voir section D                                                                                                                                                                                                                                                                                                                                                                      | Re-cadrées : grille mémento couverte par les lots R5 à R8, chantiers moteurs hors grille (voir « Exécution par lots ») |
 
 ### Exécution par lots
 
 Depuis la PR 8, le contenu de la grille mémento est livré par lots thématiques contractualisés en
 pré-implémentation : R1 placements = PR 8 (#594), R2 immobilier = PR 9 (#595), R3
-civil/international = PR 13 (#596), R4 société/comptabilité = PR 10 à 12, puis R5 dirigeant/social,
+civil/international = PR 13 (#596), R4 société/comptabilité = PR 10 à 12, R5 dirigeant/social,
 R6 retraite obligatoire, R7 prévoyance (audit `--with-db` requis), R8 épargne retraite et clôture.
 Les lots R5 à R8 remplacent les PR 14 à 38 pour le périmètre grille mémento ; les chantiers moteurs
 des parties 3 à 5 (modèle charges sociales, pipeline Excel/OCR, domaine retraite, goldens sociaux)
@@ -1413,35 +1414,35 @@ Dépendances : PR 1, PR 3.
 
 Rollback : retirer lexique.
 
-### PR 38 — Audit final, couverture simulateurs et bascule optionnelle `/settings`
+### PR 38 — Audit final, fraîcheur des références et bascule optionnelle `/settings`
 
-Objectif : valider la couverture complète et décider si `/settings/memento` devient l'entrée principale.
+Objectif : valider la couverture complète, installer la fraîcheur périodique des références Settings et décider si `/settings/memento` devient l'entrée principale.
 
 Pourquoi c'est une PR : fermeture du chantier, avec impact potentiel routing.
 
-Commits recommandés : audit coverage final, tableau dettes, E2E, docs finales, bascule `/settings` optionnelle.
+Commits recommandés : audit coverage final, tableau dettes, fraîcheur périodique des références, stockage Supabase du dernier rapport, bannière admin Home dismissible, E2E, docs finales, bascule `/settings` optionnelle.
 
-Périmètre inclus : tous domaines, tous simulateurs, sous-types, settings propriétaires.
+Périmètre inclus : tous domaines, tous simulateurs, sous-types, settings propriétaires ; audit périodique `audit:settings-references -- --stale --with-db` avec fetch URL explicite ; tables Supabase `reference_audit_reports` et acquittements admin ; bannière Home visible seulement pour les admins quand le dernier rapport demande une action.
 
 Périmètre exclu : nouveaux contenus métier.
 
-Fichiers probables : scripts audit, tests E2E, docs structurantes.
+Fichiers probables : scripts audit, workflow qualité, migrations Supabase, Home, hook lecture admin, tests E2E, docs structurantes.
 
-Données / settings concernés : tous domaines mémento.
+Données / settings concernés : tous domaines mémento ; rapport JSONB du dernier audit de références ; acquittement par admin et par rapport.
 
 Références à rattacher : toutes sources consolidées.
 
-Tests / checks attendus : `npm run check`, `test:e2e:auth-pages`, `audit:settings-references -- --with-db`, checks fiscal/social/registry.
+Tests / checks attendus : `npm run check`, `test:e2e:auth-pages`, `audit:settings-references -- --stale --with-db`, `check:supabase-rls`, `check:supabase-migrations`, checks fiscal/social/registry.
 
-Critères d'acceptation : aucun simulateur prévu n'est absent silencieusement.
+Critères d'acceptation : aucun simulateur prévu n'est absent silencieusement ; un rapport non OK apparaît sur la Home admin une seule fois par rapport tant qu'il n'est pas acquitté ; aucun message n'est affiché quand le rapport est OK ; l'audit n'est jamais exécuté dans le navigateur.
 
-Risques : bascule `/settings` prématurée.
+Risques : bascule `/settings` prématurée ; alerte admin trop bruyante ; écriture Supabase depuis GitHub Actions mal isolée.
 
-Garde-fous : bascule seulement si coverage et E2E verts.
+Garde-fous : bascule seulement si coverage et E2E verts ; le job planifié produit le rapport, l'app le lit seulement ; écriture Supabase par service role, lecture RLS admin, acquittement admin tracé.
 
 Dépendances : PR 1 à PR 37.
 
-Rollback : annuler uniquement la redirection ou l'audit trop strict.
+Rollback : annuler uniquement la redirection, la bannière ou l'audit trop strict ; conserver les tables si elles portent déjà des rapports historiques utiles.
 
 ## E. Tableau simulateurs → mémento
 

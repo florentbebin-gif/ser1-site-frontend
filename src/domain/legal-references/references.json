@@ -744,6 +744,50 @@
     "lastCheckedAt": "2026-06-08"
   },
   {
+    "id": "urssaf-assimile-salarie-dirigeant",
+    "label": "URSSAF mon-entreprise — dirigeant assimilé salarié",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://mon-entreprise.urssaf.fr/documentation/dirigeant/assimil%C3%A9-salari%C3%A9",
+    "articleOrSection": "Dirigeant — assimilé salarié",
+    "scope": "Qualification sociale des dirigeants assimilés salariés pour le futur modèle rémunération dirigeant.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "boss-assiette-generale",
+    "label": "BOSS — assiette générale des cotisations",
+    "sourceType": "BOSS",
+    "officialUrl": "https://boss.gouv.fr/portail/accueil/regles-dassujettissement/assiette-generale.html",
+    "articleOrSection": "Assiette générale",
+    "scope": "Règles générales d'assujettissement des salariés et assimilés salariés aux cotisations sociales.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "service-public-puma",
+    "label": "Service-Public — protection universelle maladie",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F34308",
+    "articleOrSection": "PUMA",
+    "scope": "Protection universelle maladie utilisée pour cadrer les alertes PUMA/CSM du dirigeant.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
+    "id": "entreprendre-service-public-regime-micro-social",
+    "label": "Entreprendre Service-Public — régime micro-social",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://entreprendre.service-public.fr/vosdroits/F37353",
+    "articleOrSection": "Régime micro-social",
+    "scope": "Déclaration et paiement des cotisations du micro-entrepreneur sous régime micro-social.",
+    "volatility": "lawChange",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-12"
+  },
+  {
     "id": "css-l136-6",
     "label": "Code de la sécurité sociale art. L136-6 — revenus du patrimoine",
     "sourceType": "Code de la sécurité sociale",
