@@ -282,6 +282,21 @@
   overflow-wrap: anywhere;
 }
 
+.settings-memento-row--editorial {
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--surface-card);
+}
+
+.settings-memento-editorial-list {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--color-c10);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .settings-memento-row__owner {
   display: flex;
   min-width: 0;

@@ -1,0 +1,38 @@
+import { describe, expect, it } from 'vitest';
+
+import { MEMENTO_CHAPTERS, MEMENTO_EDITORIAL } from '../index';
+
+const FORBIDDEN_VALUE_FRAGMENTS = ['17.2', '12.8', '30', '100000', '15932'] as const;
+
+function editorialTexts(): string[] {
+  return MEMENTO_EDITORIAL.flatMap((entry) => [entry.summary, ...entry.keyPoints]);
+}
+
+describe('settings-memento — éditorial utilisateur', () => {
+  it('couvre chaque chapitre du mémento', () => {
+    expect(MEMENTO_EDITORIAL.map((entry) => entry.chapterId)).toEqual(
+      MEMENTO_CHAPTERS.map((chapter) => chapter.id),
+    );
+  });
+
+  it('reste court et structuré pour une lecture utilisateur', () => {
+    for (const entry of MEMENTO_EDITORIAL) {
+      expect(entry.summary.length, `${entry.chapterId}: résumé trop long`).toBeLessThanOrEqual(150);
+      expect(entry.keyPoints, `${entry.chapterId}: repères`).toHaveLength(3);
+
+      for (const point of entry.keyPoints) {
+        expect(point.length, `${entry.chapterId}: repère trop long`).toBeLessThanOrEqual(120);
+      }
+    }
+  });
+
+  it('ne porte aucune valeur fiscale ou sociale chiffrée', () => {
+    for (const text of editorialTexts()) {
+      expect(text, `Chiffre interdit dans "${text}"`).not.toMatch(/\d/);
+
+      for (const forbidden of FORBIDDEN_VALUE_FRAGMENTS) {
+        expect(text, `Fragment interdit ${forbidden}`).not.toContain(forbidden);
+      }
+    }
+  });
+});
