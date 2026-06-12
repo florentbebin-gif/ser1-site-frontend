@@ -146,6 +146,7 @@ describe('route settings mémento', () => {
       '/settings/prelevements',
       '/settings/dmtg-succession',
       '/settings/base-contrat',
+      '/settings/prevoyance-regimes',
       '/settings/fiscalites',
     ]) {
       expect(getActiveSettingsKey(migratedPath)).toBe('memento');
@@ -192,9 +193,7 @@ describe('contrat de migration settings vers mémento', () => {
     expect(routePaths).toContain(MEMENTO_SETTINGS_TARGET_PATH);
 
     for (const section of MEMENTO_SETTINGS_MIGRATION_SECTIONS) {
-      const assertion = expect(routePaths, section.id);
-      if (section.id === 'prevoyance-regimes') assertion.toContain(section.legacyPagePath);
-      else assertion.not.toContain(section.legacyPagePath);
+      expect(routePaths, section.id).not.toContain(section.legacyPagePath);
     }
   });
 

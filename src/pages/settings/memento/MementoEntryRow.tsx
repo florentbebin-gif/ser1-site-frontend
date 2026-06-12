@@ -32,7 +32,6 @@ const STATUS_WITHOUT_OWNER_LINK = new Set<MementoStatus>([
 const MEMENTO_OWNER_PAGE_LABELS: Record<NonNullable<MementoEntry['ownerPagePath']>, string> = {
   '/settings/memento': 'Mémento',
   '/settings/base-contrat-retraite': 'Base CG retraite',
-  '/settings/prevoyance-regimes': 'Prévoyance — régimes',
 };
 
 export function canRenderMementoOwnerLink(status: MementoStatus): boolean {

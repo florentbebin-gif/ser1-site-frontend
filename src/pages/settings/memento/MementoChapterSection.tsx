@@ -33,6 +33,9 @@ const DmtgSuccessionSettingsPanel = lazy(
 );
 const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
 const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
+const PrevoyanceRegimesSettingsPanel = lazy(
+  () => import('../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel'),
+);
 
 type MementoSubSectionId = 'lecture' | 'parametres' | 'couverture';
 
@@ -304,6 +307,17 @@ function SettingsSectionContent({
         <SettingsSourceRow section={section} />
         <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
           <BaseContratSettingsPanel />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (section.id === 'prevoyance-regimes' && chapter.id === 'prevoyance') {
+    return (
+      <div className="settings-memento-settings-editor">
+        <SettingsSourceRow section={section} />
+        <Suspense fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}>
+          <PrevoyanceRegimesSettingsPanel />
         </Suspense>
       </div>
     );

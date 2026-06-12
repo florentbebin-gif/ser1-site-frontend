@@ -29,10 +29,7 @@ export type SettingsRegistryStatus = 'ready' | 'partial' | 'planned';
 export type SettingsReferenceStatus = 'complete' | 'a-completer';
 export type SettingsMillesime = `${number}` | 'a-renseigner-avant-codage';
 
-export type SettingsOwnerPagePath =
-  | '/settings/memento'
-  | '/settings/base-contrat-retraite'
-  | '/settings/prevoyance-regimes';
+export type SettingsOwnerPagePath = '/settings/memento' | '/settings/base-contrat-retraite';
 
 export type SettingsCurrentValue =
   | {

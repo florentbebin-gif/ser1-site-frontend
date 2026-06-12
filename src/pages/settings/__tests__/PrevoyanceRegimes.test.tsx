@@ -9,7 +9,7 @@ import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
-import PrevoyanceRegimes from '../PrevoyanceRegimes';
+import PrevoyanceRegimesSettingsPanel from '../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel';
 
 let isAdmin = false;
 const reloadMock = vi.fn();
@@ -152,10 +152,6 @@ vi.mock('@/auth/useUserRole', () => ({
   }),
 }));
 
-vi.mock('@/components/UserInfoBanner', () => ({
-  UserInfoBanner: () => <div data-testid="user-info-banner" />,
-}));
-
 vi.mock('@/hooks/usePrevoyanceSettings', () => ({
   usePrevoyanceSettings: () => ({
     regimes,
@@ -165,14 +161,14 @@ vi.mock('@/hooks/usePrevoyanceSettings', () => ({
   }),
 }));
 
-describe('PrevoyanceRegimes', () => {
+describe('PrevoyanceRegimesSettingsPanel', () => {
   beforeEach(() => {
     isAdmin = false;
     reloadMock.mockReset();
   });
 
   async function renderPage() {
-    render(<PrevoyanceRegimes />);
+    render(<PrevoyanceRegimesSettingsPanel />);
     await screen.findByText('Prévoyance — régimes');
   }
 
@@ -180,7 +176,6 @@ describe('PrevoyanceRegimes', () => {
     const user = userEvent.setup();
     await renderPage();
 
-    expect(screen.getByTestId('user-info-banner')).toBeInTheDocument();
     const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
     expect(cpam).toHaveAttribute('aria-expanded', 'false');
 

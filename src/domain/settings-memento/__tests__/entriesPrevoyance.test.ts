@@ -35,7 +35,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
       expect(entry, `entrée manquante : ${key}`).toBeDefined();
       expect(entry!.chapterId, key).toBe('prevoyance');
       expect(entry!.status, key).toBe(R7_PREVOYANCE_EXPECTED_STATUSES[key]);
-      expect(entry!.ownerPagePath, key).toBe('/settings/prevoyance-regimes');
+      expect(entry!.ownerPagePath, key).toBe('/settings/memento');
       expect(entry!.registryKeys, key).toContain('retraite-prevoyance.prevoyance-garanties');
     }
   });
@@ -90,7 +90,7 @@ describe('settings-memento — prévoyance obligatoire', () => {
       const binding = bindingsByClaimKey.get(claimKey);
 
       expect(binding, `claim inconnu ${claimKey}`).toBeDefined();
-      expect(binding!.pagePath, claimKey).toBe('/settings/prevoyance-regimes');
+      expect(binding!.pagePath, claimKey).toBe('/settings/memento');
       expect(binding!.target.kind, claimKey).toBe('prevoyance-db');
       expect(binding!.refIds, claimKey).toEqual([]);
       expect(binding!.noRefReason, claimKey).toContain(

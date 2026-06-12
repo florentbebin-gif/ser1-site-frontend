@@ -33,7 +33,7 @@ export const SETTINGS_FAMILIES = [
     id: 'retraite-prevoyance',
     label: 'Retraite & prévoyance',
     description: 'PASS, cotisations retraite, validation des droits et paramètres prévoyance.',
-    ownerPages: ['/settings/memento', '/settings/prevoyance-regimes'],
+    ownerPages: ['/settings/memento'],
     status: 'partial',
   },
   {

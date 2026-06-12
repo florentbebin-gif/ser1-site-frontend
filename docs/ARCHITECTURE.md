@@ -143,8 +143,8 @@ par page. Il est branché dans `check:static` et son rapport doit rester en
 `coverage.mode = "exhaustive"` avec `coverage.isExhaustive = true`. `coverage.byPage` expose pour
 chaque surface le nombre de bindings déclarés (`declared`) et le nombre de claims attendus
 (`expected`). Les surfaces cibles déclarées doivent rester complètes sans claim manquant ou
-surnuméraire : `/settings/memento`, `/settings/prevoyance-regimes`. La part Base-Contrat du
-mémento est dynamique : son attendu est recalculé depuis `CATALOG` + `getRules()`.
+surnuméraire : `/settings/memento`. La part Base-Contrat du mémento est dynamique : son attendu est
+recalculé depuis `CATALOG` + `getRules()`.
 
 L'audit `npm run audit:settings-references -- --stale --with-db` ajoute la fraîcheur, la
 liveness URL hors CI et la lecture des sources prévoyance en base. Ajouter `--fetch` force la
@@ -744,14 +744,13 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ### Pages settings existantes
 
-| Route                             | Composant              | Table Supabase                                                                                   | Périmètre                                                                                     |
-| --------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `/settings`                       | `SettingsGeneral`      | —                                                                                                | Généraux (placeholder)                                                                        |
-| `/settings/memento`               | `SettingsMemento`      | `tax_settings`, `ps_settings`, `fiscality_settings`, `pass_history`                              | Mémento utilisateur et éditeurs migrés : fiscalité foyer, société, prélèvements sociaux, DMTG |
-| `/settings/base-contrat-retraite` | `BaseCgRetraite`       | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops) | Base CG retraite canonique Supabase + documents admin                                         |
-| `/settings/prevoyance-regimes`    | `PrevoyanceRegimes`    | `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings`                           | Réglages Prévoyance V1                                                                        |
-| `/settings/design-system`         | `SettingsDesignSystem` | —                                                                                                | Audit visuel interne admin                                                                    |
-| `/settings/comptes`               | `SettingsComptes`      | `profiles`                                                                                       | Comptes utilisateurs par cabinet (admin only)                                                 |
+| Route                             | Composant              | Table Supabase                                                                                                                                                        | Périmètre                                                                                                                 |
+| --------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `/settings`                       | `SettingsGeneral`      | —                                                                                                                                                                     | Généraux (placeholder)                                                                                                    |
+| `/settings/memento`               | `SettingsMemento`      | `tax_settings`, `ps_settings`, `fiscality_settings`, `pass_history`, `base_contrat_overrides`, `prevoyance_regime_settings`, `prevoyance_maintien_employeur_settings` | Mémento utilisateur et éditeurs migrés : fiscalité foyer, société, prélèvements sociaux, DMTG, Base-Contrat et prévoyance |
+| `/settings/base-contrat-retraite` | `BaseCgRetraite`       | `base_cg_retraite_contracts`, `base_cg_retraite_documents` (`base_cg_retraite_catalog_meta` ops)                                                                      | Base CG retraite canonique Supabase + documents admin                                                                     |
+| `/settings/design-system`         | `SettingsDesignSystem` | —                                                                                                                                                                     | Audit visuel interne admin                                                                                                |
+| `/settings/comptes`               | `SettingsComptes`      | `profiles`                                                                                                                                                            | Comptes utilisateurs par cabinet (admin only)                                                                             |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).

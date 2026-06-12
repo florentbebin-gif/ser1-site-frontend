@@ -166,7 +166,7 @@ export const MEMENTO_DIRIGEANT_ENTRIES = [
     statusReason:
       'Le simulateur prévoyance actif couvre la famille ; la variante dirigeant ROADMAP-only attend les sources par régime et l’audit base avec références Supabase.',
     priority: 'structurant',
-    ownerPagePath: '/settings/prevoyance-regimes',
+    ownerPagePath: '/settings/memento',
     registryKeys: ['retraite-prevoyance.prevoyance-garanties'],
     claimKeys: [],
     refIds: ['boss-protection-sociale-complementaire', 'css-l911-1'],
