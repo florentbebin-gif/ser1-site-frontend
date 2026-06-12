@@ -60,6 +60,14 @@ describe('settings-memento — prévoyance obligatoire', () => {
     expect(entry!.status).toBe('partiel');
     expect(entry!.ownerPagePath).toBe('/settings/memento');
     expect(entry!.claimKeys).toEqual(PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS);
+    expect(entry!.refIds).toEqual([
+      'base-source-service-public-assurance-deces',
+      'base-source-service-public-pension-d-invalidite',
+      'base-source-boss-prevoyance-tns',
+      'base-source-art-158-6-cgi-rentes-viageres-a-titre-onereux',
+      'cgi-757-b',
+      'cgi-990-i',
+    ]);
     expect(entry!.relatedSimulatorIds).toEqual(['prevoyance']);
 
     for (const claimKey of PREVOYANCE_CONTRATS_ASSURANTIELS_CLAIMS) {
