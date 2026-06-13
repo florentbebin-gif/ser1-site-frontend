@@ -36,15 +36,6 @@ export default function MementoCalculatorSettingsView(): ReactElement {
 
   return (
     <div className="settings-memento-view settings-memento-calculators">
-      <section className="settings-premium-card settings-memento-calculators__intro">
-        <div className="settings-action-text">
-          <h3 className="settings-premium-title">Paramètres calculateurs</h3>
-          <p className="settings-premium-subtitle">
-            Panneaux d’administration qui alimentent les simulateurs via les sources centralisées.
-          </p>
-        </div>
-      </section>
-
       <div className="settings-memento-calculator-grid">
         {CALCULATOR_SECTION_IDS.map((sectionId) => {
           const section = getMementoSettingsSection(sectionId);

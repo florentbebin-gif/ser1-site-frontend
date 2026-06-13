@@ -215,19 +215,9 @@ export default function MementoAuditView(): ReactElement {
 
   return (
     <div className="settings-memento-view settings-memento-audit">
-      <section className="settings-premium-card settings-memento-audit__summary">
-        <div className="settings-premium-header settings-premium-header--row">
-          <div className="settings-action-text">
-            <h3 className="settings-premium-title">Audit & sources</h3>
-            <p className="settings-premium-subtitle">
-              Statuts, priorités, pages propriétaires, sources settings et couverture simulateurs.
-            </p>
-          </div>
-          <div className="settings-memento-hero__meta" aria-live="polite">
-            {formatHeroCount(visibleEntryCount, visibleCoverageCount)}
-          </div>
-        </div>
-      </section>
+      <p className="settings-memento-audit__count" aria-live="polite">
+        {formatHeroCount(visibleEntryCount, visibleCoverageCount)}
+      </p>
 
       <section
         className="settings-premium-card settings-memento-filters"

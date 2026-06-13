@@ -1,23 +1,16 @@
-import { Suspense, lazy, useEffect, useState, type ReactElement } from 'react';
+import { Suspense, lazy, type ReactElement } from 'react';
 
 import { useUserRole } from '@/auth/useUserRole';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 
+import MementoAdminSection from './memento/MementoAdminSection';
 import MementoReadView from './memento/MementoReadView';
-import MementoViewTabs, { type MementoViewId } from './memento/MementoViewTabs';
 
 const MementoCalculatorSettingsView = lazy(() => import('./memento/MementoCalculatorSettingsView'));
 const MementoAuditView = lazy(() => import('./memento/MementoAuditView'));
 
 export default function SettingsMemento(): ReactElement {
   const { isAdmin } = useUserRole();
-  const [activeView, setActiveView] = useState<MementoViewId>('lire');
-
-  useEffect(() => {
-    if (!isAdmin && activeView === 'audit') {
-      setActiveView('lire');
-    }
-  }, [activeView, isAdmin]);
 
   return (
     <div className="settings-page settings-memento-page" data-testid="settings-memento">
@@ -30,35 +23,38 @@ export default function SettingsMemento(): ReactElement {
               </SettingsTitleWithIcon>
             </h2>
             <p className="settings-premium-subtitle">
-              Lecture patrimoniale, paramètres calculateurs et audit des sources restent séparés
-              pour garder le conseil lisible.
+              Une lecture patrimoniale structurée pour préparer le conseil sans exposer les
+              contrôles techniques.
             </p>
           </div>
         </div>
       </section>
 
-      <MementoViewTabs activeView={activeView} showAudit={isAdmin} onChange={setActiveView} />
+      <MementoReadView showStatus={isAdmin} />
 
-      <section
-        id={`settings-memento-panel-${activeView}`}
-        role="tabpanel"
-        aria-labelledby={`settings-memento-tab-${activeView}`}
-        className="settings-memento-active-view"
-      >
-        {activeView === 'lire' ? <MementoReadView /> : null}
-        {activeView === 'parametres' ? (
-          <Suspense
-            fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}
+      {isAdmin ? (
+        <div className="settings-memento-admin-zone" aria-label="Administration du mémento">
+          <MementoAdminSection
+            title="Paramètres calculateurs"
+            subtitle="Panneaux d’administration qui alimentent les simulateurs."
           >
-            <MementoCalculatorSettingsView />
-          </Suspense>
-        ) : null}
-        {activeView === 'audit' && isAdmin ? (
-          <Suspense fallback={<p className="settings-memento-empty">Chargement de l’audit...</p>}>
-            <MementoAuditView />
-          </Suspense>
-        ) : null}
-      </section>
+            <Suspense
+              fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}
+            >
+              <MementoCalculatorSettingsView />
+            </Suspense>
+          </MementoAdminSection>
+
+          <MementoAdminSection
+            title="Audit & sources"
+            subtitle="Contrôles techniques, registre settings et couverture simulateurs."
+          >
+            <Suspense fallback={<p className="settings-memento-empty">Chargement de l’audit...</p>}>
+              <MementoAuditView />
+            </Suspense>
+          </MementoAdminSection>
+        </div>
+      ) : null}
     </div>
   );
 }
