@@ -88,6 +88,7 @@
 
 .settings-memento-parts,
 .settings-memento-read-chapters,
+.settings-memento-lexicon,
 .settings-memento-readable-list,
 .settings-memento-value-sections,
 .settings-memento-audit-registry {
@@ -229,6 +230,41 @@
 
 .settings-memento-read-chapter:first-child {
   border-top: 0;
+}
+
+.settings-memento-lexicon {
+  gap: 18px;
+}
+
+.settings-memento-lexicon-group {
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-memento-lexicon-group:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.settings-memento-lexicon-group__header {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.settings-memento-lexicon-group__header h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.settings-memento-lexicon-group__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .settings-memento-read-chapter__header {

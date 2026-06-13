@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactElement } from 'react';
 
 import {
   buildMementoDisplayPlan,
+  groupMementoLexiconTerms,
   type MementoDisplayPart,
   type MementoPartId,
 } from './mementoDisplayPlan';
@@ -89,14 +90,24 @@ export default function MementoReadView({ showStatus }: MementoReadViewProps): R
                   ) : null}
 
                   {part.lexiconTerms.length > 0 ? (
-                    <div className="settings-memento-readable-list">
-                      {part.lexiconTerms.map((term) => (
-                        <MementoReadableEntry
-                          key={term.key}
-                          kind="lexicon"
-                          term={term}
-                          showStatus={showStatus}
-                        />
+                    <div className="settings-memento-lexicon" aria-label="Définitions du lexique">
+                      {groupMementoLexiconTerms(part.lexiconTerms).map((group) => (
+                        <section key={group.id} className="settings-memento-lexicon-group">
+                          <div className="settings-memento-lexicon-group__header">
+                            <h4>{group.title}</h4>
+                            <p>{group.description}</p>
+                          </div>
+                          <div className="settings-memento-readable-list">
+                            {group.terms.map((term) => (
+                              <MementoReadableEntry
+                                key={term.key}
+                                kind="lexicon"
+                                term={term}
+                                showStatus={showStatus}
+                              />
+                            ))}
+                          </div>
+                        </section>
                       ))}
                     </div>
                   ) : null}

@@ -324,13 +324,21 @@ describe('SettingsMemento', () => {
   });
 
   it('rend le lexique dans la partie dédiée', async () => {
+    isAdmin = false;
     const user = userEvent.setup();
-    render(<SettingsMemento />);
+    const { container } = render(<SettingsMemento />);
 
     await openReadPart(user, 'Lexique');
 
+    expect(screen.getByText('Civil et transmission')).toBeInTheDocument();
+    expect(screen.getByText('Fiscalité et placements')).toBeInTheDocument();
+    expect(screen.getByText('Social et retraite')).toBeInTheDocument();
+    expect(screen.getByText('Acquêts')).toBeInTheDocument();
+    expect(screen.getByText('Quotité disponible')).toBeInTheDocument();
+    expect(screen.getByText('Plus-value')).toBeInTheDocument();
     expect(screen.getByText('PER')).toBeInTheDocument();
     expect(screen.getByText('PER individuel')).toBeInTheDocument();
+    expect(container).not.toHaveTextContent(/\b(?:SER1|moteur|moteurs|settings|registry)\b/i);
   });
 
   it('rend le barème IR en lecture seule pour un non-admin', async () => {
