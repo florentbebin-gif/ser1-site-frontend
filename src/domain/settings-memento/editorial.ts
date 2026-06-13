@@ -76,6 +76,24 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer donation, succession et clause bénéficiaire.',
       'Repérer la liquidité nécessaire au règlement de la transmission.',
     ],
+    sections: [
+      {
+        title: 'Dévolution et réserve',
+        body: 'La succession commence par l’identification des héritiers, du conjoint survivant et des droits réservataires. Les règles civiles déterminent la masse à partager avant toute lecture fiscale.',
+      },
+      {
+        title: 'Donations et libéralités',
+        body: 'Donation simple, donation-partage, legs et libéralités graduelles organisent une transmission anticipée ou testamentaire. Leur effet dépend de la qualification de l’acte, du rapport et de la réduction.',
+      },
+      {
+        title: 'Assurance-vie au décès',
+        body: 'La clause bénéficiaire organise une transmission hors règlement successoral ordinaire. Elle doit rester cohérente avec le droit civil, les primes versées et le régime fiscal applicable au décès.',
+      },
+      {
+        title: 'Droits de mutation',
+        body: 'Les droits de succession et de donation se lisent après qualification du lien familial, des abattements applicables et de la part taxable. Les tableaux DMTG portent les valeurs à utiliser.',
+      },
+    ],
   },
   {
     chapterId: 'placements',
@@ -215,6 +233,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Qualifier la société avant de parler Dutreil ou donation de titres.',
       'Séparer valeur économique, droits de vote et flux futurs.',
       'Coordonner les effets entreprise avec la transmission privée.',
+    ],
+    sections: [
+      {
+        title: 'Pacte Dutreil',
+        body: 'Le pacte Dutreil repose sur une activité éligible, une conservation des titres et une direction suivie. Sa lecture combine droit des sociétés, fiscalité des transmissions et gouvernance familiale.',
+      },
+      {
+        title: 'Donation de titres',
+        body: 'La donation de titres peut porter sur la pleine propriété, l’usufruit ou la nue-propriété. Elle demande une valorisation cohérente et une lecture des pouvoirs conservés par le donateur.',
+      },
+      {
+        title: 'Paiement des droits',
+        body: 'La transmission d’entreprise peut créer un besoin de trésorerie distinct de la valeur économique reçue. Le paiement des droits se prépare avec les garanties, les flux futurs et la liquidité familiale.',
+      },
     ],
   },
 ] as const;
