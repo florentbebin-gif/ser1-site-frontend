@@ -6,7 +6,7 @@ export const MEMENTO_FOYER_ENTRIES = [
     key: 'foyer.filiation',
     label: 'Filiation et branches familiales',
     description:
-      'Composition familiale, enfants communs ou non et branches utiles à la dévolution et au rattachement du dossier central.',
+      'Composition familiale, enfants communs ou non et branches utiles à la dévolution successorale.',
     status: 'planned',
     statusReason:
       'Simulateur filiation planifié ; le dossier central porte la composition familiale sans moteur dédié.',
@@ -23,7 +23,7 @@ export const MEMENTO_FOYER_ENTRIES = [
     key: 'foyer.budget',
     label: 'Budget et capacité d’épargne',
     description:
-      'Revenus, charges et capacité d’épargne du foyer comme données de dossier, sans règle fiscale propre.',
+      'Revenus, charges et capacité d’épargne du foyer pour apprécier la marge de manœuvre patrimoniale.',
     status: 'planned',
     statusReason:
       'Simulateur budget planifié ; aucune source officielle requise car le thème ne porte pas de règle fiscale.',
@@ -89,7 +89,7 @@ export const MEMENTO_FOYER_ENTRIES = [
     key: 'civil.reserve-quotite',
     label: 'Réserve héréditaire et quotité disponible',
     description:
-      'Parts réservées aux héritiers et quotité disponible selon la composition familiale, affichées dans le mémento et appliquées par le moteur succession.',
+      'Parts protégées par la réserve et fraction librement transmissible selon la composition familiale.',
     status: 'couvert',
     statusReason:
       'Référentiel affiché en lecture seule et appliqué par le simulateur succession actif ; les articles du Code civil fondent la réserve, la quotité et la réduction des libéralités.',

@@ -22,6 +22,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Distinguer composition du foyer, rattachement fiscal et organisation patrimoniale.',
       'Situer les objectifs dans le temps pour lire correctement les autres dispositifs.',
     ],
+    sections: [
+      {
+        title: 'Composition familiale',
+        body: 'La lecture commence par les personnes : couple, enfants, personnes à charge, ascendants et liens de dépendance. Cette qualification prépare la lecture civile, fiscale et successorale.',
+      },
+      {
+        title: 'Capacité patrimoniale',
+        body: 'Revenus, charges, dettes et épargne disponible permettent d’apprécier la marge de manœuvre du foyer. Ils éclairent la capacité à transmettre, protéger ou investir.',
+      },
+      {
+        title: 'Personnes à protéger',
+        body: 'Le foyer met en évidence les personnes dont la protection doit être organisée : conjoint, partenaire, enfants mineurs, personnes vulnérables ou proches dépendants.',
+      },
+    ],
   },
   {
     chapterId: 'civil',
@@ -31,6 +45,24 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Lire le régime matrimonial avant toute analyse successorale.',
       'Distinguer propriété, usufruit, nue-propriété et pouvoirs de gestion.',
       'Repérer les clauses civiles utiles sans les assimiler à un acte notarié.',
+    ],
+    sections: [
+      {
+        title: 'Régimes matrimoniaux',
+        body: 'Le régime matrimonial détermine les masses de biens, les pouvoirs de chaque époux et les effets d’une dissolution. Il doit être lu avant toute projection successorale.',
+      },
+      {
+        title: 'PACS et union libre',
+        body: 'Le PACS organise une vie commune avec un régime patrimonial propre, tandis que l’union libre laisse moins d’effets automatiques. La protection du partenaire doit donc être formalisée.',
+      },
+      {
+        title: 'Dévolution successorale',
+        body: 'La dévolution identifie les héritiers appelés à la succession et l’ordre dans lequel ils interviennent. Le conjoint survivant se lit séparément des autres héritiers.',
+      },
+      {
+        title: 'Réserve et quotité disponible',
+        body: 'La réserve protège certains héritiers contre les libéralités excessives. La quotité disponible correspond à la fraction qui peut être transmise librement.',
+      },
     ],
   },
   {
