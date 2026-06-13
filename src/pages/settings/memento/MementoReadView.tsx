@@ -31,6 +31,11 @@ const VALUE_TABLE_BY_PART: Partial<
     title: 'Valeurs de démembrement',
     description: 'Repères de valorisation fiscale de l’usufruit et de la nue-propriété.',
   },
+  'fiscalite-internationale': {
+    domain: 'fiscalite-internationale',
+    title: 'Valeurs internationales',
+    description: 'Repères non-résidents à relire avec les conventions fiscales applicables.',
+  },
   'social-protection': {
     domain: 'social-protection',
     title: 'Valeurs sociales de référence',

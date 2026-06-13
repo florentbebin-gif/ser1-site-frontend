@@ -193,6 +193,38 @@ describe('SettingsMemento — valeurs de référence', () => {
     });
   });
 
+  it('affiche les valeurs internationales en lecture pour un non-admin', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Fiscalité internationale');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Valeurs internationales' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('IR non-résidents — première fraction')).toBeInTheDocument();
+    expect(await screen.findByText('IFI non-résidents — assiette française')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Assurance-vie décès — bénéficiaire résident fiscal français'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('PVI non-résidents — personne physique')).toBeInTheDocument();
+    expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
+
+    const minimumInput = await screen.findByLabelText(
+      'IR non-résidents — première fraction — valeur',
+    );
+    expect(minimumInput).toBeDisabled();
+    expect(minimumInput).toHaveValue(20);
+
+    const ifiInput = await screen.findByLabelText(
+      'IFI non-résidents — assiette française — valeur',
+    );
+    expect(ifiInput).toBeDisabled();
+    expect(ifiInput).toHaveValue(
+      'Actifs immobiliers français et parts à proportion de l’immobilier français taxable',
+    );
+  });
+
   it('laisse un admin éditer et enregistrer une valeur sociale textuelle', async () => {
     isAdmin = true;
     const user = userEvent.setup();

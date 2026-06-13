@@ -1,6 +1,7 @@
 import type { LegalReferenceId } from '@/domain/legal-references';
 
 import { MEMENTO_DEMEMBREMENT_REFERENCE_VALUES } from './referenceValuesDemembrement';
+import { MEMENTO_INTERNATIONAL_REFERENCE_VALUES } from './referenceValuesInternational';
 
 export type MementoReferenceValueUnit = 'EUR' | '%' | null;
 
@@ -32,6 +33,10 @@ export const MEMENTO_REFERENCE_SUBDOMAIN_LABELS: Record<string, string> = {
   'epargne-logement': 'Épargne logement',
   'epargne-salariale': 'Épargne salariale et forfait social',
   livrets: 'Livrets réglementés',
+  'non-residents-ifi': 'IFI des non-résidents',
+  'non-residents-immobilier': 'Immobilier des non-résidents',
+  'non-residents-ir': 'IR des non-résidents',
+  'non-residents-transmission': 'Transmission et assurance-vie des non-résidents',
   pea: 'PEA et PEA-PME',
   'puma-csm': 'PUMA / CSM',
   'retraite-complementaire': 'Retraite complémentaire AGIRC-ARRCO',
@@ -227,6 +232,7 @@ export const DEFAULT_MEMENTO_REFERENCE_VALUES: readonly MementoReferenceValue[] 
     updated_at: null,
   },
   ...MEMENTO_DEMEMBREMENT_REFERENCE_VALUES,
+  ...MEMENTO_INTERNATIONAL_REFERENCE_VALUES,
   {
     key: 'csm-taux-maximum',
     domain: 'social-protection',
