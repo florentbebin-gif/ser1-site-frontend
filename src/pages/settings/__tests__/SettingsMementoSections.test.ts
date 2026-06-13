@@ -15,6 +15,7 @@ import {
   MEMENTO_SETTINGS_SECTIONS,
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
+import { MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER } from '../memento/mementoValueSections';
 
 describe('route settings mémento', () => {
   it('expose l’onglet mémento à tous les utilisateurs', () => {
@@ -113,5 +114,13 @@ describe('contrat des sections settings du mémento', () => {
       expect(sectionByKey.get(entry.key), entry.key).toHaveLength(1);
     }
     expect(sectionByKey.get('impots.ps-patrimoine')).toEqual(['prelevements']);
+  });
+
+  it('rattache les valeurs de lecture IS et placements aux bons chapitres', () => {
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toEqual(['comptables-societes']);
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual([
+      'prelevements',
+      'base-contrat',
+    ]);
   });
 });

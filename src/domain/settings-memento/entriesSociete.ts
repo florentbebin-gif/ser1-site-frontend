@@ -6,7 +6,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.is',
     label: 'Impôt sur les sociétés',
     description:
-      'Taux, seuil du taux réduit et paramètres de liquidation de l’impôt sur les sociétés administrés dans le mémento.',
+      'Impôt dû par les sociétés sur leur résultat fiscal, avec distinction entre régime normal, taux réduit et règles de liquidation.',
     status: 'couvert',
     statusReason:
       'Paramètres IS administrés et sourcés via le claim settings-references ; consommés par le simulateur trésorerie société actif.',
@@ -23,7 +23,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.groupe-mere-fille-qpfc',
     label: 'Régime mère-fille et quote-part de frais et charges',
     description:
-      'Remontée de dividendes intragroupe : quote-part de frais et charges standard et groupe administrée avec les paramètres IS.',
+      'Remontée de dividendes intragroupe : exonération mère-fille, quote-part de frais et charges et conditions de détention.',
     status: 'partiel',
     statusReason:
       'Quote-part administrée via le claim settings IS ; éligibilité mère-fille et quote-part sont sourcées, le simulateur holding restant planifié.',
@@ -40,7 +40,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.compte-courant-associe',
     label: 'Comptes courants d’associés',
     description:
-      'Avances des associés à la société : déductibilité des intérêts servie par les paramètres IS, remboursements et conventions à qualifier.',
+      'Avances des associés à la société : intérêts, remboursement, convention et déductibilité à apprécier selon les règles fiscales.',
     status: 'partiel',
     statusReason:
       'Taux maximal d’intérêts déductibles administré via le claim settings IS ; la déductibilité des intérêts est sourcée, les conventions et remboursements restant hors moteur.',
@@ -91,7 +91,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.bilans-liasses-source',
     label: 'Bilans et liasses comme sources dossier',
     description:
-      'Bilans, liasses et pièces comptables comme sources du futur dossier société, sans saisie settings exhaustive.',
+      'Bilans, liasses et pièces comptables comme socle de lecture du résultat, des capitaux propres et de la trésorerie.',
     status: 'planned',
     statusReason:
       'Besoin F5 inventorié ; les bilans et liasses doivent alimenter le dossier société futur, sans page de production comptable ni moteur livré.',
@@ -108,7 +108,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.primes',
     label: 'Primes d’émission, fusion ou apport',
     description:
-      'Primes inscrites dans les capitaux propres et mobilisables par les futures projections ou valorisations de titres.',
+      'Primes inscrites dans les capitaux propres, utiles pour lire l’historique du capital et la valeur des titres.',
     status: 'planned',
     statusReason:
       'Sujet comptable F5 inventorié ; aucune source qualifiée, valeur administrée ni consommation moteur dédiée n’est livrée.',
@@ -125,7 +125,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.emprunts',
     label: 'Emprunts société',
     description:
-      'Encours, intérêts, échéancier et actif financé à rattacher au futur modèle société et aux projections.',
+      'Encours, intérêts, échéancier et actif financé à rapprocher du résultat et de la trésorerie de la société.',
     status: 'planned',
     statusReason:
       'Trésorerie société consomme déjà des emprunts dans son périmètre actuel, mais le modèle bilan F5 et les sources comptables restent à qualifier.',
@@ -142,7 +142,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.immobilisations',
     label: 'Immobilisations',
     description:
-      'Immobilisations et amortissements éventuels comme données de bilan pour projection et valorisation.',
+      'Immobilisations et amortissements éventuels comme composantes du bilan, du résultat et de la valeur économique.',
     status: 'planned',
     statusReason:
       'Besoin F5 inventorié ; aucun moteur de projection comptable ni source ANC qualifiée n’est livré dans ce lot.',
@@ -159,7 +159,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.immobilier-detenu',
     label: 'Immobilier détenu par la société',
     description:
-      'Détention d’immobilier par une société, à relier aux futures valorisations, analyses IFI/SCI et projections de trésorerie.',
+      'Détention d’immobilier par une société : traitement patrimonial, fiscalité applicable et effets sur la valeur des titres.',
     status: 'planned',
     statusReason:
       'Sujet transversal F5/F3 inventorié ; le modèle actif/passif et le traitement fiscal restent à qualifier avant tout calcul.',
@@ -304,7 +304,7 @@ export const MEMENTO_SOCIETE_ENTRIES = [
     key: 'societe.epargne-salariale',
     label: 'Épargne salariale',
     description:
-      'Intéressement, participation, plans d’épargne d’entreprise et avantages employeur associés, documentés par le catalogue Base-Contrat et le Code du travail.',
+      'Intéressement, participation, plans d’épargne d’entreprise et avantages employeur associés au droit du travail.',
     status: 'partiel',
     statusReason:
       'Dispositifs collectifs documentés par les claims du catalogue Base-Contrat, le Code du travail, l’URSSAF et le BOSS ; la route reste placeholder et les plafonds ne sont pas administrés.',

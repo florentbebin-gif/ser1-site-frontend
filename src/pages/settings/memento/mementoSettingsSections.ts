@@ -55,8 +55,7 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['tax_settings', 'ps_settings'],
     writeSources: ['tax_settings'],
     expectedSettingsReferenceClaims: 10,
-    shortDescription:
-      'Barème IR, PFU, contributions haut revenu, IFI et repères immobiliers centralisés.',
+    shortDescription: 'Barème IR, PFU, contributions haut revenu, IFI et repères immobiliers.',
     registrySettingKeys: [
       'impots.ir.bareme',
       'impots.ir.abattements-et-decote',
@@ -80,8 +79,7 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['tax_settings'],
     writeSources: ['tax_settings'],
     expectedSettingsReferenceClaims: 1,
-    shortDescription:
-      'Impôt sur les sociétés et repères société qui alimentent les scénarios dirigeants.',
+    shortDescription: 'Impôt sur les sociétés, quote-part mère-fille et repères de cession.',
     registrySettingKeys: [
       'comptables-societes.is',
       'comptables-societes.mere-fille-qpfc',
@@ -158,7 +156,7 @@ export const MEMENTO_SETTINGS_SECTIONS = [
     readSources: ['base_contrat_catalog', 'base_contrat_overrides'],
     writeSources: ['base_contrat_overrides'],
     expectedSettingsReferenceClaims: 352,
-    shortDescription: 'Catalogue patrimonial et overrides administrés à la demande.',
+    shortDescription: 'Catalogue patrimonial des enveloppes, contrats et dispositifs par phase.',
     registrySettingKeys: [],
   },
   {
