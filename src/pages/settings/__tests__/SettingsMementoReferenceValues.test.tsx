@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -85,6 +85,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     ).toBeInTheDocument();
     expect(await screen.findByText('Livret A — plafond')).toBeInTheDocument();
     expect(await screen.findByText('PEA-PME — plafond de versement')).toBeInTheDocument();
+    expect(screen.queryByText('AGIRC-ARRCO — tranche T1')).not.toBeInTheDocument();
 
     const livretAInput = await screen.findByLabelText('Livret A — plafond — valeur');
     expect(livretAInput).toBeDisabled();
@@ -114,6 +115,53 @@ describe('SettingsMemento — valeurs de référence', () => {
           expect.objectContaining({
             key: 'livret-a-plafond',
             value_numeric: 23000,
+          }),
+        ]),
+        { onConflict: 'key' },
+      );
+    });
+  });
+
+  it('affiche les repères sociaux en lecture pour un non-admin', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Social et protection sociale');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Valeurs sociales de référence' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('CSM — taux maximal')).toBeInTheDocument();
+    expect(await screen.findByText('AGIRC-ARRCO — tranche T1')).toBeInTheDocument();
+    expect(await screen.findByText('PEE — plafond d’abondement')).toBeInTheDocument();
+    expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
+
+    const agircInput = await screen.findByLabelText('AGIRC-ARRCO — tranche T1 — valeur');
+    expect(agircInput).toBeDisabled();
+    expect(agircInput).toHaveValue('Employeur 4,72 % · salarié 3,15 % · total 7,87 %');
+  });
+
+  it('laisse un admin éditer et enregistrer une valeur sociale textuelle', async () => {
+    isAdmin = true;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Social et protection sociale');
+
+    const agircInput = await screen.findByLabelText('AGIRC-ARRCO — tranche T1 — valeur');
+    expect(agircInput).toBeEnabled();
+
+    fireEvent.change(agircInput, {
+      target: { value: 'Employeur 4,72 % / salarié 3,15 % / total 7,87 %' },
+    });
+    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs mémento' }));
+
+    await waitFor(() => {
+      expect(upsertMock).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: 'agirc-arrco-t1',
+            value_text: 'Employeur 4,72 % / salarié 3,15 % / total 7,87 %',
           }),
         ]),
         { onConflict: 'key' },

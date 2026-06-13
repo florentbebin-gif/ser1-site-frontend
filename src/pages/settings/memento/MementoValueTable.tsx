@@ -1,11 +1,17 @@
-import { useState, type ReactElement } from 'react';
+import { useId, useState, type ReactElement } from 'react';
 
 import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
-import { groupMementoReferenceValuesBySubdomain } from '@/domain/settings-memento/referenceValues';
+import {
+  groupMementoReferenceValuesBySubdomain,
+  type MementoReferenceValue,
+} from '@/domain/settings-memento/referenceValues';
 import { useMementoReferenceValues } from '@/hooks/settings/useMementoReferenceValues';
 
 interface MementoValueTableProps {
   isAdmin: boolean;
+  domain: string;
+  title: string;
+  description: string;
 }
 
 function valueToInput(value: number | null): string {
@@ -17,11 +23,54 @@ function unitLabel(unit: string | null): string {
   return unit ?? '';
 }
 
-export default function MementoValueTable({ isAdmin }: MementoValueTableProps): ReactElement {
+function valueCell(
+  row: MementoReferenceValue,
+  isAdmin: boolean,
+  handleNumericChange: (key: string, field: 'value_numeric' | 'year', value: string) => void,
+  handleTextChange: (key: string, field: 'value_text' | 'note', value: string) => void,
+): ReactElement {
+  if (row.value_text !== null && row.value_numeric === null) {
+    return (
+      <label className="settings-memento-reference-values__input">
+        <input
+          aria-label={`${row.label} — valeur`}
+          type="text"
+          value={row.value_text}
+          disabled={!isAdmin}
+          onChange={(event) => handleTextChange(row.key, 'value_text', event.target.value)}
+        />
+      </label>
+    );
+  }
+
+  return (
+    <label className="settings-memento-reference-values__input">
+      <input
+        aria-label={`${row.label} — valeur`}
+        type="number"
+        step="any"
+        value={valueToInput(row.value_numeric)}
+        disabled={!isAdmin}
+        onChange={(event) => handleNumericChange(row.key, 'value_numeric', event.target.value)}
+      />
+      {row.unit ? <span>{unitLabel(row.unit)}</span> : null}
+    </label>
+  );
+}
+
+export default function MementoValueTable({
+  isAdmin,
+  domain,
+  title,
+  description,
+}: MementoValueTableProps): ReactElement {
+  const titleId = useId();
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const { rows, loading, saving, error, handleNumericChange, save } =
+  const { rows, loading, saving, error, handleNumericChange, handleTextChange, save } =
     useMementoReferenceValues(isAdmin);
-  const groups = groupMementoReferenceValuesBySubdomain(rows);
+  const groups = groupMementoReferenceValuesBySubdomain(
+    rows.filter((row) => row.domain === domain),
+  );
 
   async function handleSave(): Promise<void> {
     const result = await save();
@@ -29,10 +78,10 @@ export default function MementoValueTable({ isAdmin }: MementoValueTableProps): 
   }
 
   return (
-    <section className="settings-memento-reference-values" aria-labelledby="memento-values-title">
+    <section className="settings-memento-reference-values" aria-labelledby={titleId}>
       <div className="settings-memento-reference-values__header">
-        <h4 id="memento-values-title">Valeurs de référence</h4>
-        <p>Plafonds et taux utiles à la lecture des produits réglementés.</p>
+        <h4 id={titleId}>{title}</h4>
+        <p>{description}</p>
       </div>
 
       {loading ? <p className="settings-memento-empty">Chargement des valeurs...</p> : null}
@@ -62,21 +111,7 @@ export default function MementoValueTable({ isAdmin }: MementoValueTableProps): 
                       <span>{row.label}</span>
                       {row.note ? <small>{row.note}</small> : null}
                     </th>
-                    <td>
-                      <label className="settings-memento-reference-values__input">
-                        <input
-                          aria-label={`${row.label} — valeur`}
-                          type="number"
-                          step="any"
-                          value={valueToInput(row.value_numeric)}
-                          disabled={!isAdmin}
-                          onChange={(event) =>
-                            handleNumericChange(row.key, 'value_numeric', event.target.value)
-                          }
-                        />
-                        {row.unit ? <span>{unitLabel(row.unit)}</span> : null}
-                      </label>
-                    </td>
+                    <td>{valueCell(row, isAdmin, handleNumericChange, handleTextChange)}</td>
                     <td>
                       <label className="settings-memento-reference-values__year">
                         <input

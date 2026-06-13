@@ -1073,6 +1073,28 @@
     "lastCheckedAt": "2026-06-12"
   },
   {
+    "id": "urssaf-puma-csm",
+    "label": "URSSAF — bénéficiaire de la PUMa et cotisation subsidiaire maladie",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/particulier/beneficiaire-puma.html",
+    "articleOrSection": "Bénéficiaire de la protection universelle maladie",
+    "scope": "Conditions, assiette et taux de la cotisation subsidiaire maladie due par certains bénéficiaires de la PUMa.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-13"
+  },
+  {
+    "id": "urssaf-plans-epargne-salariale-2026",
+    "label": "URSSAF — plans d’épargne salariale",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.urssaf.fr/accueil/employeur/beneficier-exonerations/epargne-salariale/plans-epargne.html",
+    "articleOrSection": "Les plans d’épargne",
+    "scope": "Plafonds d’abondement et régime social des plans d’épargne salariale applicables aux employeurs.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements", "base-contrat"],
+    "lastCheckedAt": "2026-06-13"
+  },
+  {
     "id": "urssaf-cotisations-independants",
     "label": "URSSAF — cotisations des indépendants",
     "sourceType": "Autre source officielle",
@@ -2737,6 +2759,17 @@
     "relatedSettings": ["prelevements"],
     "lastCheckedAt": "2026-06-12",
     "notes": "Page officielle vivante mais protégée par filtrage automatisé ; vérification navigateur requise lors des audits de fraîcheur."
+  },
+  {
+    "id": "agirc-arrco-parametres-2026",
+    "label": "AGIRC-ARRCO — paramètres et taux de cotisation 2026",
+    "sourceType": "Autre source officielle",
+    "officialUrl": "https://www.agirc-arrco.fr/nous-connaitre/nos-etudes-et-publications/documentation-institutionnelle/parametres-et-donnees-statistiques/",
+    "articleOrSection": "Taux de cotisation 2026",
+    "scope": "Tranches de salaire, plafond de sécurité sociale et taux de cotisation AGIRC-ARRCO 2026.",
+    "volatility": "annual",
+    "relatedSettings": ["prelevements"],
+    "lastCheckedAt": "2026-06-13"
   },
   {
     "id": "entreprendre-service-public-retraite-ei",

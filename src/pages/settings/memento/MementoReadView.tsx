@@ -11,6 +11,28 @@ import MementoReadChapter from './MementoReadChapter';
 
 const MementoValueTable = lazy(() => import('./MementoValueTable'));
 
+const VALUE_TABLE_BY_PART: Partial<
+  Record<
+    MementoPartId,
+    {
+      domain: string;
+      title: string;
+      description: string;
+    }
+  >
+> = {
+  'chiffres-cles': {
+    domain: 'chiffres-cles',
+    title: 'Valeurs de référence',
+    description: 'Plafonds et taux utiles à la lecture des produits réglementés.',
+  },
+  'social-protection': {
+    domain: 'social-protection',
+    title: 'Valeurs sociales de référence',
+    description: 'Repères sociaux annuels utiles à la lecture retraite, prévoyance et dirigeant.',
+  },
+};
+
 function hasReadableContent(part: MementoDisplayPart): boolean {
   return part.chapters.length + part.entries.length + part.lexiconTerms.length > 0;
 }
@@ -36,6 +58,7 @@ export default function MementoReadView({
           const hasContent = hasReadableContent(part);
           const buttonId = `settings-memento-part-${part.definition.id}-button`;
           const panelId = `settings-memento-part-${part.definition.id}-panel`;
+          const valueTable = VALUE_TABLE_BY_PART[part.definition.id];
 
           return (
             <section
@@ -82,11 +105,11 @@ export default function MementoReadView({
                   role="region"
                   aria-labelledby={buttonId}
                 >
-                  {part.definition.id === 'chiffres-cles' ? (
+                  {valueTable ? (
                     <Suspense
                       fallback={<p className="settings-memento-empty">Chargement des valeurs...</p>}
                     >
-                      <MementoValueTable isAdmin={isAdmin} />
+                      <MementoValueTable isAdmin={isAdmin} {...valueTable} />
                     </Suspense>
                   ) : null}
 
