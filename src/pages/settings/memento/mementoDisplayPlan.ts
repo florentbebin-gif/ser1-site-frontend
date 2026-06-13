@@ -47,6 +47,79 @@ export interface MementoDisplayPart {
   lexiconTerms: readonly MementoLexiconTerm[];
 }
 
+export type MementoLexiconDisplayGroupId = 'civil' | 'fiscal' | 'social' | 'autres';
+
+export interface MementoLexiconDisplayGroup {
+  id: MementoLexiconDisplayGroupId;
+  title: string;
+  description: string;
+  terms: readonly MementoLexiconTerm[];
+}
+
+const MEMENTO_LEXICON_GROUPS = [
+  {
+    id: 'civil',
+    title: 'Civil et transmission',
+    description: 'Vocabulaire utile pour lire les régimes matrimoniaux, donations et successions.',
+    chapterIds: ['foyer', 'civil', 'patrimoine', 'transmission', 'transmission-entreprise'],
+  },
+  {
+    id: 'fiscal',
+    title: 'Fiscalité et placements',
+    description: 'Notions fiscales transverses aux revenus, plus-values, sociétés et enveloppes.',
+    chapterIds: ['fiscalite-foyer', 'immobilier', 'placements', 'societe'],
+  },
+  {
+    id: 'social',
+    title: 'Social et retraite',
+    description: 'Repères sociaux et retraite à relier au statut professionnel et aux contrats.',
+    chapterIds: ['retraite', 'epargne-retraite', 'prevoyance', 'dirigeant'],
+  },
+  {
+    id: 'autres',
+    title: 'Autres repères',
+    description: 'Définitions complémentaires utiles à la lecture du mémento.',
+    chapterIds: [],
+  },
+] as const satisfies readonly {
+  id: MementoLexiconDisplayGroupId;
+  title: string;
+  description: string;
+  chapterIds: readonly MementoChapterId[];
+}[];
+
+function lexiconTermBelongsToGroup(
+  term: MementoLexiconTerm,
+  chapterIds: readonly MementoChapterId[],
+): boolean {
+  return term.chapterIds.some((chapterId) => chapterIds.includes(chapterId));
+}
+
+export function groupMementoLexiconTerms(
+  terms: readonly MementoLexiconTerm[],
+): readonly MementoLexiconDisplayGroup[] {
+  const assigned = new Set<string>();
+
+  return MEMENTO_LEXICON_GROUPS.map((group) => {
+    const groupTerms =
+      group.id === 'autres'
+        ? terms.filter((term) => !assigned.has(term.key))
+        : terms.filter((term) => {
+            if (assigned.has(term.key)) return false;
+            const matches = lexiconTermBelongsToGroup(term, group.chapterIds);
+            if (matches) assigned.add(term.key);
+            return matches;
+          });
+
+    return {
+      id: group.id,
+      title: group.title,
+      description: group.description,
+      terms: groupTerms,
+    };
+  }).filter((group) => group.terms.length > 0);
+}
+
 export const MEMENTO_DISPLAY_PARTS = [
   {
     id: 'chiffres-cles',

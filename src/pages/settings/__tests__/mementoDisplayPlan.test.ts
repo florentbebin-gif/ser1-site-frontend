@@ -5,6 +5,7 @@ import { MEMENTO_LEXICON_TERMS } from '@/domain/settings-memento/lexicon';
 
 import {
   buildMementoDisplayPlan,
+  groupMementoLexiconTerms,
   MEMENTO_DISPLAY_PARTS,
   MEMENTO_LEXICON_PRUDENCE_LABELS,
   MEMENTO_PRUDENCE_LABELS,
@@ -193,5 +194,27 @@ describe('mementoDisplayPlan', () => {
     expect(lexique?.entries).toHaveLength(0);
     expect(lexique?.chapters).toHaveLength(0);
     expect(lexique?.lexiconTerms).toHaveLength(MEMENTO_LEXICON_TERMS.length);
+  });
+
+  it('regroupe le lexique par familles de lecture', () => {
+    const groups = groupMementoLexiconTerms(MEMENTO_LEXICON_TERMS);
+    const termsByGroup = new Map(
+      groups.map((group) => [group.title, group.terms.map((term) => term.term)]),
+    );
+
+    expect(groups.map((group) => group.title)).toEqual([
+      'Civil et transmission',
+      'Fiscalité et placements',
+      'Social et retraite',
+    ]);
+    expect(termsByGroup.get('Civil et transmission')).toEqual(
+      expect.arrayContaining(['Acquêts', 'Quotité disponible', 'Soulte']),
+    );
+    expect(termsByGroup.get('Fiscalité et placements')).toEqual(
+      expect.arrayContaining(['Plus-value', 'Retenue à la source']),
+    );
+    expect(termsByGroup.get('Social et retraite')).toEqual(
+      expect.arrayContaining(['PER', 'PER individuel']),
+    );
   });
 });
