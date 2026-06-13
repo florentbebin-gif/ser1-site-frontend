@@ -19,12 +19,8 @@ import {
 
 import MementoAuditChapter from './MementoAuditChapter';
 import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './MementoEntryRow';
-import {
-  getMementoSettingsSection,
-  MEMENTO_SETTINGS_SECTIONS,
-  type MementoSettingsSection,
-  type MementoSettingsSectionId,
-} from './mementoSettingsSections';
+import { MEMENTO_SETTINGS_SECTIONS, type MementoSettingsSection } from './mementoSettingsSections';
+import { auditSettingsSectionsForChapter } from './mementoValueSections';
 
 type StatusFilter = 'all' | MementoStatus;
 type ChapterFilter = 'all' | MementoChapterId;
@@ -40,21 +36,6 @@ interface FilteredChapter {
 
 const MEMENTO_ENTRY_LIST: readonly MementoEntry[] = MEMENTO_ENTRIES;
 const SIMULATOR_COVERAGE_LIST: readonly SimulatorCoverageEntry[] = SIMULATOR_MEMENTO_COVERAGE;
-
-const MEMENTO_CHAPTER_SETTINGS_SECTION_IDS: Partial<
-  Record<MementoChapterId, readonly MementoSettingsSectionId[]>
-> = {
-  'fiscalite-foyer': ['impots'],
-  transmission: ['dmtg-succession'],
-  placements: ['base-contrat'],
-  immobilier: ['base-contrat'],
-  retraite: ['prelevements'],
-  'epargne-retraite': ['base-contrat'],
-  prevoyance: ['prevoyance-regimes', 'base-contrat'],
-  societe: ['comptables-societes'],
-  dirigeant: ['prelevements', 'comptables-societes'],
-  'transmission-entreprise': ['comptables-societes', 'base-contrat'],
-};
 
 function normalizeSearchText(value: string): string {
   return value
@@ -136,14 +117,6 @@ function chapterMatchesFilters(
   return intentChapterIds === null || intentChapterIds.has(chapter.id);
 }
 
-function settingsSectionsForChapter(
-  chapterId: MementoChapterId,
-): readonly MementoSettingsSection[] {
-  return (MEMENTO_CHAPTER_SETTINGS_SECTION_IDS[chapterId] ?? []).map((sectionId) =>
-    getMementoSettingsSection(sectionId),
-  );
-}
-
 export function buildFilteredChapters(
   searchValue: string,
   statusFilter: StatusFilter,
@@ -171,7 +144,7 @@ export function buildFilteredChapters(
         entry.chapterId === chapter.id &&
         coverageMatchesFilters(entry, chapter, search, statusFilter),
     );
-    const settingsSections = settingsSectionsForChapter(chapter.id);
+    const settingsSections = auditSettingsSectionsForChapter(chapter.id);
 
     return {
       chapter,

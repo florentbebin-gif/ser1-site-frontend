@@ -51,22 +51,19 @@ export const MEMENTO_DISPLAY_PARTS = [
   {
     id: 'chiffres-cles',
     title: 'Chiffres clés et produits réglementés',
-    description:
-      'Les repères patrimoniaux qui cadrent le dossier sans exposer de valeur révisable en dur.',
+    description: 'Repères annuels, enveloppes réglementées et plafonds utiles à la lecture.',
     chapterIds: ['patrimoine'],
   },
   {
     id: 'droit-civil',
     title: 'Droit civil',
-    description:
-      'Foyer, filiation, régime matrimonial et protection du conjoint avant toute simulation.',
+    description: 'Foyer, filiation, régime matrimonial et protection du conjoint survivant.',
     chapterIds: ['foyer', 'civil'],
   },
   {
     id: 'fiscalite',
     title: 'Fiscalité',
-    description:
-      'Impôt du foyer, immobilier et arbitrages fiscaux rattachés aux paramètres centralisés.',
+    description: 'Impôt du foyer, immobilier et arbitrages fiscaux du patrimoine privé.',
     chapterIds: ['fiscalite-foyer', 'immobilier', 'arbitrage'],
   },
   {

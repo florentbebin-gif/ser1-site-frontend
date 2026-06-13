@@ -1,7 +1,9 @@
-import { useId, type ReactElement } from 'react';
+import { useId, useState, type ReactElement } from 'react';
 
 import type { MementoDisplayChapter } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
+import CalculatorSettingsCard from './CalculatorSettingsCard';
+import { readValueSectionsForChapter } from './mementoValueSections';
 
 interface MementoReadChapterProps {
   chapter: MementoDisplayChapter;
@@ -17,8 +19,10 @@ export default function MementoReadChapter({
   onToggle,
 }: MementoReadChapterProps): ReactElement {
   const generatedId = useId();
+  const [openValueSectionId, setOpenValueSectionId] = useState<string | null>(null);
   const buttonId = `${generatedId}-read-chapter-button`;
   const panelId = `${generatedId}-read-chapter-panel`;
+  const valueSections = readValueSectionsForChapter(chapter.chapter.id);
 
   return (
     <section className="settings-memento-read-chapter">
@@ -68,6 +72,25 @@ export default function MementoReadChapter({
               />
             ))}
           </div>
+
+          {valueSections.length > 0 ? (
+            <div
+              className="settings-memento-value-sections"
+              aria-label={`Valeurs de référence — ${chapter.chapter.label}`}
+            >
+              {valueSections.map(({ section, Panel }) => (
+                <CalculatorSettingsCard
+                  key={section.id}
+                  section={section}
+                  Panel={Panel}
+                  isOpen={openValueSectionId === section.id}
+                  onToggle={() =>
+                    setOpenValueSectionId((current) => (current === section.id ? null : section.id))
+                  }
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
     </section>

@@ -9,6 +9,7 @@ interface CalculatorSettingsCardProps {
   section: MementoSettingsSection;
   Panel: LazyExoticComponent<ComponentType>;
   isOpen: boolean;
+  showTechnicalSources?: boolean;
   onToggle: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function CalculatorSettingsCard({
   section,
   Panel,
   isOpen,
+  showTechnicalSources = false,
   onToggle,
 }: CalculatorSettingsCardProps): ReactElement {
   const buttonId = `settings-memento-calculator-${section.id}-button`;
@@ -40,14 +42,16 @@ export default function CalculatorSettingsCard({
         </span>
       </button>
 
-      <div className="settings-memento-calculator-card__sources" aria-label="Sources settings">
-        {section.readSources.map((source) => (
-          <span key={`read-${source}`}>Lecture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
-        ))}
-        {section.writeSources.map((source) => (
-          <span key={`write-${source}`}>Écriture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
-        ))}
-      </div>
+      {showTechnicalSources ? (
+        <div className="settings-memento-calculator-card__sources" aria-label="Sources settings">
+          {section.readSources.map((source) => (
+            <span key={`read-${source}`}>Lecture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
+          ))}
+          {section.writeSources.map((source) => (
+            <span key={`write-${source}`}>Écriture : {MEMENTO_SETTINGS_SOURCE_LABELS[source]}</span>
+          ))}
+        </div>
+      ) : null}
 
       {isOpen ? (
         <div

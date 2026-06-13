@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { MEMENTO_CHAPTERS, MEMENTO_EDITORIAL } from '../index';
 
 const FORBIDDEN_VALUE_FRAGMENTS = ['17.2', '12.8', '30', '100000', '15932'] as const;
+const FORBIDDEN_META_WORDS =
+  /\b(?:simulateurs?|settings|couverture|param[eè]tres?|révisable|calculateurs?)\b/i;
 
 function editorialTexts(): string[] {
   return MEMENTO_EDITORIAL.flatMap((entry) => [entry.summary, ...entry.keyPoints]);
@@ -33,6 +35,12 @@ describe('settings-memento — éditorial utilisateur', () => {
       for (const forbidden of FORBIDDEN_VALUE_FRAGMENTS) {
         expect(text, `Fragment interdit ${forbidden}`).not.toContain(forbidden);
       }
+    }
+  });
+
+  it('ne parle pas de mécanique interne dans la lecture utilisateur', () => {
+    for (const text of editorialTexts()) {
+      expect(text, `Vocabulaire méta interdit dans "${text}"`).not.toMatch(FORBIDDEN_META_WORDS);
     }
   });
 });
