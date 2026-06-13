@@ -62,6 +62,17 @@ export default function MementoReadChapter({
             </blockquote>
           ) : null}
 
+          {chapter.editorial?.sections && chapter.editorial.sections.length > 0 ? (
+            <div className="settings-memento-editorial-sections">
+              {chapter.editorial.sections.map((section) => (
+                <section key={section.title} className="settings-memento-editorial-section">
+                  <h5>{section.title}</h5>
+                  <p>{section.body}</p>
+                </section>
+              ))}
+            </div>
+          ) : null}
+
           <div className="settings-memento-readable-list">
             {chapter.entries.map((entry) => (
               <MementoReadableEntry

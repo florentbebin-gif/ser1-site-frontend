@@ -6,7 +6,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.credit',
     label: 'Crédit et garanties',
     description:
-      'Financement à crédit du patrimoine : échéancier, assurance emprunteur et garanties portés par le simulateur crédit.',
+      'Financement à crédit du patrimoine : échéancier, assurance emprunteur, sûretés et obligations déclaratives.',
     status: 'couvert',
     statusReason:
       'Simulateur crédit actif ; le champ du crédit immobilier et les obligations de l’assuré sont fondés par les références Code de la consommation et Code des assurances.',
@@ -23,7 +23,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.revenus-fonciers',
     label: 'Revenus fonciers',
     description:
-      'Location nue du foyer : micro-foncier, régime réel, intérêts d’emprunt et déficit foncier rattachés au mémento.',
+      'Location nue du foyer : régime micro-foncier, régime réel, charges déductibles, intérêts d’emprunt et déficit foncier.',
     status: 'planned',
     statusReason:
       'Moteur revenus fonciers planifié ; le paramètre micro-foncier reste planned dans le registry settings.',
@@ -84,7 +84,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.scpi',
     label: 'SCPI',
     description:
-      'Parts de SCPI comme sous-parcours du placement, détenues par une personne physique ou morale : souscription, revenus, cession et transmission documentés par le catalogue Base-Contrat.',
+      'Parts de SCPI détenues en direct ou par une personne morale : souscription, revenus, cession et transmission.',
     status: 'partiel',
     statusReason:
       'Enveloppe documentée en lecture par les claims Base-Contrat pour les détentions physique et morale ; le simulateur SCPI et son pack fiscal dédié restent planifiés dans le registry settings.',
@@ -113,7 +113,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.investissement-locatif',
     label: 'Investissement locatif',
     description:
-      'Projet locatif du foyer : croisement du financement, des régimes fonciers ou meublés et de la fiscalité du bien mis en location.',
+      'Projet locatif du foyer : financement, choix entre location nue ou meublée et fiscalité du bien mis en location.',
     status: 'planned',
     statusReason:
       'Simulateur investissement locatif planifié ; les régimes fonciers et meublés consommés restent planned dans le registry settings.',
@@ -130,7 +130,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'immobilier.dispositifs-fiscaux',
     label: 'Dispositifs fiscaux immobiliers',
     description:
-      'Dispositifs de défiscalisation immobilière du catalogue Base-Contrat : Censi-Bouvard, Denormandie, Duflot, Loc’Avantages, Cosse, Malraux, Monuments historiques, Pinel, Relance logement Jeanbrun et Scellier, sur les phases de constitution, de cession et de transmission.',
+      'Dispositifs de défiscalisation immobilière : Censi-Bouvard, Denormandie, Duflot, Loc’Avantages, Cosse, Malraux, Monuments historiques, Pinel, Relance logement Jeanbrun et Scellier.',
     status: 'partiel',
     statusReason:
       'Dispositifs sourcés un par un via les claims du catalogue Base-Contrat ; aucun moteur ni paramètre administré, les conditions fines restent à qualifier avant tout calcul.',
@@ -217,7 +217,7 @@ export const MEMENTO_IMMOBILIER_ENTRIES = [
     key: 'arbitrage.vendre-conserver-reemployer',
     label: 'Vendre, conserver ou réemployer',
     description:
-      'Choix entre conserver, céder ou réemployer un actif : croisement de la fiscalité de cession immobilière et mobilière avec les enveloppes de réemploi.',
+      'Choix entre conserver, céder ou réemployer un actif : fiscalité de cession, liquidité disponible et enveloppes de réinvestissement.',
     status: 'planned',
     statusReason:
       'Simulateur arbitrage et réemploi planifié ; les régimes de cession sont référencés mais le moteur de comparaison reste à construire.',
