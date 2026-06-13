@@ -203,6 +203,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer âge, durée, points, réversion et départ anticipé.',
       'Distinguer régimes salariés, indépendants, libéraux et fonction publique.',
     ],
+    sections: [
+      {
+        title: 'Régime de base',
+        body: 'La pension de base dépend du régime d’affiliation, de la durée validée, de l’assiette de revenus et de la date de liquidation. La lecture distingue les périodes cotisées, les périodes assimilées et les effets d’une carrière incomplète.',
+      },
+      {
+        title: 'Complémentaires',
+        body: 'Les régimes complémentaires fonctionnent souvent par points ou par classes de cotisation. Le repère utile consiste à identifier la caisse, l’assiette de cotisation, la valeur des droits et les conditions de service.',
+      },
+      {
+        title: 'Départ et réversion',
+        body: 'Le départ peut relever d’un âge légal, d’un taux plein, d’une carrière longue, d’une retraite progressive ou d’un cumul emploi-retraite. La réversion se lit séparément, avec ses propres conditions de bénéficiaire et de ressources.',
+      },
+    ],
   },
   {
     chapterId: 'epargne-retraite',
@@ -213,6 +227,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Lire les plafonds dans les tableaux de valeurs dédiés.',
       'Séparer transfert de contrat, potentiel de versement et liquidation.',
     ],
+    sections: [
+      {
+        title: 'Familles de contrats',
+        body: 'Le PER individuel, les anciens contrats retraite, les contrats collectifs et l’épargne salariale ne répondent pas au même usage. Il faut distinguer l’origine des versements, le titulaire, le cadre collectif et les droits de sortie.',
+      },
+      {
+        title: 'Déductibilité et compartiments',
+        body: 'L’avantage fiscal d’entrée dépend de la nature du versement et du plafond disponible. La sortie dépend ensuite du compartiment, du choix rente ou capital et du régime social applicable aux revenus de remplacement.',
+      },
+      {
+        title: 'Transfert et disponibilité',
+        body: 'Le transfert compare les frais, garanties, options de rente, contraintes contractuelles et modalités de sortie. Les cas de disponibilité anticipée restent attachés au cadre légal du produit et à la situation du titulaire.',
+      },
+    ],
   },
   {
     chapterId: 'prevoyance',
@@ -222,6 +250,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Comparer régime obligatoire, maintien employeur et contrat privé.',
       'Relier les garanties au besoin familial avant de parler cotisation.',
       'Distinguer arrêt de travail, invalidité, décès et maintien de revenu.',
+    ],
+    sections: [
+      {
+        title: 'Régimes obligatoires',
+        body: 'La protection obligatoire varie selon le statut : salarié, agricole, indépendant, profession libérale ou dirigeant. Chaque régime doit être lu par risque, avec ses franchises, assiettes, prestations et conditions de versement.',
+      },
+      {
+        title: 'Maintien employeur',
+        body: 'Le maintien de salaire relève d’abord de la relation de travail, puis des conventions collectives et contrats complémentaires. Il ne se confond pas avec les prestations de sécurité sociale ni avec une garantie individuelle.',
+      },
+      {
+        title: 'Contrats privés',
+        body: 'Les contrats de prévoyance assurantiels complètent le régime obligatoire. La lecture porte sur le risque garanti, le bénéficiaire, la durée d’indemnisation, les exclusions et le traitement fiscal ou social des prestations.',
+      },
     ],
   },
   {
@@ -255,6 +297,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Identifier le statut social avant toute comparaison de rémunération.',
       'Distinguer revenu personnel, flux société et protection sociale.',
       'Repérer les effets croisés entre rémunération, dividendes et prévoyance.',
+    ],
+    sections: [
+      {
+        title: 'Statut social',
+        body: 'Le statut du dirigeant oriente l’affiliation, les cotisations, les droits retraite et les garanties de prévoyance. La comparaison commence par la fonction exercée, la forme sociale et le niveau de contrôle de la société.',
+      },
+      {
+        title: 'Rémunération et dividendes',
+        body: 'Rémunération, dividendes, avantages et compte courant n’ont pas la même nature sociale. Pour les travailleurs non salariés, une part des dividendes peut rejoindre l’assiette sociale selon le cadre applicable.',
+      },
+      {
+        title: 'Protection du foyer',
+        body: 'La protection du dirigeant relie revenu professionnel, continuité de l’activité, garanties personnelles et besoins familiaux. Elle se lit avec les statuts de la société, les contrats existants et les régimes obligatoires.',
+      },
     ],
   },
   {
