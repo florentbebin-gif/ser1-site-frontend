@@ -122,5 +122,6 @@ describe('contrat des sections settings du mémento', () => {
       'prelevements',
       'base-contrat',
     ]);
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
   });
 });

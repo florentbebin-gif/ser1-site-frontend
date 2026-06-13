@@ -279,6 +279,27 @@ describe('SettingsMemento', () => {
     expect(screen.getByText('Référentiel contrats')).toBeInTheDocument();
   });
 
+  it('affiche successions et libéralités avec les valeurs DMTG en lecture', async () => {
+    isAdmin = false;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Successions et libéralités');
+    await openReadChapter(user, 'Transmission');
+
+    expect(screen.getByText('Dévolution et réserve')).toBeInTheDocument();
+    expect(screen.getByText('Donations et libéralités')).toBeInTheDocument();
+    expect(screen.getAllByText('Assurance-vie au décès').length).toBeGreaterThan(0);
+    expect(screen.getByText('Droits de mutation')).toBeInTheDocument();
+    expect(screen.getByText('Transmission, DMTG et succession')).toBeInTheDocument();
+
+    await openReadChapter(user, 'Transmission entreprise');
+
+    expect(screen.getAllByText('Pacte Dutreil').length).toBeGreaterThan(0);
+    expect(screen.getByText('Donation de titres')).toBeInTheDocument();
+    expect(screen.getByText('Paiement des droits')).toBeInTheDocument();
+  });
+
   it('réserve les pastilles de prudence aux admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);

@@ -137,6 +137,46 @@ describe('mementoDisplayPlan', () => {
     }
   });
 
+  it('présente successions et libéralités comme un aide-mémoire, sans méta-discours', () => {
+    const partie = buildMementoDisplayPlan().find(
+      (candidate) => candidate.definition.id === 'successions-liberalites',
+    );
+    if (!partie) throw new Error('Partie Successions et libéralités introuvable');
+
+    expect(partie.chapters.map((chapter) => chapter.chapter.id)).toEqual([
+      'transmission',
+      'transmission-entreprise',
+    ]);
+
+    const sectionTitles = partie.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual(
+      expect.arrayContaining([
+        'Dévolution et réserve',
+        'Donations et libéralités',
+        'Assurance-vie au décès',
+        'Droits de mutation',
+        'Pacte Dutreil',
+        'Donation de titres',
+        'Paiement des droits',
+      ]),
+    );
+
+    const visibleTexts = partie.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+      ...chapter.entries.flatMap((entry) => [entry.label, entry.description]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
+    }
+  });
+
   it('déplace seulement la présentation des entrées transverses', () => {
     expect(resolveMementoEntryPartId(getEntry('patrimoine.demembrement'))).toBe('demembrement');
     expect(resolveMementoEntryPartId(getEntry('fiscalite-foyer.non-residents'))).toBe(

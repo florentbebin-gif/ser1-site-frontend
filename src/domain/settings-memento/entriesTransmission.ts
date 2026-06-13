@@ -6,7 +6,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission.succession-dmtg',
     label: 'Succession et DMTG',
     description:
-      'Droits de mutation à titre gratuit, exonération conjoint ou partenaire pacsé et repères civils de dévolution pour le simulateur succession.',
+      'Droits de mutation à titre gratuit, exonération du conjoint ou partenaire pacsé et repères civils de dévolution successorale.',
     status: 'couvert',
     statusReason:
       'Paramètres DMTG administrés et sourcés via les claims settings-references ; simulateur succession actif.',
@@ -31,7 +31,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission.assurance-vie-deces',
     label: 'Assurance-vie au décès',
     description:
-      'Régimes décès de l’assurance-vie rattachés au mémento, séparés de l’angle enveloppe et rachat porté par Base-Contrat.',
+      'Régimes décès de l’assurance-vie, à distinguer des rachats du vivant et de la dévolution successorale ordinaire.',
     status: 'couvert',
     statusReason:
       'Paramètres décès administrés et sourcés via les claims settings-references ; lecture consommée par le simulateur succession actif.',
@@ -82,7 +82,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission.liberalites',
     label: 'Libéralités et testaments',
     description:
-      'Donations graduelles et résiduelles, legs universels, à titre universel ou particuliers et renonciation anticipée à l’action en réduction, en appui des scénarios successoraux.',
+      'Donations graduelles et résiduelles, legs universels, à titre universel ou particuliers et renonciation anticipée à l’action en réduction.',
     status: 'partiel',
     statusReason:
       'Référentiel libéralités affiché en lecture seule dans le mémento avec les références civiles existantes ; la renonciation anticipée à l’action en réduction reste à sourcer.',
@@ -124,7 +124,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission-entreprise.pacte-dutreil',
     label: 'Pacte Dutreil',
     description:
-      'Transmission d’entreprise sous engagement Dutreil, avec rattachement au paramètre settings planifié et aux sources fiscales existantes.',
+      'Transmission d’entreprise sous engagement de conservation, avec articulation entre activité, titres transmis et conditions fiscales.',
     status: 'planned',
     statusReason:
       'Simulateur Pacte Dutreil planifié ; le registry settings identifie le besoin sans activer de moteur dédié.',
@@ -158,7 +158,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission-entreprise.donation-titres',
     label: 'Donation de titres de société',
     description:
-      'Donation de titres et démembrement société comme couverture métier future, sans simulateur registry autonome aujourd’hui.',
+      'Donation de titres de société, avec ou sans démembrement, à articuler avec la valorisation et les pouvoirs de gestion.',
     status: 'planned',
     statusReason:
       'Variante société ROADMAP-only ; la valorisation et le modèle société relèvent du jalon société avant calcul.',
@@ -182,7 +182,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     key: 'transmission-entreprise.liquidite-societe',
     label: 'Liquidité successorale société',
     description:
-      'Anticipation de la liquidité liée à une société transmise, en attente du modèle société et valorisation.',
+      'Anticipation de la liquidité nécessaire lorsque le patrimoine transmis comprend des titres de société.',
     status: 'planned',
     statusReason:
       'Variante société ROADMAP-only ; le calcul dépend du futur modèle société, des titres et des besoins de liquidité.',
