@@ -14,7 +14,9 @@ describe('memento reference values', () => {
     const domains = new Set(DEFAULT_MEMENTO_REFERENCE_VALUES.map((value) => value.domain));
 
     expect(new Set(keys).size).toBe(keys.length);
-    expect(domains).toEqual(new Set(['chiffres-cles', 'demembrement', 'social-protection']));
+    expect(domains).toEqual(
+      new Set(['chiffres-cles', 'demembrement', 'fiscalite-internationale', 'social-protection']),
+    );
     expect(
       DEFAULT_MEMENTO_REFERENCE_VALUES.every(
         (value) => value.value_numeric !== null || value.value_text !== null,
@@ -95,6 +97,32 @@ describe('memento reference values', () => {
       'usufruit-viager-moins-91',
       'usufruit-viager-plus-91',
       'usufruit-temporaire-periode',
+    ]);
+  });
+
+  it('présente les repères internationaux dans les familles attendues', () => {
+    const groups = groupMementoReferenceValuesBySubdomain(
+      DEFAULT_MEMENTO_REFERENCE_VALUES.filter(
+        (value) => value.domain === 'fiscalite-internationale',
+      ),
+    );
+
+    expect(groups.map((group) => group.label)).toEqual([
+      'IR des non-résidents',
+      'IFI des non-résidents',
+      'Transmission et assurance-vie des non-résidents',
+      'Immobilier des non-résidents',
+    ]);
+    expect(groups.flatMap((group) => group.rows.map((row) => row.key))).toEqual([
+      'non-residents-ir-premiere-fraction',
+      'non-residents-ir-fraction-superieure',
+      'non-residents-ir-dom-premiere-fraction',
+      'non-residents-ir-dom-fraction-superieure',
+      'non-residents-ifi-assiette-france',
+      'non-residents-dmtg-residence-beneficiaire',
+      'non-residents-assurance-vie-residence-beneficiaire',
+      'non-residents-pvi-personne-physique',
+      'non-residents-pvi-prelevement-solidarite',
     ]);
   });
 
