@@ -7,7 +7,11 @@ const FORBIDDEN_META_WORDS =
   /\b(?:simulateurs?|settings|couverture|param[eè]tres?|révisable|calculateurs?)\b/i;
 
 function editorialTexts(): string[] {
-  return MEMENTO_EDITORIAL.flatMap((entry) => [entry.summary, ...entry.keyPoints]);
+  return MEMENTO_EDITORIAL.flatMap((entry) => [
+    entry.summary,
+    ...entry.keyPoints,
+    ...(entry.sections ?? []).flatMap((section) => [section.title, section.body]),
+  ]);
 }
 
 describe('settings-memento — éditorial utilisateur', () => {
@@ -24,6 +28,16 @@ describe('settings-memento — éditorial utilisateur', () => {
 
       for (const point of entry.keyPoints) {
         expect(point.length, `${entry.chapterId}: repère trop long`).toBeLessThanOrEqual(120);
+      }
+
+      for (const section of entry.sections ?? []) {
+        expect(
+          section.title.length,
+          `${entry.chapterId}: titre de section trop long`,
+        ).toBeLessThanOrEqual(60);
+        expect(section.body.length, `${entry.chapterId}: section trop longue`).toBeLessThanOrEqual(
+          320,
+        );
       }
     }
   });

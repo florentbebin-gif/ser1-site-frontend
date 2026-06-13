@@ -281,6 +281,35 @@
   line-height: 1.5;
 }
 
+.settings-memento-editorial-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-memento-editorial-section {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-memento-editorial-section:first-child {
+  border-top: 0;
+}
+
+.settings-memento-editorial-section h5 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.settings-memento-editorial-section p {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .settings-memento-readable-entry {
   padding: 14px 0;
   border-top: 1px solid var(--border-subtle);

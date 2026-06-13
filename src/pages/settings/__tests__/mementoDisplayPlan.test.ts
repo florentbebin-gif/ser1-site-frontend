@@ -12,7 +12,7 @@ import {
 } from '../memento/mementoDisplayPlan';
 
 const FORBIDDEN_META_WORDS =
-  /\b(?:simulateurs?|settings|couverture|param[eè]tres?|révisable|calculateurs?)\b/i;
+  /\b(?:simulateurs?|settings|couverture|param[eè]tres?|révisable|calculateurs?|moteur|registry)\b/i;
 
 function getEntry(key: string) {
   const entry = MEMENTO_ENTRIES.find((candidate) => candidate.key === key);
@@ -60,6 +60,44 @@ describe('mementoDisplayPlan', () => {
   it('garde les descriptions du sommaire sans vocabulaire technique interne', () => {
     for (const part of MEMENTO_DISPLAY_PARTS) {
       expect(part.description, part.title).not.toMatch(FORBIDDEN_META_WORDS);
+    }
+  });
+
+  it('présente la fiscalité comme un aide-mémoire de dispositifs, sans méta-discours', () => {
+    const fiscalite = buildMementoDisplayPlan().find((part) => part.definition.id === 'fiscalite');
+    if (!fiscalite) throw new Error('Partie Fiscalité introuvable');
+
+    expect(fiscalite.chapters.map((chapter) => chapter.chapter.id)).toEqual([
+      'fiscalite-foyer',
+      'immobilier',
+      'arbitrage',
+    ]);
+
+    const sectionTitles = fiscalite.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual(
+      expect.arrayContaining([
+        'Impôt sur le revenu',
+        'Revenus du capital',
+        'Patrimoine immobilier taxable',
+        'Revenus et détention',
+        'Cession immobilière',
+        'Cession ou conservation',
+      ]),
+    );
+
+    const visibleTexts = fiscalite.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+      ...chapter.entries.flatMap((entry) => [entry.label, entry.description]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
     }
   });
 

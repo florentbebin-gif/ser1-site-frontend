@@ -6,7 +6,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     key: 'fiscalite-foyer.ir',
     label: 'Impôt sur le revenu du foyer',
     description:
-      'Barème progressif, quotient familial, décote, contributions sur hauts revenus et part IR du PFU administrés dans le mémento et consommés via la chaîne fiscale.',
+      'Barème progressif, quotient familial, décote, contributions sur hauts revenus et part d’impôt du prélèvement forfaitaire unique.',
     status: 'couvert',
     statusReason:
       'Paramètres administrés dans la section Fiscalité du foyer, sourcés via settings-references ; simulateur IR actif.',
@@ -49,7 +49,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     key: 'fiscalite-foyer.niches-fiscales',
     label: 'Niches fiscales et réductions d’impôt',
     description:
-      'Réductions et crédits d’impôt du foyer recensés par le BOFiP RICI, sans référentiel centralisé des dispositifs dans Settings.',
+      'Réductions et crédits d’impôt du foyer à apprécier avec le plafonnement global et les règles propres à chaque avantage.',
     status: 'partiel',
     statusReason:
       'Seuls les montants saisis manuellement dans le simulateur IR sont reflétés ; aucun paramètre dédié n’est centralisé dans le registry settings.',
@@ -66,7 +66,7 @@ export const MEMENTO_FISCALITE_FOYER_ENTRIES = [
     key: 'fiscalite-foyer.ifi',
     label: 'IFI',
     description:
-      'Imposition de la fortune immobilière : barème administré dans le mémento, biens imposables et dettes lus par les analyses patrimoniales.',
+      'Impôt sur la fortune immobilière : biens et droits imposables, dettes admises, démembrement et plafonnement.',
     status: 'partiel',
     statusReason:
       'Barème courant administré et sourcé ; millésimes encore planifiés côté registry, simulateur IFI non livré et valorisation du démembrement fondée par le barème usufruit commun.',

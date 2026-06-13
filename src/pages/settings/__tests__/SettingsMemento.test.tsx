@@ -243,6 +243,22 @@ describe('SettingsMemento', () => {
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
+  it('affiche la fiscalité comme aide-mémoire de dispositifs', async () => {
+    isAdmin = false;
+    const user = userEvent.setup();
+    const { container } = render(<SettingsMemento />);
+
+    await openReadPart(user, 'Fiscalité');
+    await openReadChapter(user, 'Fiscalité foyer');
+
+    expect(screen.getByText('Impôt sur le revenu')).toBeInTheDocument();
+    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
+    expect(screen.getByText('Patrimoine immobilier taxable')).toBeInTheDocument();
+    expect(container).not.toHaveTextContent(
+      /\b(?:simulateur|simulateurs|settings|param[eè]tre|param[eè]tres|moteur|registry)\b/i,
+    );
+  });
+
   it('réserve les pastilles de prudence aux admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);

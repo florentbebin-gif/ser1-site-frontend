@@ -4,9 +4,15 @@ export interface MementoChapterEditorial {
   chapterId: MementoChapterId;
   summary: string;
   keyPoints: readonly string[];
+  sections?: readonly MementoEditorialSection[];
 }
 
-export const MEMENTO_EDITORIAL = [
+export interface MementoEditorialSection {
+  title: string;
+  body: string;
+}
+
+export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
   {
     chapterId: 'foyer',
     summary:
@@ -42,9 +48,23 @@ export const MEMENTO_EDITORIAL = [
     summary:
       'La fiscalité du foyer présente les mécanismes d’imposition des revenus, du patrimoine et des contributions associées.',
     keyPoints: [
-      'Distinguer revenu imposable, quotient familial et revenus du capital.',
-      'Lire les barèmes dans les tableaux de valeurs dédiés.',
-      'Distinguer impôt courant, revenus du capital et fiscalité immobilière.',
+      'Partir du revenu imposable avant de lire les effets du quotient familial.',
+      'Séparer barème progressif, revenus du capital et contributions spécifiques.',
+      'Relier la fiscalité courante à la détention immobilière taxable.',
+    ],
+    sections: [
+      {
+        title: 'Impôt sur le revenu',
+        body: 'Le revenu net imposable est réparti par parts de quotient familial avant application du barème progressif. La décote, les abattements et les contributions sur hauts revenus corrigent ensuite l’impôt selon la composition du foyer et la nature des revenus.',
+      },
+      {
+        title: 'Revenus du capital',
+        body: 'Les dividendes, intérêts et plus-values mobilières relèvent en principe du prélèvement forfaitaire unique, avec option possible pour le barème progressif lorsque cette option est globale et cohérente avec les autres revenus du foyer.',
+      },
+      {
+        title: 'Patrimoine immobilier taxable',
+        body: 'L’IFI vise les immeubles et droits immobiliers non affectés à une activité opérationnelle. La lecture porte autant sur l’actif imposable que sur les dettes admises, les règles de démembrement et le plafonnement.',
+      },
     ],
   },
   {
@@ -76,6 +96,20 @@ export const MEMENTO_EDITORIAL = [
       'Séparer rendement, fiscalité, crédit et risque de liquidité.',
       'Distinguer immobilier d’usage, locatif et détention indirecte.',
     ],
+    sections: [
+      {
+        title: 'Revenus et détention',
+        body: 'La location nue relève des revenus fonciers, tandis que la location meublée suit une logique de bénéfices commerciaux. Le choix entre détention directe, société civile ou enveloppe collective modifie la lecture des revenus, des charges et de la transmission.',
+      },
+      {
+        title: 'Cession immobilière',
+        body: 'La plus-value immobilière se lit à partir du prix de cession, du prix d’acquisition, des frais admissibles et de la durée de détention. Les exonérations, surtaxes et abattements exceptionnels dépendent de la nature du bien et de la situation du cédant.',
+      },
+      {
+        title: 'Dispositifs spécifiques',
+        body: 'Les régimes locatifs ou patrimoniaux favorables reposent sur des conditions d’usage, de travaux, de conservation et de location. Leur lecture doit rester attachée à la date d’engagement et au texte applicable au dispositif.',
+      },
+    ],
   },
   {
     chapterId: 'arbitrage',
@@ -84,6 +118,16 @@ export const MEMENTO_EDITORIAL = [
       'Comparer les scénarios avec les mêmes hypothèses de départ.',
       'Ne pas confondre gain fiscal, risque pris et besoin de trésorerie.',
       'Lire ensemble les effets sur le foyer, la société et la transmission.',
+    ],
+    sections: [
+      {
+        title: 'Cession ou conservation',
+        body: 'La décision de céder un actif confronte la fiscalité de sortie, le risque conservé, la liquidité obtenue et les objectifs familiaux. Un report peut être pertinent si le coût fiscal immédiat absorbe l’intérêt économique de l’opération.',
+      },
+      {
+        title: 'Réemploi',
+        body: 'Le réemploi compare les enveloppes disponibles, leur horizon, leur disponibilité et leur traitement successoral. La fiscalité n’est qu’un élément de l’arbitrage aux côtés du risque, du rendement attendu et du besoin de revenus.',
+      },
     ],
   },
   {
@@ -145,7 +189,7 @@ export const MEMENTO_EDITORIAL = [
       'Coordonner les effets entreprise avec la transmission privée.',
     ],
   },
-] as const satisfies readonly MementoChapterEditorial[];
+] as const;
 
 export const MEMENTO_EDITORIAL_BY_CHAPTER = new Map<MementoChapterId, MementoChapterEditorial>(
   MEMENTO_EDITORIAL.map((entry) => [entry.chapterId, entry]),

@@ -19,7 +19,8 @@ export const MEMENTO_CHAPTERS = [
   {
     id: 'fiscalite-foyer',
     label: 'Fiscalité foyer',
-    description: 'Paramètres fiscaux du foyer, sans dupliquer les valeurs portées par Settings.',
+    description:
+      'Impôt du foyer, revenus du capital, patrimoine taxable et contributions associées.',
   },
   {
     id: 'transmission',
