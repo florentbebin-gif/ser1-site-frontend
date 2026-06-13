@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { configure, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -24,6 +24,12 @@ import {
   MEMENTO_SETTINGS_SECTIONS,
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
+
+// Les vues calculateurs et audit sont chargées en lazy (double `lazy()` en série) :
+// sous la charge de la suite complète en CI, le timeout async par défaut (1 s) expire avant
+// le montage. On élargit le timeout async et le testTimeout pour ce fichier uniquement.
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: 15_000 });
 
 let isAdmin = true;
 const fromMock = vi.hoisted(() => vi.fn());
