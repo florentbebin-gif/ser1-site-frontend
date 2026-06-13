@@ -15,10 +15,10 @@
   align-self: center;
   min-height: 28px;
   padding: 6px 10px;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
-  background: var(--color-c7);
-  color: var(--color-c10);
+  background: var(--surface-muted);
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
@@ -40,7 +40,7 @@
 }
 
 .settings-memento-filter span {
-  color: var(--color-c9);
+  color: var(--text-muted);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
@@ -52,10 +52,10 @@
 .settings-memento-filter select {
   width: 100%;
   min-height: 36px;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   background: var(--surface-card);
-  color: var(--color-c10);
+  color: var(--text-primary);
   font: inherit;
   font-size: 13px;
   padding: 0 10px;
@@ -63,8 +63,8 @@
 
 .settings-memento-filter input:focus,
 .settings-memento-filter select:focus {
-  border-color: var(--color-c2);
-  box-shadow: 0 0 0 3px var(--surface-active);
+  border-color: var(--action-primary);
+  box-shadow: var(--focus-ring);
   outline: none;
 }
 
@@ -72,7 +72,6 @@
   gap: 16px;
 }
 
-.settings-memento-active-view,
 .settings-memento-view {
   display: flex;
   min-width: 0;
@@ -80,51 +79,11 @@
   gap: 16px;
 }
 
-.settings-memento-view-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 8px;
-}
-
-.settings-memento-view-tabs__tab {
+.settings-memento-admin-zone {
   display: flex;
   min-width: 0;
-  min-height: 58px;
   flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: var(--surface-card);
-  color: var(--color-c10);
-  cursor: pointer;
-  font: inherit;
-  padding: 10px 12px;
-  text-align: left;
-}
-
-.settings-memento-view-tabs__tab:hover,
-.settings-memento-view-tabs__tab:focus-visible {
-  border-color: var(--color-c3);
-  background: var(--surface-active);
-  outline: none;
-}
-
-.settings-memento-view-tabs__tab.is-active {
-  border-color: var(--color-c3);
-  box-shadow: inset 0 0 0 1px var(--color-c3);
-}
-
-.settings-memento-view-tabs__tab span {
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.settings-memento-view-tabs__tab small {
-  color: var(--color-c9);
-  font-size: 12px;
-  line-height: 1.25;
+  gap: 10px;
 }
 
 .settings-memento-parts,
@@ -138,19 +97,17 @@
   gap: 12px;
 }
 
-.settings-memento-part,
-.settings-memento-read-chapter,
-.settings-memento-readable-entry,
 .settings-memento-calculator-card {
   overflow: hidden;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   background: var(--surface-card);
 }
 
 .settings-memento-part__header,
 .settings-memento-read-chapter__header,
-.settings-memento-calculator-card__header {
+.settings-memento-calculator-card__header,
+.settings-memento-admin-section__header {
   width: 100%;
   border: 0;
   background: transparent;
@@ -160,12 +117,16 @@
   text-align: left;
 }
 
+.settings-memento-part {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 .settings-memento-part__header {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
-  padding: 16px;
+  padding: 18px 0;
 }
 
 .settings-memento-part__header:hover,
@@ -173,8 +134,10 @@
 .settings-memento-read-chapter__header:hover,
 .settings-memento-read-chapter__header:focus-visible,
 .settings-memento-calculator-card__header:hover,
-.settings-memento-calculator-card__header:focus-visible {
-  background: var(--color-c7);
+.settings-memento-calculator-card__header:focus-visible,
+.settings-memento-admin-section__header:hover,
+.settings-memento-admin-section__header:focus-visible {
+  background: var(--surface-muted);
   outline: none;
 }
 
@@ -188,16 +151,17 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: var(--surface-active);
-  color: var(--color-c10);
+  background: var(--surface-muted);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 900;
 }
 
 .settings-memento-part__text,
 .settings-memento-calculator-card__text,
+.settings-memento-admin-section__text,
 .settings-memento-read-chapter__header span:first-child {
   display: flex;
   min-width: 0;
@@ -206,7 +170,7 @@
 }
 
 .settings-memento-part__title {
-  color: var(--color-c10);
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 850;
   line-height: 1.2;
@@ -214,27 +178,36 @@
 
 .settings-memento-part__description,
 .settings-memento-read-chapter__header small,
-.settings-memento-calculator-card__text small {
-  color: var(--color-c9);
+.settings-memento-calculator-card__text small,
+.settings-memento-admin-section__subtitle {
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.45;
 }
 
 .settings-memento-part__state {
-  color: var(--color-c9);
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .settings-memento-part__body,
-.settings-memento-read-chapter__body,
+.settings-memento-read-chapter__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 0 18px 46px;
+  animation: memento-reveal var(--transition-base) var(--easing-standard);
+}
+
 .settings-memento-calculator-card__body {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 12px;
-  padding: 0 16px 16px;
+  padding: 0 14px 14px;
 }
 
 .settings-memento-read-chapter__header,
@@ -246,25 +219,41 @@
   padding: 13px 14px;
 }
 
+.settings-memento-read-chapter {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-memento-read-chapter:first-child {
+  border-top: 0;
+}
+
+.settings-memento-read-chapter__header {
+  padding: 14px 0;
+}
+
+.settings-memento-read-chapter__body {
+  padding: 0 0 16px;
+}
+
 .settings-memento-read-chapter__header strong,
 .settings-memento-calculator-card__text strong {
-  color: var(--color-c10);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 850;
   line-height: 1.25;
 }
 
 .settings-memento-read-note {
-  padding: 14px;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: var(--color-c7);
+  margin: 0;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--border-strong);
+  background: transparent;
 }
 
 .settings-memento-read-note h5,
 .settings-memento-readable-entry h5 {
   margin: 0;
-  color: var(--color-c10);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 850;
   line-height: 1.25;
@@ -273,7 +262,7 @@
 .settings-memento-read-note p,
 .settings-memento-readable-entry p {
   margin: 8px 0 0;
-  color: var(--color-c9);
+  color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -283,13 +272,18 @@
   gap: 6px;
   margin: 10px 0 0;
   padding-left: 18px;
-  color: var(--color-c10);
+  color: var(--text-primary);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .settings-memento-readable-entry {
-  padding: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-memento-readable-entry:first-child {
+  border-top: 0;
 }
 
 .settings-memento-readable-entry__header {
@@ -305,61 +299,25 @@
   align-items: center;
   min-height: 22px;
   padding: 0 8px;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  background: var(--surface-active);
-  color: var(--color-c9);
+  background: transparent;
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.1;
 }
 
-.settings-memento-readable-entry__used-by span,
-.settings-memento-readable-entry__sources > span {
-  color: var(--color-c10);
+.settings-memento-readable-entry__used-by span {
+  color: var(--text-primary);
   font-weight: 850;
 }
 
-.settings-memento-readable-entry__sources {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 7px;
+.settings-memento-readable-entry__references {
   margin-top: 10px;
-  color: var(--color-c9);
+  color: var(--text-secondary);
   font-size: 12px;
-  line-height: 1.35;
-}
-
-.settings-memento-readable-entry__sources div {
-  display: flex;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.settings-memento-readable-entry__sources a {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--color-c8);
-  border-radius: 999px;
-  background: var(--surface-card);
-  color: var(--color-c3);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.1;
-  overflow-wrap: anywhere;
-  text-decoration: none;
-}
-
-.settings-memento-readable-entry__sources a:hover,
-.settings-memento-readable-entry__sources a:focus-visible {
-  border-color: var(--color-c3);
-  background: var(--surface-active);
-  outline: none;
+  line-height: 1.45;
 }
 
 .settings-memento-calculator-card__sources {
@@ -374,13 +332,50 @@
   align-items: center;
   min-height: 22px;
   padding: 0 8px;
-  border: 1px solid var(--color-c8);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
-  background: var(--color-c7);
-  color: var(--color-c9);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.1;
+}
+
+.settings-memento-admin-section {
+  overflow: hidden;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-memento-admin-section:first-child {
+  border-top: 0;
+}
+
+.settings-memento-admin-section__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 15px 0;
+}
+
+.settings-memento-admin-section__title {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.settings-memento-admin-section__body {
+  padding: 0 0 16px;
+  animation: memento-reveal var(--transition-base) var(--easing-standard);
+}
+
+.settings-memento-audit__count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .settings-memento-chapter,
@@ -477,9 +472,10 @@
 }
 
 .settings-memento-chevron {
-  color: var(--color-c9);
+  color: var(--text-muted);
   font-size: 12px;
   line-height: 1;
+  transition: transform var(--transition-base) var(--easing-standard);
 }
 
 .settings-memento-chapter__panel {
@@ -716,6 +712,18 @@
 .settings-memento-empty {
   color: var(--color-c9);
   font-size: 13px;
+}
+
+@keyframes memento-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 900px) {

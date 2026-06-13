@@ -12,23 +12,17 @@ function hasReadableContent(part: MementoDisplayPart): boolean {
   return part.chapters.length + part.entries.length + part.lexiconTerms.length > 0;
 }
 
-export default function MementoReadView(): ReactElement {
+interface MementoReadViewProps {
+  showStatus: boolean;
+}
+
+export default function MementoReadView({ showStatus }: MementoReadViewProps): ReactElement {
   const displayPlan = useMemo(() => buildMementoDisplayPlan(), []);
   const [openPartId, setOpenPartId] = useState<MementoPartId | null>(null);
   const [openChapterKey, setOpenChapterKey] = useState<string | null>(null);
 
   return (
     <div className="settings-memento-view settings-memento-read-view">
-      <section className="settings-premium-card settings-memento-read-intro">
-        <div className="settings-action-text">
-          <h3 className="settings-premium-title">Lire le mémento</h3>
-          <p className="settings-premium-subtitle">
-            Sommaire patrimonial structuré pour préparer un conseil, sans exposer les contrôles
-            techniques de couverture.
-          </p>
-        </div>
-      </section>
-
       <div className="settings-memento-parts" aria-label="Sommaire du mémento">
         {displayPlan.map((part, index) => {
           const isOpen = openPartId === part.definition.id;
@@ -84,7 +78,12 @@ export default function MementoReadView(): ReactElement {
                   {part.entries.length > 0 ? (
                     <div className="settings-memento-readable-list">
                       {part.entries.map((entry) => (
-                        <MementoReadableEntry key={entry.key} kind="entry" entry={entry} />
+                        <MementoReadableEntry
+                          key={entry.key}
+                          kind="entry"
+                          entry={entry}
+                          showStatus={showStatus}
+                        />
                       ))}
                     </div>
                   ) : null}
@@ -92,7 +91,12 @@ export default function MementoReadView(): ReactElement {
                   {part.lexiconTerms.length > 0 ? (
                     <div className="settings-memento-readable-list">
                       {part.lexiconTerms.map((term) => (
-                        <MementoReadableEntry key={term.key} kind="lexicon" term={term} />
+                        <MementoReadableEntry
+                          key={term.key}
+                          kind="lexicon"
+                          term={term}
+                          showStatus={showStatus}
+                        />
                       ))}
                     </div>
                   ) : null}
@@ -107,6 +111,7 @@ export default function MementoReadView(): ReactElement {
                             key={chapterKey}
                             chapter={chapter}
                             isOpen={openChapterKey === chapterKey}
+                            showStatus={showStatus}
                             onToggle={() =>
                               setOpenChapterKey((current) =>
                                 current === chapterKey ? null : chapterKey,

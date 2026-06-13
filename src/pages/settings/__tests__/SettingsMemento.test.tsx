@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -99,10 +99,6 @@ const entryWithStatus = (status: MementoStatus): MementoEntry => ({
   statusReason: 'Contenu planifié, aucune page propriétaire active.',
 });
 
-async function openInternalTab(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
-  await user.click(screen.getByRole('tab', { name }));
-}
-
 function findButtonByClass(className: string, label: string): HTMLButtonElement {
   const button = screen
     .getAllByRole('button')
@@ -115,6 +111,13 @@ function findButtonByClass(className: string, label: string): HTMLButtonElement 
 
   if (!button) throw new Error(`Bouton introuvable : ${label}`);
   return button;
+}
+
+async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = findButtonByClass('settings-memento-admin-section__header', label);
+  if (button.getAttribute('aria-expanded') !== 'true') {
+    await user.click(button);
+  }
 }
 
 async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
@@ -132,21 +135,23 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
 }
 
 async function openAuditChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = findButtonByClass('settings-memento-chapter__header', label);
+  const button = await waitFor(() => findButtonByClass('settings-memento-chapter__header', label));
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
 async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = findButtonByClass('settings-memento-calculator-card__header', label);
+  const button = await waitFor(() =>
+    findButtonByClass('settings-memento-calculator-card__header', label),
+  );
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
 async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
-  const button = screen.getByRole('button', { name });
+  const button = await screen.findByRole('button', { name });
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
@@ -282,55 +287,47 @@ describe('SettingsMemento', () => {
     rpcMock.mockResolvedValue({ data: null, error: null });
   });
 
-  it('ouvre la vue Lire par défaut avec les trois onglets admin', () => {
+  it('rend directement le mémento sans sélecteur de mode ni bloc intro redondant', () => {
     render(<SettingsMemento />);
 
     expect(
       screen.getByRole('heading', { name: 'Mémento patrimonial & social' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Lire le mémento/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Lire le mémento' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Sommaire du mémento')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Paramètres calculateurs/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
     );
-    expect(screen.getByRole('tab', { name: /Paramètres calculateurs/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Audit & sources/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Lire le mémento' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Audit & sources/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 
-  it('masque l’onglet audit aux non-admins', () => {
+  it('masque les sections admin aux non-admins', () => {
     isAdmin = false;
 
     render(<SettingsMemento />);
 
-    expect(screen.getAllByRole('tab')).toHaveLength(2);
-    expect(screen.queryByRole('tab', { name: /Audit & sources/i })).not.toBeInTheDocument();
-  });
-
-  it('pilote les onglets au clavier', async () => {
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    const lire = screen.getByRole('tab', { name: /Lire le mémento/i });
-    lire.focus();
-    await user.keyboard('{ArrowRight}');
-
-    expect(screen.getByRole('tab', { name: /Paramètres calculateurs/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-
-    await user.keyboard('{End}');
-    expect(screen.getByRole('tab', { name: /Audit & sources/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Paramètres calculateurs/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Audit & sources/i })).not.toBeInTheDocument();
   });
 
   it('garde les parties de lecture fermées par défaut sans métadonnées techniques', () => {
     render(<SettingsMemento />);
 
-    for (const button of screen.getAllByRole('button', { expanded: false })) {
-      expect(button.className).toContain('settings-memento-part__header');
+    const partButtons = screen
+      .getAllByRole('button')
+      .filter((button) => button.classList.contains('settings-memento-part__header'));
+    expect(partButtons.length).toBeGreaterThan(0);
+    for (const button of partButtons) {
+      expect(button).toHaveAttribute('aria-expanded', 'false');
     }
     expect(screen.queryByText('Page propriétaire')).not.toBeInTheDocument();
     expect(screen.queryByText('/settings/memento')).not.toBeInTheDocument();
@@ -339,7 +336,7 @@ describe('SettingsMemento', () => {
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
   });
 
-  it('rend le mémento lisible avec sources officielles sans IDs bruts', async () => {
+  it('rend le mémento lisible avec références inline sans IDs bruts', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
@@ -347,10 +344,34 @@ describe('SettingsMemento', () => {
     await openReadChapter(user, 'Fiscalité foyer');
 
     expect(screen.getByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
-    expect(screen.getAllByText('Sources officielles').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Références :').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Sources officielles')).not.toBeInTheDocument();
     expect(screen.getAllByRole('link').some((link) => link.getAttribute('href'))).toBe(true);
     expect(container).not.toHaveTextContent(/claimKeys|ownerPagePath|coverageSources|cgi-/i);
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
+  });
+
+  it('réserve les pastilles de prudence aux admins', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Fiscalité');
+    await openReadChapter(user, 'Fiscalité foyer');
+
+    expect(screen.getAllByText('Périmètre en cours').length).toBeGreaterThan(0);
+  });
+
+  it('ne rend pas les pastilles de prudence pour un non-admin', async () => {
+    isAdmin = false;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Fiscalité');
+    await openReadChapter(user, 'Fiscalité foyer');
+
+    expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
+    expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
+    expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
   });
 
   it('rend le lexique dans la partie dédiée', async () => {
@@ -367,9 +388,10 @@ describe('SettingsMemento', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
+    expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
 
-    await openInternalTab(user, /Paramètres calculateurs/i);
+    await openAdminSection(user, 'Paramètres calculateurs');
     expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
 
     await openCalculatorCard(user, 'Fiscalité du foyer');
@@ -385,7 +407,7 @@ describe('SettingsMemento', () => {
 
     expect(screen.queryByTestId('memento-coverage-ir')).not.toBeInTheDocument();
 
-    await openInternalTab(user, /Audit & sources/i);
+    await openAdminSection(user, 'Audit & sources');
     await openAuditChapter(user, 'Fiscalité foyer');
     await openSubAccordion(user, /Entrées techniques/);
 
@@ -396,12 +418,15 @@ describe('SettingsMemento', () => {
     expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
   });
 
-  it('filtre l’audit par intention, priorité, recherche, statut et chapitre', async () => {
+  it('filtre l’audit par intention et priorité', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openInternalTab(user, /Audit & sources/i);
-    await user.selectOptions(screen.getByLabelText('Intention métier'), 'verifier-fiscalite');
+    await openAdminSection(user, 'Audit & sources');
+    await user.selectOptions(
+      await screen.findByLabelText('Intention métier'),
+      'verifier-fiscalite',
+    );
     await openAuditChapter(user, 'Fiscalité foyer');
     await openSubAccordion(user, /Entrées techniques/);
 
@@ -414,17 +439,26 @@ describe('SettingsMemento', () => {
 
     expect(screen.getByText('Niches fiscales et réductions d’impôt')).toBeInTheDocument();
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
+  });
 
-    await user.selectOptions(screen.getByLabelText('Priorité métier'), 'all');
-    await user.selectOptions(screen.getByLabelText('Intention métier'), 'all');
-    await user.type(screen.getByLabelText('Recherche mémento'), 'cession');
+  it('filtre l’audit par recherche', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openAdminSection(user, 'Audit & sources');
+    await user.type(await screen.findByLabelText('Recherche mémento'), 'cession');
     await openAuditChapter(user, 'Société');
     await openSubAccordion(user, /Couverture simulateurs/);
 
     expect(await screen.findByTestId('memento-coverage-cession-titres')).toBeInTheDocument();
+  });
 
-    await user.clear(screen.getByLabelText('Recherche mémento'));
-    await user.selectOptions(screen.getByLabelText('Statut'), 'couvert');
+  it('filtre l’audit par statut et chapitre', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openAdminSection(user, 'Audit & sources');
+    await user.selectOptions(await screen.findByLabelText('Statut'), 'couvert');
     await openAuditChapter(user, 'Fiscalité foyer');
     await openSubAccordion(user, /Couverture simulateurs/);
 
@@ -442,7 +476,7 @@ describe('SettingsMemento', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openInternalTab(user, /Audit & sources/i);
+    await openAdminSection(user, 'Audit & sources');
     await openAuditChapter(user, 'Foyer');
     await openSubAccordion(user, /Couverture simulateurs/);
 

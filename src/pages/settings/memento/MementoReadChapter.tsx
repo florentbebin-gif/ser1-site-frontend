@@ -6,12 +6,14 @@ import MementoReadableEntry from './MementoReadableEntry';
 interface MementoReadChapterProps {
   chapter: MementoDisplayChapter;
   isOpen: boolean;
+  showStatus: boolean;
   onToggle: () => void;
 }
 
 export default function MementoReadChapter({
   chapter,
   isOpen,
+  showStatus,
   onToggle,
 }: MementoReadChapterProps): ReactElement {
   const generatedId = useId();
@@ -45,7 +47,7 @@ export default function MementoReadChapter({
           aria-labelledby={buttonId}
         >
           {chapter.editorial ? (
-            <article className="settings-memento-read-note">
+            <blockquote className="settings-memento-read-note" aria-label="À retenir">
               <h5>À retenir</h5>
               <p>{chapter.editorial.summary}</p>
               <ul>
@@ -53,12 +55,17 @@ export default function MementoReadChapter({
                   <li key={point}>{point}</li>
                 ))}
               </ul>
-            </article>
+            </blockquote>
           ) : null}
 
           <div className="settings-memento-readable-list">
             {chapter.entries.map((entry) => (
-              <MementoReadableEntry key={entry.key} kind="entry" entry={entry} />
+              <MementoReadableEntry
+                key={entry.key}
+                kind="entry"
+                entry={entry}
+                showStatus={showStatus}
+              />
             ))}
           </div>
         </div>

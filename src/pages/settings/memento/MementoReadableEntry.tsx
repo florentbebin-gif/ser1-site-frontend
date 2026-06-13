@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import { getOptionalLegalReference, type LegalReferenceId } from '@/domain/legal-references';
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
@@ -11,51 +12,33 @@ type MementoReadableEntryProps =
   | {
       kind: 'entry';
       entry: MementoEntry;
+      showStatus: boolean;
     }
   | {
       kind: 'lexicon';
       term: MementoLexiconTerm;
+      showStatus: boolean;
     };
 
-function referenceLabel(referenceId: LegalReferenceId): {
-  href: string;
-  label: string;
-} | null {
+function isUsableReferenceId(referenceId: LegalReferenceId): boolean {
   const reference = getOptionalLegalReference(referenceId);
-  if (!reference) return null;
-  if (reference.officialUrl.toLowerCase().includes('.pdf')) return null;
-
-  return {
-    href: reference.officialUrl,
-    label: reference.articleOrSection
-      ? `${reference.label} (${reference.articleOrSection})`
-      : reference.label,
-  };
+  if (!reference) return false;
+  return !reference.officialUrl.toLowerCase().includes('.pdf');
 }
 
-function SourceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): ReactElement | null {
-  const references = refIds
-    .map((refId) => referenceLabel(refId))
-    .filter((reference): reference is { href: string; label: string } => reference !== null);
+function usableReferenceIds(refIds: readonly LegalReferenceId[]): LegalReferenceId[] {
+  return refIds.filter(isUsableReferenceId);
+}
+
+function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): ReactElement | null {
+  const references = usableReferenceIds(refIds);
 
   if (references.length === 0) return null;
 
   return (
-    <div className="settings-memento-readable-entry__sources" aria-label="Sources officielles">
-      <span>Sources officielles</span>
-      <div>
-        {references.map((reference) => (
-          <a
-            key={`${reference.href}-${reference.label}`}
-            href={reference.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {reference.label}
-          </a>
-        ))}
-      </div>
-    </div>
+    <p className="settings-memento-readable-entry__references">
+      <LegalRefInlineList ids={references} />
+    </p>
   );
 }
 
@@ -81,10 +64,10 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
       <article className="settings-memento-readable-entry settings-memento-readable-entry--lexicon">
         <div className="settings-memento-readable-entry__header">
           <h5>{props.term.term}</h5>
-          {prudence ? <span>{prudence}</span> : null}
+          {props.showStatus && prudence ? <span>{prudence}</span> : null}
         </div>
         <p>{props.term.shortDefinition}</p>
-        <SourceLinks refIds={props.term.refIds} />
+        <ReferenceLinks refIds={props.term.refIds} />
       </article>
     );
   }
@@ -95,11 +78,11 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
     <article className="settings-memento-readable-entry">
       <div className="settings-memento-readable-entry__header">
         <h5>{props.entry.label}</h5>
-        {prudence ? <span>{prudence}</span> : null}
+        {props.showStatus && prudence ? <span>{prudence}</span> : null}
       </div>
       <p>{props.entry.description}</p>
       <SimulatorLinks entry={props.entry} />
-      <SourceLinks refIds={props.entry.refIds} />
+      <ReferenceLinks refIds={props.entry.refIds} />
     </article>
   );
 }
