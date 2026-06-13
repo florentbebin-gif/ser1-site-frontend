@@ -243,63 +243,6 @@ describe('SettingsMemento', () => {
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('affiche la fiscalité comme aide-mémoire de dispositifs', async () => {
-    isAdmin = false;
-    const user = userEvent.setup();
-    const { container } = render(<SettingsMemento />);
-
-    await openReadPart(user, 'Fiscalité');
-    await openReadChapter(user, 'Fiscalité foyer');
-
-    expect(screen.getByText('Impôt sur le revenu')).toBeInTheDocument();
-    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
-    expect(screen.getByText('Patrimoine immobilier taxable')).toBeInTheDocument();
-    expect(container).not.toHaveTextContent(
-      /\b(?:simulateur|simulateurs|settings|param[eè]tre|param[eè]tres|moteur|registry)\b/i,
-    );
-  });
-
-  it('affiche sociétés et placements avec leurs valeurs de référence en lecture', async () => {
-    isAdmin = false;
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openReadPart(user, 'Impôt sur les sociétés et placements');
-    await openReadChapter(user, 'Société');
-
-    expect(screen.getByText('Distribution et réserves')).toBeInTheDocument();
-    expect(screen.getByText('Titres et opérations de capital')).toBeInTheDocument();
-    expect(screen.getByText('Comptables et sociétés')).toBeInTheDocument();
-
-    await openReadChapter(user, 'Placements');
-
-    expect(screen.getByText('Enveloppes de placement')).toBeInTheDocument();
-    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
-    expect(screen.getByText('Prélèvements sociaux')).toBeInTheDocument();
-    expect(screen.getByText('Référentiel contrats')).toBeInTheDocument();
-  });
-
-  it('affiche successions et libéralités avec les valeurs DMTG en lecture', async () => {
-    isAdmin = false;
-    const user = userEvent.setup();
-    render(<SettingsMemento />);
-
-    await openReadPart(user, 'Successions et libéralités');
-    await openReadChapter(user, 'Transmission');
-
-    expect(screen.getByText('Dévolution et réserve')).toBeInTheDocument();
-    expect(screen.getByText('Donations et libéralités')).toBeInTheDocument();
-    expect(screen.getAllByText('Assurance-vie au décès').length).toBeGreaterThan(0);
-    expect(screen.getByText('Droits de mutation')).toBeInTheDocument();
-    expect(screen.getByText('Transmission, DMTG et succession')).toBeInTheDocument();
-
-    await openReadChapter(user, 'Transmission entreprise');
-
-    expect(screen.getAllByText('Pacte Dutreil').length).toBeGreaterThan(0);
-    expect(screen.getByText('Donation de titres')).toBeInTheDocument();
-    expect(screen.getByText('Paiement des droits')).toBeInTheDocument();
-  });
-
   it('réserve les pastilles de prudence aux admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
@@ -321,24 +264,6 @@ describe('SettingsMemento', () => {
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
-  });
-
-  it('rend le lexique dans la partie dédiée', async () => {
-    isAdmin = false;
-    const user = userEvent.setup();
-    const { container } = render(<SettingsMemento />);
-
-    await openReadPart(user, 'Lexique');
-
-    expect(screen.getByText('Civil et transmission')).toBeInTheDocument();
-    expect(screen.getByText('Fiscalité et placements')).toBeInTheDocument();
-    expect(screen.getByText('Social et retraite')).toBeInTheDocument();
-    expect(screen.getByText('Acquêts')).toBeInTheDocument();
-    expect(screen.getByText('Quotité disponible')).toBeInTheDocument();
-    expect(screen.getByText('Plus-value')).toBeInTheDocument();
-    expect(screen.getByText('PER')).toBeInTheDocument();
-    expect(screen.getByText('PER individuel')).toBeInTheDocument();
-    expect(container).not.toHaveTextContent(/\b(?:SER1|moteur|moteurs|settings|registry)\b/i);
   });
 
   it('rend le barème IR en lecture seule pour un non-admin', async () => {

@@ -64,6 +64,43 @@ describe('mementoDisplayPlan', () => {
     }
   });
 
+  it('présente le droit civil comme un aide-mémoire, sans méta-discours', () => {
+    const partie = buildMementoDisplayPlan().find(
+      (candidate) => candidate.definition.id === 'droit-civil',
+    );
+    if (!partie) throw new Error('Partie Droit civil introuvable');
+
+    expect(partie.chapters.map((chapter) => chapter.chapter.id)).toEqual(['foyer', 'civil']);
+
+    const sectionTitles = partie.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual(
+      expect.arrayContaining([
+        'Composition familiale',
+        'Capacité patrimoniale',
+        'Personnes à protéger',
+        'Régimes matrimoniaux',
+        'PACS et union libre',
+        'Dévolution successorale',
+        'Réserve et quotité disponible',
+      ]),
+    );
+
+    const visibleTexts = partie.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+      ...chapter.entries.flatMap((entry) => [entry.label, entry.description]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
+    }
+  });
+
   it('présente la fiscalité comme un aide-mémoire de dispositifs, sans méta-discours', () => {
     const fiscalite = buildMementoDisplayPlan().find((part) => part.definition.id === 'fiscalite');
     if (!fiscalite) throw new Error('Partie Fiscalité introuvable');
