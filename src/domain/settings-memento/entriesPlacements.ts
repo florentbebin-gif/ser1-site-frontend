@@ -6,7 +6,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.allocation',
     label: 'Allocation et choix d’enveloppes',
     description:
-      'Comparaison d’enveloppes du simulateur placement sur les phases d’épargne, de liquidation et de transmission, adossée aux blocs du catalogue Base-Contrat.',
+      'Comparaison des enveloppes selon les phases d’épargne, de liquidation et de transmission.',
     status: 'couvert',
     statusReason:
       'Simulateur placement actif ; les enveloppes comparées sont documentées par les claims Base-Contrat, la fiscalité transverse étant portée par l’entrée dédiée aux prélèvements sociaux et au PFU.',
@@ -27,7 +27,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.ps-pfu-revenus-capital',
     label: 'Prélèvements sociaux et PFU sur les revenus du capital',
     description:
-      'Prélèvements sociaux du patrimoine et prélèvement forfaitaire unique appliqués aux revenus des enveloppes financières, consommés par les moteurs via la chaîne fiscale.',
+      'Prélèvements sociaux du patrimoine et prélèvement forfaitaire unique appliqués aux revenus des enveloppes financières.',
     status: 'couvert',
     statusReason:
       'Taux administrés et sourcés via les claims settings-references des pages Prélèvements et Impôts ; la part sociale du PFU est composée depuis les prélèvements sociaux.',
@@ -50,7 +50,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.assurance-vie-capitalisation',
     label: 'Assurance-vie et contrats de capitalisation',
     description:
-      'Enveloppes vie et capitalisation du catalogue Base-Contrat : versements, rachats selon l’ancienneté du contrat et transmissibilité, l’angle décès restant porté par le mémento.',
+      'Enveloppes vie et capitalisation : versements, rachats selon l’ancienneté du contrat et transmissibilité.',
     status: 'partiel',
     statusReason:
       'Claims Base-Contrat de constitution, de rachat et de transmission présents ; le pack placement complet reste partiel dans le registry settings.',
@@ -80,7 +80,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.enveloppes-titres',
     label: 'Enveloppes titres : PEA, PEA-PME et compte-titres',
     description:
-      'Sous-types titres du simulateur placement : éligibilité et versements des plans, retraits selon la maturité du plan et imposition des revenus et cessions du compte-titres.',
+      'Plans d’actions et compte-titres : éligibilité, versements, retraits, revenus et cessions.',
     status: 'partiel',
     statusReason:
       'Claims Base-Contrat des plans et du compte-titres présents ; les abattements de détention antérieurs au PFU sont sourcés mais le pack placement complet reste partiel dans le registry settings.',
@@ -114,7 +114,7 @@ export const MEMENTO_PLACEMENTS_ENTRIES = [
     key: 'placements.epargne-reglementee',
     label: 'Épargne réglementée et livrets',
     description:
-      'Livrets réglementés, épargne logement et plan d’épargne avenir climat : versements, exonérations de sortie et traitement successoral documentés par le catalogue Base-Contrat.',
+      'Livrets réglementés, épargne logement et plan d’épargne avenir climat : versements, exonérations de sortie et traitement successoral.',
     status: 'couvert',
     statusReason:
       'Produits sourcés bloc par bloc via les claims settings-references du catalogue Base-Contrat ; couverture de lecture sans moteur dédié.',

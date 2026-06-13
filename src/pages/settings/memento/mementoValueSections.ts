@@ -55,7 +55,7 @@ export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
 > = {
   'fiscalite-foyer': ['impots'],
   transmission: ['dmtg-succession'],
-  placements: ['base-contrat'],
+  placements: ['prelevements', 'base-contrat'],
   retraite: ['prelevements'],
   prevoyance: ['prevoyance-regimes'],
   societe: ['comptables-societes'],

@@ -101,6 +101,42 @@ describe('mementoDisplayPlan', () => {
     }
   });
 
+  it('présente les sociétés et placements comme un aide-mémoire, sans méta-discours', () => {
+    const partie = buildMementoDisplayPlan().find(
+      (candidate) => candidate.definition.id === 'societes-placements',
+    );
+    if (!partie) throw new Error('Partie Sociétés et placements introuvable');
+
+    expect(partie.chapters.map((chapter) => chapter.chapter.id)).toEqual(['societe', 'placements']);
+
+    const sectionTitles = partie.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual(
+      expect.arrayContaining([
+        'Impôt sur les sociétés',
+        'Distribution et réserves',
+        'Titres et opérations de capital',
+        'Enveloppes de placement',
+        'Revenus du capital',
+        'Sortie et transmission',
+      ]),
+    );
+
+    const visibleTexts = partie.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+      ...chapter.entries.flatMap((entry) => [entry.label, entry.description]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
+    }
+  });
+
   it('déplace seulement la présentation des entrées transverses', () => {
     expect(resolveMementoEntryPartId(getEntry('patrimoine.demembrement'))).toBe('demembrement');
     expect(resolveMementoEntryPartId(getEntry('fiscalite-foyer.non-residents'))).toBe(

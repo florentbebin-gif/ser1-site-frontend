@@ -259,6 +259,26 @@ describe('SettingsMemento', () => {
     );
   });
 
+  it('affiche sociétés et placements avec leurs valeurs de référence en lecture', async () => {
+    isAdmin = false;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Impôt sur les sociétés et placements');
+    await openReadChapter(user, 'Société');
+
+    expect(screen.getByText('Distribution et réserves')).toBeInTheDocument();
+    expect(screen.getByText('Titres et opérations de capital')).toBeInTheDocument();
+    expect(screen.getByText('Comptables et sociétés')).toBeInTheDocument();
+
+    await openReadChapter(user, 'Placements');
+
+    expect(screen.getByText('Enveloppes de placement')).toBeInTheDocument();
+    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
+    expect(screen.getByText('Prélèvements sociaux')).toBeInTheDocument();
+    expect(screen.getByText('Référentiel contrats')).toBeInTheDocument();
+  });
+
   it('réserve les pastilles de prudence aux admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);

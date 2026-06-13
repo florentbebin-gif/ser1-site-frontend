@@ -86,6 +86,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Distinguer assurance-vie, capitalisation, titres et liquidités.',
       'Lire les règles détaillées dans le référentiel contrats.',
     ],
+    sections: [
+      {
+        title: 'Enveloppes de placement',
+        body: 'Assurance-vie, capitalisation, compte-titres, plans d’actions et livrets ne répondent pas aux mêmes besoins. La lecture combine disponibilité, horizon de détention, fiscalité des revenus, transmission et niveau de risque.',
+      },
+      {
+        title: 'Revenus du capital',
+        body: 'Les revenus financiers peuvent relever du prélèvement forfaitaire unique ou du barème progressif selon l’option retenue. Les prélèvements sociaux se lisent séparément pour comprendre le coût fiscal total.',
+      },
+      {
+        title: 'Sortie et transmission',
+        body: 'Chaque enveloppe possède ses propres règles de rachat, retrait, clôture ou décès. La maturité du contrat ou du plan modifie souvent le traitement fiscal et les effets successoraux.',
+      },
+    ],
   },
   {
     chapterId: 'immobilier',
@@ -167,6 +181,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer fiscalité société, droit des associés et stratégie patrimoniale.',
       'Distinguer dividendes, réserves, compte courant et trésorerie disponible.',
       'Repérer les opérations sur titres et leurs effets pour les associés.',
+    ],
+    sections: [
+      {
+        title: 'Impôt sur les sociétés',
+        body: 'L’IS s’applique au résultat fiscal de la société. La lecture distingue le bénéfice imposable, le taux applicable, les intérêts déductibles et les régimes intragroupe comme le régime mère-fille.',
+      },
+      {
+        title: 'Distribution et réserves',
+        body: 'Le résultat distribuable dépend du bénéfice, des pertes antérieures, des réserves et des décisions sociales. Le dividende se lit ensuite chez l’associé selon sa situation fiscale et sociale.',
+      },
+      {
+        title: 'Titres et opérations de capital',
+        body: 'Valorisation, cession, apport à une holding, compte courant et épargne salariale relient la société au patrimoine privé. Ces opérations demandent une lecture conjointe du droit des sociétés et de la fiscalité des associés.',
+      },
     ],
   },
   {
