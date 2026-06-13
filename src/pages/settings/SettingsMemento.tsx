@@ -29,7 +29,7 @@ export default function SettingsMemento(): ReactElement {
         </div>
       </section>
 
-      <MementoReadView showStatus={isAdmin} />
+      <MementoReadView showStatus={isAdmin} isAdmin={isAdmin} />
 
       {isAdmin ? (
         <div className="settings-memento-admin-zone" aria-label="Administration du mémento">

@@ -1710,6 +1710,18 @@
     "lastCheckedAt": "2026-06-06"
   },
   {
+    "id": "service-public-cel",
+    "label": "Service-Public — Compte épargne logement (CEL)",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F16136",
+    "articleOrSection": "Compte épargne logement (CEL)",
+    "scope": "Fonctionnement, plafond et taux du compte épargne logement.",
+    "volatility": "annual",
+    "relatedSettings": ["base-contrat"],
+    "relatedCatalogProducts": ["cel"],
+    "lastCheckedAt": "2026-06-13"
+  },
+  {
     "id": "base-source-service-public-fr-livrets-reglementes",
     "label": "Service-public.fr — Livrets réglementés",
     "sourceType": "Service-Public",
@@ -1719,6 +1731,30 @@
     "relatedSettings": ["base-contrat"],
     "relatedCatalogProducts": ["ldds", "lep", "livret_a", "livret_jeune", "peac"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "service-public-comptes-livrets-comparatif-2026",
+    "label": "Service-Public — comparatif comptes et livrets d'épargne",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F34393",
+    "articleOrSection": "Comptes et livrets d'épargne : quelles différences ?",
+    "scope": "Comparatif officiel des livrets d'épargne, plafonds, disponibilité, intérêts et fiscalité.",
+    "volatility": "annual",
+    "relatedSettings": ["base-contrat"],
+    "relatedCatalogProducts": ["ldds", "lep", "livret_a", "livret_jeune"],
+    "lastCheckedAt": "2026-06-13"
+  },
+  {
+    "id": "service-public-livrets-taux-2026",
+    "label": "Service-Public — taux Livret A, LDDS, LEP et CEL 2026",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/actualites/A18000",
+    "articleOrSection": "Actualité A18000",
+    "scope": "Taux de rémunération des livrets réglementés applicables à compter du 1er février 2026.",
+    "volatility": "annual",
+    "relatedSettings": ["base-contrat"],
+    "relatedCatalogProducts": ["ldds", "lep", "livret_a", "livret_jeune", "cel"],
+    "lastCheckedAt": "2026-06-13"
   },
   {
     "id": "base-source-art-157-7-cgi",
@@ -1742,6 +1778,30 @@
     "relatedSettings": ["base-contrat"],
     "relatedCatalogProducts": ["pel"],
     "lastCheckedAt": "2026-06-06"
+  },
+  {
+    "id": "service-public-pel-taux-2026",
+    "label": "Service-Public — taux du PEL 2026",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/actualites/A16217",
+    "articleOrSection": "Actualité A16217",
+    "scope": "Taux de rémunération des plans épargne logement ouverts à compter du 1er janvier 2026.",
+    "volatility": "annual",
+    "relatedSettings": ["base-contrat"],
+    "relatedCatalogProducts": ["pel"],
+    "lastCheckedAt": "2026-06-13"
+  },
+  {
+    "id": "service-public-pea",
+    "label": "Service-Public — Plan d'épargne en actions (PEA)",
+    "sourceType": "Service-Public",
+    "officialUrl": "https://www.service-public.fr/particuliers/vosdroits/F2385",
+    "articleOrSection": "Plan d'épargne en actions (PEA)",
+    "scope": "Fonctionnement, plafonds de versement et fiscalité du PEA et du PEA-PME.",
+    "volatility": "lawChange",
+    "relatedSettings": ["base-contrat"],
+    "relatedCatalogProducts": ["pea", "pea_pme"],
+    "lastCheckedAt": "2026-06-13"
   },
   {
     "id": "base-source-art-l221-30-code-monetaire-et-financier-pea",

@@ -43,6 +43,11 @@ const TARGETS = {
     readMustUseAdmin: false,
     writesMustUseAdmin: true,
   },
+  memento_reference_values: {
+    read: 'authenticated',
+    readMustUseAdmin: false,
+    writesMustUseAdmin: true,
+  },
   prevoyance_regime_settings: {
     read: 'authenticated',
     readMustUseAdmin: false,
