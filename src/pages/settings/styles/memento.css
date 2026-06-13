@@ -102,6 +102,152 @@
   padding-top: 4px;
 }
 
+.settings-memento-reference-values {
+  display: grid;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-memento-reference-values__header {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-memento-reference-values__header h4,
+.settings-memento-reference-values__group h5 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.settings-memento-reference-values__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-memento-reference-values__group {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-memento-reference-values__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.settings-memento-reference-values__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.settings-memento-reference-values__table th,
+.settings-memento-reference-values__table td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  text-align: left;
+  vertical-align: top;
+}
+
+.settings-memento-reference-values__table thead th {
+  border-top: 0;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-weight: 850;
+}
+
+.settings-memento-reference-values__table tbody th {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.settings-memento-reference-values__table tbody th span,
+.settings-memento-reference-values__table tbody th small {
+  display: block;
+}
+
+.settings-memento-reference-values__table tbody th small {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.settings-memento-reference-values__input,
+.settings-memento-reference-values__year {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.settings-memento-reference-values__input input,
+.settings-memento-reference-values__year input {
+  min-height: 30px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: right;
+}
+
+.settings-memento-reference-values__input input {
+  width: 112px;
+}
+
+.settings-memento-reference-values__year input {
+  width: 74px;
+}
+
+.settings-memento-reference-values__input input:focus,
+.settings-memento-reference-values__year input:focus {
+  border-color: var(--action-primary);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.settings-memento-reference-values__input input:disabled,
+.settings-memento-reference-values__year input:disabled {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+.settings-memento-reference-values__input span {
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.settings-memento-reference-values__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.settings-memento-reference-values__actions span,
+.settings-memento-reference-values__error {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-memento-reference-values__error {
+  color: var(--state-danger);
+}
+
 .settings-memento-calculator-card {
   overflow: hidden;
   border: 1px solid var(--border-default);

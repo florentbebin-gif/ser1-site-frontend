@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { Suspense, lazy, useMemo, useState, type ReactElement } from 'react';
 
 import {
   buildMementoDisplayPlan,
@@ -9,15 +9,21 @@ import {
 import MementoReadableEntry from './MementoReadableEntry';
 import MementoReadChapter from './MementoReadChapter';
 
+const MementoValueTable = lazy(() => import('./MementoValueTable'));
+
 function hasReadableContent(part: MementoDisplayPart): boolean {
   return part.chapters.length + part.entries.length + part.lexiconTerms.length > 0;
 }
 
 interface MementoReadViewProps {
   showStatus: boolean;
+  isAdmin: boolean;
 }
 
-export default function MementoReadView({ showStatus }: MementoReadViewProps): ReactElement {
+export default function MementoReadView({
+  showStatus,
+  isAdmin,
+}: MementoReadViewProps): ReactElement {
   const displayPlan = useMemo(() => buildMementoDisplayPlan(), []);
   const [openPartId, setOpenPartId] = useState<MementoPartId | null>(null);
   const [openChapterKey, setOpenChapterKey] = useState<string | null>(null);
@@ -76,6 +82,14 @@ export default function MementoReadView({ showStatus }: MementoReadViewProps): R
                   role="region"
                   aria-labelledby={buttonId}
                 >
+                  {part.definition.id === 'chiffres-cles' ? (
+                    <Suspense
+                      fallback={<p className="settings-memento-empty">Chargement des valeurs...</p>}
+                    >
+                      <MementoValueTable isAdmin={isAdmin} />
+                    </Suspense>
+                  ) : null}
+
                   {part.entries.length > 0 ? (
                     <div className="settings-memento-readable-list">
                       {part.entries.map((entry) => (

@@ -93,6 +93,12 @@ const COVERED_TABLES = {
     read: 'tenant_or_admin',
     writes: { insert: 'admin', update: 'admin', delete: 'admin' },
   },
+  memento_reference_values: {
+    sensitivity: 'sensitive',
+    reason: 'Valeurs de reference du memento, lecture auth et ecriture admin.',
+    read: 'authenticated',
+    writes: { insert: 'admin', update: 'admin', delete: 'admin' },
+  },
   pass_history: {
     sensitivity: 'sensitive',
     reason:

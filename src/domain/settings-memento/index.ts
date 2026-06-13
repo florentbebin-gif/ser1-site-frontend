@@ -25,6 +25,16 @@ export {
   type MementoLexiconValidationResult,
 } from './lexicon';
 export {
+  DEFAULT_MEMENTO_REFERENCE_VALUES,
+  MEMENTO_REFERENCE_SUBDOMAIN_LABELS,
+  groupMementoReferenceValuesBySubdomain,
+  sortMementoReferenceValues,
+  type MementoReferenceValue,
+  type MementoReferenceValueDraft,
+  type MementoReferenceValueGroup,
+  type MementoReferenceValueUnit,
+} from './referenceValues';
+export {
   ARTICLE_83_PERO_CLAIMS,
   EPARGNE_SALARIALE_RETRAITE_CLAIMS,
   FISCALITE_SORTIE_RETRAITE_CLAIMS,
