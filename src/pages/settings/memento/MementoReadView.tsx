@@ -26,6 +26,11 @@ const VALUE_TABLE_BY_PART: Partial<
     title: 'Valeurs de référence',
     description: 'Plafonds et taux utiles à la lecture des produits réglementés.',
   },
+  demembrement: {
+    domain: 'demembrement',
+    title: 'Valeurs de démembrement',
+    description: 'Repères de valorisation fiscale de l’usufruit et de la nue-propriété.',
+  },
   'social-protection': {
     domain: 'social-protection',
     title: 'Valeurs sociales de référence',
