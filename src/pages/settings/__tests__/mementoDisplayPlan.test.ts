@@ -11,6 +11,9 @@ import {
   resolveMementoEntryPartId,
 } from '../memento/mementoDisplayPlan';
 
+const FORBIDDEN_META_WORDS =
+  /\b(?:simulateurs?|settings|couverture|param[eè]tres?|révisable|calculateurs?)\b/i;
+
 function getEntry(key: string) {
   const entry = MEMENTO_ENTRIES.find((candidate) => candidate.key === key);
   if (!entry) throw new Error(`Entrée mémento introuvable : ${key}`);
@@ -52,6 +55,12 @@ describe('mementoDisplayPlan', () => {
     ].filter((value): value is string => value !== null);
 
     expect([...displayTexts, ...prudenceTexts].filter((text) => /\d/.test(text))).toEqual([]);
+  });
+
+  it('garde les descriptions du sommaire sans vocabulaire technique interne', () => {
+    for (const part of MEMENTO_DISPLAY_PARTS) {
+      expect(part.description, part.title).not.toMatch(FORBIDDEN_META_WORDS);
+    }
   });
 
   it('déplace seulement la présentation des entrées transverses', () => {

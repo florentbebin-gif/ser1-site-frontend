@@ -6,7 +6,6 @@ import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import MementoAdminSection from './memento/MementoAdminSection';
 import MementoReadView from './memento/MementoReadView';
 
-const MementoCalculatorSettingsView = lazy(() => import('./memento/MementoCalculatorSettingsView'));
 const MementoAuditView = lazy(() => import('./memento/MementoAuditView'));
 
 export default function SettingsMemento(): ReactElement {
@@ -34,17 +33,6 @@ export default function SettingsMemento(): ReactElement {
 
       {isAdmin ? (
         <div className="settings-memento-admin-zone" aria-label="Administration du mémento">
-          <MementoAdminSection
-            title="Paramètres calculateurs"
-            subtitle="Panneaux d’administration qui alimentent les simulateurs."
-          >
-            <Suspense
-              fallback={<p className="settings-memento-empty">Chargement des paramètres...</p>}
-            >
-              <MementoCalculatorSettingsView />
-            </Suspense>
-          </MementoAdminSection>
-
           <MementoAdminSection
             title="Audit & sources"
             subtitle="Contrôles techniques, registre settings et couverture simulateurs."

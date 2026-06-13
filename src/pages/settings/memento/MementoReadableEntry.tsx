@@ -4,7 +4,6 @@ import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import { getOptionalLegalReference, type LegalReferenceId } from '@/domain/legal-references';
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
-import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 
 import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
 
@@ -42,20 +41,6 @@ function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): Re
   );
 }
 
-function SimulatorLinks({ entry }: { entry: MementoEntry }): ReactElement | null {
-  const simulatorLabels = entry.relatedSimulatorIds
-    .map((simulatorId) => getOptionalSimulatorDefinition(simulatorId)?.shortLabel)
-    .filter((label): label is string => Boolean(label));
-
-  if (simulatorLabels.length === 0) return null;
-
-  return (
-    <p className="settings-memento-readable-entry__used-by">
-      <span>Utilisé par</span> {simulatorLabels.join(', ')}
-    </p>
-  );
-}
-
 export default function MementoReadableEntry(props: MementoReadableEntryProps): ReactElement {
   if (props.kind === 'lexicon') {
     const prudence = MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status];
@@ -81,7 +66,6 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
         {props.showStatus && prudence ? <span>{prudence}</span> : null}
       </div>
       <p>{props.entry.description}</p>
-      <SimulatorLinks entry={props.entry} />
       <ReferenceLinks refIds={props.entry.refIds} />
     </article>
   );

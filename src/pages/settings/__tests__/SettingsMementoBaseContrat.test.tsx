@@ -48,18 +48,36 @@ async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, labe
   await user.click(button);
 }
 
-async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
   const button = await waitFor(() => {
     const candidate = screen
       .getAllByRole('button')
       .find(
         (item): item is HTMLButtonElement =>
           item instanceof HTMLButtonElement &&
-          item.classList.contains('settings-memento-admin-section__header') &&
+          item.classList.contains('settings-memento-part__header') &&
           item.textContent?.includes(label) === true,
       );
 
-    if (!candidate) throw new Error(`Section admin introuvable : ${label}`);
+    if (!candidate) throw new Error(`Partie introuvable : ${label}`);
+    return candidate;
+  });
+
+  await user.click(button);
+}
+
+async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = await waitFor(() => {
+    const candidate = screen
+      .getAllByRole('button')
+      .find(
+        (item): item is HTMLButtonElement =>
+          item instanceof HTMLButtonElement &&
+          item.classList.contains('settings-memento-read-chapter__header') &&
+          item.textContent?.includes(label) === true,
+      );
+
+    if (!candidate) throw new Error(`Chapitre introuvable : ${label}`);
     return candidate;
   });
 
@@ -67,13 +85,19 @@ async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label:
 }
 
 describe('SettingsMemento — Base-Contrat', () => {
-  it('rend le référentiel contrats depuis la vue paramètres calculateurs', async () => {
+  it('rend le référentiel contrats depuis la lecture placements', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
 
-    await openAdminSection(user, 'Paramètres calculateurs');
+    await openReadPart(user, 'Impôt sur les sociétés et placements');
+    await openReadChapter(user, 'Placements');
+    expect(
+      screen
+        .getAllByRole('button')
+        .filter((button) => button.textContent?.includes('Référentiel contrats')),
+    ).toHaveLength(1);
     await openCalculatorCard(user, 'Référentiel contrats');
 
     expect(

@@ -89,12 +89,16 @@
 .settings-memento-parts,
 .settings-memento-read-chapters,
 .settings-memento-readable-list,
-.settings-memento-calculator-grid,
+.settings-memento-value-sections,
 .settings-memento-audit-registry {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 12px;
+}
+
+.settings-memento-value-sections {
+  padding-top: 4px;
 }
 
 .settings-memento-calculator-card {
@@ -306,11 +310,6 @@
   font-size: 11px;
   font-weight: 800;
   line-height: 1.1;
-}
-
-.settings-memento-readable-entry__used-by span {
-  color: var(--text-primary);
-  font-weight: 850;
 }
 
 .settings-memento-readable-entry__references {

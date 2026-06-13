@@ -10,11 +10,11 @@ export const MEMENTO_EDITORIAL = [
   {
     chapterId: 'foyer',
     summary:
-      'Le foyer donne le point de départ du conseil : personnes concernées, liens familiaux et capacité à porter les projets.',
+      'Le foyer décrit les personnes concernées, leurs liens familiaux et leur capacité à porter les projets patrimoniaux.',
     keyPoints: [
-      'Identifier les personnes à protéger avant de choisir un outil.',
-      'Séparer les données de famille des règles fiscales ou civiles.',
-      'Relier budget, objectifs et horizon patrimonial au dossier central.',
+      'Qualifier la situation familiale, les personnes à charge et les liens de dépendance.',
+      'Distinguer composition du foyer, rattachement fiscal et organisation patrimoniale.',
+      'Situer les objectifs dans le temps pour lire correctement les autres dispositifs.',
     ],
   },
   {
@@ -22,9 +22,9 @@ export const MEMENTO_EDITORIAL = [
     summary:
       'Le civil explique qui possède quoi, qui décide et comment le patrimoine circule en cas de séparation ou de décès.',
     keyPoints: [
-      'Lire le régime matrimonial avant toute projection successorale.',
+      'Lire le régime matrimonial avant toute analyse successorale.',
       'Distinguer propriété, usufruit, nue-propriété et pouvoirs de gestion.',
-      'Repérer les clauses utiles sans les transformer en conseil notarial automatique.',
+      'Repérer les clauses civiles utiles sans les assimiler à un acte notarié.',
     ],
   },
   {
@@ -34,16 +34,16 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Rattacher chaque actif au bon détenteur et au bon objectif.',
       'Séparer valeur de marché, valeur fiscale et valeur de conseil.',
-      'Garder la synthèse actif-passif dans le dossier central.',
+      'Distinguer les liquidités disponibles des actifs difficiles à céder.',
     ],
   },
   {
     chapterId: 'fiscalite-foyer',
     summary:
-      'La fiscalité du foyer sert à comprendre la pression fiscale et les paramètres utilisés par les simulateurs.',
+      'La fiscalité du foyer présente les mécanismes d’imposition des revenus, du patrimoine et des contributions associées.',
     keyPoints: [
-      'Lire les mécanismes sans recopier les barèmes dans le texte.',
-      'Vérifier que chaque valeur vient des settings chargés.',
+      'Distinguer revenu imposable, quotient familial et revenus du capital.',
+      'Lire les barèmes dans les tableaux de valeurs dédiés.',
       'Distinguer impôt courant, revenus du capital et fiscalité immobilière.',
     ],
   },
@@ -52,9 +52,9 @@ export const MEMENTO_EDITORIAL = [
     summary:
       'La transmission prépare le passage du patrimoine : héritiers, libéralités, assurance-vie et liquidité disponible.',
     keyPoints: [
-      'Commencer par la règle civile avant le calcul des droits.',
+      'Commencer par la règle civile avant l’évaluation fiscale.',
       'Séparer donation, succession et clause bénéficiaire.',
-      'Vérifier la liquidité avant de promettre une stratégie transmissive.',
+      'Repérer la liquidité nécessaire au règlement de la transmission.',
     ],
   },
   {
@@ -62,9 +62,9 @@ export const MEMENTO_EDITORIAL = [
     summary:
       'Les placements comparent les enveloppes, leur usage patrimonial et les règles de sortie ou de transmission.',
     keyPoints: [
-      'Choisir une enveloppe selon le projet, pas seulement selon sa fiscalité.',
-      'Relier assurance-vie, capitalisation, titres et liquidités au référentiel contrats.',
-      'Laisser les règles détaillées au catalogue Base-Contrat et à ses overrides.',
+      'Situer chaque enveloppe selon sa durée, sa disponibilité et sa fiscalité.',
+      'Distinguer assurance-vie, capitalisation, titres et liquidités.',
+      'Lire les règles détaillées dans le référentiel contrats.',
     ],
   },
   {
@@ -74,7 +74,7 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Qualifier le mode de détention avant de comparer les régimes.',
       'Séparer rendement, fiscalité, crédit et risque de liquidité.',
-      'Garder les sujets planifiés prudents tant que le moteur n’existe pas.',
+      'Distinguer immobilier d’usage, locatif et détention indirecte.',
     ],
   },
   {
@@ -83,17 +83,17 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Comparer les scénarios avec les mêmes hypothèses de départ.',
       'Ne pas confondre gain fiscal, risque pris et besoin de trésorerie.',
-      'Tracer les effets société, foyer et transmission quand ils se croisent.',
+      'Lire ensemble les effets sur le foyer, la société et la transmission.',
     ],
   },
   {
     chapterId: 'retraite',
     summary:
-      'La retraite obligatoire décrit les droits futurs sans simuler une carrière complète tant que le moteur reste planifié.',
+      'La retraite obligatoire expose les droits de base, les régimes complémentaires et les conditions de liquidation.',
     keyPoints: [
       'Identifier le régime avant de parler de liquidation.',
       'Séparer âge, durée, points, réversion et départ anticipé.',
-      'Suivre la fonction publique comme chantier prévu tant qu’aucun simulateur ne l’exploite.',
+      'Distinguer régimes salariés, indépendants, libéraux et fonction publique.',
     ],
   },
   {
@@ -102,7 +102,7 @@ export const MEMENTO_EDITORIAL = [
       'L’épargne retraite relie effort d’épargne, fiscalité d’entrée, disponibilité et sortie en rente ou capital.',
     keyPoints: [
       'Distinguer PER, anciens contrats et épargne salariale.',
-      'Lire les plafonds depuis les settings ou le dossier, jamais depuis le texte.',
+      'Lire les plafonds dans les tableaux de valeurs dédiés.',
       'Séparer transfert de contrat, potentiel de versement et liquidation.',
     ],
   },
@@ -113,7 +113,7 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Comparer régime obligatoire, maintien employeur et contrat privé.',
       'Relier les garanties au besoin familial avant de parler cotisation.',
-      'Auditer les sources de caisse sans recopier leurs valeurs dans le mémento.',
+      'Distinguer arrêt de travail, invalidité, décès et maintien de revenu.',
     ],
   },
   {
@@ -121,8 +121,8 @@ export const MEMENTO_EDITORIAL = [
     summary: 'La société rassemble résultat, distribution, trésorerie et opérations sur titres.',
     keyPoints: [
       'Séparer fiscalité société, droit des associés et stratégie patrimoniale.',
-      'Relier dividendes, réserves et trésorerie aux simulateurs concernés.',
-      'Garder les sujets de valorisation prudents tant que les preuves manquent.',
+      'Distinguer dividendes, réserves, compte courant et trésorerie disponible.',
+      'Repérer les opérations sur titres et leurs effets pour les associés.',
     ],
   },
   {
@@ -132,7 +132,7 @@ export const MEMENTO_EDITORIAL = [
     keyPoints: [
       'Identifier le statut social avant toute comparaison de rémunération.',
       'Distinguer revenu personnel, flux société et protection sociale.',
-      'Ne pas activer les variantes planifiées sans contrat simulateur.',
+      'Repérer les effets croisés entre rémunération, dividendes et prévoyance.',
     ],
   },
   {

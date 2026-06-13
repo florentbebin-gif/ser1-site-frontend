@@ -448,7 +448,7 @@ export default function BaseContratSettingsPanel() {
 
                           {isProductOpen && (
                             <div className="base-contrat-product__body">
-                              {override?.note_admin && (
+                              {isAdmin && override?.note_admin && (
                                 <p className="base-contrat-note">Note : {override.note_admin}</p>
                               )}
                               {isAdmin && override && <ReviewStatusDetails override={override} />}

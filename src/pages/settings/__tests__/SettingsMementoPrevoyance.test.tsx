@@ -106,18 +106,36 @@ async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, labe
   await user.click(button);
 }
 
-async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
   const button = await waitFor(() => {
     const candidate = screen
       .getAllByRole('button')
       .find(
         (item): item is HTMLButtonElement =>
           item instanceof HTMLButtonElement &&
-          item.classList.contains('settings-memento-admin-section__header') &&
+          item.classList.contains('settings-memento-part__header') &&
           item.textContent?.includes(label) === true,
       );
 
-    if (!candidate) throw new Error(`Section admin introuvable : ${label}`);
+    if (!candidate) throw new Error(`Partie introuvable : ${label}`);
+    return candidate;
+  });
+
+  await user.click(button);
+}
+
+async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const button = await waitFor(() => {
+    const candidate = screen
+      .getAllByRole('button')
+      .find(
+        (item): item is HTMLButtonElement =>
+          item instanceof HTMLButtonElement &&
+          item.classList.contains('settings-memento-read-chapter__header') &&
+          item.textContent?.includes(label) === true,
+      );
+
+    if (!candidate) throw new Error(`Chapitre introuvable : ${label}`);
     return candidate;
   });
 
@@ -125,7 +143,7 @@ async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label:
 }
 
 describe('SettingsMemento — prévoyance', () => {
-  it('rend les régimes prévoyance depuis la vue paramètres calculateurs', async () => {
+  it('rend les régimes prévoyance depuis la lecture protection sociale', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
@@ -133,7 +151,8 @@ describe('SettingsMemento — prévoyance', () => {
       screen.queryByPlaceholderText('Rechercher un régime, une caisse ou un code'),
     ).not.toBeInTheDocument();
 
-    await openAdminSection(user, 'Paramètres calculateurs');
+    await openReadPart(user, 'Social et protection sociale');
+    await openReadChapter(user, 'Prévoyance');
     await openCalculatorCard(user, 'Prévoyance et régimes');
 
     expect(
