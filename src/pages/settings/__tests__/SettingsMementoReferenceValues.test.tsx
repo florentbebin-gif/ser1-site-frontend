@@ -141,6 +141,58 @@ describe('SettingsMemento — valeurs de référence', () => {
     expect(agircInput).toHaveValue('Employeur 4,72 % · salarié 3,15 % · total 7,87 %');
   });
 
+  it('affiche les valeurs de démembrement en lecture pour un non-admin', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Démembrement');
+
+    expect(
+      await screen.findByRole('heading', { name: 'Valeurs de démembrement' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Moins de vingt et un ans révolus')).toBeInTheDocument();
+    expect(await screen.findByText('Usufruit temporaire — période de dix ans')).toBeInTheDocument();
+    expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
+
+    const usufruitInput = await screen.findByLabelText('Moins de vingt et un ans révolus — valeur');
+    expect(usufruitInput).toBeDisabled();
+    expect(usufruitInput).toHaveValue('Usufruit 90 % · nue-propriété 10 %');
+
+    const usufruitTemporaireInput = await screen.findByLabelText(
+      'Usufruit temporaire — période de dix ans — valeur',
+    );
+    expect(usufruitTemporaireInput).toBeDisabled();
+    expect(usufruitTemporaireInput).toHaveValue(23);
+  });
+
+  it('laisse un admin éditer et enregistrer une valeur de démembrement', async () => {
+    isAdmin = true;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Démembrement');
+
+    const usufruitInput = await screen.findByLabelText('Moins de vingt et un ans révolus — valeur');
+    expect(usufruitInput).toBeEnabled();
+
+    fireEvent.change(usufruitInput, {
+      target: { value: 'Usufruit 90 % · nue-propriété 10 % — ligne revue' },
+    });
+    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs mémento' }));
+
+    await waitFor(() => {
+      expect(upsertMock).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: 'usufruit-viager-moins-21',
+            value_text: 'Usufruit 90 % · nue-propriété 10 % — ligne revue',
+          }),
+        ]),
+        { onConflict: 'key' },
+      );
+    });
+  });
+
   it('laisse un admin éditer et enregistrer une valeur sociale textuelle', async () => {
     isAdmin = true;
     const user = userEvent.setup();

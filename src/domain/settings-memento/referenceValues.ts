@@ -1,5 +1,7 @@
 import type { LegalReferenceId } from '@/domain/legal-references';
 
+import { MEMENTO_DEMEMBREMENT_REFERENCE_VALUES } from './referenceValuesDemembrement';
+
 export type MementoReferenceValueUnit = 'EUR' | '%' | null;
 
 export interface MementoReferenceValue {
@@ -33,6 +35,8 @@ export const MEMENTO_REFERENCE_SUBDOMAIN_LABELS: Record<string, string> = {
   pea: 'PEA et PEA-PME',
   'puma-csm': 'PUMA / CSM',
   'retraite-complementaire': 'Retraite complémentaire AGIRC-ARRCO',
+  'usufruit-temporaire': 'Usufruit temporaire',
+  'usufruit-viager': 'Usufruit viager',
 };
 
 export const DEFAULT_MEMENTO_REFERENCE_VALUES: readonly MementoReferenceValue[] = [
@@ -222,6 +226,7 @@ export const DEFAULT_MEMENTO_REFERENCE_VALUES: readonly MementoReferenceValue[] 
     note: 'Plafond propre au PEA-PME, avec plafond global de cumul mentionné par Service-Public.',
     updated_at: null,
   },
+  ...MEMENTO_DEMEMBREMENT_REFERENCE_VALUES,
   {
     key: 'csm-taux-maximum',
     domain: 'social-protection',

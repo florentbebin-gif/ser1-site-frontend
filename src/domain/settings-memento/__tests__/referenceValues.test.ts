@@ -14,7 +14,7 @@ describe('memento reference values', () => {
     const domains = new Set(DEFAULT_MEMENTO_REFERENCE_VALUES.map((value) => value.domain));
 
     expect(new Set(keys).size).toBe(keys.length);
-    expect(domains).toEqual(new Set(['chiffres-cles', 'social-protection']));
+    expect(domains).toEqual(new Set(['chiffres-cles', 'demembrement', 'social-protection']));
     expect(
       DEFAULT_MEMENTO_REFERENCE_VALUES.every(
         (value) => value.value_numeric !== null || value.value_text !== null,
@@ -75,6 +75,26 @@ describe('memento reference values', () => {
       'pel-taux',
       'pea-plafond',
       'pea-pme-plafond',
+    ]);
+  });
+
+  it('présente le barème de démembrement dans les familles attendues', () => {
+    const groups = groupMementoReferenceValuesBySubdomain(
+      DEFAULT_MEMENTO_REFERENCE_VALUES.filter((value) => value.domain === 'demembrement'),
+    );
+
+    expect(groups.map((group) => group.label)).toEqual(['Usufruit viager', 'Usufruit temporaire']);
+    expect(groups.flatMap((group) => group.rows.map((row) => row.key))).toEqual([
+      'usufruit-viager-moins-21',
+      'usufruit-viager-moins-31',
+      'usufruit-viager-moins-41',
+      'usufruit-viager-moins-51',
+      'usufruit-viager-moins-61',
+      'usufruit-viager-moins-71',
+      'usufruit-viager-moins-81',
+      'usufruit-viager-moins-91',
+      'usufruit-viager-plus-91',
+      'usufruit-temporaire-periode',
     ]);
   });
 
