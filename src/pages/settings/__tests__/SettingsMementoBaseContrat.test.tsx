@@ -30,24 +30,6 @@ vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   upsertBaseContratOverride: vi.fn(() => Promise.resolve()),
 }));
 
-async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = await waitFor(() => {
-    const candidate = screen
-      .getAllByRole('button')
-      .find(
-        (item): item is HTMLButtonElement =>
-          item instanceof HTMLButtonElement &&
-          item.classList.contains('settings-memento-calculator-card__header') &&
-          item.textContent?.includes(label) === true,
-      );
-
-    if (!candidate) throw new Error(`Carte paramètres introuvable : ${label}`);
-    return candidate;
-  });
-
-  await user.click(button);
-}
-
 async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
   const button = await waitFor(() => {
     const candidate = screen
@@ -85,23 +67,28 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
 }
 
 describe('SettingsMemento — Base-Contrat', () => {
-  it('rend le référentiel contrats depuis la lecture placements', async () => {
+  it('rend le référentiel contrats depuis la partie chiffres clés', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
 
-    await openReadPart(user, 'Impôt sur les sociétés et placements');
-    await openReadChapter(user, 'Placements');
-    expect(
-      screen
-        .getAllByRole('button')
-        .filter((button) => button.textContent?.includes('Référentiel contrats')),
-    ).toHaveLength(1);
-    await openCalculatorCard(user, 'Référentiel contrats');
+    await openReadPart(user, 'Chiffres clés et produits réglementés');
 
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Référentiel contrats/i })).toBeInTheDocument();
+  });
+
+  it('ne rend plus le référentiel contrats dans la lecture placements', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Impôt sur les sociétés et placements');
+    await openReadChapter(user, 'Placements');
+
+    expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Référentiel contrats')).not.toBeInTheDocument();
   });
 });

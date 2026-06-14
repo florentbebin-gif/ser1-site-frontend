@@ -8,24 +8,21 @@ import {
 } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
 import MementoReadChapter from './MementoReadChapter';
+import type { MementoReferenceValueDomain } from '@/domain/settings-memento/referenceValues';
 
 const MementoValueTable = lazy(() => import('./MementoValueTable'));
+const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
 
 const VALUE_TABLE_BY_PART: Partial<
   Record<
     MementoPartId,
     {
-      domain: string;
+      domain: MementoReferenceValueDomain;
       title: string;
       description: string;
     }
   >
 > = {
-  'chiffres-cles': {
-    domain: 'chiffres-cles',
-    title: 'Valeurs de référence',
-    description: 'Plafonds et taux utiles à la lecture des produits réglementés.',
-  },
   demembrement: {
     domain: 'demembrement',
     title: 'Valeurs de démembrement',
@@ -69,6 +66,7 @@ export default function MementoReadView({
           const buttonId = `settings-memento-part-${part.definition.id}-button`;
           const panelId = `settings-memento-part-${part.definition.id}-panel`;
           const valueTable = VALUE_TABLE_BY_PART[part.definition.id];
+          const showBaseContrat = part.definition.id === 'chiffres-cles';
 
           return (
             <section
@@ -120,6 +118,18 @@ export default function MementoReadView({
                       fallback={<p className="settings-memento-empty">Chargement des valeurs...</p>}
                     >
                       <MementoValueTable isAdmin={isAdmin} {...valueTable} />
+                    </Suspense>
+                  ) : null}
+
+                  {showBaseContrat ? (
+                    <Suspense
+                      fallback={
+                        <p className="settings-memento-empty">
+                          Chargement du référentiel contrats...
+                        </p>
+                      }
+                    >
+                      <BaseContratSettingsPanel />
                     </Suspense>
                   ) : null}
 

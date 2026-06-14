@@ -118,10 +118,7 @@ describe('contrat des sections settings du mémento', () => {
 
   it('rattache les valeurs de lecture IS et placements aux bons chapitres', () => {
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toEqual(['comptables-societes']);
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual([
-      'prelevements',
-      'base-contrat',
-    ]);
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual(['prelevements']);
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
   });
 });

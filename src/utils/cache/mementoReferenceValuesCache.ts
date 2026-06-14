@@ -4,6 +4,7 @@ import {
   sortMementoReferenceValues,
   type MementoReferenceValue,
   type MementoReferenceValueDraft,
+  type MementoReferenceValueDomain,
   type MementoReferenceValueUnit,
 } from '@/domain/settings-memento/referenceValues';
 
@@ -54,6 +55,19 @@ function normalizeString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
+function normalizeDomain(value: unknown): MementoReferenceValueDomain | null {
+  const domain = normalizeString(value);
+  if (
+    domain === 'chiffres-cles' ||
+    domain === 'demembrement' ||
+    domain === 'fiscalite-internationale' ||
+    domain === 'social-protection'
+  ) {
+    return domain;
+  }
+  return null;
+}
+
 function normalizeData(value: unknown): MementoReferenceValue['data'] {
   if (!isRecord(value)) return {};
 
@@ -74,7 +88,7 @@ function normalizeRow(row: unknown): MementoReferenceValue | null {
   if (!isRecord(row)) return null;
 
   const key = normalizeString(row.key);
-  const domain = normalizeString(row.domain);
+  const domain = normalizeDomain(row.domain);
   const subdomain = normalizeString(row.subdomain);
   const label = normalizeString(row.label);
   const year = normalizeNumber(row.year);
@@ -168,6 +182,7 @@ export async function getMementoReferenceValues(options?: {
 
 export async function upsertMementoReferenceValues(
   values: readonly MementoReferenceValue[],
+  options?: { domain?: MementoReferenceValueDomain },
 ): Promise<void> {
   const payload = values.map(toPayload);
   const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'key' });
@@ -176,6 +191,15 @@ export async function upsertMementoReferenceValues(
     throw new Error("Erreur lors de l'enregistrement des valeurs du mémento.");
   }
 
-  cache = sortMementoReferenceValues(values.map(cloneValue));
+  if (options?.domain && cache) {
+    cache = sortMementoReferenceValues([
+      ...cache.filter((value) => value.domain !== options.domain),
+      ...values.map(cloneValue),
+    ]);
+  } else if (options?.domain) {
+    invalidateMementoReferenceValuesCache();
+  } else {
+    cache = sortMementoReferenceValues(values.map(cloneValue));
+  }
   fetchedAt = Date.now();
 }

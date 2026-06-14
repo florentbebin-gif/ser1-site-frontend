@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { MementoReferenceValue } from '@/domain/settings-memento/referenceValues';
+import type {
+  MementoReferenceValue,
+  MementoReferenceValueDomain,
+} from '@/domain/settings-memento/referenceValues';
 import {
   broadcastMementoReferenceValuesInvalidation,
   getMementoReferenceValues,
@@ -11,6 +14,10 @@ import {
 export interface MementoReferenceValuesSaveResult {
   ok: boolean;
   error?: string;
+}
+
+export interface UseMementoReferenceValuesOptions {
+  domain?: MementoReferenceValueDomain;
 }
 
 export interface UseMementoReferenceValuesReturn {
@@ -30,24 +37,31 @@ function parseNumberInput(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function useMementoReferenceValues(isAdmin: boolean): UseMementoReferenceValuesReturn {
+export function useMementoReferenceValues(
+  isAdmin: boolean,
+  options: UseMementoReferenceValuesOptions = {},
+): UseMementoReferenceValuesReturn {
+  const { domain } = options;
   const [rows, setRows] = useState<MementoReferenceValue[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (force = false): Promise<void> => {
-    setLoading(true);
-    try {
-      const values = await getMementoReferenceValues({ force });
-      setRows(values);
-      setError(null);
-    } catch {
-      setError('Les valeurs de référence du mémento ne peuvent pas être chargées.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (force = false): Promise<void> => {
+      setLoading(true);
+      try {
+        const values = await getMementoReferenceValues({ force });
+        setRows(domain ? values.filter((value) => value.domain === domain) : values);
+        setError(null);
+      } catch {
+        setError('Les valeurs de référence du mémento ne peuvent pas être chargées.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [domain],
+  );
 
   useEffect(() => {
     void load(false);
@@ -89,7 +103,7 @@ export function useMementoReferenceValues(isAdmin: boolean): UseMementoReference
 
     setSaving(true);
     try {
-      await upsertMementoReferenceValues(rows);
+      await upsertMementoReferenceValues(rows, { domain });
       broadcastMementoReferenceValuesInvalidation();
       setError(null);
       return { ok: true };

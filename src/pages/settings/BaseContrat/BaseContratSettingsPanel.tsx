@@ -4,7 +4,7 @@
  * Panneau /settings/memento.
  * Catalogue hardcode (domain/base-contrat/catalog.ts) + overrides Supabase.
  * Règles fiscales lues via domain/base-contrat/rules/.
- * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
+ * UI de lecture : seules actions admin = valeurs de référence et clôture/réouverture.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -23,21 +23,17 @@ import {
 } from '@/domain/base-contrat/overrides';
 import type { BaseContratOverrideInput, OverrideMap } from '@/domain/base-contrat/overrides';
 import { buildBaseContratFiscalLabels, getRules } from '@/domain/base-contrat/rules/index';
-import type {
-  Audience,
-  Confidence,
-  ProductRules,
-  RuleBlock,
-  RuleRenderContext,
-} from '@/domain/base-contrat/rules/index';
+import type { Audience, RuleRenderContext } from '@/domain/base-contrat/rules/index';
+import { getReferenceValuesForProduct } from '@/domain/settings-memento/referenceValues';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
+import { useMementoReferenceValues } from '@/hooks/settings/useMementoReferenceValues';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
-import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from '../baseContratLabels';
+import { GRANDE_FAMILLE_OPTIONS } from '../baseContratLabels';
 import { OverrideModal, ReviewStatusDetails } from '../BaseContratOverrideControls';
-import { RuleSourcesList } from '../BaseContratRuleSources';
+import BaseContratRulesPanel from './BaseContratRulesPanel';
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -78,110 +74,6 @@ function useOverrides() {
   return { overrides, loading, reload };
 }
 
-const CONFIDENCE_LABELS: Record<Confidence, string> = {
-  elevee: 'Vérifié',
-  moyenne: 'À vérifier',
-  faible: 'Non vérifié',
-};
-
-function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {
-  const hasSources = Boolean(block.sources && block.sources.length > 0);
-
-  return (
-    <div className="settings-reference-rule-card">
-      <div className="settings-reference-rule-card__title">{block.title}</div>
-      <ul className="settings-reference-rule-card__list">
-        {block.bullets.map((bullet, index) => (
-          <li key={index}>{bullet}</li>
-        ))}
-      </ul>
-      {(showAdminMeta || hasSources) && (
-        <div
-          className="settings-reference-rule-meta"
-          aria-label={showAdminMeta ? 'Métadonnées admin' : 'Sources'}
-        >
-          {showAdminMeta && (
-            <span
-              className={`settings-reference-confidence settings-reference-confidence--${block.confidence}`}
-            >
-              {CONFIDENCE_LABELS[block.confidence]}
-            </span>
-          )}
-          {hasSources && block.sources && (
-            <div className="settings-reference-rule-meta__group">
-              <span className="settings-reference-rule-meta__label">Sources</span>
-              <RuleSourcesList sources={block.sources} />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function EmptyRuleCard() {
-  return (
-    <div className="settings-reference-empty-card">
-      <div className="settings-reference-empty-card__title">Aucune règle renseignée</div>
-      <div className="settings-reference-empty-card__body">
-        Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
-      </div>
-    </div>
-  );
-}
-
-function PhaseColumn({
-  phaseKey,
-  blocks,
-  showAdminMeta,
-}: {
-  phaseKey: 'constitution' | 'sortie' | 'deces';
-  blocks: RuleBlock[];
-  showAdminMeta: boolean;
-}) {
-  return (
-    <div className="settings-reference-phase">
-      <div
-        className={`settings-reference-phase__title settings-reference-phase__title--${phaseKey}`}
-      >
-        {PHASE_LABELS[phaseKey]}
-      </div>
-      {blocks.length === 0 ? (
-        <EmptyRuleCard />
-      ) : (
-        blocks.map((block, index) => (
-          <RuleBlockCard key={index} block={block} showAdminMeta={showAdminMeta} />
-        ))
-      )}
-    </div>
-  );
-}
-
-function RulesPanel({
-  rules,
-  closed,
-  showAdminMeta,
-}: {
-  rules: ProductRules;
-  closed: boolean;
-  showAdminMeta: boolean;
-}) {
-  return (
-    <div className={`settings-reference-rules${closed ? ' settings-reference-rules--closed' : ''}`}>
-      <div className="settings-reference-rules__grid">
-        {(['constitution', 'sortie', 'deces'] as const).map((phaseKey) => (
-          <PhaseColumn
-            key={phaseKey}
-            phaseKey={phaseKey}
-            blocks={rules[phaseKey]}
-            showAdminMeta={showAdminMeta}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function formatOpenCount(count: number): string {
   return `${count} ouvert${count > 1 ? 's' : ''}`;
 }
@@ -212,6 +104,14 @@ export default function BaseContratSettingsPanel() {
   const { isAdmin } = useUserRole();
   const { fiscalContext } = useFiscalContext();
   const { overrides, loading, reload } = useOverrides();
+  const {
+    rows: referenceRows,
+    saving: referenceValuesSaving,
+    error: referenceValuesError,
+    handleNumericChange: handleReferenceNumericChange,
+    handleTextChange: handleReferenceTextChange,
+    save: saveReferenceValues,
+  } = useMementoReferenceValues(isAdmin, { domain: 'chiffres-cles' });
 
   const [openProductId, setOpenProductId] = useState<string | null>(null);
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
@@ -220,6 +120,7 @@ export default function BaseContratSettingsPanel() {
   const [togglePPPM, setTogglePPPM] = useState<Audience>('pp');
   const [overrideTarget, setOverrideTarget] = useState<CatalogProduct | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [referenceValuesSaveMessage, setReferenceValuesSaveMessage] = useState<string | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
   const ruleRenderContext = useMemo<RuleRenderContext>(
@@ -278,6 +179,13 @@ export default function BaseContratSettingsPanel() {
     } catch (error) {
       setErrorMsg((error as Error).message ?? 'Erreur lors de la sauvegarde.');
     }
+  }
+
+  async function handleSaveReferenceValues(): Promise<void> {
+    const result = await saveReferenceValues();
+    setReferenceValuesSaveMessage(
+      result.ok ? 'Valeurs de référence enregistrées.' : (result.error ?? null),
+    );
   }
 
   if (loading) {
@@ -392,6 +300,10 @@ export default function BaseContratSettingsPanel() {
                       const override = overrides[product.id];
                       const reviewStatus = override?.review_status ?? 'ok';
                       const rules = getRules(product.id, togglePPPM, ruleRenderContext);
+                      const productReferenceValues = getReferenceValuesForProduct(
+                        referenceRows,
+                        product.id,
+                      );
                       const hasNoRules =
                         rules.constitution.length === 0 &&
                         rules.sortie.length === 0 &&
@@ -452,7 +364,18 @@ export default function BaseContratSettingsPanel() {
                                 <p className="base-contrat-note">Note : {override.note_admin}</p>
                               )}
                               {isAdmin && override && <ReviewStatusDetails override={override} />}
-                              <RulesPanel rules={rules} closed={closed} showAdminMeta={isAdmin} />
+                              <BaseContratRulesPanel
+                                rules={rules}
+                                closed={closed}
+                                showAdminMeta={isAdmin}
+                                referenceValues={productReferenceValues}
+                                referenceValuesSaving={referenceValuesSaving}
+                                referenceValuesError={referenceValuesError}
+                                referenceValuesSaveMessage={referenceValuesSaveMessage}
+                                onReferenceNumericChange={handleReferenceNumericChange}
+                                onReferenceTextChange={handleReferenceTextChange}
+                                onReferenceSave={handleSaveReferenceValues}
+                              />
                             </div>
                           )}
                         </div>

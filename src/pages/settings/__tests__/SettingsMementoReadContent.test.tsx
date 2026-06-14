@@ -89,7 +89,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(container).not.toHaveTextContent(INTERNAL_WORDS);
   });
 
-  it('affiche sociétés et placements avec leurs valeurs de référence en lecture', async () => {
+  it('affiche sociétés et placements sans le référentiel contrats déplacé', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
@@ -105,7 +105,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(screen.getByText('Enveloppes de placement')).toBeInTheDocument();
     expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
     expect(screen.getByText('Prélèvements sociaux')).toBeInTheDocument();
-    expect(screen.getByText('Référentiel contrats')).toBeInTheDocument();
+    expect(screen.queryByText('Référentiel contrats')).not.toBeInTheDocument();
   });
 
   it('affiche successions et libéralités avec les valeurs DMTG en lecture', async () => {

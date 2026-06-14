@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
+import { CATALOG_BY_ID } from '@/domain/base-contrat/catalog';
 import { getOptionalLegalReference } from '@/domain/legal-references';
 
 import {
   DEFAULT_MEMENTO_REFERENCE_VALUES,
+  getReferenceValuesForProduct,
   groupMementoReferenceValuesBySubdomain,
   sortMementoReferenceValues,
 } from '../referenceValues';
@@ -57,6 +59,44 @@ describe('memento reference values', () => {
       'PEA — plafond de versement',
       'PEA-PME — plafond de versement',
     ]);
+  });
+
+  it('rattache les valeurs de chiffres clés à des produits du catalogue', () => {
+    const productIds = DEFAULT_MEMENTO_REFERENCE_VALUES.filter(
+      (value) => value.domain === 'chiffres-cles',
+    ).flatMap((value) => (typeof value.data.product === 'string' ? [value.data.product] : []));
+
+    expect([...new Set(productIds)].sort()).toEqual([
+      'cel',
+      'ldds',
+      'lep',
+      'livret_a',
+      'pea',
+      'pea_pme',
+      'pel',
+    ]);
+    expect(productIds.every((productId) => CATALOG_BY_ID[productId])).toBe(true);
+  });
+
+  it('filtre les valeurs par produit et domaine', () => {
+    const livretAValues = getReferenceValuesForProduct(
+      DEFAULT_MEMENTO_REFERENCE_VALUES,
+      'livret_a',
+    );
+    const peeChiffresClesValues = getReferenceValuesForProduct(
+      DEFAULT_MEMENTO_REFERENCE_VALUES,
+      'pee',
+    );
+    const peeSocialValues = getReferenceValuesForProduct(
+      DEFAULT_MEMENTO_REFERENCE_VALUES,
+      'pee',
+      'social-protection',
+    );
+
+    expect(livretAValues.map((value) => value.key)).toEqual(['livret-a-plafond', 'livret-a-taux']);
+    expect(livretAValues.map((value) => value.value_numeric)).toEqual([22950, 1.5]);
+    expect(peeChiffresClesValues).toEqual([]);
+    expect(peeSocialValues.map((value) => value.key)).toEqual(['pee-abondement-plafond']);
   });
 
   it('conserve un tri stable par ordre de lecture', () => {
