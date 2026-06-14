@@ -47,6 +47,20 @@ vi.mock('@/supabaseClient', () => ({
   },
 }));
 
+vi.mock('@/hooks/useFiscalContext', () => ({
+  useFiscalContext: () => ({
+    fiscalContext: undefined,
+    loading: false,
+    error: null,
+    meta: {},
+  }),
+}));
+
+vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
+  getBaseContratOverrides: vi.fn(() => Promise.resolve({})),
+  upsertBaseContratOverride: vi.fn(() => Promise.resolve()),
+}));
+
 async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
   const button = await waitFor(() => {
     const candidate = screen
@@ -74,40 +88,45 @@ describe('SettingsMemento — valeurs de référence', () => {
     invalidateMementoReferenceValuesCache();
   });
 
-  it('affiche les produits réglementés en lecture pour un non-admin', async () => {
+  it('affiche les valeurs des produits réglementés dans la fiche pour un non-admin', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Chiffres clés et produits réglementés');
 
+    expect(screen.queryByRole('heading', { name: 'Valeurs de référence' })).not.toBeInTheDocument();
     expect(
-      await screen.findByRole('heading', { name: 'Valeurs de référence' }),
+      await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
     ).toBeInTheDocument();
-    expect(await screen.findByText('Livret A — plafond')).toBeInTheDocument();
-    expect(await screen.findByText('PEA-PME — plafond de versement')).toBeInTheDocument();
-    expect(screen.queryByText('AGIRC-ARRCO — tranche T1')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
+    await user.click(screen.getByRole('button', { name: /Livret A/i }));
 
-    const livretAInput = await screen.findByLabelText('Livret A — plafond — valeur');
-    expect(livretAInput).toBeDisabled();
-    expect(livretAInput).toHaveValue(22950);
+    expect(await screen.findByRole('heading', { name: 'Chiffres clés' })).toBeInTheDocument();
+    expect(screen.getByText(/22\s*950\s*€/)).toBeInTheDocument();
+    expect(screen.getByText(/1,5\s*%/)).toBeInTheDocument();
+    expect(screen.queryByText('AGIRC-ARRCO — tranche T1')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Livret A — plafond — valeur')).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Enregistrer les valeurs mémento' }),
+      screen.queryByRole('button', { name: 'Enregistrer les valeurs de référence' }),
     ).not.toBeInTheDocument();
   });
 
-  it('laisse un admin éditer et enregistrer ces valeurs', async () => {
+  it('laisse un admin éditer et enregistrer les valeurs de la fiche produit', async () => {
     isAdmin = true;
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await screen.findByRole('radiogroup', { name: 'Audience' });
+    await user.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
+    await user.click(screen.getByRole('button', { name: /Livret A/i }));
 
     const livretAInput = await screen.findByLabelText('Livret A — plafond — valeur');
     expect(livretAInput).toBeEnabled();
 
     await user.clear(livretAInput);
     await user.type(livretAInput, '23000');
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs mémento' }));
+    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs de référence' }));
 
     await waitFor(() => {
       expect(upsertMock).toHaveBeenCalledWith(
@@ -120,6 +139,8 @@ describe('SettingsMemento — valeurs de référence', () => {
         { onConflict: 'key' },
       );
     });
+    const payload = upsertMock.mock.calls[0]?.[0] as Array<{ domain: string }> | undefined;
+    expect(payload?.every((row) => row.domain === 'chiffres-cles')).toBe(true);
   });
 
   it('affiche les repères sociaux en lecture pour un non-admin', async () => {

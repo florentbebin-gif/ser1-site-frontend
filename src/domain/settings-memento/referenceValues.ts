@@ -4,10 +4,15 @@ import { MEMENTO_DEMEMBREMENT_REFERENCE_VALUES } from './referenceValuesDemembre
 import { MEMENTO_INTERNATIONAL_REFERENCE_VALUES } from './referenceValuesInternational';
 
 export type MementoReferenceValueUnit = 'EUR' | '%' | null;
+export type MementoReferenceValueDomain =
+  | 'chiffres-cles'
+  | 'demembrement'
+  | 'fiscalite-internationale'
+  | 'social-protection';
 
 export interface MementoReferenceValue {
   key: string;
-  domain: string;
+  domain: MementoReferenceValueDomain;
   subdomain: string;
   label: string;
   value_numeric: number | null;
@@ -423,6 +428,16 @@ export function sortMementoReferenceValues(
       left.display_order - right.display_order ||
       left.subdomain.localeCompare(right.subdomain, 'fr') ||
       left.label.localeCompare(right.label, 'fr'),
+  );
+}
+
+export function getReferenceValuesForProduct(
+  values: readonly MementoReferenceValue[],
+  productId: string,
+  domain: MementoReferenceValueDomain = 'chiffres-cles',
+): MementoReferenceValue[] {
+  return sortMementoReferenceValues(
+    values.filter((value) => value.domain === domain && value.data.product === productId),
   );
 }
 

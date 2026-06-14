@@ -1500,17 +1500,17 @@
     "sectionKey": "epargne-bancaire",
     "sectionLabel": "Épargne bancaire",
     "category": "constitution",
-    "claimKey": "base-contrat-ldds-pp-constitution-versements-et-plafonds",
-    "claimLabel": "LDDS (PP) — Versements et plafonds",
+    "claimKey": "base-contrat-ldds-pp-constitution-ouverture-et-conditions",
+    "claimLabel": "LDDS (PP) — Ouverture et conditions",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "ldds",
       "audience": "pp",
       "phase": "constitution",
-      "blockKey": "versements-et-plafonds"
+      "blockKey": "ouverture-et-conditions"
     },
     "refIds": ["base-source-service-public-fr-livrets-reglementes"],
-    "relevanceNote": "Le bloc Base-Contrat « Versements et plafonds » du produit LDDS (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
+    "relevanceNote": "Le bloc Base-Contrat « Ouverture et conditions » du produit LDDS (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -1557,17 +1557,17 @@
     "sectionKey": "epargne-bancaire",
     "sectionLabel": "Épargne bancaire",
     "category": "constitution",
-    "claimKey": "base-contrat-lep-pp-constitution-versements-et-plafonds",
-    "claimLabel": "LEP (PP) — Versements et plafonds",
+    "claimKey": "base-contrat-lep-pp-constitution-ouverture-et-conditions",
+    "claimLabel": "LEP (PP) — Ouverture et conditions",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "lep",
       "audience": "pp",
       "phase": "constitution",
-      "blockKey": "versements-et-plafonds"
+      "blockKey": "ouverture-et-conditions"
     },
     "refIds": ["base-source-service-public-fr-livrets-reglementes"],
-    "relevanceNote": "Le bloc Base-Contrat « Versements et plafonds » du produit LEP (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
+    "relevanceNote": "Le bloc Base-Contrat « Ouverture et conditions » du produit LEP (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -1614,17 +1614,17 @@
     "sectionKey": "epargne-bancaire",
     "sectionLabel": "Épargne bancaire",
     "category": "constitution",
-    "claimKey": "base-contrat-livret-a-pp-constitution-versements-et-plafonds",
-    "claimLabel": "Livret A (PP) — Versements et plafonds",
+    "claimKey": "base-contrat-livret-a-pp-constitution-ouverture-et-conditions",
+    "claimLabel": "Livret A (PP) — Ouverture et conditions",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "livret_a",
       "audience": "pp",
       "phase": "constitution",
-      "blockKey": "versements-et-plafonds"
+      "blockKey": "ouverture-et-conditions"
     },
     "refIds": ["base-source-service-public-fr-livrets-reglementes"],
-    "relevanceNote": "Le bloc Base-Contrat « Versements et plafonds » du produit Livret A (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
+    "relevanceNote": "Le bloc Base-Contrat « Ouverture et conditions » du produit Livret A (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -1671,17 +1671,17 @@
     "sectionKey": "epargne-bancaire",
     "sectionLabel": "Épargne bancaire",
     "category": "constitution",
-    "claimKey": "base-contrat-livret-jeune-pp-constitution-versements-et-plafonds",
-    "claimLabel": "Livret Jeune (PP) — Versements et plafonds",
+    "claimKey": "base-contrat-livret-jeune-pp-constitution-ouverture-et-conditions",
+    "claimLabel": "Livret Jeune (PP) — Ouverture et conditions",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "livret_jeune",
       "audience": "pp",
       "phase": "constitution",
-      "blockKey": "versements-et-plafonds"
+      "blockKey": "ouverture-et-conditions"
     },
     "refIds": ["base-source-service-public-fr-livrets-reglementes"],
-    "relevanceNote": "Le bloc Base-Contrat « Versements et plafonds » du produit Livret Jeune (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
+    "relevanceNote": "Le bloc Base-Contrat « Ouverture et conditions » du produit Livret Jeune (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },
@@ -1795,17 +1795,17 @@
     "sectionKey": "epargne-bancaire",
     "sectionLabel": "Épargne bancaire",
     "category": "constitution",
-    "claimKey": "base-contrat-peac-pp-constitution-versements-et-plafonds",
-    "claimLabel": "PEAC (Plan d'épargne avenir climat) (PP) — Versements et plafonds",
+    "claimKey": "base-contrat-peac-pp-constitution-ouverture-et-conditions",
+    "claimLabel": "PEAC (Plan d'épargne avenir climat) (PP) — Ouverture et conditions",
     "target": {
       "kind": "base-contrat-rule",
       "productId": "peac",
       "audience": "pp",
       "phase": "constitution",
-      "blockKey": "versements-et-plafonds"
+      "blockKey": "ouverture-et-conditions"
     },
     "refIds": ["base-source-service-public-fr-livrets-reglementes"],
-    "relevanceNote": "Le bloc Base-Contrat « Versements et plafonds » du produit PEAC (Plan d'épargne avenir climat) (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
+    "relevanceNote": "Le bloc Base-Contrat « Ouverture et conditions » du produit PEAC (Plan d'épargne avenir climat) (PP) s'appuie sur les sources officielles déclarées dans ses RuleSource.",
     "verifiedAt": "2026-06-06",
     "volatility": "lawChange"
   },

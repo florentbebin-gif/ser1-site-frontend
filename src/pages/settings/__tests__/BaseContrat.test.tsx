@@ -1,18 +1,26 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BaseContratSettingsPanel from '../BaseContrat/BaseContratSettingsPanel';
 import type { UserRoleState } from '@/auth/useUserRole';
 import type { ProductRules } from '@/domain/base-contrat/rules';
 import { getLegalReference } from '@/domain/legal-references';
+import {
+  DEFAULT_MEMENTO_REFERENCE_VALUES,
+  type MementoReferenceValue,
+} from '@/domain/settings-memento/referenceValues';
 
 let isAdmin = false;
 
 const getBaseContratOverridesMock = vi.fn();
 const upsertBaseContratOverrideMock = vi.fn();
+const useMementoReferenceValuesMock = vi.hoisted(() => vi.fn());
+const handleReferenceNumericChangeMock = vi.hoisted(() => vi.fn());
+const handleReferenceTextChangeMock = vi.hoisted(() => vi.fn());
+const saveReferenceValuesMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/auth/useUserRole', () => ({
   useUserRole: (): UserRoleState => ({
@@ -26,6 +34,11 @@ vi.mock('@/auth/useUserRole', () => ({
 vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   getBaseContratOverrides: () => getBaseContratOverridesMock(),
   upsertBaseContratOverride: (payload: unknown) => upsertBaseContratOverrideMock(payload),
+}));
+
+vi.mock('@/hooks/settings/useMementoReferenceValues', () => ({
+  useMementoReferenceValues: (admin: boolean, options?: unknown) =>
+    useMementoReferenceValuesMock(admin, options),
 }));
 
 vi.mock('@/hooks/useFiscalContext', () => ({
@@ -82,6 +95,18 @@ vi.mock('@/domain/base-contrat/rules/index', () => ({
   })),
 }));
 
+function mockReferenceValuesHook(rows: readonly MementoReferenceValue[] = []) {
+  useMementoReferenceValuesMock.mockReturnValue({
+    rows,
+    loading: false,
+    saving: false,
+    error: null,
+    handleNumericChange: handleReferenceNumericChangeMock,
+    handleTextChange: handleReferenceTextChangeMock,
+    save: saveReferenceValuesMock,
+  });
+}
+
 async function openFirstProduct() {
   render(<BaseContratSettingsPanel />);
 
@@ -99,6 +124,12 @@ describe('BaseContratSettingsPanel', () => {
     getBaseContratOverridesMock.mockResolvedValue({});
     upsertBaseContratOverrideMock.mockReset();
     upsertBaseContratOverrideMock.mockResolvedValue(undefined);
+    useMementoReferenceValuesMock.mockReset();
+    handleReferenceNumericChangeMock.mockReset();
+    handleReferenceTextChangeMock.mockReset();
+    saveReferenceValuesMock.mockReset();
+    saveReferenceValuesMock.mockResolvedValue({ ok: true });
+    mockReferenceValuesHook();
   });
 
   it('utilise un bouton natif pour ouvrir un produit', async () => {
@@ -196,6 +227,44 @@ describe('BaseContratSettingsPanel', () => {
     expect(await screen.findByText('Revue : À revoir')).toBeInTheDocument();
     expect(screen.getByText('Source fiscale à relire')).toBeInTheDocument();
     expect(screen.getByText('2026-07-01')).toBeInTheDocument();
+  });
+
+  it('affiche les valeurs de référence du produit sans champs en lecture non-admin', async () => {
+    mockReferenceValuesHook(DEFAULT_MEMENTO_REFERENCE_VALUES);
+    render(<BaseContratSettingsPanel />);
+
+    await screen.findByText('Référentiel contrats');
+    await userEvent.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Livret A/i }));
+
+    expect(await screen.findByRole('heading', { name: 'Chiffres clés' })).toBeInTheDocument();
+    expect(screen.getByText(/22\s*950\s*€/)).toBeInTheDocument();
+    expect(screen.getByText(/1,5\s*%/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Livret A — plafond — valeur')).not.toBeInTheDocument();
+    expect(screen.queryByText(/12\s*000\s*€/)).not.toBeInTheDocument();
+  });
+
+  it('laisse un admin sauvegarder les valeurs de référence du produit', async () => {
+    isAdmin = true;
+    mockReferenceValuesHook(DEFAULT_MEMENTO_REFERENCE_VALUES);
+    render(<BaseContratSettingsPanel />);
+
+    await screen.findByText('Référentiel contrats');
+    await userEvent.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Livret A/i }));
+
+    const plafondInput = await screen.findByLabelText('Livret A — plafond — valeur');
+    fireEvent.change(plafondInput, { target: { value: '23000' } });
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Enregistrer les valeurs de référence' }),
+    );
+
+    expect(handleReferenceNumericChangeMock).toHaveBeenCalledWith(
+      'livret-a-plafond',
+      'value_numeric',
+      '23000',
+    );
+    expect(saveReferenceValuesMock).toHaveBeenCalledTimes(1);
   });
 
   it('sauvegarde les champs de revue depuis la modale admin', async () => {

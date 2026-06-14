@@ -10,13 +10,11 @@ import type { ProductRules, Audience } from '../types';
 const LIVRETS_REGLEMENTES: ProductRules = {
   constitution: [
     {
-      title: 'Versements et plafonds',
+      title: 'Ouverture et conditions',
       bullets: [
-        'Livret A : plafond de 22 950 € (hors capitalisation des intérêts — art. R221-2 CMF, À confirmer selon plafond en vigueur).',
-        'LDDS : plafond de 12 000 € (art. D221-103 CMF, À confirmer selon plafond en vigueur). Réservé aux résidents fiscaux français.',
-        'LEP : plafond de 10 000 € (À confirmer selon plafond en vigueur). Accessible sous conditions de revenus.',
-        'Livret Jeune : plafond de 1 600 € (À confirmer selon plafond en vigueur). Réservé aux 12-25 ans.',
-        'PEAC : plafond de 22 950 € (À confirmer selon plafond en vigueur). Réservé aux moins de 21 ans.',
+        'Produit réglementé réservé aux personnes physiques, selon les conditions propres à chaque livret.',
+        'Résidence fiscale, âge ou revenus peuvent conditionner l’accès selon le produit.',
+        'À confirmer selon le livret, le plafond de versement et le taux réglementaire applicables à la date de lecture.',
       ],
       tags: ['plafond_reglemente', 'resident_fiscal'],
       confidence: 'moyenne',
@@ -154,11 +152,11 @@ const PEA: ProductRules = {
     {
       title: 'Versements et titres éligibles',
       bullets: [
-        '{peaVersementCeilings}.',
+        'Versements plafonnés par le régime PEA, avec cumul encadré avec le PEA-PME.',
         "Titres éligibles : actions de sociétés ayant leur siège dans l'UE ou l'EEE, parts d'OPCVM investis à plus de 75 % en actions européennes.",
         'Un seul PEA par personne physique.',
       ],
-      tags: ['plafond_150k', 'actions_europeennes', 'pp_uniquement'],
+      tags: ['plafond_reglemente', 'actions_europeennes', 'pp_uniquement'],
       confidence: 'elevee',
       sources: [
         {
@@ -225,11 +223,11 @@ const PEA_PME: ProductRules = {
     {
       title: 'Versements et titres éligibles',
       bullets: [
-        '{peaPmeVersementCeilings}.',
+        'Versements plafonnés par le régime PEA-PME, avec cumul encadré avec le PEA.',
         'Titres éligibles : PME et ETI européennes, titres participatifs, obligations remboursables en actions.',
         'Un seul PEA-PME par personne physique.',
       ],
-      tags: ['plafond_75k', 'pme_eti_europeennes', 'pp_uniquement'],
+      tags: ['plafond_reglemente', 'pme_eti_europeennes', 'pp_uniquement'],
       confidence: 'elevee',
       sources: [
         {
@@ -295,10 +293,9 @@ const PEL: ProductRules = {
       title: 'Versements',
       bullets: [
         "Versement minimal à l'ouverture : 225 €. Versements annuels minimaux : 540 €.",
-        'Plafond des versements : 61 200 € (À confirmer selon plafond en vigueur).',
-        "Taux d'intérêt garanti fixé à l'ouverture (taux réglementé).",
+        "À confirmer selon le plafond de versement et le taux d'intérêt garantis par le régime applicable au millésime d'ouverture.",
       ],
-      tags: ['plafond_61200', 'taux_garanti'],
+      tags: ['plafond_reglemente', 'taux_garanti'],
       confidence: 'moyenne',
       sources: [
         {
@@ -348,11 +345,11 @@ const CEL: ProductRules = {
     {
       title: 'Versements',
       bullets: [
-        'Plafond des versements : 15 300 € (À confirmer selon plafond en vigueur).',
+        'Plafond de versement réglementé à relire selon le millésime applicable.',
         "Doit être détenu conjointement avec un PEL pour l'accès au prêt épargne logement.",
         "À confirmer : taux d'intérêt réglementé variable, fixé par arrêté ministériel.",
       ],
-      tags: ['plafond_15300', 'taux_reglemente'],
+      tags: ['plafond_reglemente', 'taux_reglemente'],
       confidence: 'moyenne',
       sources: [
         {

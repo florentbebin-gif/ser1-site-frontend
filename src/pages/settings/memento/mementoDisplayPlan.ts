@@ -148,7 +148,7 @@ export const MEMENTO_DISPLAY_PARTS = [
   {
     id: 'societes-placements',
     title: 'Impôt sur les sociétés et placements',
-    description: 'Société, trésorerie, enveloppes de placement et référentiel contrats.',
+    description: 'Société, trésorerie et enveloppes de placement.',
     chapterIds: ['societe', 'placements'],
   },
   {

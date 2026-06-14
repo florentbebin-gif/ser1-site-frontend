@@ -4,12 +4,13 @@ import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import {
   groupMementoReferenceValuesBySubdomain,
   type MementoReferenceValue,
+  type MementoReferenceValueDomain,
 } from '@/domain/settings-memento/referenceValues';
 import { useMementoReferenceValues } from '@/hooks/settings/useMementoReferenceValues';
 
 interface MementoValueTableProps {
   isAdmin: boolean;
-  domain: string;
+  domain: MementoReferenceValueDomain;
   title: string;
   description: string;
 }
@@ -67,10 +68,8 @@ export default function MementoValueTable({
   const titleId = useId();
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const { rows, loading, saving, error, handleNumericChange, handleTextChange, save } =
-    useMementoReferenceValues(isAdmin);
-  const groups = groupMementoReferenceValuesBySubdomain(
-    rows.filter((row) => row.domain === domain),
-  );
+    useMementoReferenceValues(isAdmin, { domain });
+  const groups = groupMementoReferenceValuesBySubdomain(rows);
 
   async function handleSave(): Promise<void> {
     const result = await save();
