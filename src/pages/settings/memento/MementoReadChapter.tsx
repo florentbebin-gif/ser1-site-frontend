@@ -1,9 +1,18 @@
-import { useId, useState, type ReactElement } from 'react';
+import {
+  Fragment,
+  Suspense,
+  useId,
+  useState,
+  type Dispatch,
+  type ReactElement,
+  type SetStateAction,
+} from 'react';
 
 import type { MementoDisplayChapter } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
 import CalculatorSettingsCard from './CalculatorSettingsCard';
 import { readValueSectionsForChapter } from './mementoValueSections';
+import { readChapterWrapperForChapter, readEntrySectionForKey } from './mementoEntrySections';
 
 interface MementoReadChapterProps {
   chapter: MementoDisplayChapter;
@@ -23,6 +32,16 @@ export default function MementoReadChapter({
   const buttonId = `${generatedId}-read-chapter-button`;
   const panelId = `${generatedId}-read-chapter-panel`;
   const valueSections = readValueSectionsForChapter(chapter.chapter.id);
+  const ChapterWrapper = readChapterWrapperForChapter(chapter.chapter.id);
+  const chapterBody = (
+    <MementoReadChapterBody
+      chapter={chapter}
+      showStatus={showStatus}
+      valueSections={valueSections}
+      openValueSectionId={openValueSectionId}
+      setOpenValueSectionId={setOpenValueSectionId}
+    />
+  );
 
   return (
     <section className="settings-memento-read-chapter">
@@ -50,60 +69,94 @@ export default function MementoReadChapter({
           role="region"
           aria-labelledby={buttonId}
         >
-          {chapter.editorial ? (
-            <blockquote className="settings-memento-read-note" aria-label="À retenir">
-              <h5>À retenir</h5>
-              <p>{chapter.editorial.summary}</p>
-              <ul>
-                {chapter.editorial.keyPoints.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            </blockquote>
-          ) : null}
-
-          {chapter.editorial?.sections && chapter.editorial.sections.length > 0 ? (
-            <div className="settings-memento-editorial-sections">
-              {chapter.editorial.sections.map((section) => (
-                <section key={section.title} className="settings-memento-editorial-section">
-                  <h5>{section.title}</h5>
-                  <p>{section.body}</p>
-                </section>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="settings-memento-readable-list">
-            {chapter.entries.map((entry) => (
-              <MementoReadableEntry
-                key={entry.key}
-                kind="entry"
-                entry={entry}
-                showStatus={showStatus}
-              />
-            ))}
-          </div>
-
-          {valueSections.length > 0 ? (
-            <div
-              className="settings-memento-value-sections"
-              aria-label={`Valeurs de référence — ${chapter.chapter.label}`}
-            >
-              {valueSections.map(({ section, Panel }) => (
-                <CalculatorSettingsCard
-                  key={section.id}
-                  section={section}
-                  Panel={Panel}
-                  isOpen={openValueSectionId === section.id}
-                  onToggle={() =>
-                    setOpenValueSectionId((current) => (current === section.id ? null : section.id))
-                  }
-                />
-              ))}
-            </div>
-          ) : null}
+          {ChapterWrapper ? (
+            <Suspense fallback={<p className="settings-memento-empty">Chargement...</p>}>
+              <ChapterWrapper>{chapterBody}</ChapterWrapper>
+            </Suspense>
+          ) : (
+            chapterBody
+          )}
         </div>
       )}
     </section>
+  );
+}
+
+interface MementoReadChapterBodyProps {
+  chapter: MementoDisplayChapter;
+  showStatus: boolean;
+  valueSections: ReturnType<typeof readValueSectionsForChapter>;
+  openValueSectionId: string | null;
+  setOpenValueSectionId: Dispatch<SetStateAction<string | null>>;
+}
+
+function MementoReadChapterBody({
+  chapter,
+  showStatus,
+  valueSections,
+  openValueSectionId,
+  setOpenValueSectionId,
+}: MementoReadChapterBodyProps): ReactElement {
+  return (
+    <>
+      {chapter.editorial ? (
+        <blockquote className="settings-memento-read-note" aria-label="À retenir">
+          <h5>À retenir</h5>
+          <p>{chapter.editorial.summary}</p>
+          <ul>
+            {chapter.editorial.keyPoints.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+        </blockquote>
+      ) : null}
+
+      {chapter.editorial?.sections && chapter.editorial.sections.length > 0 ? (
+        <div className="settings-memento-editorial-sections">
+          {chapter.editorial.sections.map((section) => (
+            <section key={section.title} className="settings-memento-editorial-section">
+              <h5>{section.title}</h5>
+              <p>{section.body}</p>
+            </section>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="settings-memento-readable-list">
+        {chapter.entries.map((entry) => {
+          const EntrySection = readEntrySectionForKey(entry.key);
+
+          return (
+            <Fragment key={entry.key}>
+              <MementoReadableEntry kind="entry" entry={entry} showStatus={showStatus} />
+              {EntrySection ? (
+                <Suspense fallback={<p className="settings-memento-empty">Chargement...</p>}>
+                  <EntrySection entryKey={entry.key} />
+                </Suspense>
+              ) : null}
+            </Fragment>
+          );
+        })}
+      </div>
+
+      {valueSections.length > 0 ? (
+        <div
+          className="settings-memento-value-sections"
+          aria-label={`Valeurs de référence — ${chapter.chapter.label}`}
+        >
+          {valueSections.map(({ section, Panel }) => (
+            <CalculatorSettingsCard
+              key={section.id}
+              section={section}
+              Panel={Panel}
+              isOpen={openValueSectionId === section.id}
+              onToggle={() =>
+                setOpenValueSectionId((current) => (current === section.id ? null : section.id))
+              }
+            />
+          ))}
+        </div>
+      ) : null}
+    </>
   );
 }

@@ -15,7 +15,15 @@ import {
   MEMENTO_SETTINGS_SECTIONS,
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
-import { MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER } from '../memento/mementoValueSections';
+import {
+  MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER,
+  MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER,
+  MEMENTO_VALUE_PANEL_BY_SECTION,
+} from '../memento/mementoValueSections';
+import {
+  readChapterWrapperForChapter,
+  readEntrySectionForKey,
+} from '../memento/mementoEntrySections';
 
 describe('route settings mémento', () => {
   it('expose l’onglet mémento à tous les utilisateurs', () => {
@@ -116,9 +124,23 @@ describe('contrat des sections settings du mémento', () => {
     expect(sectionByKey.get('impots.ps-patrimoine')).toEqual(['prelevements']);
   });
 
-  it('rattache les valeurs de lecture IS et placements aux bons chapitres', () => {
+  it('rattache les valeurs de lecture IS et placements aux bons chapitres sans bloc DMTG monolithique', () => {
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toEqual(['comptables-societes']);
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual(['prelevements']);
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
+    expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
+    expect(MEMENTO_VALUE_PANEL_BY_SECTION['dmtg-succession']).toBeUndefined();
+  });
+
+  it('rattache les sections DMTG aux entrées de lecture ciblées', () => {
+    expect(readChapterWrapperForChapter('transmission')).toBeDefined();
+    expect(readEntrySectionForKey('transmission.succession-dmtg')).toBeDefined();
+    expect(readEntrySectionForKey('transmission.donations-anterieures')).toBeDefined();
+    expect(readEntrySectionForKey('transmission.assurance-vie-deces')).toBeDefined();
+    expect(readEntrySectionForKey('transmission.liberalites')).toBeDefined();
+    expect(readEntrySectionForKey('civil.reserve-quotite')).toBeDefined();
+    expect(readEntrySectionForKey('civil.devolution-conjoint-survivant')).toBeDefined();
+    expect(readEntrySectionForKey('civil.regime-matrimonial')).toBeDefined();
+    expect(readEntrySectionForKey('placements.revenus-capitaux')).toBeUndefined();
   });
 });

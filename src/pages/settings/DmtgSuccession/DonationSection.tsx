@@ -1,7 +1,7 @@
 import React from 'react';
 import { LegalRefLink } from '@/components/legal/LegalRefLink';
-import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
 import { numberOrEmpty } from '@/components/settings/settingsHelpers';
+import { formatDmtgAmount, formatDmtgYears } from './dmtgDisplay';
 import { DONATION_SECTION_LEGAL_REFERENCE_IDS } from './dmtgLegalReferenceIds';
 
 interface DonationSettings {
@@ -16,74 +16,60 @@ interface DonationSectionProps {
   donation: DonationSettings;
   updateDonation: (path: string[], value: string | number | null) => void;
   isAdmin: boolean;
-  openSection: string | null;
-  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export default function DonationSection({
   donation,
   updateDonation,
   isAdmin,
-  openSection,
-  setOpenSection,
 }: DonationSectionProps): React.ReactElement {
-  const isOpen = openSection === 'donation';
-
   return (
-    <div className="fisc-acc-item">
-      <button
-        type="button"
-        className="fisc-acc-header fisc-acc-header--with-icon"
-        aria-expanded={isOpen}
-        onClick={() => setOpenSection(isOpen ? null : 'donation')}
-      >
-        <SettingsTitleWithIcon
-          icon="gift"
-          className="settings-premium-title settings-premium-title--flush"
-        >
-          Donation & rappel fiscal
-        </SettingsTitleWithIcon>
-        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
-      </button>
+    <section className="settings-memento-entry-section settings-dmtg-entry-section">
+      <h6>Donation & rappel fiscal</h6>
+      <p className="dmtg-intro">
+        Paramètres de donation entre vifs et rappel fiscal (
+        {DONATION_SECTION_LEGAL_REFERENCE_IDS.map((referenceId, index) => (
+          <React.Fragment key={referenceId}>
+            {index > 0 ? ', ' : null}
+            <LegalRefLink id={referenceId} />
+          </React.Fragment>
+        ))}
+        ).
+      </p>
 
-      {isOpen && (
-        <div className="fisc-acc-body">
-          <p className="dmtg-intro">
-            Paramètres de donation entre vifs et rappel fiscal (
-            {DONATION_SECTION_LEGAL_REFERENCE_IDS.map((referenceId, index) => (
-              <React.Fragment key={referenceId}>
-                {index > 0 ? ', ' : null}
-                <LegalRefLink id={referenceId} />
-              </React.Fragment>
-            ))}
-            ).
-          </p>
-
-          <div className="income-tax-block dmtg-block--mb16">
-            <div className="dmtg-block-title">Rappel fiscal</div>
-            <div className="dmtg-indent">
-              <div className="settings-field-row">
-                <label htmlFor="donation-rappel-fiscal-annees">Durée du rappel fiscal</label>
-                <input
-                  id="donation-rappel-fiscal-annees"
-                  type="number"
-                  value={numberOrEmpty(donation.rappelFiscalAnnees)}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    updateDonation(
-                      ['rappelFiscalAnnees'],
-                      event.target.value === '' ? null : Number(event.target.value),
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>ans</span>
-              </div>
+      <div className="income-tax-block dmtg-block--mb16">
+        <div className="dmtg-block-title">Rappel fiscal</div>
+        <div className="dmtg-indent">
+          {isAdmin ? (
+            <div className="settings-field-row">
+              <label htmlFor="donation-rappel-fiscal-annees">Durée du rappel fiscal</label>
+              <input
+                id="donation-rappel-fiscal-annees"
+                type="number"
+                value={numberOrEmpty(donation.rappelFiscalAnnees)}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  updateDonation(
+                    ['rappelFiscalAnnees'],
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              />
+              <span>ans</span>
             </div>
-          </div>
+          ) : (
+            <p className="dmtg-readonly-field">
+              <strong>Durée du rappel fiscal</strong>
+              <span>{formatDmtgYears(donation.rappelFiscalAnnees)}</span>
+            </p>
+          )}
+        </div>
+      </div>
 
-          <div className="income-tax-block">
-            <div className="dmtg-block-title">Don familial de sommes d'argent (art. 790 G)</div>
-            <div className="dmtg-indent">
+      <div className="income-tax-block">
+        <div className="dmtg-block-title">Don familial de sommes d'argent (art. 790 G)</div>
+        <div className="dmtg-indent">
+          {isAdmin ? (
+            <>
               <div className="settings-field-row dmtg-field-row--mb8">
                 <label htmlFor="donation-don-familial-montant">Montant exonéré</label>
                 <input
@@ -96,7 +82,6 @@ export default function DonationSection({
                       event.target.value === '' ? null : Number(event.target.value),
                     )
                   }
-                  disabled={!isAdmin}
                 />
                 <span>EUR</span>
               </div>
@@ -110,14 +95,21 @@ export default function DonationSection({
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(['donFamilial790G', 'conditions'], event.target.value)
                   }
-                  disabled={!isAdmin}
                 />
                 <span />
               </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              <p className="dmtg-readonly-field">
+                <strong>Montant exonéré</strong>
+                <span>{formatDmtgAmount(donation.donFamilial790G.montant)}</span>
+              </p>
+              <p className="dmtg-desc--flush">{donation.donFamilial790G.conditions}</p>
+            </>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }
