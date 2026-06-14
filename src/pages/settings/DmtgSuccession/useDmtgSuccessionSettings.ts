@@ -1,20 +1,16 @@
-import { useEffect, useState, useMemo } from 'react';
-import { supabase } from '@/supabaseClient';
+import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
-import '../styles/impots.css';
-import '../styles/dmtg.css';
-import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
-
 import {
   DEFAULT_ASSURANCE_VIE_RULES,
   DEFAULT_FISCALITY_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
-import { getFiscalityRules, toFiscalitySettingsV2 } from '@/utils/cache/fiscalitySettingsAccess';
+import { supabase } from '@/supabaseClient';
+import { broadcastInvalidation, invalidate } from '@/utils/cache/fiscalSettingsCache';
 import type { FiscalitySettingsV2 } from '@/utils/cache/fiscalitySettings';
-
-import ImpotsDmtgSection from '../Impots/ImpotsDmtgSection';
-import { validateDmtg, validateAvDeces, isValid } from '../validators/dmtgValidators';
+import { getFiscalityRules, toFiscalitySettingsV2 } from '@/utils/cache/fiscalitySettingsAccess';
+import { validateAvDeces, validateDmtg, isValid } from '../validators/dmtgValidators';
+import { checkDmtgGoldenScenario } from './dmtgGoldenCheck';
 import { DEFAULT_DONATION } from './dmtgReferenceData';
 import {
   formatDmtgSchemaError,
@@ -22,13 +18,6 @@ import {
   validateDmtgFiscalityPayload,
   validateDmtgTaxPayload,
 } from './dmtgSettingsSchema';
-import DonationSection from './DonationSection';
-import AvDecesSection from './AvDecesSection';
-import ReserveCivilSection from './ReserveCivilSection';
-import RegimesSection from './RegimesSection';
-import LiberalitesSection from './LiberalitesSection';
-import AvantagesMatrimoniauxSection from './AvantagesMatrimoniauxSection';
-import { checkDmtgGoldenScenario } from './dmtgGoldenCheck';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -42,31 +31,32 @@ type DeepFormValue<T> = T extends number
           ? { [K in keyof T]: DeepFormValue<T[K]> }
           : T;
 
-type DonationSettings = DeepFormValue<typeof DEFAULT_DONATION>;
-type TaxSettings = DeepFormValue<typeof DEFAULT_TAX_SETTINGS> & {
+export type DonationSettings = DeepFormValue<typeof DEFAULT_DONATION>;
+export type TaxSettings = DeepFormValue<typeof DEFAULT_TAX_SETTINGS> & {
   donation?: DonationSettings;
 };
-type FiscalitySettings = DeepFormValue<typeof DEFAULT_FISCALITY_SETTINGS>;
-type DmtgCategoryKey = keyof TaxSettings['dmtg'];
-type DmtgScaleRow = TaxSettings['dmtg']['ligneDirecte']['scale'][number];
-type DmtgScaleUpdate = {
+export type FiscalitySettings = DeepFormValue<typeof DEFAULT_FISCALITY_SETTINGS>;
+export type DmtgCategoryKey = keyof TaxSettings['dmtg'];
+export type DmtgScaleRow = TaxSettings['dmtg']['ligneDirecte']['scale'][number];
+export type DmtgScaleUpdate = {
   idx: number;
   key: string;
   value: string | number | null;
 };
-type DonationUpdateValue = string | number | null;
-type AvDecesBracket = {
+export type DonationUpdateValue = string | number | null;
+export type AvDecesBracket = {
   upTo: number | null;
   ratePercent: number | null;
 };
-type AvDecesUpdateValue = number | null | AvDecesBracket[];
+export type AvDecesUpdateValue = number | null | AvDecesBracket[];
+
 type NestedRecord = Record<string, unknown>;
 
 interface SettingsRow<T> {
   data: Partial<T> | null;
 }
 
-export default function DmtgSuccessionSettingsPanel() {
+export function useDmtgSuccessionSettings() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
@@ -75,7 +65,6 @@ export default function DmtgSuccessionSettingsPanel() {
   );
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [openSection, setOpenSection] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -228,7 +217,7 @@ export default function DmtgSuccessionSettingsPanel() {
       ? dmtgGoldenCheck.message
       : '';
 
-  const handleSave = async () => {
+  const save = async () => {
     if (!isAdmin || hasErrors || !dmtgGoldenCheck.ok) return;
 
     try {
@@ -262,7 +251,6 @@ export default function DmtgSuccessionSettingsPanel() {
         (existingFiscRes.data?.data as unknown | null) ?? DEFAULT_FISCALITY_SETTINGS,
       );
 
-      // Pruning : retirer les champs donation obsolètes persistés en DB (ex: donManuel).
       const { donManuel: _donManuel, ...donationClean } = (taxSettings.donation ??
         DEFAULT_DONATION) as Record<string, unknown>;
       void _donManuel;
@@ -313,7 +301,7 @@ export default function DmtgSuccessionSettingsPanel() {
         console.error(taxRes.error, fiscRes.error);
         setMessage("Erreur lors de l'enregistrement.");
       } else {
-        setMessage('Paramètres DMTG & Succession enregistrés.');
+        setMessage('Paramètres DMTG & succession enregistrés.');
         invalidate('tax');
         broadcastInvalidation('tax');
         invalidate('fiscality');
@@ -327,95 +315,30 @@ export default function DmtgSuccessionSettingsPanel() {
     }
   };
 
-  if (loading) {
-    return <p>Chargement…</p>;
-  }
-
-  const { dmtg } = taxSettings;
   const donation = { ...DEFAULT_DONATION, ...taxSettings.donation };
   const avDeces =
     getFiscalityRules(fiscalitySettings as FiscalitySettingsV2, 'assuranceVie').deces ||
     DEFAULT_ASSURANCE_VIE_RULES.deces;
 
-  return (
-    <div className="settings-stack">
-      <div className="fisc-accordion">
-        <ImpotsDmtgSection
-          dmtg={dmtg}
-          updateDmtgCategory={updateDmtgCategory}
-          isAdmin={isAdmin}
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
-        {openSection === 'dmtg' && Object.keys(dmtgErrors).length > 0 && (
-          <div className="settings-dmtg-inline-errors">
-            {Object.entries(dmtgErrors).map(([key, msg]) => (
-              <div key={key} className="settings-dmtg-inline-error">
-                {key} : {msg}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <DonationSection
-          donation={donation}
-          updateDonation={updateDonation}
-          isAdmin={isAdmin}
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
-
-        <AvDecesSection
-          avDeces={avDeces}
-          updateAvDeces={updateAvDeces}
-          isAdmin={isAdmin}
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-          errors={avDecesErrors}
-        />
-
-        <ReserveCivilSection openSection={openSection} setOpenSection={setOpenSection} />
-
-        <RegimesSection openSection={openSection} setOpenSection={setOpenSection} />
-
-        <LiberalitesSection openSection={openSection} setOpenSection={setOpenSection} />
-
-        <AvantagesMatrimoniauxSection openSection={openSection} setOpenSection={setOpenSection} />
-      </div>
-
-      {isAdmin && (
-        <>
-          {!hasErrors && !dmtgGoldenCheck.ok && (
-            <div className="settings-feedback-message settings-feedback-message--error">
-              {dmtgGoldenCheck.message}
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="chip settings-save-btn"
-            onClick={handleSave}
-            disabled={saveDisabled}
-            title={saveTitle}
-          >
-            {saving
-              ? 'Enregistrement…'
-              : hasErrors
-                ? 'Erreurs de validation'
-                : !dmtgGoldenCheck.ok
-                  ? 'Golden DMTG bloqué'
-                  : 'Enregistrer DMTG & Succession'}
-          </button>
-        </>
-      )}
-
-      {message && (
-        <div
-          className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}
-        >
-          {message}
-        </div>
-      )}
-    </div>
-  );
+  return {
+    isAdmin,
+    loading,
+    taxSettings,
+    fiscalitySettings,
+    dmtg: taxSettings.dmtg,
+    donation,
+    avDeces,
+    updateDmtgCategory,
+    updateDonation,
+    updateAvDeces,
+    dmtgErrors,
+    avDecesErrors,
+    hasErrors,
+    dmtgGoldenCheck,
+    saving,
+    message,
+    save,
+    saveDisabled,
+    saveTitle,
+  };
 }

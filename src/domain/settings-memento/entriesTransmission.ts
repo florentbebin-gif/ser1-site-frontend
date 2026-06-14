@@ -55,13 +55,7 @@ export const MEMENTO_TRANSMISSION_ENTRIES = [
     priority: 'critique',
     ownerPagePath: '/settings/memento',
     registryKeys: [],
-    claimKeys: [
-      'donation-rappel-fiscal-15-ans',
-      'donation-rapport-reduction',
-      'don-familial-sommes-790g',
-      'usufruit-nue-propriete-cgi-669',
-      'dmtg-conjoint-pacs-exoneration-cgi-796-0-bis',
-    ],
+    claimKeys: ['usufruit-nue-propriete-cgi-669', 'dmtg-conjoint-pacs-exoneration-cgi-796-0-bis'],
     refIds: [
       'cgi-784',
       'cgi-790-g',

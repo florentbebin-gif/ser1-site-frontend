@@ -107,14 +107,18 @@ export const MEMENTO_FOYER_ENTRIES = [
     label: 'Donations antérieures',
     description:
       'Historique des donations, rapport civil et rappel fiscal pris en compte avant toute nouvelle transmission.',
-    status: 'planned',
+    status: 'partiel',
     statusReason:
-      'Simulateur donations antérieures planifié ; le rappel fiscal et ses paramètres restent portés par le mémento.',
+      'Paramètres de rappel fiscal et don familial affichés dans le mémento ; le simulateur donations antérieures reste planifié.',
     priority: 'critique',
     ownerPagePath: '/settings/memento',
-    registryKeys: [],
-    claimKeys: [],
-    refIds: ['cgi-784', 'code-civil-843'],
+    registryKeys: ['transmission.dmtg-succession'],
+    claimKeys: [
+      'donation-rappel-fiscal-15-ans',
+      'donation-rapport-reduction',
+      'don-familial-sommes-790g',
+    ],
+    refIds: ['cgi-784', 'cgi-790-g', 'code-civil-843'],
     coverageSources: ['cadrage-externe'],
     relatedSimulatorIds: ['donations-anterieures'],
   },

@@ -13,7 +13,7 @@ describe('settings-memento — foyer, civil et patrimoine', () => {
     'civil.regime-matrimonial': 'partiel',
     'civil.devolution-conjoint-survivant': 'partiel',
     'civil.reserve-quotite': 'couvert',
-    'transmission.donations-anterieures': 'planned',
+    'transmission.donations-anterieures': 'partiel',
     'patrimoine.demembrement': 'couvert',
     'patrimoine.actif-passif': 'a_verifier',
   } as const;
@@ -72,6 +72,18 @@ describe('settings-memento — foyer, civil et patrimoine', () => {
     expect(entry!.registryKeys).toEqual(['transmission.dmtg-succession']);
     expect(entry!.refIds).toContain('cgi-669');
     expect(entry!.refIds).toContain('code-civil-578');
+  });
+
+  it('rattache les donations antérieures aux claims donation affichés dans le mémento', () => {
+    const entry = entryByKey.get('transmission.donations-anterieures');
+
+    expect(entry!.status).toBe('partiel');
+    expect(entry!.registryKeys).toEqual(['transmission.dmtg-succession']);
+    expect(entry!.claimKeys).toEqual([
+      'donation-rappel-fiscal-15-ans',
+      'donation-rapport-reduction',
+      'don-familial-sommes-790g',
+    ]);
   });
 
   it('garde le régime matrimonial partiel avec son référentiel civil complet', () => {

@@ -12,9 +12,6 @@ const ComptablesSocietesSettingsPanel = lazy(
   () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
 );
 const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
-const DmtgSuccessionSettingsPanel = lazy(
-  () => import('../DmtgSuccession/DmtgSuccessionSettingsPanel'),
-);
 const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
 const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
 const PrevoyanceRegimesSettingsPanel = lazy(
@@ -26,14 +23,15 @@ export interface MementoValueSection {
   Panel: LazyExoticComponent<ComponentType>;
 }
 
-export const MEMENTO_VALUE_PANEL_BY_SECTION = {
+export const MEMENTO_VALUE_PANEL_BY_SECTION: Partial<
+  Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>
+> = {
   impots: ImpotsSettingsPanel,
   'comptables-societes': ComptablesSocietesSettingsPanel,
   prelevements: PrelevementsSettingsPanel,
-  'dmtg-succession': DmtgSuccessionSettingsPanel,
   'base-contrat': BaseContratSettingsPanel,
   'prevoyance-regimes': PrevoyanceRegimesSettingsPanel,
-} as const satisfies Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>;
+};
 
 export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   Record<MementoChapterId, readonly MementoSettingsSectionId[]>
@@ -54,7 +52,6 @@ export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   Record<MementoChapterId, readonly MementoSettingsSectionId[]>
 > = {
   'fiscalite-foyer': ['impots'],
-  transmission: ['dmtg-succession'],
   placements: ['prelevements'],
   retraite: ['prelevements'],
   prevoyance: ['prevoyance-regimes'],
@@ -64,10 +61,17 @@ export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
 function valueSectionsForIds(
   sectionIds: readonly MementoSettingsSectionId[] | undefined,
 ): MementoValueSection[] {
-  return (sectionIds ?? []).map((sectionId) => ({
-    section: getMementoSettingsSection(sectionId),
-    Panel: MEMENTO_VALUE_PANEL_BY_SECTION[sectionId],
-  }));
+  return (sectionIds ?? []).flatMap((sectionId) => {
+    const Panel = MEMENTO_VALUE_PANEL_BY_SECTION[sectionId];
+    if (!Panel) return [];
+
+    return [
+      {
+        section: getMementoSettingsSection(sectionId),
+        Panel,
+      },
+    ];
+  });
 }
 
 export function readValueSectionsForChapter(chapterId: MementoChapterId): MementoValueSection[] {
@@ -77,7 +81,7 @@ export function readValueSectionsForChapter(chapterId: MementoChapterId): Mement
 export function auditSettingsSectionsForChapter(
   chapterId: MementoChapterId,
 ): readonly MementoSettingsSection[] {
-  return valueSectionsForIds(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER[chapterId]).map(
-    ({ section }) => section,
+  return (MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER[chapterId] ?? []).map((sectionId) =>
+    getMementoSettingsSection(sectionId),
   );
 }

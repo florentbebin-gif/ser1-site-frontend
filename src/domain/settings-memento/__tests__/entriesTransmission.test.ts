@@ -51,6 +51,9 @@ describe('settings-memento — transmission', () => {
   it('trace l’absence du barème de donation entre époux sur l’entrée donation et démembrement', () => {
     const entry = entryByKey.get('transmission.donation-demembrement');
 
+    expect(entry!.claimKeys).not.toContain('donation-rappel-fiscal-15-ans');
+    expect(entry!.claimKeys).not.toContain('donation-rapport-reduction');
+    expect(entry!.claimKeys).not.toContain('don-familial-sommes-790g');
     expect(entry!.claimKeys).toContain('dmtg-conjoint-pacs-exoneration-cgi-796-0-bis');
     expect(entry!.refIds).toContain('cgi-796-0-bis');
     expect(entry!.refIds).toContain('cgi-790-e');

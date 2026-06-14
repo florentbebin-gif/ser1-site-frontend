@@ -11,12 +11,18 @@ import {
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
 import { getLegalReference } from '@/domain/legal-references';
-import DmtgSuccessionSettingsPanel from '../DmtgSuccession/DmtgSuccessionSettingsPanel';
+import {
+  DmtgSuccessionProvider,
+  DmtgSuccessionSaveBar,
+} from '../DmtgSuccession/DmtgSuccessionProvider';
+import MementoDmtgEntrySection from '../memento/MementoDmtgEntrySection';
 
 let isAdmin = true;
 let taxSettingsData: unknown = DEFAULT_TAX_SETTINGS;
 let fiscalitySettingsData: unknown = DEFAULT_FISCALITY_SETTINGS;
 let authUserId: string | null = '11111111-1111-4111-8111-111111111111';
+let loadGate: Promise<void> | null = null;
+let releaseLoadGate: (() => void) | null = null;
 const upsertCalls: Array<{ table: SettingsTable; payload: unknown }> = [];
 
 type SettingsTable = 'tax_settings' | 'fiscality_settings';
@@ -54,7 +60,7 @@ function makeQueryBuilder(table: SettingsTable) {
   });
   builder.maybeSingle = vi.fn(() => Promise.resolve(singleResult));
   builder.then = (onFulfilled, onRejected) =>
-    Promise.resolve(listResult).then(onFulfilled, onRejected);
+    (loadGate ?? Promise.resolve()).then(() => listResult).then(onFulfilled, onRejected);
 
   return builder;
 }
@@ -87,13 +93,50 @@ vi.mock('@/supabaseClient', () => ({
   },
 }));
 
-describe('DmtgSuccessionSettingsPanel', () => {
+async function renderDmtgEntry(entryKey: string, withSave = true) {
+  render(
+    <DmtgSuccessionProvider>
+      <MementoDmtgEntrySection entryKey={entryKey} />
+      {withSave ? <DmtgSuccessionSaveBar /> : null}
+    </DmtgSuccessionProvider>,
+  );
+
+  await waitFor(() => {
+    expect(screen.queryByText(/Chargement/i)).not.toBeInTheDocument();
+  });
+}
+
+describe('DMTG dans les entrées du mémento', () => {
   beforeEach(() => {
     isAdmin = true;
     taxSettingsData = DEFAULT_TAX_SETTINGS;
     fiscalitySettingsData = DEFAULT_FISCALITY_SETTINGS;
     authUserId = '11111111-1111-4111-8111-111111111111';
+    loadGate = null;
+    releaseLoadGate = null;
     upsertCalls.length = 0;
+  });
+
+  it('ne bloque pas le contenu de lecture pendant le chargement DMTG', () => {
+    loadGate = new Promise<void>((resolve) => {
+      releaseLoadGate = resolve;
+    });
+
+    render(
+      <DmtgSuccessionProvider>
+        <p>Lecture transmission disponible</p>
+        <MementoDmtgEntrySection entryKey="transmission.succession-dmtg" />
+        <DmtgSuccessionSaveBar />
+      </DmtgSuccessionProvider>,
+    );
+
+    expect(screen.getByText('Lecture transmission disponible')).toBeInTheDocument();
+    expect(screen.getByText('Chargement des paramètres DMTG...')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    ).not.toBeInTheDocument();
+
+    releaseLoadGate?.();
   });
 
   it('bloque la sauvegarde admin quand le golden DMTG local dérive', async () => {
@@ -108,48 +151,33 @@ describe('DmtgSuccessionSettingsPanel', () => {
       },
     };
 
-    render(<DmtgSuccessionSettingsPanel />);
+    await renderDmtgEntry('transmission.succession-dmtg');
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    const saveButton = screen.getByRole('button', {
+      name: /Golden DMTG bloqué/i,
     });
-
-    const saveButton = screen.getByRole('button', { name: /Golden DMTG bloqué/i });
     expect(saveButton).toBeDisabled();
     expect(screen.getByText(/Scénario conjoint \+ deux enfants 600 kEUR/i)).toBeInTheDocument();
   });
 
   it('autorise la sauvegarde admin quand le golden DMTG local passe', async () => {
-    render(<DmtgSuccessionSettingsPanel />);
+    await renderDmtgEntry('transmission.succession-dmtg');
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
+    const saveButton = screen.getByRole('button', {
+      name: /Enregistrer les paramètres DMTG & succession/i,
     });
-
-    const saveButton = screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i });
     expect(saveButton).toBeEnabled();
     expect(
       screen.queryByText(/Scénario conjoint \+ deux enfants 600 kEUR/i),
     ).not.toBeInTheDocument();
   });
 
-  it('ne monte plus le registre settings dans le panel calculateur', async () => {
-    render(<DmtgSuccessionSettingsPanel />);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
-    });
-    expect(screen.queryByText('Registre settings DMTG & Succession')).not.toBeInTheDocument();
-  });
-
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {
-    render(<DmtgSuccessionSettingsPanel />);
+    await renderDmtgEntry('transmission.succession-dmtg');
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    );
 
     await waitFor(() => {
       expect(upsertCalls).toHaveLength(2);
@@ -177,13 +205,11 @@ describe('DmtgSuccessionSettingsPanel', () => {
       },
     };
 
-    render(<DmtgSuccessionSettingsPanel />);
+    await renderDmtgEntry('transmission.succession-dmtg');
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    );
 
     await waitFor(() => {
       expect(upsertCalls).toHaveLength(2);
@@ -217,13 +243,11 @@ describe('DmtgSuccessionSettingsPanel', () => {
       },
     };
 
-    render(<DmtgSuccessionSettingsPanel />);
+    await renderDmtgEntry('transmission.assurance-vie-deces');
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: /Enregistrer DMTG & Succession/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Erreur de validation du schéma DMTG/i)).toBeInTheDocument();
@@ -231,14 +255,32 @@ describe('DmtgSuccessionSettingsPanel', () => {
     expect(upsertCalls).toHaveLength(0);
   });
 
-  it('rend les références juridiques DMTG cliquables', async () => {
-    render(<DmtgSuccessionSettingsPanel />);
+  it('rend les blocs chiffrés en texte, sans inputs ni bouton, pour un non-admin', async () => {
+    isAdmin = false;
 
-    await waitFor(() => {
-      expect(screen.queryByText('Chargement…')).not.toBeInTheDocument();
-    });
+    await renderDmtgEntry('transmission.succession-dmtg');
 
-    await userEvent.click(screen.getByRole('button', { name: /Libéralités/i }));
+    expect(screen.getByText('100 000 €')).toBeInTheDocument();
+    expect(screen.getByText('20 %')).toBeInTheDocument();
+    expect(screen.queryAllByRole('spinbutton')).toHaveLength(0);
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+    expect(
+      screen.queryByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('rend les inputs des blocs chiffrés seulement pour un admin', async () => {
+    await renderDmtgEntry('transmission.assurance-vie-deces');
+
+    expect(screen.getAllByRole('spinbutton').length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('rend les références juridiques DMTG cliquables dans les entrées éclatées', async () => {
+    await renderDmtgEntry('transmission.liberalites', false);
+
     const donationSimpleBlock = screen
       .getByText('Donation simple (pleine propriété)')
       .closest('.income-tax-block');
@@ -249,37 +291,22 @@ describe('DmtgSuccessionSettingsPanel', () => {
     ).toHaveAttribute('href', getLegalReference('code-civil-894').officialUrl);
     expect(screen.queryByText(/C\. civ\. art\. 894/)).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /Avantages matrimoniaux/i }));
+    render(<MementoDmtgEntrySection entryKey="civil.reserve-quotite" />);
     expect(
       screen
-        .getAllByRole('link', { name: 'Art. 1527' })
+        .getAllByRole('link', { name: 'Art. 913' })
         .some(
-          (link) => link.getAttribute('href') === getLegalReference('code-civil-1527').officialUrl,
+          (link) => link.getAttribute('href') === getLegalReference('code-civil-913').officialUrl,
         ),
     ).toBe(true);
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Réserve héréditaire & droits du conjoint/i }),
-    );
-    expect(screen.getByRole('link', { name: 'Art. 913' })).toHaveAttribute(
-      'href',
-      getLegalReference('code-civil-913').officialUrl,
-    );
-    expect(screen.getByRole('link', { name: 'Art. 757' })).toHaveAttribute(
-      'href',
-      getLegalReference('code-civil-757').officialUrl,
-    );
-
-    await userEvent.click(screen.getByRole('button', { name: /Assurance-vie décès/i }));
+    render(<MementoDmtgEntrySection entryKey="civil.devolution-conjoint-survivant" />);
     expect(
       screen
-        .getAllByRole('link', { name: 'Art. 990 I' })
-        .some((link) => link.getAttribute('href') === getLegalReference('cgi-990-i').officialUrl),
-    ).toBe(true);
-    expect(
-      screen
-        .getAllByRole('link', { name: 'Art. 757 B' })
-        .some((link) => link.getAttribute('href') === getLegalReference('cgi-757-b').officialUrl),
+        .getAllByRole('link', { name: 'Art. 757' })
+        .some(
+          (link) => link.getAttribute('href') === getLegalReference('code-civil-757').officialUrl,
+        ),
     ).toBe(true);
   });
 });

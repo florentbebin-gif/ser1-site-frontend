@@ -4,12 +4,39 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
 import type { UserRoleState } from '@/auth/useUserRole';
 
 import SettingsMemento from '../SettingsMemento';
 
 let isAdmin = false;
+
+type SettingsTable = 'tax_settings' | 'fiscality_settings';
+
+function makeSettingsBuilder(table: SettingsTable) {
+  const listResult = {
+    data: [
+      {
+        data: table === 'tax_settings' ? DEFAULT_TAX_SETTINGS : DEFAULT_FISCALITY_SETTINGS,
+      },
+    ],
+    error: null,
+  };
+
+  const builder = {} as {
+    select: () => typeof builder;
+    eq: () => typeof builder;
+    then: PromiseLike<typeof listResult>['then'];
+  };
+
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.then = (onFulfilled, onRejected) =>
+    Promise.resolve(listResult).then(onFulfilled, onRejected);
+
+  return builder;
+}
 
 vi.mock('@/auth/useUserRole', () => ({
   useUserRole: (): UserRoleState => ({
@@ -18,6 +45,12 @@ vi.mock('@/auth/useUserRole', () => ({
     isAdmin,
     isLoading: false,
   }),
+}));
+
+vi.mock('@/supabaseClient', () => ({
+  supabase: {
+    from: vi.fn((table: SettingsTable) => makeSettingsBuilder(table)),
+  },
 }));
 
 function findButtonByClass(className: string, label: string): HTMLButtonElement {
@@ -110,22 +143,39 @@ describe('SettingsMemento — lecture éditoriale', () => {
 
   it('affiche successions et libéralités avec les valeurs DMTG en lecture', async () => {
     const user = userEvent.setup();
-    render(<SettingsMemento />);
+    const { container } = render(<SettingsMemento />);
 
     await openReadPart(user, 'Successions et libéralités');
     await openReadChapter(user, 'Transmission');
 
-    expect(screen.getByText('Dévolution et réserve')).toBeInTheDocument();
-    expect(screen.getByText('Donations et libéralités')).toBeInTheDocument();
+    expect(await screen.findByText('Ligne directe (enfants, petits-enfants)')).toBeInTheDocument();
+    expect(screen.getByText('Donation & rappel fiscal')).toBeInTheDocument();
+    expect(screen.getByText('Assurance-vie décès')).toBeInTheDocument();
     expect(screen.getAllByText('Assurance-vie au décès').length).toBeGreaterThan(0);
-    expect(screen.getByText('Droits de mutation')).toBeInTheDocument();
-    expect(screen.getByText('Transmission, DMTG et succession')).toBeInTheDocument();
+    expect(screen.queryByText('Transmission, DMTG et succession')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(
+      screen.queryByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+    ).not.toBeInTheDocument();
 
     await openReadChapter(user, 'Transmission entreprise');
 
     expect(screen.getAllByText('Pacte Dutreil').length).toBeGreaterThan(0);
     expect(screen.getByText('Donation de titres')).toBeInTheDocument();
     expect(screen.getByText('Paiement des droits')).toBeInTheDocument();
+  });
+
+  it('affiche les blocs civils sous les entrées de droit civil', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Droit civil');
+    await openReadChapter(user, 'Civil');
+
+    expect((await screen.findAllByText(/Réserve héréditaire/)).length).toBeGreaterThan(1);
+    expect(screen.getAllByText(/Droits du conjoint survivant/).length).toBeGreaterThan(0);
+    expect(screen.getByText('Régimes matrimoniaux & PACS')).toBeInTheDocument();
+    expect(screen.getByText('Avantages matrimoniaux')).toBeInTheDocument();
   });
 
   it('rend le lexique dans la partie dédiée', async () => {
