@@ -46,24 +46,6 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Distinguer propriété, usufruit, nue-propriété et pouvoirs de gestion.',
       'Repérer les clauses civiles utiles sans les assimiler à un acte notarié.',
     ],
-    sections: [
-      {
-        title: 'Régimes matrimoniaux',
-        body: 'Le régime matrimonial détermine les masses de biens, les pouvoirs de chaque époux et les effets d’une dissolution. Il doit être lu avant toute projection successorale.',
-      },
-      {
-        title: 'PACS et union libre',
-        body: 'Le PACS organise une vie commune avec un régime patrimonial propre, tandis que l’union libre laisse moins d’effets automatiques. La protection du partenaire doit donc être formalisée.',
-      },
-      {
-        title: 'Dévolution successorale',
-        body: 'La dévolution identifie les héritiers appelés à la succession et l’ordre dans lequel ils interviennent. Le conjoint survivant se lit séparément des autres héritiers.',
-      },
-      {
-        title: 'Réserve et quotité disponible',
-        body: 'La réserve protège certains héritiers contre les libéralités excessives. La quotité disponible correspond à la fraction qui peut être transmise librement.',
-      },
-    ],
   },
   {
     chapterId: 'patrimoine',
@@ -84,20 +66,6 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer barème progressif, revenus du capital et contributions spécifiques.',
       'Relier la fiscalité courante à la détention immobilière taxable.',
     ],
-    sections: [
-      {
-        title: 'Impôt sur le revenu',
-        body: 'Le revenu net imposable est réparti par parts de quotient familial avant application du barème progressif. La décote, les abattements et les contributions sur hauts revenus corrigent ensuite l’impôt selon la composition du foyer et la nature des revenus.',
-      },
-      {
-        title: 'Revenus du capital',
-        body: 'Les dividendes, intérêts et plus-values mobilières relèvent en principe du prélèvement forfaitaire unique, avec option possible pour le barème progressif lorsque cette option est globale et cohérente avec les autres revenus du foyer.',
-      },
-      {
-        title: 'Patrimoine immobilier taxable',
-        body: 'L’IFI vise les immeubles et droits immobiliers non affectés à une activité opérationnelle. La lecture porte autant sur l’actif imposable que sur les dettes admises, les règles de démembrement et le plafonnement.',
-      },
-    ],
   },
   {
     chapterId: 'transmission',
@@ -107,24 +75,6 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Commencer par la règle civile avant l’évaluation fiscale.',
       'Séparer donation, succession et clause bénéficiaire.',
       'Repérer la liquidité nécessaire au règlement de la transmission.',
-    ],
-    sections: [
-      {
-        title: 'Dévolution et réserve',
-        body: 'La succession commence par l’identification des héritiers, du conjoint survivant et des droits réservataires. Les règles civiles déterminent la masse à partager avant toute lecture fiscale.',
-      },
-      {
-        title: 'Donations et libéralités',
-        body: 'Donation simple, donation-partage, legs et libéralités graduelles organisent une transmission anticipée ou testamentaire. Leur effet dépend de la qualification de l’acte, du rapport et de la réduction.',
-      },
-      {
-        title: 'Assurance-vie au décès',
-        body: 'La clause bénéficiaire organise une transmission hors règlement successoral ordinaire. Elle doit rester cohérente avec le droit civil, les primes versées et le régime fiscal applicable au décès.',
-      },
-      {
-        title: 'Droits de mutation',
-        body: 'Les droits de succession et de donation se lisent après qualification du lien familial, des abattements applicables et de la part taxable. Les tableaux DMTG portent les valeurs à utiliser.',
-      },
     ],
   },
   {
@@ -251,20 +201,6 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Relier les garanties au besoin familial avant de parler cotisation.',
       'Distinguer arrêt de travail, invalidité, décès et maintien de revenu.',
     ],
-    sections: [
-      {
-        title: 'Régimes obligatoires',
-        body: 'La protection obligatoire varie selon le statut : salarié, agricole, indépendant, profession libérale ou dirigeant. Chaque régime doit être lu par risque, avec ses franchises, assiettes, prestations et conditions de versement.',
-      },
-      {
-        title: 'Maintien employeur',
-        body: 'Le maintien de salaire relève d’abord de la relation de travail, puis des conventions collectives et contrats complémentaires. Il ne se confond pas avec les prestations de sécurité sociale ni avec une garantie individuelle.',
-      },
-      {
-        title: 'Contrats privés',
-        body: 'Les contrats de prévoyance assurantiels complètent le régime obligatoire. La lecture porte sur le risque garanti, le bénéficiaire, la durée d’indemnisation, les exclusions et le traitement fiscal ou social des prestations.',
-      },
-    ],
   },
   {
     chapterId: 'societe',
@@ -273,20 +209,6 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer fiscalité société, droit des associés et stratégie patrimoniale.',
       'Distinguer dividendes, réserves, compte courant et trésorerie disponible.',
       'Repérer les opérations sur titres et leurs effets pour les associés.',
-    ],
-    sections: [
-      {
-        title: 'Impôt sur les sociétés',
-        body: 'L’IS s’applique au résultat fiscal de la société. La lecture distingue le bénéfice imposable, le taux applicable, les intérêts déductibles et les régimes intragroupe comme le régime mère-fille.',
-      },
-      {
-        title: 'Distribution et réserves',
-        body: 'Le résultat distribuable dépend du bénéfice, des pertes antérieures, des réserves et des décisions sociales. Le dividende se lit ensuite chez l’associé selon sa situation fiscale et sociale.',
-      },
-      {
-        title: 'Titres et opérations de capital',
-        body: 'Valorisation, cession, apport à une holding, compte courant et épargne salariale relient la société au patrimoine privé. Ces opérations demandent une lecture conjointe du droit des sociétés et de la fiscalité des associés.',
-      },
     ],
   },
   {

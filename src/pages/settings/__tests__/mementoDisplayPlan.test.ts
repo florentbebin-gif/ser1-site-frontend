@@ -76,17 +76,11 @@ describe('mementoDisplayPlan', () => {
       (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
     );
 
-    expect(sectionTitles).toEqual(
-      expect.arrayContaining([
-        'Composition familiale',
-        'Capacité patrimoniale',
-        'Personnes à protéger',
-        'Régimes matrimoniaux',
-        'PACS et union libre',
-        'Dévolution successorale',
-        'Réserve et quotité disponible',
-      ]),
-    );
+    expect(sectionTitles).toEqual([
+      'Composition familiale',
+      'Capacité patrimoniale',
+      'Personnes à protéger',
+    ]);
 
     const visibleTexts = partie.chapters.flatMap((chapter) => [
       chapter.chapter.description,
@@ -117,14 +111,13 @@ describe('mementoDisplayPlan', () => {
 
     expect(sectionTitles).toEqual(
       expect.arrayContaining([
-        'Impôt sur le revenu',
-        'Revenus du capital',
-        'Patrimoine immobilier taxable',
         'Revenus et détention',
         'Cession immobilière',
         'Cession ou conservation',
       ]),
     );
+    expect(sectionTitles).not.toContain('Impôt sur le revenu');
+    expect(sectionTitles).not.toContain('Patrimoine immobilier taxable');
 
     const visibleTexts = fiscalite.chapters.flatMap((chapter) => [
       chapter.chapter.description,
@@ -153,14 +146,13 @@ describe('mementoDisplayPlan', () => {
 
     expect(sectionTitles).toEqual(
       expect.arrayContaining([
-        'Impôt sur les sociétés',
-        'Distribution et réserves',
-        'Titres et opérations de capital',
         'Enveloppes de placement',
         'Revenus du capital',
         'Sortie et transmission',
       ]),
     );
+    expect(sectionTitles).not.toContain('Impôt sur les sociétés');
+    expect(sectionTitles).not.toContain('Distribution et réserves');
 
     const visibleTexts = partie.chapters.flatMap((chapter) => [
       chapter.chapter.description,
@@ -191,16 +183,10 @@ describe('mementoDisplayPlan', () => {
     );
 
     expect(sectionTitles).toEqual(
-      expect.arrayContaining([
-        'Dévolution et réserve',
-        'Donations et libéralités',
-        'Assurance-vie au décès',
-        'Droits de mutation',
-        'Pacte Dutreil',
-        'Donation de titres',
-        'Paiement des droits',
-      ]),
+      expect.arrayContaining(['Pacte Dutreil', 'Donation de titres', 'Paiement des droits']),
     );
+    expect(sectionTitles).not.toContain('Dévolution et réserve');
+    expect(sectionTitles).not.toContain('Droits de mutation');
 
     const visibleTexts = partie.chapters.flatMap((chapter) => [
       chapter.chapter.description,

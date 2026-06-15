@@ -105,16 +105,11 @@
 .settings-memento-read-chapters,
 .settings-memento-lexicon,
 .settings-memento-readable-list,
-.settings-memento-value-sections,
 .settings-memento-audit-registry {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 12px;
-}
-
-.settings-memento-value-sections {
-  padding-top: 4px;
 }
 
 .settings-memento-reference-values {
@@ -244,35 +239,20 @@
   font-weight: 800;
 }
 
-.settings-memento-reference-values__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.settings-memento-reference-values__actions span,
 .settings-memento-reference-values__error {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--state-danger);
   font-size: 12px;
   line-height: 1.4;
 }
 
-.settings-memento-reference-values__error {
-  color: var(--state-danger);
-}
-
-.settings-memento-calculator-card {
-  overflow: hidden;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--surface-card);
+.settings-memento-reference-values__readonly {
+  color: var(--text-primary);
+  font-weight: 750;
 }
 
 .settings-memento-part__header,
 .settings-memento-read-chapter__header,
-.settings-memento-calculator-card__header,
 .settings-memento-admin-section__header {
   width: 100%;
   border: 0;
@@ -299,8 +279,6 @@
 .settings-memento-part__header:focus-visible,
 .settings-memento-read-chapter__header:hover,
 .settings-memento-read-chapter__header:focus-visible,
-.settings-memento-calculator-card__header:hover,
-.settings-memento-calculator-card__header:focus-visible,
 .settings-memento-admin-section__header:hover,
 .settings-memento-admin-section__header:focus-visible {
   background: var(--surface-muted);
@@ -326,7 +304,6 @@
 }
 
 .settings-memento-part__text,
-.settings-memento-calculator-card__text,
 .settings-memento-admin-section__text,
 .settings-memento-read-chapter__header span:first-child {
   display: flex;
@@ -344,7 +321,6 @@
 
 .settings-memento-part__description,
 .settings-memento-read-chapter__header small,
-.settings-memento-calculator-card__text small,
 .settings-memento-admin-section__subtitle {
   color: var(--text-secondary);
   font-size: 12px;
@@ -368,21 +344,12 @@
   animation: memento-reveal var(--transition-base) var(--easing-standard);
 }
 
-.settings-memento-calculator-card__body {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 14px 14px;
-}
-
-.settings-memento-read-chapter__header,
-.settings-memento-calculator-card__header {
+.settings-memento-read-chapter__header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
-  padding: 13px 14px;
+  padding: 14px 0;
 }
 
 .settings-memento-read-chapter {
@@ -428,16 +395,11 @@
   line-height: 1.45;
 }
 
-.settings-memento-read-chapter__header {
-  padding: 14px 0;
-}
-
 .settings-memento-read-chapter__body {
   padding: 0 0 16px;
 }
 
-.settings-memento-read-chapter__header strong,
-.settings-memento-calculator-card__text strong {
+.settings-memento-read-chapter__header strong {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 850;
@@ -543,27 +505,6 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.45;
-}
-
-.settings-memento-calculator-card__sources {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 0 14px 14px;
-}
-
-.settings-memento-calculator-card__sources span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border: 1px solid var(--border-default);
-  border-radius: 999px;
-  background: var(--surface-muted);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.1;
 }
 
 .settings-memento-admin-section {

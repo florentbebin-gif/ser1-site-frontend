@@ -55,27 +55,45 @@ jobs:
         if: steps.visual_scope.outputs.should_run != 'true'
         run: echo "Aucun changement UI/visuel détecté; job sentinelle vert."
 
-      - name: Run visual snapshots in Playwright container
+      - name: Setup Node
+        if: steps.visual_scope.outputs.should_run == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.1
+          cache: npm
+
+      - name: Cache Playwright browsers
+        if: steps.visual_scope.outputs.should_run == 'true'
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-1.60.0
+
+      - name: Pin npm version
+        if: steps.visual_scope.outputs.should_run == 'true'
+        run: |
+          npm install -g npm@11.12.0
+          npm --version
+
+      - name: Install dependencies
+        if: steps.visual_scope.outputs.should_run == 'true'
+        run: npm ci
+
+      - name: Install Chromium
+        if: steps.visual_scope.outputs.should_run == 'true'
+        run: npx playwright install chromium --with-deps
+
+      - name: Run visual snapshots
         if: steps.visual_scope.outputs.should_run == 'true'
         timeout-minutes: 15
         env:
+          CI: true
+          VITE_E2E: 'true'
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           E2E_EMAIL: ${{ vars.E2E_AUTH_REQUIRED == 'true' && secrets.E2E_EMAIL || '' }}
           E2E_PASSWORD: ${{ vars.E2E_AUTH_REQUIRED == 'true' && secrets.E2E_PASSWORD || '' }}
-        run: |
-          docker run --rm \
-            -v "${GITHUB_WORKSPACE}:/work" \
-            -w /work \
-            -e CI=true \
-            -e VITE_E2E=true \
-            -e HUSKY=0 \
-            -e VITE_SUPABASE_URL="${VITE_SUPABASE_URL}" \
-            -e VITE_SUPABASE_ANON_KEY="${VITE_SUPABASE_ANON_KEY}" \
-            -e E2E_EMAIL="${E2E_EMAIL}" \
-            -e E2E_PASSWORD="${E2E_PASSWORD}" \
-            mcr.microsoft.com/playwright:v1.60.0-jammy \
-            bash -lc "npm install -g n >/dev/null && n 22.22.1 >/dev/null && hash -r && npm install -g npm@11.12.0 >/dev/null && npm ci && npm run test:e2e:visual"
+        run: npm run test:e2e:visual
 
       - name: Upload visual test report
         uses: actions/upload-artifact@v6

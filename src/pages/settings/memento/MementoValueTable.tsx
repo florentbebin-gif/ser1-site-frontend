@@ -1,4 +1,4 @@
-import { useId, useState, type ReactElement } from 'react';
+import { useId, type ReactElement } from 'react';
 
 import { LegalRefInlineList } from '@/components/legal/LegalRefLink';
 import {
@@ -24,12 +24,31 @@ function unitLabel(unit: string | null): string {
   return unit ?? '';
 }
 
+function formatReferenceValue(row: MementoReferenceValue): string {
+  if (row.value_text !== null && row.value_numeric === null) return row.value_text;
+
+  const formattedValue =
+    row.value_numeric === null
+      ? ''
+      : new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(row.value_numeric);
+  const unit = unitLabel(row.unit);
+  return unit ? `${formattedValue} ${unit}` : formattedValue;
+}
+
 function valueCell(
   row: MementoReferenceValue,
   isAdmin: boolean,
   handleNumericChange: (key: string, field: 'value_numeric' | 'year', value: string) => void,
   handleTextChange: (key: string, field: 'value_text' | 'note', value: string) => void,
 ): ReactElement {
+  if (!isAdmin) {
+    return (
+      <span className="settings-memento-reference-values__readonly">
+        {formatReferenceValue(row)}
+      </span>
+    );
+  }
+
   if (row.value_text !== null && row.value_numeric === null) {
     return (
       <label className="settings-memento-reference-values__input">
@@ -66,15 +85,15 @@ export default function MementoValueTable({
   description,
 }: MementoValueTableProps): ReactElement {
   const titleId = useId();
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const { rows, loading, saving, error, handleNumericChange, handleTextChange, save } =
-    useMementoReferenceValues(isAdmin, { domain });
+  const { rows, loading, error, handleNumericChange, handleTextChange } = useMementoReferenceValues(
+    isAdmin,
+    {
+      domain,
+      saveTargetId: `memento-reference-values-${domain}`,
+      saveTargetLabel: title,
+    },
+  );
   const groups = groupMementoReferenceValuesBySubdomain(rows);
-
-  async function handleSave(): Promise<void> {
-    const result = await save();
-    setSaveMessage(result.ok ? 'Valeurs mémento enregistrées.' : (result.error ?? null));
-  }
 
   return (
     <section className="settings-memento-reference-values" aria-labelledby={titleId}>
@@ -112,17 +131,22 @@ export default function MementoValueTable({
                     </th>
                     <td>{valueCell(row, isAdmin, handleNumericChange, handleTextChange)}</td>
                     <td>
-                      <label className="settings-memento-reference-values__year">
-                        <input
-                          aria-label={`${row.label} — année`}
-                          type="number"
-                          value={row.year}
-                          disabled={!isAdmin}
-                          onChange={(event) =>
-                            handleNumericChange(row.key, 'year', event.target.value)
-                          }
-                        />
-                      </label>
+                      {isAdmin ? (
+                        <label className="settings-memento-reference-values__year">
+                          <input
+                            aria-label={`${row.label} — année`}
+                            type="number"
+                            value={row.year}
+                            onChange={(event) =>
+                              handleNumericChange(row.key, 'year', event.target.value)
+                            }
+                          />
+                        </label>
+                      ) : (
+                        <span className="settings-memento-reference-values__readonly">
+                          {row.year}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <LegalRefInlineList ids={row.ref_ids} />
@@ -134,20 +158,6 @@ export default function MementoValueTable({
           </div>
         </section>
       ))}
-
-      {isAdmin ? (
-        <div className="settings-memento-reference-values__actions">
-          <button
-            type="button"
-            className="settings-btn settings-btn--primary"
-            disabled={saving}
-            onClick={() => void handleSave()}
-          >
-            {saving ? 'Enregistrement...' : 'Enregistrer les valeurs mémento'}
-          </button>
-          {saveMessage ? <span>{saveMessage}</span> : null}
-        </div>
-      ) : null}
     </section>
   );
 }

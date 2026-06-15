@@ -15,11 +15,7 @@ import {
   MEMENTO_SETTINGS_SECTIONS,
   MEMENTO_SETTINGS_TARGET_PATH,
 } from '../memento/mementoSettingsSections';
-import {
-  MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER,
-  MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER,
-  MEMENTO_VALUE_PANEL_BY_SECTION,
-} from '../memento/mementoValueSections';
+import { MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER } from '../memento/mementoValueSections';
 import {
   readChapterWrapperForChapter,
   readChapterWrappersForChapter,
@@ -126,22 +122,18 @@ describe('contrat des sections settings du mémento', () => {
     expect(sectionByKey.get('impots.ps-patrimoine')).toEqual(['prelevements']);
   });
 
-  it('rattache les valeurs de lecture aux bons chapitres sans blocs monolithiques migrés', () => {
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER['fiscalite-foyer']).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.retraite).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.prevoyance).toBeUndefined();
+  it('conserve les sections settings en audit sans bloc monolithique de lecture', () => {
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.prevoyance).toEqual([
       'prevoyance-regimes',
       'base-contrat',
     ]);
-    expect(MEMENTO_VALUE_PANEL_BY_SECTION.impots).toBeUndefined();
-    expect(MEMENTO_VALUE_PANEL_BY_SECTION.prelevements).toBeUndefined();
-    expect(MEMENTO_VALUE_PANEL_BY_SECTION['dmtg-succession']).toBeUndefined();
-    expect(MEMENTO_VALUE_PANEL_BY_SECTION['prevoyance-regimes']).toBeUndefined();
+    expect(readEntrySectionForKey('fiscalite-foyer.ir')).toBeDefined();
+    expect(readEntrySectionForKey('societe.is')).toBeDefined();
+    expect(readEntrySectionForKey('placements.ps-pfu-revenus-capital')).toBeDefined();
+    expect(readEntrySectionForKey('retraite.globale')).toBeDefined();
+    expect(readEntrySectionForKey('transmission.succession-dmtg')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.maintien-employeur')).toBeDefined();
   });
 
   it('rattache les sections DMTG aux entrées de lecture ciblées', () => {
