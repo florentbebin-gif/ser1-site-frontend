@@ -9,10 +9,11 @@ import type {
   PrevoyanceMaintienEmployeurSettings,
   PrevoyanceRegimeSettings,
 } from '@/domain/prevoyance/types';
-import PrevoyanceRegimesSettingsPanel from '../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel';
+import MementoPrevoyanceEntrySection from '../memento/MementoPrevoyanceEntrySection';
+import type { PrevoyanceEditorTarget } from '../PrevoyanceRegimes/usePrevoyanceMementoSettings';
 
 let isAdmin = false;
-const reloadMock = vi.fn();
+const applyEditorTargetMock = vi.fn();
 
 const baseData: PrevoyanceRegimeSettings['data'] = {
   arret: {
@@ -77,16 +78,6 @@ const sources: PrevoyanceRegimeSettings['sources'] = {
 
 const regimes: PrevoyanceRegimeSettings[] = [
   {
-    code: 'cavamac',
-    label: 'Agent général — CAVAMAC',
-    caisse: 'CAVAMAC',
-    population: 'tns',
-    defaultContractKind: 'individuel',
-    year: 2026,
-    data: baseData,
-    sources,
-  },
-  {
     code: 'salarie-cpam',
     label: 'Salarié secteur privé — CPAM',
     caisse: 'CPAM',
@@ -107,11 +98,11 @@ const regimes: PrevoyanceRegimeSettings[] = [
     sources,
   },
   {
-    code: 'salarie-msa',
-    label: 'Salarié agricole — MSA',
-    caisse: 'MSA salariés',
-    population: 'salarie',
-    defaultContractKind: 'collectif',
+    code: 'cnavpl',
+    label: 'Profession libérale — socle CNAVPL',
+    caisse: 'CNAVPL',
+    population: 'liberal',
+    defaultContractKind: 'individuel',
     year: 2026,
     data: baseData,
     sources,
@@ -143,41 +134,31 @@ const maintien: PrevoyanceMaintienEmployeurSettings[] = [
   },
 ];
 
-vi.mock('@/auth/useUserRole', () => ({
-  useUserRole: () => ({
-    role: isAdmin ? 'admin' : 'user',
-    user: null,
+vi.mock('../PrevoyanceRegimes/PrevoyanceProvider', () => ({
+  usePrevoyanceContext: () => ({
     isAdmin,
-    isLoading: false,
-  }),
-}));
-
-vi.mock('@/hooks/usePrevoyanceSettings', () => ({
-  usePrevoyanceSettings: () => ({
+    loading: false,
     regimes,
     maintien,
-    loading: false,
-    reload: reloadMock,
+    applyEditorTarget: applyEditorTargetMock,
   }),
 }));
 
-describe('PrevoyanceRegimesSettingsPanel', () => {
+describe('MementoPrevoyanceEntrySection', () => {
   beforeEach(() => {
     isAdmin = false;
-    reloadMock.mockReset();
+    applyEditorTargetMock.mockReset();
   });
 
-  async function renderPage() {
-    render(<PrevoyanceRegimesSettingsPanel />);
-    await screen.findByText('Prévoyance — régimes');
-  }
-
-  it('affiche la page aux users en lecture seule avec les références consultables', async () => {
+  it('affiche les régimes salariés aux users en lecture seule avec les références consultables', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    render(<MementoPrevoyanceEntrySection entryKey="prevoyance.regimes-salaries" />);
 
     const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
     expect(cpam).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByRole('button', { name: /Artisan \/ commerçant/i }),
+    ).not.toBeInTheDocument();
 
     await user.click(cpam);
     expect(cpam).toHaveAttribute('aria-expanded', 'true');
@@ -190,85 +171,81 @@ describe('PrevoyanceRegimesSettingsPanel', () => {
     expect(screen.queryByText(/Valeurs couvertes/i)).not.toBeInTheDocument();
     expect(screen.getByText('Cotisations')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Maintien employeur' })).not.toBeInTheDocument();
     expect(screen.queryByText('Note interne invisible aux users.')).not.toBeInTheDocument();
   });
 
-  it('affiche les actions secondaires aux admins', async () => {
-    const user = userEvent.setup();
-    isAdmin = true;
+  it('répartit les indépendants et les caisses libérales dans leurs entrées', () => {
+    const { rerender } = render(
+      <MementoPrevoyanceEntrySection entryKey="prevoyance.regimes-independants" />,
+    );
 
-    await renderPage();
-
-    expect(screen.getByRole('button', { name: 'Maintien employeur' })).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
-    expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument();
-    expect(screen.getByText('Vérifié')).toBeInTheDocument();
-    expect(screen.getByText(/consulté le 2026-05-24/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        (_, element) => element?.textContent === 'Valeurs couvertes : invalidité, décès',
-      ),
-    ).toBeInTheDocument();
-    expect(screen.queryByText('Note admin')).not.toBeInTheDocument();
-    expect(screen.queryByText('Note interne invisible aux users.')).not.toBeInTheDocument();
-  });
-
-  it('initialise une nouvelle source admin sans URL factice', async () => {
-    const user = userEvent.setup();
-    isAdmin = true;
-
-    await renderPage();
-
-    await user.click(screen.getByRole('button', { name: /Agent général — CAVAMAC/i }));
-    await user.click(screen.getByRole('button', { name: 'Modifier' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Modifier le régime' });
-
-    await user.click(within(dialog).getByRole('button', { name: 'Ajouter une référence' }));
-
-    const urlFields = within(dialog).getAllByLabelText('URL');
-    expect(urlFields[1]).toHaveValue('');
-  });
-
-  it('garde les régimes repliés au chargement puis les ouvre au clic', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    const cavamac = screen.getByRole('button', { name: /Agent général — CAVAMAC/i });
-    const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
-    expect(cavamac).toHaveAttribute('aria-expanded', 'false');
-    expect(cpam).toHaveAttribute('aria-expanded', 'false');
-
-    await user.click(cavamac);
-    expect(cavamac).toHaveAttribute('aria-expanded', 'true');
-
-    await user.click(cavamac);
-    expect(cavamac).toHaveAttribute('aria-expanded', 'false');
-
-    const ssi = screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i });
-    await user.click(ssi);
-    expect(ssi).toHaveAttribute('aria-expanded', 'true');
-  });
-
-  it('filtre par libellé, caisse et code', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    const search = screen.getByPlaceholderText('Rechercher un régime, une caisse ou un code');
-    await user.type(search, 'MSA salariés');
-    expect(screen.getByRole('button', { name: /Salarié agricole — MSA/i })).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /Salarié secteur privé — CPAM/i }),
-    ).not.toBeInTheDocument();
-
-    await user.clear(search);
-    await user.type(search, 'ssi-artisan');
     expect(
       screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }),
     ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Profession libérale/i })).not.toBeInTheDocument();
+
+    rerender(<MementoPrevoyanceEntrySection entryKey="prevoyance.affiliation-caisses" />);
+
     expect(
-      screen.queryByRole('button', { name: /Salarié agricole — MSA/i }),
+      screen.getByRole('button', { name: /Profession libérale — socle CNAVPL/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Artisan \/ commerçant/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it('permet à l’admin de valider une modification en brouillon sans sauvegarde locale', async () => {
+    const user = userEvent.setup();
+    isAdmin = true;
+
+    render(<MementoPrevoyanceEntrySection entryKey="prevoyance.regimes-independants" />);
+
+    await user.click(screen.getByRole('button', { name: /Artisan \/ commerçant — SSI/i }));
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Modifier le régime' });
+
+    expect(
+      within(dialog).getByRole('button', { name: 'Valider les modifications' }),
+    ).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument();
+
+    const labelInput = within(dialog).getAllByLabelText('Libellé')[0];
+    await user.clear(labelInput);
+    await user.type(labelInput, 'Artisan modifié — SSI');
+    await user.click(within(dialog).getByRole('button', { name: 'Valider les modifications' }));
+
+    expect(applyEditorTargetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'regime',
+        originalCode: 'ssi-artisan-commercant',
+        value: expect.objectContaining({
+          code: 'ssi-artisan-commercant',
+          label: 'Artisan modifié — SSI',
+        }),
+      }) satisfies PrevoyanceEditorTarget,
+    );
+  });
+
+  it('affiche le maintien employeur sous son entrée dédiée', async () => {
+    const user = userEvent.setup();
+    isAdmin = true;
+
+    render(<MementoPrevoyanceEntrySection entryKey="prevoyance.maintien-employeur" />);
+
+    expect(screen.getByText('Maintien employeur légal')).toBeInTheDocument();
+    expect(screen.getByText('Carence : 7 j')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    expect(
+      await screen.findByRole('dialog', { name: 'Modifier le maintien employeur' }),
+    ).toBeInTheDocument();
+  });
+
+  it('rappelle que les contrats assurantiels restent dans Base-Contrat sans dupliquer de paramètre', () => {
+    render(<MementoPrevoyanceEntrySection entryKey="prevoyance.contrats-assurantiels" />);
+
+    expect(screen.getByText('Contrats assurantiels')).toBeInTheDocument();
+    expect(screen.getByText(/Référentiel contrats/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
   });
 });

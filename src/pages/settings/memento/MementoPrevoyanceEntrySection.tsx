@@ -1,15 +1,14 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useUserRole } from '@/auth/useUserRole';
-import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
-import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
+import { useMemo, useState, type ReactElement, type ReactNode } from 'react';
 import type {
   PrevoyanceAmountRule,
   PrevoyanceRegimeData,
   PrevoyanceRegimeSettings,
   PrevoyanceSources,
 } from '@/domain/prevoyance/types';
-import { usePrevoyanceSettings } from '@/hooks/usePrevoyanceSettings';
+import { PREVOYANCE_MAINTIEN_LEGAL_CODE } from '@/domain/prevoyance/constants';
 import { EditModal, type EditorTarget } from '../PrevoyanceRegimesEditModal';
+import { usePrevoyanceContext } from '../PrevoyanceRegimes/PrevoyanceProvider';
+import type { MementoEntrySectionProps } from './mementoEntrySections';
 import '../styles/prevoyance-regimes.css';
 
 function formatEuro(value: number): string {
@@ -19,14 +18,12 @@ function formatEuro(value: number): string {
     maximumFractionDigits: 2,
   }).format(value);
 }
-
 function formatRegimeType(regime: PrevoyanceRegimeSettings): string {
   return regime.defaultContractKind === 'collectif'
     ? 'Salarié collectif'
     : 'Individuel TNS/libéral';
 }
-
-function formatAmountLabel(value: PrevoyanceAmountRule | null | undefined) {
+function formatAmountLabel(value: PrevoyanceAmountRule | null | undefined): string {
   if (!value) return 'Non prévu';
   if (value.label) return value.label;
   if (value.value === null || value.value === undefined) return 'Formule régime';
@@ -34,7 +31,6 @@ function formatAmountLabel(value: PrevoyanceAmountRule | null | undefined) {
   if (value.mode.startsWith('percent')) return `${value.value} %`;
   return `${value.value}`;
 }
-
 function formatCotisationLabel(cotisations: PrevoyanceRegimeData['cotisations']): string {
   if (cotisations.notes?.[0]) return cotisations.notes[0];
   if (cotisations.mode === 'none') return 'Aucune cotisation obligatoire renseignée.';
@@ -42,18 +38,15 @@ function formatCotisationLabel(cotisations: PrevoyanceRegimeData['cotisations'])
   if (cotisations.mode === 'fixed_eur') return `Forfait ${formatEuro(cotisations.value)}`;
   return `${cotisations.value} % de l'assiette documentée.`;
 }
-
 function formatRange(from: number, to: number | null): string {
   return `${from} % à ${to ?? '+'} %`;
 }
-
 function formatConfidence(confidence: string): string {
   if (confidence === 'haute') return 'Vérifié';
   if (confidence === 'moyenne') return 'À vérifier';
   return 'Non vérifié';
 }
-
-function RuleCard({ title, children }: { title: string; children: ReactNode }) {
+function RuleCard({ title, children }: { title: string; children: ReactNode }): ReactElement {
   return (
     <div className="settings-reference-rule-card">
       <div className="settings-reference-rule-card__title">{title}</div>
@@ -61,8 +54,7 @@ function RuleCard({ title, children }: { title: string; children: ReactNode }) {
     </div>
   );
 }
-
-function RuleList({ items }: { items: string[] }) {
+function RuleList({ items }: { items: string[] }): ReactElement {
   return (
     <ul className="settings-reference-rule-card__list">
       {items.map((item) => (
@@ -71,14 +63,12 @@ function RuleList({ items }: { items: string[] }) {
     </ul>
   );
 }
-
 function getCoveredValuesLabel(sources: PrevoyanceSources): string {
   const values = Array.from(
     new Set(sources.references.flatMap((reference) => reference.valeursCouvertes)),
   );
   return values.length === 0 ? 'à compléter' : values.join(', ');
 }
-
 function getCotisationItems(cotisations: PrevoyanceRegimeData['cotisations']): string[] {
   return [
     formatCotisationLabel(cotisations),
@@ -90,7 +80,6 @@ function getCotisationItems(cotisations: PrevoyanceRegimeData['cotisations']): s
       : []),
   ];
 }
-
 function PhaseColumn({
   title,
   tone,
@@ -99,7 +88,7 @@ function PhaseColumn({
   title: string;
   tone: 'constitution' | 'sortie' | 'deces';
   children: ReactNode;
-}) {
+}): ReactElement {
   return (
     <section className="settings-reference-phase">
       <div className={`settings-reference-phase__title settings-reference-phase__title--${tone}`}>
@@ -109,7 +98,6 @@ function PhaseColumn({
     </section>
   );
 }
-
 function RegimeMetaCard({
   sources,
   cotisations,
@@ -118,9 +106,8 @@ function RegimeMetaCard({
   sources: PrevoyanceSources;
   cotisations: PrevoyanceRegimeData['cotisations'];
   showAdminNotes: boolean;
-}) {
+}): ReactElement | null {
   const cotisationItems = getCotisationItems(cotisations);
-
   if (sources.references.length === 0) {
     return (
       <RuleCard title="Références">
@@ -140,7 +127,6 @@ function RegimeMetaCard({
   }
   const firstReference = sources.references[0];
   if (!firstReference) return null;
-
   return (
     <RuleCard title="Références">
       <div className="prevoyance-settings-meta-card">
@@ -185,7 +171,6 @@ function RegimeMetaCard({
     </RuleCard>
   );
 }
-
 function RegimePanel({
   regime,
   isOpen,
@@ -198,10 +183,9 @@ function RegimePanel({
   onToggle: () => void;
   onEdit: () => void;
   canEdit: boolean;
-}) {
+}): ReactElement {
   const firstArret = regime.data.arret.paliers[0];
   const invaliditePaliers = regime.data.invalidite.paliers.slice(0, 3);
-
   return (
     <article className="fisc-acc-item prevoyance-settings-regime">
       <button
@@ -222,7 +206,6 @@ function RegimePanel({
         </span>
         <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
-
       {isOpen ? (
         <div className="fisc-acc-body prevoyance-settings-regime__body">
           <div className="settings-reference-rules prevoyance-settings-rules">
@@ -238,7 +221,6 @@ function RegimePanel({
                   />
                 </RuleCard>
               </PhaseColumn>
-
               <PhaseColumn title="Invalidité" tone="sortie">
                 {invaliditePaliers.length === 0 ? (
                   <div className="settings-reference-empty-card">
@@ -249,7 +231,9 @@ function RegimePanel({
                 ) : (
                   invaliditePaliers.map((palier, palierIndex) => (
                     <RuleCard
-                      key={`${palier.fromRate}-${palier.toRate ?? 'plus'}-${palier.category ?? palier.label ?? palierIndex}`}
+                      key={`${palier.fromRate}-${palier.toRate ?? 'plus'}-${
+                        palier.category ?? palier.label ?? palierIndex
+                      }`}
                       title={palier.label}
                     >
                       <RuleList
@@ -263,20 +247,23 @@ function RegimePanel({
                   ))
                 )}
               </PhaseColumn>
-
               <PhaseColumn title="Décès" tone="deces">
                 <RuleCard title="Capital décès">
                   <RuleList
                     items={[
                       `Capital : ${formatAmountLabel(regime.data.deces.capital)}`,
-                      `Doublement accident : ${regime.data.deces.doublementAccident ? 'Oui' : 'Non'}`,
+                      `Doublement accident : ${
+                        regime.data.deces.doublementAccident ? 'Oui' : 'Non'
+                      }`,
                       `Double effet : ${regime.data.deces.doubleEffet ? 'Oui' : 'Non'}`,
                       ...(regime.data.deces.renteConjoint
                         ? [`Rente conjoint : ${formatAmountLabel(regime.data.deces.renteConjoint)}`]
                         : []),
                       ...(regime.data.deces.renteEducation
                         ? [
-                            `Rente éducation : ${formatAmountLabel(regime.data.deces.renteEducation)}`,
+                            `Rente éducation : ${formatAmountLabel(
+                              regime.data.deces.renteEducation,
+                            )}`,
                           ]
                         : []),
                     ]}
@@ -284,7 +271,6 @@ function RegimePanel({
                 </RuleCard>
               </PhaseColumn>
             </div>
-
             <div className="prevoyance-settings-meta-block">
               <RegimeMetaCard
                 sources={regime.sources}
@@ -293,7 +279,6 @@ function RegimePanel({
               />
             </div>
           </div>
-
           {canEdit ? (
             <div className="prevoyance-settings-regime__actions">
               <button type="button" className="settings-reference-admin-action" onClick={onEdit}>
@@ -306,77 +291,37 @@ function RegimePanel({
     </article>
   );
 }
-
-export default function PrevoyanceRegimesSettingsPanel() {
-  const { isAdmin } = useUserRole();
-  const { regimes, maintien, loading, reload } = usePrevoyanceSettings();
-  const [search, setSearch] = useState('');
+function EmptySection({ label }: { label: string }): ReactElement {
+  return (
+    <div className="settings-premium-card prevoyance-settings-state">
+      Aucun repère prévoyance disponible pour {label}.
+    </div>
+  );
+}
+function RegimeListSection({
+  title,
+  regimes,
+}: {
+  title: string;
+  regimes: PrevoyanceRegimeSettings[];
+}): ReactElement {
+  const { isAdmin, applyEditorTarget } = usePrevoyanceContext();
   const [openCode, setOpenCode] = useState<string | null>(null);
   const [editorTarget, setEditorTarget] = useState<EditorTarget | null>(null);
-  const maintienLegal =
-    maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? null;
-
-  const filteredRegimes = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    if (!needle) return regimes;
-    return regimes.filter(
-      (regime) =>
-        regime.label.toLowerCase().includes(needle) ||
-        regime.caisse.toLowerCase().includes(needle) ||
-        regime.code.toLowerCase().includes(needle),
-    );
-  }, [regimes, search]);
-
   return (
-    <div className="prevoyance-settings-page">
+    <section className="prevoyance-settings-page">
       <div className="settings-stack settings-stack--spacious">
-        <section className="settings-premium-card prevoyance-settings-header-card">
-          <div className="settings-reference-header">
-            <div className="settings-reference-header__copy">
-              <h2 className="settings-premium-title">
-                <SettingsTitleWithIcon icon="umbrella">Prévoyance — régimes</SettingsTitleWithIcon>
-              </h2>
-              <p className="settings-premium-subtitle">
-                Référentiel des régimes obligatoires, des règles décès et du maintien employeur.
-              </p>
-            </div>
-            <div className="prevoyance-settings-header__aside">
-              <span className="settings-reference-badges" aria-label="Synthèse référentiel">
-                <span className="settings-reference-badge">{regimes.length} régimes</span>
-                <span className="settings-reference-badge settings-reference-badge--muted">
-                  {maintien.length} maintien légal
-                </span>
-              </span>
-              {maintienLegal && isAdmin ? (
-                <button
-                  type="button"
-                  className="settings-reference-admin-action"
-                  onClick={() => {
-                    setEditorTarget({ type: 'maintien', value: maintienLegal });
-                  }}
-                >
-                  Maintien employeur
-                </button>
-              ) : null}
-            </div>
+        <div className="settings-reference-header">
+          <div className="settings-reference-header__copy">
+            <h6>{title}</h6>
           </div>
-        </section>
-
-        <div className="settings-reference-filters">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher un régime, une caisse ou un code"
-            className="settings-reference-field"
-          />
+          <span className="settings-reference-badge">{regimes.length} régimes</span>
         </div>
-
-        {loading ? (
-          <div className="settings-premium-card prevoyance-settings-state">Chargement...</div>
+        {regimes.length === 0 ? (
+          <EmptySection label={title.toLowerCase()} />
         ) : (
           <div className="fisc-accordion prevoyance-settings-list">
-            {filteredRegimes.map((regime) => (
+            {regimes.map((regime) => (
               <RegimePanel
                 key={regime.code}
                 regime={regime}
@@ -389,10 +334,145 @@ export default function PrevoyanceRegimesSettingsPanel() {
           </div>
         )}
       </div>
-
       {editorTarget ? (
-        <EditModal target={editorTarget} onClose={() => setEditorTarget(null)} onSaved={reload} />
+        <EditModal
+          target={editorTarget}
+          onClose={() => setEditorTarget(null)}
+          onApply={applyEditorTarget}
+        />
       ) : null}
-    </div>
+    </section>
   );
+}
+function MaintienSection(): ReactElement {
+  const { isAdmin, maintien, applyEditorTarget } = usePrevoyanceContext();
+  const [editorTarget, setEditorTarget] = useState<EditorTarget | null>(null);
+  const maintienLegal =
+    maintien.find((item) => item.code === PREVOYANCE_MAINTIEN_LEGAL_CODE) ?? maintien[0] ?? null;
+  if (!maintienLegal) return <EmptySection label="le maintien employeur" />;
+  const maintienData = maintienLegal.data.maintienEmployeur;
+  return (
+    <section className="prevoyance-settings-page">
+      <div className="settings-stack settings-stack--spacious">
+        <div className="settings-reference-header">
+          <div className="settings-reference-header__copy">
+            <h6>Maintien employeur légal</h6>
+            <p className="settings-premium-subtitle">
+              {maintienLegal.label} - millésime {maintienLegal.year}
+            </p>
+          </div>
+          {isAdmin ? (
+            <button
+              type="button"
+              className="settings-reference-admin-action"
+              onClick={() => setEditorTarget({ type: 'maintien', value: maintienLegal })}
+            >
+              Modifier
+            </button>
+          ) : null}
+        </div>
+        <div className="settings-reference-rules prevoyance-settings-rules">
+          <div className="settings-reference-rules__grid prevoyance-settings-main-grid">
+            <PhaseColumn title="Conditions" tone="constitution">
+              <RuleCard title="Accès">
+                <RuleList
+                  items={[
+                    `Carence : ${maintienData.carenceDays} j`,
+                    `Ancienneté minimale : ${maintienData.minAncienneteYears} an(s)`,
+                  ]}
+                />
+              </RuleCard>
+            </PhaseColumn>
+            <PhaseColumn title="Maintien" tone="sortie">
+              {maintienData.paliers.length === 0 ? (
+                <div className="settings-reference-empty-card">
+                  <div className="settings-reference-empty-card__title">Aucun palier renseigné</div>
+                </div>
+              ) : (
+                maintienData.paliers.map((palier) => (
+                  <RuleCard
+                    key={`${palier.fromAncienneteYears}-${palier.toAncienneteYears ?? 'plus'}`}
+                    title={`${palier.fromAncienneteYears} à ${palier.toAncienneteYears ?? '+'} ans`}
+                  >
+                    <RuleList
+                      items={[
+                        `${palier.firstPeriodDays} j à ${palier.firstPeriodRate} %`,
+                        `${palier.secondPeriodDays} j à ${palier.secondPeriodRate} %`,
+                      ]}
+                    />
+                  </RuleCard>
+                ))
+              )}
+            </PhaseColumn>
+            <PhaseColumn title="Références" tone="deces">
+              <RegimeMetaCard
+                sources={maintienLegal.sources}
+                cotisations={{
+                  mode: 'none',
+                  value: null,
+                  notes: maintienData.notes,
+                }}
+                showAdminNotes={isAdmin}
+              />
+            </PhaseColumn>
+          </div>
+        </div>
+      </div>
+      {editorTarget ? (
+        <EditModal
+          target={editorTarget}
+          onClose={() => setEditorTarget(null)}
+          onApply={applyEditorTarget}
+        />
+      ) : null}
+    </section>
+  );
+}
+function ContractsSection(): ReactElement {
+  return (
+    <section className="prevoyance-settings-page">
+      <div className="settings-reference-rules prevoyance-settings-rules">
+        <RuleCard title="Contrats assurantiels">
+          <RuleList
+            items={[
+              'Les contrats décès, arrêt de travail et invalidité sont détaillés dans le Référentiel contrats.',
+              'Cette entrée garde le lien métier entre garanties privées, régimes obligatoires et simulateur prévoyance.',
+              'Les règles contractuelles restent administrées dans Base-Contrat ; aucun paramètre prévoyance supplémentaire n’est dupliqué ici.',
+            ]}
+          />
+        </RuleCard>
+      </div>
+    </section>
+  );
+}
+export default function MementoPrevoyanceEntrySection({
+  entryKey,
+}: MementoEntrySectionProps): ReactElement | null {
+  const { loading, regimes } = usePrevoyanceContext();
+  const grouped = useMemo(
+    () => ({
+      salaries: regimes.filter((regime) => regime.population === 'salarie'),
+      independants: regimes.filter(
+        (regime) => regime.population === 'tns' || regime.population === 'exploitant_agricole',
+      ),
+      caisses: regimes.filter(
+        (regime) => regime.population === 'liberal' || regime.population === 'avocat',
+      ),
+    }),
+    [regimes],
+  );
+  if (loading) return <p className="settings-memento-empty">Chargement de la prévoyance...</p>;
+  if (entryKey === 'prevoyance.maintien-employeur') return <MaintienSection />;
+  if (entryKey === 'prevoyance.regimes-salaries') {
+    return <RegimeListSection title="Régimes salariés" regimes={grouped.salaries} />;
+  }
+  if (entryKey === 'prevoyance.regimes-independants') {
+    return <RegimeListSection title="Régimes indépendants" regimes={grouped.independants} />;
+  }
+  if (entryKey === 'prevoyance.affiliation-caisses') {
+    return <RegimeListSection title="Affiliation aux caisses" regimes={grouped.caisses} />;
+  }
+  if (entryKey === 'prevoyance.contrats-assurantiels') return <ContractsSection />;
+
+  return null;
 }
