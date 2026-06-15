@@ -11,6 +11,12 @@ export interface MementoChapterWrapperProps {
 
 const MementoDmtgEntrySection = lazy(() => import('./MementoDmtgEntrySection'));
 const MementoDmtgChapterProvider = lazy(() => import('../DmtgSuccession/DmtgSuccessionProvider'));
+const MementoComptablesSocietesEntrySection = lazy(
+  () => import('./MementoComptablesSocietesEntrySection'),
+);
+const MementoComptablesSocietesChapterProvider = lazy(
+  () => import('../ComptablesSocietes/ComptablesSocietesProvider'),
+);
 
 const READ_ENTRY_SECTIONS: Partial<
   Record<string, LazyExoticComponent<ComponentType<MementoEntrySectionProps>>>
@@ -22,12 +28,18 @@ const READ_ENTRY_SECTIONS: Partial<
   'civil.reserve-quotite': MementoDmtgEntrySection,
   'civil.devolution-conjoint-survivant': MementoDmtgEntrySection,
   'civil.regime-matrimonial': MementoDmtgEntrySection,
+  'societe.is': MementoComptablesSocietesEntrySection,
+  'societe.groupe-mere-fille-qpfc': MementoComptablesSocietesEntrySection,
+  'societe.compte-courant-associe': MementoComptablesSocietesEntrySection,
+  'dirigeant.dividendes-tns': MementoComptablesSocietesEntrySection,
 };
 
 const READ_CHAPTER_WRAPPERS: Partial<
   Record<MementoChapterId, LazyExoticComponent<ComponentType<MementoChapterWrapperProps>>>
 > = {
   transmission: MementoDmtgChapterProvider,
+  societe: MementoComptablesSocietesChapterProvider,
+  dirigeant: MementoComptablesSocietesChapterProvider,
 };
 
 export function readEntrySectionForKey(

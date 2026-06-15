@@ -8,9 +8,6 @@ import {
   type MementoSettingsSectionId,
 } from './mementoSettingsSections';
 
-const ComptablesSocietesSettingsPanel = lazy(
-  () => import('../ComptablesSocietes/ComptablesSocietesSettingsPanel'),
-);
 const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
 const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
 const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
@@ -27,7 +24,6 @@ export const MEMENTO_VALUE_PANEL_BY_SECTION: Partial<
   Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>
 > = {
   impots: ImpotsSettingsPanel,
-  'comptables-societes': ComptablesSocietesSettingsPanel,
   prelevements: PrelevementsSettingsPanel,
   'base-contrat': BaseContratSettingsPanel,
   'prevoyance-regimes': PrevoyanceRegimesSettingsPanel,
@@ -55,7 +51,6 @@ export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   placements: ['prelevements'],
   retraite: ['prelevements'],
   prevoyance: ['prevoyance-regimes'],
-  societe: ['comptables-societes'],
 };
 
 function valueSectionsForIds(
