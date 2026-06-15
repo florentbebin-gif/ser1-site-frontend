@@ -11,11 +11,9 @@ import {
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
 import { getLegalReference } from '@/domain/legal-references';
-import {
-  DmtgSuccessionProvider,
-  DmtgSuccessionSaveBar,
-} from '../DmtgSuccession/DmtgSuccessionProvider';
+import { DmtgSuccessionProvider } from '../DmtgSuccession/DmtgSuccessionProvider';
 import MementoDmtgEntrySection from '../memento/MementoDmtgEntrySection';
+import { MementoGlobalSaveBar, MementoSaveProvider } from '@/hooks/settings/mementoSaveRegistry';
 
 let isAdmin = true;
 let taxSettingsData: unknown = DEFAULT_TAX_SETTINGS;
@@ -95,15 +93,29 @@ vi.mock('@/supabaseClient', () => ({
 
 async function renderDmtgEntry(entryKey: string, withSave = true) {
   render(
-    <DmtgSuccessionProvider>
-      <MementoDmtgEntrySection entryKey={entryKey} />
-      {withSave ? <DmtgSuccessionSaveBar /> : null}
-    </DmtgSuccessionProvider>,
+    <MementoSaveProvider>
+      <DmtgSuccessionProvider>
+        <MementoDmtgEntrySection entryKey={entryKey} />
+      </DmtgSuccessionProvider>
+      {withSave ? <MementoGlobalSaveBar isAdmin={isAdmin} /> : null}
+    </MementoSaveProvider>,
   );
 
   await waitFor(() => {
     expect(screen.queryByText(/Chargement/i)).not.toBeInTheDocument();
   });
+}
+
+async function editDmtgFrereSoeurAbattement(value = '15933') {
+  const input = screen.getByLabelText('Abattement frère/sœur');
+  await userEvent.clear(input);
+  await userEvent.type(input, value);
+}
+
+async function editDmtgLigneDirecteAbattement(value: string) {
+  const input = screen.getByLabelText('Abattement par enfant');
+  await userEvent.clear(input);
+  await userEvent.type(input, value);
 }
 
 describe('DMTG dans les entrées du mémento', () => {
@@ -123,11 +135,13 @@ describe('DMTG dans les entrées du mémento', () => {
     });
 
     render(
-      <DmtgSuccessionProvider>
-        <p>Lecture transmission disponible</p>
-        <MementoDmtgEntrySection entryKey="transmission.succession-dmtg" />
-        <DmtgSuccessionSaveBar />
-      </DmtgSuccessionProvider>,
+      <MementoSaveProvider>
+        <DmtgSuccessionProvider>
+          <p>Lecture transmission disponible</p>
+          <MementoDmtgEntrySection entryKey="transmission.succession-dmtg" />
+        </DmtgSuccessionProvider>
+        <MementoGlobalSaveBar isAdmin={isAdmin} />
+      </MementoSaveProvider>,
     );
 
     expect(screen.getByText('Lecture transmission disponible')).toBeInTheDocument();
@@ -153,9 +167,9 @@ describe('DMTG dans les entrées du mémento', () => {
 
     await renderDmtgEntry('transmission.succession-dmtg');
 
-    const saveButton = screen.getByRole('button', {
-      name: /Golden DMTG bloqué/i,
-    });
+    await editDmtgLigneDirecteAbattement('120000');
+
+    const saveButton = screen.getByRole('button', { name: /Enregistrer les modifications/i });
     expect(saveButton).toBeDisabled();
     expect(screen.getByText(/Scénario conjoint \+ deux enfants 600 kEUR/i)).toBeInTheDocument();
   });
@@ -163,9 +177,9 @@ describe('DMTG dans les entrées du mémento', () => {
   it('autorise la sauvegarde admin quand le golden DMTG local passe', async () => {
     await renderDmtgEntry('transmission.succession-dmtg');
 
-    const saveButton = screen.getByRole('button', {
-      name: /Enregistrer les paramètres DMTG & succession/i,
-    });
+    await editDmtgFrereSoeurAbattement();
+
+    const saveButton = screen.getByRole('button', { name: /Enregistrer les modifications/i });
     expect(saveButton).toBeEnabled();
     expect(
       screen.queryByText(/Scénario conjoint \+ deux enfants 600 kEUR/i),
@@ -174,10 +188,9 @@ describe('DMTG dans les entrées du mémento', () => {
 
   it("trace l'utilisateur authentifié dans les deux écritures DMTG", async () => {
     await renderDmtgEntry('transmission.succession-dmtg');
+    await editDmtgFrereSoeurAbattement();
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer les modifications/i }));
 
     await waitFor(() => {
       expect(upsertCalls).toHaveLength(2);
@@ -206,10 +219,9 @@ describe('DMTG dans les entrées du mémento', () => {
     };
 
     await renderDmtgEntry('transmission.succession-dmtg');
+    await editDmtgFrereSoeurAbattement();
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer les modifications/i }));
 
     await waitFor(() => {
       expect(upsertCalls).toHaveLength(2);
@@ -244,10 +256,11 @@ describe('DMTG dans les entrées du mémento', () => {
     };
 
     await renderDmtgEntry('transmission.assurance-vie-deces');
+    const allowanceInput = screen.getByLabelText('Abattement par bénéficiaire');
+    await userEvent.clear(allowanceInput);
+    await userEvent.type(allowanceInput, '152501');
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
-    );
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer les modifications/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Erreur de validation du schéma DMTG/i)).toBeInTheDocument();
@@ -274,7 +287,7 @@ describe('DMTG dans les entrées du mémento', () => {
 
     expect(screen.getAllByRole('spinbutton').length).toBeGreaterThan(0);
     expect(
-      screen.getByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
+      screen.getByRole('button', { name: /Aucune modification à enregistrer/i }),
     ).toBeInTheDocument();
   });
 

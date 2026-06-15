@@ -244,7 +244,7 @@ describe('BaseContratSettingsPanel', () => {
     expect(screen.queryByText(/12\s*000\s*€/)).not.toBeInTheDocument();
   });
 
-  it('laisse un admin sauvegarder les valeurs de référence du produit', async () => {
+  it('laisse un admin éditer les valeurs de référence sans bouton local', async () => {
     isAdmin = true;
     mockReferenceValuesHook(DEFAULT_MEMENTO_REFERENCE_VALUES);
     render(<BaseContratSettingsPanel />);
@@ -255,16 +255,16 @@ describe('BaseContratSettingsPanel', () => {
 
     const plafondInput = await screen.findByLabelText('Livret A — plafond — valeur');
     fireEvent.change(plafondInput, { target: { value: '23000' } });
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Enregistrer les valeurs de référence' }),
-    );
 
     expect(handleReferenceNumericChangeMock).toHaveBeenCalledWith(
       'livret-a-plafond',
       'value_numeric',
       '23000',
     );
-    expect(saveReferenceValuesMock).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole('button', { name: 'Enregistrer les valeurs de référence' }),
+    ).not.toBeInTheDocument();
+    expect(saveReferenceValuesMock).not.toHaveBeenCalled();
   });
 
   it('sauvegarde les champs de revue depuis la modale admin', async () => {

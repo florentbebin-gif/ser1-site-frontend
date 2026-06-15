@@ -149,8 +149,8 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadChapter(user, 'Transmission');
 
     expect(await screen.findByText('Ligne directe (enfants, petits-enfants)')).toBeInTheDocument();
-    expect(screen.getByText('Donation & rappel fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Assurance-vie décès')).toBeInTheDocument();
+    expect(await screen.findByText('Donation & rappel fiscal')).toBeInTheDocument();
+    expect(await screen.findByText('Assurance-vie décès')).toBeInTheDocument();
     expect(screen.getAllByText('Assurance-vie au décès').length).toBeGreaterThan(0);
     expect(screen.queryByText('Transmission, DMTG et succession')).not.toBeInTheDocument();
     expect(container.querySelectorAll('input')).toHaveLength(0);

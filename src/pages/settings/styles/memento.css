@@ -86,6 +86,21 @@
   gap: 10px;
 }
 
+.settings-memento-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.settings-memento-save-bar__button {
+  min-width: 220px;
+}
+
 .settings-memento-parts,
 .settings-memento-read-chapters,
 .settings-memento-lexicon,

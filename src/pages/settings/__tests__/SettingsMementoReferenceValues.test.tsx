@@ -111,7 +111,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('laisse un admin éditer et enregistrer les valeurs de la fiche produit', async () => {
+  it('laisse un admin éditer puis enregistrer les valeurs de la fiche produit via le bouton global', async () => {
     isAdmin = true;
     const user = userEvent.setup();
     render(<SettingsMemento />);
@@ -126,7 +126,16 @@ describe('SettingsMemento — valeurs de référence', () => {
 
     await user.clear(livretAInput);
     await user.type(livretAInput, '23000');
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs de référence' }));
+
+    const globalSaveButton = await screen.findByRole('button', {
+      name: 'Enregistrer les modifications',
+    });
+    await waitFor(() => {
+      expect(globalSaveButton).toBeEnabled();
+    });
+
+    await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await user.click(globalSaveButton);
 
     await waitFor(() => {
       expect(upsertMock).toHaveBeenCalledWith(
@@ -141,6 +150,9 @@ describe('SettingsMemento — valeurs de référence', () => {
     });
     const payload = upsertMock.mock.calls[0]?.[0] as Array<{ domain: string }> | undefined;
     expect(payload?.every((row) => row.domain === 'chiffres-cles')).toBe(true);
+    expect(
+      screen.queryByRole('button', { name: 'Enregistrer les valeurs de référence' }),
+    ).not.toBeInTheDocument();
   });
 
   it('affiche les repères sociaux en lecture pour un non-admin', async () => {
