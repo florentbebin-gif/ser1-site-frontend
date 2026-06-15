@@ -939,6 +939,42 @@
   font-size: 13px;
 }
 
+.settings-comptables-entry-section {
+  margin: var(--space-3) 0 var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.settings-comptables-entry-section h6 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.settings-comptables-readonly-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-comptables-readonly-row:last-child {
+  border-bottom: 0;
+}
+
+.settings-comptables-readonly-row span {
+  color: var(--text-secondary);
+}
+
+.settings-comptables-readonly-row strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 @keyframes memento-reveal {
   from {
     opacity: 0;

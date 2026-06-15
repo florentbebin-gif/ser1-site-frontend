@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
-import ComptablesSocietesSettingsPanel from '../ComptablesSocietes/ComptablesSocietesSettingsPanel';
 import ImpotsSettingsPanel from '../Impots/ImpotsSettingsPanel';
 
 let isAdmin = true;
@@ -162,58 +161,5 @@ describe('ImpotsSettingsPanel', () => {
     await screen.findByRole('button', { name: /Barème de l’impôt sur le revenu/i });
     expect(screen.queryByText('Registre settings impôts')).not.toBeInTheDocument();
     expect(screen.queryByText('IFI - millésimes historiques')).not.toBeInTheDocument();
-  });
-});
-
-describe('ComptablesSocietesSettingsPanel', () => {
-  beforeEach(() => {
-    isAdmin = true;
-    taxSettingsData = DEFAULT_TAX_SETTINGS;
-    psSettingsData = DEFAULT_PS_SETTINGS;
-    upsertCalls.length = 0;
-    invalidateMock.mockReset();
-    broadcastInvalidationMock.mockReset();
-    fromMock.mockReset();
-    fromMock.mockImplementation((table: SettingsTable) => makeSettingsBuilder(table));
-  });
-
-  it('rend et sauvegarde l’IS dans Comptables & sociétés, sans bloc IFI', async () => {
-    const user = userEvent.setup();
-
-    render(<ComptablesSocietesSettingsPanel />);
-
-    const isButton = await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
-    expect(
-      screen.queryByRole('region', { name: /Impôt sur les sociétés/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /Impôt sur la fortune immobilière/i }),
-    ).not.toBeInTheDocument();
-
-    await user.click(isButton);
-    const normalRateInput = getFieldInput('Taux normal IS');
-    expect(normalRateInput).toHaveValue(DEFAULT_TAX_SETTINGS.corporateTax.current.normalRate);
-    await user.clear(normalRateInput);
-    await user.type(normalRateInput, '26');
-
-    await user.click(
-      screen.getByRole('button', { name: 'Enregistrer les paramètres comptables et sociétés' }),
-    );
-
-    await waitFor(() => {
-      expect(upsertCalls).toHaveLength(1);
-    });
-    const saved = getSavedTaxPayload();
-    expect(saved.data.corporateTax.current.normalRate).toBe(26);
-    expect(saved.data.ifi).toEqual(DEFAULT_TAX_SETTINGS.ifi);
-    expect(screen.getByText('Paramètres comptables et sociétés enregistrés.')).toBeInTheDocument();
-  });
-
-  it('ne monte plus le registre settings dans le panel calculateur', async () => {
-    render(<ComptablesSocietesSettingsPanel />);
-
-    await screen.findByRole('button', { name: /Impôt sur les sociétés/i });
-    expect(screen.queryByText('Registre settings comptables & sociétés')).not.toBeInTheDocument();
-    expect(screen.queryByText('Dividendes')).not.toBeInTheDocument();
   });
 });

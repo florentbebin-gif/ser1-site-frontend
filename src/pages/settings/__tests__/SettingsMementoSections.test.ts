@@ -124,8 +124,8 @@ describe('contrat des sections settings du mémento', () => {
     expect(sectionByKey.get('impots.ps-patrimoine')).toEqual(['prelevements']);
   });
 
-  it('rattache les valeurs de lecture IS et placements aux bons chapitres sans bloc DMTG monolithique', () => {
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toEqual(['comptables-societes']);
+  it('rattache les valeurs de lecture aux bons chapitres sans blocs monolithiques migrés', () => {
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual(['prelevements']);
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
@@ -142,5 +142,14 @@ describe('contrat des sections settings du mémento', () => {
     expect(readEntrySectionForKey('civil.devolution-conjoint-survivant')).toBeDefined();
     expect(readEntrySectionForKey('civil.regime-matrimonial')).toBeDefined();
     expect(readEntrySectionForKey('placements.revenus-capitaux')).toBeUndefined();
+  });
+
+  it('rattache les sections Comptables et sociétés aux entrées de lecture ciblées', () => {
+    expect(readChapterWrapperForChapter('societe')).toBeDefined();
+    expect(readChapterWrapperForChapter('dirigeant')).toBeDefined();
+    expect(readEntrySectionForKey('societe.is')).toBeDefined();
+    expect(readEntrySectionForKey('societe.groupe-mere-fille-qpfc')).toBeDefined();
+    expect(readEntrySectionForKey('societe.compte-courant-associe')).toBeDefined();
+    expect(readEntrySectionForKey('dirigeant.dividendes-tns')).toBeDefined();
   });
 });

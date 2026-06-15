@@ -129,9 +129,12 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Impôt sur les sociétés et placements');
     await openReadChapter(user, 'Société');
 
-    expect(screen.getByText('Distribution et réserves')).toBeInTheDocument();
-    expect(screen.getByText('Titres et opérations de capital')).toBeInTheDocument();
-    expect(screen.getByText('Comptables et sociétés')).toBeInTheDocument();
+    expect(await screen.findByText('Distribution et réserves')).toBeInTheDocument();
+    expect(await screen.findByText('Titres et opérations de capital')).toBeInTheDocument();
+    expect(await screen.findByText('Taux IS')).toBeInTheDocument();
+    expect(screen.getByText('Quote-part mère-fille')).toBeInTheDocument();
+    expect(screen.getByText('Déductibilité des intérêts CCA')).toBeInTheDocument();
+    expect(screen.queryByText('Comptables et sociétés')).not.toBeInTheDocument();
 
     await openReadChapter(user, 'Placements');
 
