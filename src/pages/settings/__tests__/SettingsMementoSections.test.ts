@@ -22,7 +22,9 @@ import {
 } from '../memento/mementoValueSections';
 import {
   readChapterWrapperForChapter,
+  readChapterWrappersForChapter,
   readEntrySectionForKey,
+  readEntrySectionsForKey,
 } from '../memento/mementoEntrySections';
 
 describe('route settings mémento', () => {
@@ -127,10 +129,12 @@ describe('contrat des sections settings du mémento', () => {
   it('rattache les valeurs de lecture aux bons chapitres sans blocs monolithiques migrés', () => {
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER['fiscalite-foyer']).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toBeUndefined();
-    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual(['prelevements']);
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toBeUndefined();
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.retraite).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
     expect(MEMENTO_VALUE_PANEL_BY_SECTION.impots).toBeUndefined();
+    expect(MEMENTO_VALUE_PANEL_BY_SECTION.prelevements).toBeUndefined();
     expect(MEMENTO_VALUE_PANEL_BY_SECTION['dmtg-succession']).toBeUndefined();
   });
 
@@ -159,5 +163,16 @@ describe('contrat des sections settings du mémento', () => {
     expect(readChapterWrapperForChapter('fiscalite-foyer')).toBeDefined();
     expect(readEntrySectionForKey('fiscalite-foyer.ir')).toBeDefined();
     expect(readEntrySectionForKey('fiscalite-foyer.ifi')).toBeDefined();
+  });
+
+  it('rattache les sections Prélèvements aux entrées ciblées sans double panneau', () => {
+    expect(readChapterWrapperForChapter('placements')).toBeDefined();
+    expect(readChapterWrapperForChapter('retraite')).toBeDefined();
+    expect(readChapterWrappersForChapter('dirigeant')).toHaveLength(2);
+    expect(readEntrySectionForKey('placements.ps-pfu-revenus-capital')).toBeDefined();
+    expect(readEntrySectionForKey('retraite.globale')).toBeDefined();
+    expect(readEntrySectionsForKey('dirigeant.dividendes-tns')).toHaveLength(2);
+    expect(readEntrySectionForKey('dirigeant.charges-sociales-tns')).toBeDefined();
+    expect(readEntrySectionForKey('dirigeant.puma-csm')).toBeUndefined();
   });
 });
