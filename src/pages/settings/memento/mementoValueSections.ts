@@ -9,7 +9,6 @@ import {
 } from './mementoSettingsSections';
 
 const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
-const ImpotsSettingsPanel = lazy(() => import('../Impots/ImpotsSettingsPanel'));
 const PrelevementsSettingsPanel = lazy(() => import('../Prelevements/PrelevementsSettingsPanel'));
 const PrevoyanceRegimesSettingsPanel = lazy(
   () => import('../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel'),
@@ -23,7 +22,6 @@ export interface MementoValueSection {
 export const MEMENTO_VALUE_PANEL_BY_SECTION: Partial<
   Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>
 > = {
-  impots: ImpotsSettingsPanel,
   prelevements: PrelevementsSettingsPanel,
   'base-contrat': BaseContratSettingsPanel,
   'prevoyance-regimes': PrevoyanceRegimesSettingsPanel,
@@ -47,7 +45,6 @@ export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
 export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   Record<MementoChapterId, readonly MementoSettingsSectionId[]>
 > = {
-  'fiscalite-foyer': ['impots'],
   placements: ['prelevements'],
   retraite: ['prelevements'],
   prevoyance: ['prevoyance-regimes'],

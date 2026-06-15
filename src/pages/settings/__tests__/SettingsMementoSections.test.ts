@@ -125,10 +125,12 @@ describe('contrat des sections settings du mémento', () => {
   });
 
   it('rattache les valeurs de lecture aux bons chapitres sans blocs monolithiques migrés', () => {
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER['fiscalite-foyer']).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.societe).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toEqual(['prelevements']);
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
+    expect(MEMENTO_VALUE_PANEL_BY_SECTION.impots).toBeUndefined();
     expect(MEMENTO_VALUE_PANEL_BY_SECTION['dmtg-succession']).toBeUndefined();
   });
 
@@ -151,5 +153,11 @@ describe('contrat des sections settings du mémento', () => {
     expect(readEntrySectionForKey('societe.groupe-mere-fille-qpfc')).toBeDefined();
     expect(readEntrySectionForKey('societe.compte-courant-associe')).toBeDefined();
     expect(readEntrySectionForKey('dirigeant.dividendes-tns')).toBeDefined();
+  });
+
+  it('rattache les sections Impôts aux entrées de lecture ciblées', () => {
+    expect(readChapterWrapperForChapter('fiscalite-foyer')).toBeDefined();
+    expect(readEntrySectionForKey('fiscalite-foyer.ir')).toBeDefined();
+    expect(readEntrySectionForKey('fiscalite-foyer.ifi')).toBeDefined();
   });
 });

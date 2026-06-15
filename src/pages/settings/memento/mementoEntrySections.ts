@@ -17,6 +17,8 @@ const MementoComptablesSocietesEntrySection = lazy(
 const MementoComptablesSocietesChapterProvider = lazy(
   () => import('../ComptablesSocietes/ComptablesSocietesProvider'),
 );
+const MementoImpotsEntrySection = lazy(() => import('./MementoImpotsEntrySection'));
+const MementoImpotsChapterProvider = lazy(() => import('../Impots/ImpotsProvider'));
 
 const READ_ENTRY_SECTIONS: Partial<
   Record<string, LazyExoticComponent<ComponentType<MementoEntrySectionProps>>>
@@ -32,12 +34,15 @@ const READ_ENTRY_SECTIONS: Partial<
   'societe.groupe-mere-fille-qpfc': MementoComptablesSocietesEntrySection,
   'societe.compte-courant-associe': MementoComptablesSocietesEntrySection,
   'dirigeant.dividendes-tns': MementoComptablesSocietesEntrySection,
+  'fiscalite-foyer.ir': MementoImpotsEntrySection,
+  'fiscalite-foyer.ifi': MementoImpotsEntrySection,
 };
 
 const READ_CHAPTER_WRAPPERS: Partial<
   Record<MementoChapterId, LazyExoticComponent<ComponentType<MementoChapterWrapperProps>>>
 > = {
   transmission: MementoDmtgChapterProvider,
+  'fiscalite-foyer': MementoImpotsChapterProvider,
   societe: MementoComptablesSocietesChapterProvider,
   dirigeant: MementoComptablesSocietesChapterProvider,
 };
