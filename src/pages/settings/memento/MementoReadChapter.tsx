@@ -1,17 +1,7 @@
-import {
-  Fragment,
-  Suspense,
-  useId,
-  useState,
-  type Dispatch,
-  type ReactElement,
-  type SetStateAction,
-} from 'react';
+import { Fragment, Suspense, useId, type ReactElement } from 'react';
 
 import type { MementoDisplayChapter } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
-import CalculatorSettingsCard from './CalculatorSettingsCard';
-import { readValueSectionsForChapter } from './mementoValueSections';
 import { readChapterWrappersForChapter, readEntrySectionsForKey } from './mementoEntrySections';
 
 interface MementoReadChapterProps {
@@ -28,20 +18,10 @@ export default function MementoReadChapter({
   onToggle,
 }: MementoReadChapterProps): ReactElement {
   const generatedId = useId();
-  const [openValueSectionId, setOpenValueSectionId] = useState<string | null>(null);
   const buttonId = `${generatedId}-read-chapter-button`;
   const panelId = `${generatedId}-read-chapter-panel`;
-  const valueSections = readValueSectionsForChapter(chapter.chapter.id);
   const ChapterWrappers = readChapterWrappersForChapter(chapter.chapter.id);
-  const chapterBody = (
-    <MementoReadChapterBody
-      chapter={chapter}
-      showStatus={showStatus}
-      valueSections={valueSections}
-      openValueSectionId={openValueSectionId}
-      setOpenValueSectionId={setOpenValueSectionId}
-    />
-  );
+  const chapterBody = <MementoReadChapterBody chapter={chapter} showStatus={showStatus} />;
 
   return (
     <section className="settings-memento-read-chapter">
@@ -96,17 +76,11 @@ function MementoChapterWrappers({
 interface MementoReadChapterBodyProps {
   chapter: MementoDisplayChapter;
   showStatus: boolean;
-  valueSections: ReturnType<typeof readValueSectionsForChapter>;
-  openValueSectionId: string | null;
-  setOpenValueSectionId: Dispatch<SetStateAction<string | null>>;
 }
 
 function MementoReadChapterBody({
   chapter,
   showStatus,
-  valueSections,
-  openValueSectionId,
-  setOpenValueSectionId,
 }: MementoReadChapterBodyProps): ReactElement {
   return (
     <>
@@ -152,25 +126,6 @@ function MementoReadChapterBody({
           );
         })}
       </div>
-
-      {valueSections.length > 0 ? (
-        <div
-          className="settings-memento-value-sections"
-          aria-label={`Valeurs de référence — ${chapter.chapter.label}`}
-        >
-          {valueSections.map(({ section, Panel }) => (
-            <CalculatorSettingsCard
-              key={section.id}
-              section={section}
-              Panel={Panel}
-              isOpen={openValueSectionId === section.id}
-              onToggle={() =>
-                setOpenValueSectionId((current) => (current === section.id ? null : section.id))
-              }
-            />
-          ))}
-        </div>
-      ) : null}
     </>
   );
 }

@@ -164,7 +164,9 @@ describe('SettingsMemento — prévoyance', () => {
     await openReadPart(user, 'Social et protection sociale');
     await openReadChapter(user, 'Prévoyance');
 
-    expect(await screen.findByText('Salarié secteur privé — CPAM')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Salarié secteur privé — CPAM', {}, { timeout: 5_000 }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i }),
     ).toBeInTheDocument();

@@ -1,5 +1,3 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-
 import type { MementoChapterId } from '@/domain/settings-memento/types';
 
 import {
@@ -7,19 +5,6 @@ import {
   type MementoSettingsSection,
   type MementoSettingsSectionId,
 } from './mementoSettingsSections';
-
-const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
-
-export interface MementoValueSection {
-  section: MementoSettingsSection;
-  Panel: LazyExoticComponent<ComponentType>;
-}
-
-export const MEMENTO_VALUE_PANEL_BY_SECTION: Partial<
-  Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>
-> = {
-  'base-contrat': BaseContratSettingsPanel,
-};
 
 export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   Record<MementoChapterId, readonly MementoSettingsSectionId[]>
@@ -35,30 +20,6 @@ export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   dirigeant: ['prelevements', 'comptables-societes'],
   'transmission-entreprise': ['comptables-societes', 'base-contrat'],
 };
-
-export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
-  Record<MementoChapterId, readonly MementoSettingsSectionId[]>
-> = {};
-
-function valueSectionsForIds(
-  sectionIds: readonly MementoSettingsSectionId[] | undefined,
-): MementoValueSection[] {
-  return (sectionIds ?? []).flatMap((sectionId) => {
-    const Panel = MEMENTO_VALUE_PANEL_BY_SECTION[sectionId];
-    if (!Panel) return [];
-
-    return [
-      {
-        section: getMementoSettingsSection(sectionId),
-        Panel,
-      },
-    ];
-  });
-}
-
-export function readValueSectionsForChapter(chapterId: MementoChapterId): MementoValueSection[] {
-  return valueSectionsForIds(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER[chapterId]);
-}
 
 export function auditSettingsSectionsForChapter(
   chapterId: MementoChapterId,

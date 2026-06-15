@@ -167,11 +167,14 @@ describe('SettingsMemento — valeurs de référence', () => {
     expect(await screen.findByText('CSM — taux maximal')).toBeInTheDocument();
     expect(await screen.findByText('AGIRC-ARRCO — tranche T1')).toBeInTheDocument();
     expect(await screen.findByText('PEE — plafond d’abondement')).toBeInTheDocument();
+    expect(
+      screen.getByText('Employeur 4,72 % · salarié 3,15 % · total 7,87 %'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
-
-    const agircInput = await screen.findByLabelText('AGIRC-ARRCO — tranche T1 — valeur');
-    expect(agircInput).toBeDisabled();
-    expect(agircInput).toHaveValue('Employeur 4,72 % · salarié 3,15 % · total 7,87 %');
+    expect(screen.queryByLabelText('AGIRC-ARRCO — tranche T1 — valeur')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Enregistrer les valeurs mémento' }),
+    ).not.toBeInTheDocument();
   });
 
   it('affiche les valeurs de démembrement en lecture pour un non-admin', async () => {
@@ -185,20 +188,18 @@ describe('SettingsMemento — valeurs de référence', () => {
     ).toBeInTheDocument();
     expect(await screen.findByText('Moins de vingt et un ans révolus')).toBeInTheDocument();
     expect(await screen.findByText('Usufruit temporaire — période de dix ans')).toBeInTheDocument();
+    expect(screen.getByText('Usufruit 90 % · nue-propriété 10 %')).toBeInTheDocument();
+    expect(screen.getByText('23 %')).toBeInTheDocument();
     expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
-
-    const usufruitInput = await screen.findByLabelText('Moins de vingt et un ans révolus — valeur');
-    expect(usufruitInput).toBeDisabled();
-    expect(usufruitInput).toHaveValue('Usufruit 90 % · nue-propriété 10 %');
-
-    const usufruitTemporaireInput = await screen.findByLabelText(
-      'Usufruit temporaire — période de dix ans — valeur',
-    );
-    expect(usufruitTemporaireInput).toBeDisabled();
-    expect(usufruitTemporaireInput).toHaveValue(23);
+    expect(
+      screen.queryByLabelText('Moins de vingt et un ans révolus — valeur'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Usufruit temporaire — période de dix ans — valeur'),
+    ).not.toBeInTheDocument();
   });
 
-  it('laisse un admin éditer et enregistrer une valeur de démembrement', async () => {
+  it('laisse un admin éditer et enregistrer une valeur de démembrement via le bouton global', async () => {
     isAdmin = true;
     const user = userEvent.setup();
     render(<SettingsMemento />);
@@ -211,7 +212,14 @@ describe('SettingsMemento — valeurs de référence', () => {
     fireEvent.change(usufruitInput, {
       target: { value: 'Usufruit 90 % · nue-propriété 10 % — ligne revue' },
     });
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs mémento' }));
+    const globalSaveButton = await screen.findByRole('button', {
+      name: 'Enregistrer les modifications',
+    });
+    await waitFor(() => {
+      expect(globalSaveButton).toBeEnabled();
+    });
+    await openReadPart(user, 'Démembrement');
+    await user.click(globalSaveButton);
 
     await waitFor(() => {
       expect(upsertMock).toHaveBeenCalledWith(
@@ -241,24 +249,22 @@ describe('SettingsMemento — valeurs de référence', () => {
       await screen.findByText('Assurance-vie décès — bénéficiaire résident fiscal français'),
     ).toBeInTheDocument();
     expect(await screen.findByText('PVI non-résidents — personne physique')).toBeInTheDocument();
+    expect(screen.getAllByText('20 %').length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        'Actifs immobiliers français et parts à proportion de l’immobilier français taxable',
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Livret A — plafond')).not.toBeInTheDocument();
-
-    const minimumInput = await screen.findByLabelText(
-      'IR non-résidents — première fraction — valeur',
-    );
-    expect(minimumInput).toBeDisabled();
-    expect(minimumInput).toHaveValue(20);
-
-    const ifiInput = await screen.findByLabelText(
-      'IFI non-résidents — assiette française — valeur',
-    );
-    expect(ifiInput).toBeDisabled();
-    expect(ifiInput).toHaveValue(
-      'Actifs immobiliers français et parts à proportion de l’immobilier français taxable',
-    );
+    expect(
+      screen.queryByLabelText('IR non-résidents — première fraction — valeur'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('IFI non-résidents — assiette française — valeur'),
+    ).not.toBeInTheDocument();
   });
 
-  it('laisse un admin éditer et enregistrer une valeur sociale textuelle', async () => {
+  it('laisse un admin éditer et enregistrer une valeur sociale textuelle via le bouton global', async () => {
     isAdmin = true;
     const user = userEvent.setup();
     render(<SettingsMemento />);
@@ -271,7 +277,13 @@ describe('SettingsMemento — valeurs de référence', () => {
     fireEvent.change(agircInput, {
       target: { value: 'Employeur 4,72 % / salarié 3,15 % / total 7,87 %' },
     });
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les valeurs mémento' }));
+    const globalSaveButton = await screen.findByRole('button', {
+      name: 'Enregistrer les modifications',
+    });
+    await waitFor(() => {
+      expect(globalSaveButton).toBeEnabled();
+    });
+    await user.click(globalSaveButton);
 
     await waitFor(() => {
       expect(upsertMock).toHaveBeenCalledWith(

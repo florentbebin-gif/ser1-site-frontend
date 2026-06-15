@@ -126,13 +126,11 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadChapter(user, 'Fiscalité foyer');
 
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
-    expect(screen.getByText('Impôt sur le revenu')).toBeInTheDocument();
-    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
-    expect(screen.getByText('Patrimoine immobilier taxable')).toBeInTheDocument();
     expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
     expect(screen.getByText('Prélèvement forfaitaire unique')).toBeInTheDocument();
     expect(screen.getByText('CEHR / CDHR')).toBeInTheDocument();
     expect(screen.getAllByText('Impôt sur la fortune immobilière').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Patrimoine immobilier taxable')).not.toBeInTheDocument();
     expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
     expect(container.querySelectorAll('input')).toHaveLength(0);
     expect(container).not.toHaveTextContent(INTERNAL_WORDS);
@@ -151,10 +149,10 @@ describe('SettingsMemento — lecture éditoriale', () => {
 
     await openReadChapter(user, 'Civil');
 
-    expect(screen.getByText('Régimes matrimoniaux')).toBeInTheDocument();
-    expect(screen.getByText('PACS et union libre')).toBeInTheDocument();
-    expect(screen.getByText('Dévolution successorale')).toBeInTheDocument();
-    expect(screen.getByText('Réserve et quotité disponible')).toBeInTheDocument();
+    expect(await screen.findByText('Régimes matrimoniaux & PACS')).toBeInTheDocument();
+    expect(screen.getByText('Avantages matrimoniaux')).toBeInTheDocument();
+    expect(screen.queryByText('PACS et union libre')).not.toBeInTheDocument();
+    expect(screen.queryByText('Réserve et quotité disponible')).not.toBeInTheDocument();
     expect(container).not.toHaveTextContent(INTERNAL_WORDS);
   });
 
@@ -165,11 +163,10 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Impôt sur les sociétés et placements');
     await openReadChapter(user, 'Société');
 
-    expect(await screen.findByText('Distribution et réserves')).toBeInTheDocument();
-    expect(await screen.findByText('Titres et opérations de capital')).toBeInTheDocument();
     expect(await screen.findByText('Taux IS')).toBeInTheDocument();
     expect(screen.getByText('Quote-part mère-fille')).toBeInTheDocument();
     expect(screen.getByText('Déductibilité des intérêts CCA')).toBeInTheDocument();
+    expect(screen.queryByText('Titres et opérations de capital')).not.toBeInTheDocument();
     expect(screen.queryByText('Comptables et sociétés')).not.toBeInTheDocument();
 
     await openReadChapter(user, 'Placements');
