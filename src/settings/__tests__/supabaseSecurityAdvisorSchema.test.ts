@@ -59,12 +59,19 @@ describe('advisor securite Supabase', () => {
   });
 
   it('reserve la maintenance PASS aux admins cote client', () => {
-    const hook = readFileSync(
-      path.join(process.cwd(), 'src', 'hooks', 'settings', 'usePassHistory.ts'),
+    const adapter = readFileSync(
+      path.join(
+        process.cwd(),
+        'src',
+        'pages',
+        'settings',
+        'Prelevements',
+        'prelevementsSaveAdapter.ts',
+      ),
       'utf8',
     );
 
-    expect(hook).toMatch(
+    expect(adapter).toMatch(
       /if\s*\(\s*isAdmin\s*\)\s*{\s*await\s+supabase\.rpc\s*\(\s*['"]ensure_pass_history_current['"]\s*\)/s,
     );
   });

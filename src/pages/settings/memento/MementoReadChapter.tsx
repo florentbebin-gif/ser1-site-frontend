@@ -12,7 +12,7 @@ import type { MementoDisplayChapter } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
 import CalculatorSettingsCard from './CalculatorSettingsCard';
 import { readValueSectionsForChapter } from './mementoValueSections';
-import { readChapterWrapperForChapter, readEntrySectionForKey } from './mementoEntrySections';
+import { readChapterWrappersForChapter, readEntrySectionsForKey } from './mementoEntrySections';
 
 interface MementoReadChapterProps {
   chapter: MementoDisplayChapter;
@@ -32,7 +32,7 @@ export default function MementoReadChapter({
   const buttonId = `${generatedId}-read-chapter-button`;
   const panelId = `${generatedId}-read-chapter-panel`;
   const valueSections = readValueSectionsForChapter(chapter.chapter.id);
-  const ChapterWrapper = readChapterWrapperForChapter(chapter.chapter.id);
+  const ChapterWrappers = readChapterWrappersForChapter(chapter.chapter.id);
   const chapterBody = (
     <MementoReadChapterBody
       chapter={chapter}
@@ -69,16 +69,27 @@ export default function MementoReadChapter({
           role="region"
           aria-labelledby={buttonId}
         >
-          {ChapterWrapper ? (
-            <Suspense fallback={<p className="settings-memento-empty">Chargement...</p>}>
-              <ChapterWrapper>{chapterBody}</ChapterWrapper>
-            </Suspense>
-          ) : (
-            chapterBody
-          )}
+          <MementoChapterWrappers wrappers={ChapterWrappers}>{chapterBody}</MementoChapterWrappers>
         </div>
       )}
     </section>
+  );
+}
+
+function MementoChapterWrappers({
+  wrappers,
+  children,
+}: {
+  wrappers: ReturnType<typeof readChapterWrappersForChapter>;
+  children: ReactElement;
+}): ReactElement {
+  return wrappers.reduceRight<ReactElement>(
+    (content, ChapterWrapper) => (
+      <Suspense fallback={<p className="settings-memento-empty">Chargement...</p>}>
+        <ChapterWrapper>{content}</ChapterWrapper>
+      </Suspense>
+    ),
+    children,
   );
 }
 
@@ -124,16 +135,19 @@ function MementoReadChapterBody({
 
       <div className="settings-memento-readable-list">
         {chapter.entries.map((entry) => {
-          const EntrySection = readEntrySectionForKey(entry.key);
+          const entrySections = readEntrySectionsForKey(entry.key);
 
           return (
             <Fragment key={entry.key}>
               <MementoReadableEntry kind="entry" entry={entry} showStatus={showStatus} />
-              {EntrySection ? (
-                <Suspense fallback={<p className="settings-memento-empty">Chargement...</p>}>
+              {entrySections.map((EntrySection, index) => (
+                <Suspense
+                  key={`${entry.key}-${index}`}
+                  fallback={<p className="settings-memento-empty">Chargement...</p>}
+                >
                   <EntrySection entryKey={entry.key} />
                 </Suspense>
-              ) : null}
+              ))}
             </Fragment>
           );
         })}

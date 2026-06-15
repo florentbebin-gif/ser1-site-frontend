@@ -5,22 +5,47 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRoleState } from '@/auth/useUserRole';
-import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  DEFAULT_PASS_HISTORY,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '@/constants/settingsDefaults';
 import SettingsMemento from '../SettingsMemento';
 
 let isAdmin = false;
 let taxSettingsData: typeof DEFAULT_TAX_SETTINGS = DEFAULT_TAX_SETTINGS;
 const fromMock = vi.hoisted(() => vi.fn());
+const rpcMock = vi.hoisted(() => vi.fn());
 const getUserMock = vi.hoisted(() => vi.fn());
 const upsertCalls: unknown[] = [];
 
-function makeTaxSettingsBuilder() {
+type SettingsTable = 'tax_settings' | 'ps_settings' | 'pass_history';
+
+function makeSettingsBuilder(table: SettingsTable) {
+  if (table === 'pass_history') {
+    const passResult = {
+      data: Object.entries(DEFAULT_PASS_HISTORY).map(([year, pass_amount]) => ({
+        year: Number(year),
+        pass_amount,
+      })),
+      error: null,
+    };
+    const passBuilder = {} as {
+      select: () => typeof passBuilder;
+      order: () => Promise<typeof passResult>;
+    };
+
+    passBuilder.select = vi.fn(() => passBuilder);
+    passBuilder.order = vi.fn(() => Promise.resolve(passResult));
+    return passBuilder;
+  }
+
   const listResult = {
-    data: [{ data: taxSettingsData }],
+    data: [{ data: table === 'ps_settings' ? DEFAULT_PS_SETTINGS : taxSettingsData }],
     error: null,
   };
   const singleResult = {
-    data: { data: taxSettingsData },
+    data: { data: table === 'ps_settings' ? DEFAULT_PS_SETTINGS : taxSettingsData },
     error: null,
   };
   const writeResult = { data: null, error: null };
@@ -58,6 +83,7 @@ vi.mock('@/auth/useUserRole', () => ({
 vi.mock('@/supabaseClient', () => ({
   supabase: {
     from: fromMock,
+    rpc: rpcMock,
     auth: {
       getUser: getUserMock,
     },
@@ -103,8 +129,10 @@ describe('SettingsMemento — Comptables et sociétés éclaté', () => {
     taxSettingsData = DEFAULT_TAX_SETTINGS;
     fromMock.mockReset();
     getUserMock.mockReset();
+    rpcMock.mockReset();
     upsertCalls.length = 0;
-    fromMock.mockImplementation(() => makeTaxSettingsBuilder());
+    fromMock.mockImplementation((table: SettingsTable) => makeSettingsBuilder(table));
+    rpcMock.mockResolvedValue({ data: null, error: null });
     getUserMock.mockResolvedValue({ data: { user: { id: 'admin-id' } }, error: null });
   });
 

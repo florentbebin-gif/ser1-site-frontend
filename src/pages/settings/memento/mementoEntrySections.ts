@@ -19,42 +19,62 @@ const MementoComptablesSocietesChapterProvider = lazy(
 );
 const MementoImpotsEntrySection = lazy(() => import('./MementoImpotsEntrySection'));
 const MementoImpotsChapterProvider = lazy(() => import('../Impots/ImpotsProvider'));
+const MementoPrelevementsEntrySection = lazy(() => import('./MementoPrelevementsEntrySection'));
+const MementoPrelevementsChapterProvider = lazy(
+  () => import('../Prelevements/PrelevementsProvider'),
+);
 
-const READ_ENTRY_SECTIONS: Partial<
-  Record<string, LazyExoticComponent<ComponentType<MementoEntrySectionProps>>>
-> = {
-  'transmission.succession-dmtg': MementoDmtgEntrySection,
-  'transmission.donations-anterieures': MementoDmtgEntrySection,
-  'transmission.assurance-vie-deces': MementoDmtgEntrySection,
-  'transmission.liberalites': MementoDmtgEntrySection,
-  'civil.reserve-quotite': MementoDmtgEntrySection,
-  'civil.devolution-conjoint-survivant': MementoDmtgEntrySection,
-  'civil.regime-matrimonial': MementoDmtgEntrySection,
-  'societe.is': MementoComptablesSocietesEntrySection,
-  'societe.groupe-mere-fille-qpfc': MementoComptablesSocietesEntrySection,
-  'societe.compte-courant-associe': MementoComptablesSocietesEntrySection,
-  'dirigeant.dividendes-tns': MementoComptablesSocietesEntrySection,
-  'fiscalite-foyer.ir': MementoImpotsEntrySection,
-  'fiscalite-foyer.ifi': MementoImpotsEntrySection,
+type EntrySectionComponent = LazyExoticComponent<ComponentType<MementoEntrySectionProps>>;
+type ChapterWrapperComponent = LazyExoticComponent<ComponentType<MementoChapterWrapperProps>>;
+
+const READ_ENTRY_SECTIONS: Partial<Record<string, readonly EntrySectionComponent[]>> = {
+  'transmission.succession-dmtg': [MementoDmtgEntrySection],
+  'transmission.donations-anterieures': [MementoDmtgEntrySection],
+  'transmission.assurance-vie-deces': [MementoDmtgEntrySection],
+  'transmission.liberalites': [MementoDmtgEntrySection],
+  'civil.reserve-quotite': [MementoDmtgEntrySection],
+  'civil.devolution-conjoint-survivant': [MementoDmtgEntrySection],
+  'civil.regime-matrimonial': [MementoDmtgEntrySection],
+  'societe.is': [MementoComptablesSocietesEntrySection],
+  'societe.groupe-mere-fille-qpfc': [MementoComptablesSocietesEntrySection],
+  'societe.compte-courant-associe': [MementoComptablesSocietesEntrySection],
+  'dirigeant.dividendes-tns': [
+    MementoComptablesSocietesEntrySection,
+    MementoPrelevementsEntrySection,
+  ],
+  'dirigeant.charges-sociales-tns': [MementoPrelevementsEntrySection],
+  'placements.ps-pfu-revenus-capital': [MementoPrelevementsEntrySection],
+  'retraite.globale': [MementoPrelevementsEntrySection],
+  'fiscalite-foyer.ir': [MementoImpotsEntrySection],
+  'fiscalite-foyer.ifi': [MementoImpotsEntrySection],
 };
 
-const READ_CHAPTER_WRAPPERS: Partial<
-  Record<MementoChapterId, LazyExoticComponent<ComponentType<MementoChapterWrapperProps>>>
-> = {
-  transmission: MementoDmtgChapterProvider,
-  'fiscalite-foyer': MementoImpotsChapterProvider,
-  societe: MementoComptablesSocietesChapterProvider,
-  dirigeant: MementoComptablesSocietesChapterProvider,
-};
+const READ_CHAPTER_WRAPPERS: Partial<Record<MementoChapterId, readonly ChapterWrapperComponent[]>> =
+  {
+    transmission: [MementoDmtgChapterProvider],
+    'fiscalite-foyer': [MementoImpotsChapterProvider],
+    societe: [MementoComptablesSocietesChapterProvider],
+    placements: [MementoPrelevementsChapterProvider],
+    retraite: [MementoPrelevementsChapterProvider],
+    dirigeant: [MementoComptablesSocietesChapterProvider, MementoPrelevementsChapterProvider],
+  };
 
-export function readEntrySectionForKey(
-  entryKey: string,
-): LazyExoticComponent<ComponentType<MementoEntrySectionProps>> | undefined {
-  return READ_ENTRY_SECTIONS[entryKey];
+export function readEntrySectionsForKey(entryKey: string): readonly EntrySectionComponent[] {
+  return READ_ENTRY_SECTIONS[entryKey] ?? [];
+}
+
+export function readEntrySectionForKey(entryKey: string): EntrySectionComponent | undefined {
+  return readEntrySectionsForKey(entryKey)[0];
+}
+
+export function readChapterWrappersForChapter(
+  chapterId: MementoChapterId,
+): readonly ChapterWrapperComponent[] {
+  return READ_CHAPTER_WRAPPERS[chapterId] ?? [];
 }
 
 export function readChapterWrapperForChapter(
   chapterId: MementoChapterId,
-): LazyExoticComponent<ComponentType<MementoChapterWrapperProps>> | undefined {
-  return READ_CHAPTER_WRAPPERS[chapterId];
+): ChapterWrapperComponent | undefined {
+  return readChapterWrappersForChapter(chapterId)[0];
 }

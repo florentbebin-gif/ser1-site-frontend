@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PASS_HISTORY,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
 } from '@/constants/settingsDefaults';
@@ -16,9 +17,27 @@ import SettingsMemento from '../SettingsMemento';
 
 let isAdmin = false;
 
-type SettingsTable = 'tax_settings' | 'ps_settings' | 'fiscality_settings';
+type SettingsTable = 'tax_settings' | 'ps_settings' | 'fiscality_settings' | 'pass_history';
 
 function makeSettingsBuilder(table: SettingsTable) {
+  if (table === 'pass_history') {
+    const passResult = {
+      data: Object.entries(DEFAULT_PASS_HISTORY).map(([year, pass_amount]) => ({
+        year: Number(year),
+        pass_amount,
+      })),
+      error: null,
+    };
+    const passBuilder = {} as {
+      select: () => typeof passBuilder;
+      order: () => Promise<typeof passResult>;
+    };
+
+    passBuilder.select = vi.fn(() => passBuilder);
+    passBuilder.order = vi.fn(() => Promise.resolve(passResult));
+    return passBuilder;
+  }
+
   const listResult = {
     data: [
       {
@@ -59,6 +78,7 @@ vi.mock('@/auth/useUserRole', () => ({
 vi.mock('@/supabaseClient', () => ({
   supabase: {
     from: vi.fn((table: SettingsTable) => makeSettingsBuilder(table)),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }));
 
@@ -154,9 +174,11 @@ describe('SettingsMemento — lecture éditoriale', () => {
 
     await openReadChapter(user, 'Placements');
 
-    expect(screen.getByText('Enveloppes de placement')).toBeInTheDocument();
-    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
-    expect(screen.getByText('Prélèvements sociaux')).toBeInTheDocument();
+    expect(await screen.findByText('Enveloppes de placement')).toBeInTheDocument();
+    expect(await screen.findByText('Revenus du capital')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Prélèvements sociaux sur patrimoine et capital'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Référentiel contrats')).not.toBeInTheDocument();
   });
 

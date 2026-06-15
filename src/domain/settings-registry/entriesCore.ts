@@ -340,7 +340,7 @@ export const SETTINGS_CORE_REGISTRY = [
     defaultValue: { kind: 'pass-history', year: 'latest' },
     currentValue: { kind: 'supabase-table', table: 'pass_history', path: 'year/pass_amount' },
     validation: {
-      validators: ['check:settings-references', 'usePassHistory'],
+      validators: ['check:settings-references', 'prelevementsSaveAdapter'],
       rules: ['Millésime annuel présent dans DEFAULT_PASS_HISTORY et pass_history.'],
       requiredBeforeConsumption: true,
     },
