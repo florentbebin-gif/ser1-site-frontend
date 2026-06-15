@@ -4,7 +4,11 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_FISCALITY_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_TAX_SETTINGS,
+} from '@/constants/settingsDefaults';
 
 import type { UserRoleState } from '@/auth/useUserRole';
 
@@ -12,13 +16,18 @@ import SettingsMemento from '../SettingsMemento';
 
 let isAdmin = false;
 
-type SettingsTable = 'tax_settings' | 'fiscality_settings';
+type SettingsTable = 'tax_settings' | 'ps_settings' | 'fiscality_settings';
 
 function makeSettingsBuilder(table: SettingsTable) {
   const listResult = {
     data: [
       {
-        data: table === 'tax_settings' ? DEFAULT_TAX_SETTINGS : DEFAULT_FISCALITY_SETTINGS,
+        data:
+          table === 'tax_settings'
+            ? DEFAULT_TAX_SETTINGS
+            : table === 'ps_settings'
+              ? DEFAULT_PS_SETTINGS
+              : DEFAULT_FISCALITY_SETTINGS,
       },
     ],
     error: null,
@@ -96,9 +105,16 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
+    expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
     expect(screen.getByText('Impôt sur le revenu')).toBeInTheDocument();
     expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
     expect(screen.getByText('Patrimoine immobilier taxable')).toBeInTheDocument();
+    expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
+    expect(screen.getByText('Prélèvement forfaitaire unique')).toBeInTheDocument();
+    expect(screen.getByText('CEHR / CDHR')).toBeInTheDocument();
+    expect(screen.getAllByText('Impôt sur la fortune immobilière').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('input')).toHaveLength(0);
     expect(container).not.toHaveTextContent(INTERNAL_WORDS);
   });
 

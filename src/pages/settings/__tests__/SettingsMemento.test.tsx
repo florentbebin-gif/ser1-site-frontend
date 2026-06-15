@@ -133,15 +133,6 @@ async function openAuditChapter(user: ReturnType<typeof userEvent.setup>, label:
   }
 }
 
-async function openCalculatorCard(user: ReturnType<typeof userEvent.setup>, label: string) {
-  const button = await waitFor(() =>
-    findButtonByClass('settings-memento-calculator-card__header', label),
-  );
-  if (button.getAttribute('aria-expanded') !== 'true') {
-    await user.click(button);
-  }
-}
-
 async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
   const button = await screen.findByRole('button', { name });
   if (button.getAttribute('aria-expanded') !== 'true') {
@@ -234,7 +225,7 @@ describe('SettingsMemento', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
-    expect(screen.getByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
+    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
     expect(screen.getAllByText('Références :').length).toBeGreaterThan(0);
     expect(screen.queryByText('Sources officielles')).not.toBeInTheDocument();
     expect(screen.queryByText('Utilisé par')).not.toBeInTheDocument();
@@ -250,6 +241,7 @@ describe('SettingsMemento', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
+    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
     expect(screen.getAllByText('Périmètre en cours').length).toBeGreaterThan(0);
   });
 
@@ -261,6 +253,7 @@ describe('SettingsMemento', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
+    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
@@ -271,35 +264,14 @@ describe('SettingsMemento', () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
-    expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
-
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
-    expect(screen.getByText('Fiscalité du foyer')).toBeInTheDocument();
+    expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
+    expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
+    expect(screen.getByText('Prélèvement forfaitaire unique')).toBeInTheDocument();
     expect(container).not.toHaveTextContent(/Lecture :|Écriture :/);
-    expect(screen.queryByRole('button', { name: /Barème de l’impôt sur le revenu/i })).toBeNull();
-
-    await openCalculatorCard(user, 'Fiscalité du foyer');
-
-    const baremeButton = await screen.findByRole('button', {
-      name: /Barème de l’impôt sur le revenu/i,
-    });
-    await user.click(baremeButton);
-
-    const baremePanel = await screen.findByRole('region', {
-      name: /Barème de l’impôt sur le revenu/i,
-    });
-    const inputs = within(baremePanel).getAllByRole('spinbutton');
-
-    expect(inputs.length).toBeGreaterThan(0);
-    for (const input of inputs) {
-      expect(input).toBeDisabled();
-    }
-    for (const input of within(baremePanel).getAllByRole('textbox')) {
-      expect(input).toBeDisabled();
-    }
+    expect(container.querySelectorAll('input')).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: /Enregistrer les paramètres impôts/i }),
     ).not.toBeInTheDocument();
@@ -311,25 +283,18 @@ describe('SettingsMemento', () => {
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
-    await openCalculatorCard(user, 'Fiscalité du foyer');
 
-    const baremeButton = await screen.findByRole('button', {
-      name: /Barème de l’impôt sur le revenu/i,
-    });
-    await user.click(baremeButton);
+    expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
 
-    const baremePanel = await screen.findByRole('region', {
-      name: /Barème de l’impôt sur le revenu/i,
-    });
-    const inputs = within(baremePanel).getAllByRole('spinbutton');
+    const inputs = screen.getAllByRole('spinbutton');
 
     expect(inputs.length).toBeGreaterThan(0);
     for (const input of inputs) {
       expect(input).not.toBeDisabled();
     }
     expect(
-      screen.getByRole('button', { name: /Enregistrer les paramètres impôts/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: /Enregistrer les paramètres impôts/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('rend audit, entrées techniques et couverture seulement dans la vue audit', async () => {
