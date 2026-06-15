@@ -1,15 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   MementoReferenceValue,
   MementoReferenceValueDomain,
 } from '@/domain/settings-memento/referenceValues';
 import {
-  broadcastMementoReferenceValuesInvalidation,
-  getMementoReferenceValues,
-  subscribeMementoReferenceValuesInvalidation,
-  upsertMementoReferenceValues,
-} from '@/utils/cache/mementoReferenceValuesCache';
+  useOptionalMementoSaveRegistry,
+  type MementoSaveResult,
+} from '@/hooks/settings/mementoSaveRegistry';
+import {
+  isMementoReferenceValuesDraft,
+  loadMementoReferenceValuesDraft,
+  normalizeMementoReferenceValuesDraft,
+  saveMementoReferenceValuesDraft,
+} from '@/hooks/settings/mementoReferenceValuesSaveAdapter';
+import { subscribeMementoReferenceValuesInvalidation } from '@/utils/cache/mementoReferenceValuesCache';
 
 export interface MementoReferenceValuesSaveResult {
   ok: boolean;
@@ -18,6 +23,8 @@ export interface MementoReferenceValuesSaveResult {
 
 export interface UseMementoReferenceValuesOptions {
   domain?: MementoReferenceValueDomain;
+  saveTargetId?: string;
+  saveTargetLabel?: string;
 }
 
 export interface UseMementoReferenceValuesReturn {
@@ -41,7 +48,14 @@ export function useMementoReferenceValues(
   isAdmin: boolean,
   options: UseMementoReferenceValuesOptions = {},
 ): UseMementoReferenceValuesReturn {
-  const { domain } = options;
+  const { domain, saveTargetId, saveTargetLabel } = options;
+  const saveRegistry = useOptionalMementoSaveRegistry();
+  const registerSaveTarget = saveRegistry?.registerTarget;
+  const markSaveTargetDirty = saveRegistry?.markDirty;
+  const markSaveTargetClean = saveRegistry?.markClean;
+  const initialRegistryDraftRef = useRef(
+    saveTargetId ? saveRegistry?.targets[saveTargetId]?.draft : undefined,
+  );
   const [rows, setRows] = useState<MementoReferenceValue[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,10 +63,17 @@ export function useMementoReferenceValues(
 
   const load = useCallback(
     async (force = false): Promise<void> => {
+      if (!force && isMementoReferenceValuesDraft(initialRegistryDraftRef.current)) {
+        setRows(normalizeMementoReferenceValuesDraft(initialRegistryDraftRef.current));
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const values = await getMementoReferenceValues({ force });
-        setRows(domain ? values.filter((value) => value.domain === domain) : values);
+        const values = await loadMementoReferenceValuesDraft({ domain, force });
+        setRows(values);
         setError(null);
       } catch {
         setError('Les valeurs de référence du mémento ne peuvent pas être chargées.');
@@ -83,37 +104,56 @@ export function useMementoReferenceValues(
         return { ...row, [field]: parsed };
       }),
     );
+    if (saveTargetId) markSaveTargetDirty?.(saveTargetId);
   };
 
   const handleTextChange = (key: string, field: 'value_text' | 'note', value: string): void => {
     setRows((currentRows) =>
       currentRows.map((row) => (row.key === key ? { ...row, [field]: value || null } : row)),
     );
+    if (saveTargetId) markSaveTargetDirty?.(saveTargetId);
   };
 
-  const save = async (): Promise<MementoReferenceValuesSaveResult> => {
-    if (!isAdmin) return { ok: true };
-
+  const blockingError = useMemo(() => {
     const missingValue = rows.find((row) => row.value_numeric === null && row.value_text === null);
-    if (missingValue) {
-      const message = `La valeur "${missingValue.label}" est obligatoire.`;
-      setError(message);
-      return { ok: false, error: message };
-    }
+    return missingValue ? `La valeur "${missingValue.label}" est obligatoire.` : null;
+  }, [rows]);
 
+  useEffect(() => {
+    if (!registerSaveTarget || !saveTargetId || loading) return;
+
+    registerSaveTarget({
+      id: saveTargetId,
+      label: saveTargetLabel ?? 'Valeurs de référence',
+      draft: rows,
+      blockingError,
+      save: async (draft): Promise<MementoSaveResult> => {
+        return saveMementoReferenceValuesDraft(normalizeMementoReferenceValuesDraft(draft, rows), {
+          isAdmin,
+          domain,
+        });
+      },
+    });
+  }, [
+    blockingError,
+    domain,
+    isAdmin,
+    loading,
+    registerSaveTarget,
+    rows,
+    saveTargetId,
+    saveTargetLabel,
+  ]);
+
+  const save = async (): Promise<MementoReferenceValuesSaveResult> => {
     setSaving(true);
     try {
-      await upsertMementoReferenceValues(rows, { domain });
-      broadcastMementoReferenceValuesInvalidation();
-      setError(null);
-      return { ok: true };
-    } catch (saveError) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Erreur lors de l'enregistrement des valeurs du mémento.";
-      setError(message);
-      return { ok: false, error: message };
+      const result = await saveMementoReferenceValuesDraft(rows, { isAdmin, domain });
+      setError(result.ok ? null : (result.message ?? null));
+      if (result.ok && saveTargetId) {
+        markSaveTargetClean?.(saveTargetId, 'Valeurs de référence enregistrées.');
+      }
+      return { ok: result.ok, error: result.ok ? undefined : result.message };
     } finally {
       setSaving(false);
     }

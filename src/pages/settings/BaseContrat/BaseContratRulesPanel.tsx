@@ -91,12 +91,9 @@ interface BaseContratRulesPanelProps {
   closed: boolean;
   showAdminMeta: boolean;
   referenceValues: readonly MementoReferenceValue[];
-  referenceValuesSaving: boolean;
   referenceValuesError: string | null;
-  referenceValuesSaveMessage: string | null;
   onReferenceNumericChange: (key: string, field: 'value_numeric' | 'year', value: string) => void;
   onReferenceTextChange: (key: string, field: 'value_text' | 'note', value: string) => void;
-  onReferenceSave: () => Promise<void>;
 }
 
 export default function BaseContratRulesPanel({
@@ -104,24 +101,18 @@ export default function BaseContratRulesPanel({
   closed,
   showAdminMeta,
   referenceValues,
-  referenceValuesSaving,
   referenceValuesError,
-  referenceValuesSaveMessage,
   onReferenceNumericChange,
   onReferenceTextChange,
-  onReferenceSave,
 }: BaseContratRulesPanelProps): ReactElement {
   return (
     <div className={`settings-reference-rules${closed ? ' settings-reference-rules--closed' : ''}`}>
       <ReferenceValuesRow
         values={referenceValues}
         isAdmin={showAdminMeta}
-        saving={referenceValuesSaving}
         error={referenceValuesError}
-        saveMessage={referenceValuesSaveMessage}
         onNumericChange={onReferenceNumericChange}
         onTextChange={onReferenceTextChange}
-        onSave={onReferenceSave}
       />
       <div className="settings-reference-rules__grid">
         {(['constitution', 'sortie', 'deces'] as const).map((phaseKey) => (

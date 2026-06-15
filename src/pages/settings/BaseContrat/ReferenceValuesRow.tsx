@@ -6,12 +6,9 @@ import type { MementoReferenceValue } from '@/domain/settings-memento/referenceV
 interface ReferenceValuesRowProps {
   values: readonly MementoReferenceValue[];
   isAdmin: boolean;
-  saving: boolean;
   error: string | null;
-  saveMessage: string | null;
   onNumericChange: (key: string, field: 'value_numeric' | 'year', value: string) => void;
   onTextChange: (key: string, field: 'value_text' | 'note', value: string) => void;
-  onSave: () => Promise<void>;
 }
 
 function valueToInput(value: number | null): string {
@@ -122,12 +119,9 @@ function ReferenceValueItem({
 export default function ReferenceValuesRow({
   values,
   isAdmin,
-  saving,
   error,
-  saveMessage,
   onNumericChange,
   onTextChange,
-  onSave,
 }: ReferenceValuesRowProps): ReactElement | null {
   if (values.length === 0) return null;
 
@@ -148,18 +142,9 @@ export default function ReferenceValuesRow({
           />
         ))}
       </div>
-      {isAdmin ? (
+      {isAdmin && error ? (
         <div className="base-contrat-reference-values__actions">
-          <button
-            type="button"
-            className="settings-btn settings-btn--primary"
-            disabled={saving}
-            onClick={() => void onSave()}
-          >
-            {saving ? 'Enregistrement...' : 'Enregistrer les valeurs de référence'}
-          </button>
-          {saveMessage ? <span>{saveMessage}</span> : null}
-          {error ? <span className="base-contrat-reference-values__error">{error}</span> : null}
+          <span className="base-contrat-reference-values__error">{error}</span>
         </div>
       ) : null}
     </section>

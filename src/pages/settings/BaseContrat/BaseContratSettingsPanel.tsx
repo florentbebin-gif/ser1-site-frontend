@@ -96,6 +96,8 @@ const FAMILY_ICON_BY_NAME: Record<string, SettingsTitleIconName> = {
   Autres: 'sparkles',
 };
 
+const REFERENCE_VALUES_SAVE_TARGET_ID = 'reference-values:chiffres-cles';
+
 function getFamilyIcon(famille: string): SettingsTitleIconName {
   return FAMILY_ICON_BY_NAME[famille] ?? 'sparkles';
 }
@@ -106,12 +108,14 @@ export default function BaseContratSettingsPanel() {
   const { overrides, loading, reload } = useOverrides();
   const {
     rows: referenceRows,
-    saving: referenceValuesSaving,
     error: referenceValuesError,
     handleNumericChange: handleReferenceNumericChange,
     handleTextChange: handleReferenceTextChange,
-    save: saveReferenceValues,
-  } = useMementoReferenceValues(isAdmin, { domain: 'chiffres-cles' });
+  } = useMementoReferenceValues(isAdmin, {
+    domain: 'chiffres-cles',
+    saveTargetId: REFERENCE_VALUES_SAVE_TARGET_ID,
+    saveTargetLabel: 'Valeurs de référence',
+  });
 
   const [openProductId, setOpenProductId] = useState<string | null>(null);
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
@@ -120,7 +124,6 @@ export default function BaseContratSettingsPanel() {
   const [togglePPPM, setTogglePPPM] = useState<Audience>('pp');
   const [overrideTarget, setOverrideTarget] = useState<CatalogProduct | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
-  const [referenceValuesSaveMessage, setReferenceValuesSaveMessage] = useState<string | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
   const ruleRenderContext = useMemo<RuleRenderContext>(
@@ -179,13 +182,6 @@ export default function BaseContratSettingsPanel() {
     } catch (error) {
       setErrorMsg((error as Error).message ?? 'Erreur lors de la sauvegarde.');
     }
-  }
-
-  async function handleSaveReferenceValues(): Promise<void> {
-    const result = await saveReferenceValues();
-    setReferenceValuesSaveMessage(
-      result.ok ? 'Valeurs de référence enregistrées.' : (result.error ?? null),
-    );
   }
 
   if (loading) {
@@ -369,12 +365,9 @@ export default function BaseContratSettingsPanel() {
                                 closed={closed}
                                 showAdminMeta={isAdmin}
                                 referenceValues={productReferenceValues}
-                                referenceValuesSaving={referenceValuesSaving}
                                 referenceValuesError={referenceValuesError}
-                                referenceValuesSaveMessage={referenceValuesSaveMessage}
                                 onReferenceNumericChange={handleReferenceNumericChange}
                                 onReferenceTextChange={handleReferenceTextChange}
-                                onReferenceSave={handleSaveReferenceValues}
                               />
                             </div>
                           )}
