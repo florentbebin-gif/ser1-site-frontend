@@ -132,10 +132,16 @@ describe('contrat des sections settings du mémento', () => {
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.placements).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.retraite).toBeUndefined();
     expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toBeUndefined();
+    expect(MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER.prevoyance).toBeUndefined();
     expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.transmission).toEqual(['dmtg-succession']);
+    expect(MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER.prevoyance).toEqual([
+      'prevoyance-regimes',
+      'base-contrat',
+    ]);
     expect(MEMENTO_VALUE_PANEL_BY_SECTION.impots).toBeUndefined();
     expect(MEMENTO_VALUE_PANEL_BY_SECTION.prelevements).toBeUndefined();
     expect(MEMENTO_VALUE_PANEL_BY_SECTION['dmtg-succession']).toBeUndefined();
+    expect(MEMENTO_VALUE_PANEL_BY_SECTION['prevoyance-regimes']).toBeUndefined();
   });
 
   it('rattache les sections DMTG aux entrées de lecture ciblées', () => {
@@ -174,5 +180,14 @@ describe('contrat des sections settings du mémento', () => {
     expect(readEntrySectionsForKey('dirigeant.dividendes-tns')).toHaveLength(2);
     expect(readEntrySectionForKey('dirigeant.charges-sociales-tns')).toBeDefined();
     expect(readEntrySectionForKey('dirigeant.puma-csm')).toBeUndefined();
+  });
+
+  it('rattache les sections Prévoyance aux entrées ciblées sans panneau monolithique', () => {
+    expect(readChapterWrapperForChapter('prevoyance')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.maintien-employeur')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.regimes-salaries')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.regimes-independants')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.affiliation-caisses')).toBeDefined();
+    expect(readEntrySectionForKey('prevoyance.contrats-assurantiels')).toBeDefined();
   });
 });

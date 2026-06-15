@@ -23,6 +23,10 @@ const MementoPrelevementsEntrySection = lazy(() => import('./MementoPrelevements
 const MementoPrelevementsChapterProvider = lazy(
   () => import('../Prelevements/PrelevementsProvider'),
 );
+const MementoPrevoyanceEntrySection = lazy(() => import('./MementoPrevoyanceEntrySection'));
+const MementoPrevoyanceChapterProvider = lazy(
+  () => import('../PrevoyanceRegimes/PrevoyanceProvider'),
+);
 
 type EntrySectionComponent = LazyExoticComponent<ComponentType<MementoEntrySectionProps>>;
 type ChapterWrapperComponent = LazyExoticComponent<ComponentType<MementoChapterWrapperProps>>;
@@ -45,6 +49,11 @@ const READ_ENTRY_SECTIONS: Partial<Record<string, readonly EntrySectionComponent
   'dirigeant.charges-sociales-tns': [MementoPrelevementsEntrySection],
   'placements.ps-pfu-revenus-capital': [MementoPrelevementsEntrySection],
   'retraite.globale': [MementoPrelevementsEntrySection],
+  'prevoyance.maintien-employeur': [MementoPrevoyanceEntrySection],
+  'prevoyance.regimes-salaries': [MementoPrevoyanceEntrySection],
+  'prevoyance.regimes-independants': [MementoPrevoyanceEntrySection],
+  'prevoyance.affiliation-caisses': [MementoPrevoyanceEntrySection],
+  'prevoyance.contrats-assurantiels': [MementoPrevoyanceEntrySection],
   'fiscalite-foyer.ir': [MementoImpotsEntrySection],
   'fiscalite-foyer.ifi': [MementoImpotsEntrySection],
 };
@@ -56,6 +65,7 @@ const READ_CHAPTER_WRAPPERS: Partial<Record<MementoChapterId, readonly ChapterWr
     societe: [MementoComptablesSocietesChapterProvider],
     placements: [MementoPrelevementsChapterProvider],
     retraite: [MementoPrelevementsChapterProvider],
+    prevoyance: [MementoPrevoyanceChapterProvider],
     dirigeant: [MementoComptablesSocietesChapterProvider, MementoPrelevementsChapterProvider],
   };
 

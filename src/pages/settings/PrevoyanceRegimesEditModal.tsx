@@ -12,18 +12,14 @@ import type {
   PrevoyanceRegimeSettings,
   PrevoyanceSources,
 } from '@/domain/prevoyance/types';
-import {
-  upsertPrevoyanceMaintienEmployeurSettings,
-  upsertPrevoyanceRegimeSettings,
-} from '@/utils/cache/prevoyanceSettingsCache';
 import { MaintienDataEditor } from './PrevoyanceMaintienDataEditor';
 import { RegimeDataEditor } from './PrevoyanceRegimeDataEditor';
 import { Field, SourceReferencesEditor } from './PrevoyanceRegimesEditorFields';
 import SettingsModalShell from './components/SettingsModalShell';
 
 export type EditorTarget =
-  | { type: 'regime'; value: PrevoyanceRegimeSettings }
-  | { type: 'maintien'; value: PrevoyanceMaintienEmployeurSettings };
+  | { type: 'regime'; value: PrevoyanceRegimeSettings; originalCode?: string }
+  | { type: 'maintien'; value: PrevoyanceMaintienEmployeurSettings; originalCode?: string };
 
 type EditorData = PrevoyanceRegimeData | PrevoyanceMaintienEmployeurSettings['data'];
 
@@ -61,23 +57,21 @@ function createEditorState(target: EditorTarget): EditorState {
 export function EditModal({
   target,
   onClose,
-  onSaved,
+  onApply,
 }: {
   target: EditorTarget;
   onClose: () => void;
-  onSaved: () => void;
+  onApply: (target: EditorTarget) => void;
 }) {
   const [state, setState] = useState<EditorState>(() => createEditorState(target));
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const setField = <K extends keyof EditorState>(key: K, value: EditorState[K]) => {
     setState((prev) => ({ ...prev, [key]: value }));
   };
 
-  const save = async () => {
+  const apply = () => {
     setError('');
-    setSaving(true);
     try {
       const sourceParse = prevoyanceSourcesSchema.safeParse(state.sources);
       if (!sourceParse.success) {
@@ -101,7 +95,11 @@ export function EditModal({
           data: dataParse.data,
           sources: sourceParse.data,
         });
-        await upsertPrevoyanceRegimeSettings(payload);
+        onApply({
+          type: 'regime',
+          value: payload,
+          originalCode: target.originalCode ?? target.value.code,
+        });
       } else {
         const payload = prevoyanceMaintienEmployeurSettingsSchema.parse({
           code: state.code,
@@ -110,15 +108,16 @@ export function EditModal({
           data: state.data,
           sources: sourceParse.data,
         });
-        await upsertPrevoyanceMaintienEmployeurSettings(payload);
+        onApply({
+          type: 'maintien',
+          value: payload,
+          originalCode: target.originalCode ?? target.value.code,
+        });
       }
 
-      onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Enregistrement impossible.');
-    } finally {
-      setSaving(false);
+      setError(err instanceof Error ? err.message : 'Validation impossible.');
     }
   };
 
@@ -132,8 +131,8 @@ export function EditModal({
       footer={
         <>
           {error ? <span className="prevoyance-settings-modal__error">{error}</span> : <span />}
-          <button type="button" className="settings-action-btn" onClick={save} disabled={saving}>
-            {saving ? 'Enregistrement...' : 'Enregistrer'}
+          <button type="button" className="settings-action-btn" onClick={apply}>
+            Valider les modifications
           </button>
         </>
       }

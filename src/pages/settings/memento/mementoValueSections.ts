@@ -9,9 +9,6 @@ import {
 } from './mementoSettingsSections';
 
 const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
-const PrevoyanceRegimesSettingsPanel = lazy(
-  () => import('../PrevoyanceRegimes/PrevoyanceRegimesSettingsPanel'),
-);
 
 export interface MementoValueSection {
   section: MementoSettingsSection;
@@ -22,7 +19,6 @@ export const MEMENTO_VALUE_PANEL_BY_SECTION: Partial<
   Record<MementoSettingsSectionId, LazyExoticComponent<ComponentType>>
 > = {
   'base-contrat': BaseContratSettingsPanel,
-  'prevoyance-regimes': PrevoyanceRegimesSettingsPanel,
 };
 
 export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
@@ -42,9 +38,7 @@ export const MEMENTO_AUDIT_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
 
 export const MEMENTO_READ_SETTINGS_SECTION_IDS_BY_CHAPTER: Partial<
   Record<MementoChapterId, readonly MementoSettingsSectionId[]>
-> = {
-  prevoyance: ['prevoyance-regimes'],
-};
+> = {};
 
 function valueSectionsForIds(
   sectionIds: readonly MementoSettingsSectionId[] | undefined,
