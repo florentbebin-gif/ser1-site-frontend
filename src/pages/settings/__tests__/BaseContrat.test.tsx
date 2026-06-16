@@ -110,7 +110,7 @@ function mockReferenceValuesHook(rows: readonly MementoReferenceValue[] = []) {
 async function openFirstProduct() {
   render(<BaseContratSettingsPanel />);
 
-  await screen.findByText('Référentiel contrats');
+  await screen.findByRole('radiogroup', { name: 'Audience' });
   await userEvent.click(screen.getByRole('button', { name: /Assurance prévoyance/i }));
   const productHeader = screen.getByRole('button', { name: /Assurance dépendance/i });
   await userEvent.click(productHeader);
@@ -141,7 +141,7 @@ describe('BaseContratSettingsPanel', () => {
   it('rend le choix audience comme un radiogroup', async () => {
     render(<BaseContratSettingsPanel />);
 
-    await screen.findByText('Référentiel contrats');
+    await screen.findByRole('radiogroup', { name: 'Audience' });
 
     expect(screen.getByRole('radiogroup', { name: 'Audience' })).toBeInTheDocument();
     expect(screen.queryByRole('tablist', { name: 'Audience' })).not.toBeInTheDocument();
@@ -233,7 +233,7 @@ describe('BaseContratSettingsPanel', () => {
     mockReferenceValuesHook(DEFAULT_MEMENTO_REFERENCE_VALUES);
     render(<BaseContratSettingsPanel />);
 
-    await screen.findByText('Référentiel contrats');
+    await screen.findByRole('radiogroup', { name: 'Audience' });
     await userEvent.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
     await userEvent.click(screen.getByRole('button', { name: /^Livret A/i }));
 
@@ -249,7 +249,7 @@ describe('BaseContratSettingsPanel', () => {
     mockReferenceValuesHook(DEFAULT_MEMENTO_REFERENCE_VALUES);
     render(<BaseContratSettingsPanel />);
 
-    await screen.findByText('Référentiel contrats');
+    await screen.findByRole('radiogroup', { name: 'Audience' });
     await userEvent.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
     await userEvent.click(screen.getByRole('button', { name: /^Livret A/i }));
 

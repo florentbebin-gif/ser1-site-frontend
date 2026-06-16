@@ -132,7 +132,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(screen.getAllByText('Impôt sur la fortune immobilière').length).toBeGreaterThan(0);
     expect(screen.queryByText('Patrimoine immobilier taxable')).not.toBeInTheDocument();
     expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
     expect(container).not.toHaveTextContent(INTERNAL_WORDS);
   });
 
@@ -176,7 +176,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(
       await screen.findByText('Prélèvements sociaux sur patrimoine et capital'),
     ).toBeInTheDocument();
-    expect(screen.queryByText('Référentiel contrats')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
   });
 
   it('affiche successions et libéralités avec les valeurs DMTG en lecture', async () => {
@@ -191,7 +191,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(await screen.findByText('Assurance-vie décès')).toBeInTheDocument();
     expect(screen.getAllByText('Assurance-vie au décès').length).toBeGreaterThan(0);
     expect(screen.queryByText('Transmission, DMTG et succession')).not.toBeInTheDocument();
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: /Enregistrer les paramètres DMTG & succession/i }),
     ).not.toBeInTheDocument();

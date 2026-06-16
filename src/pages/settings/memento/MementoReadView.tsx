@@ -3,12 +3,27 @@ import { Suspense, lazy, useMemo, useState, type ReactElement } from 'react';
 import {
   buildMementoDisplayPlan,
   groupMementoLexiconTerms,
+  type MementoDisplayChapter,
   type MementoDisplayPart,
   type MementoPartId,
 } from './mementoDisplayPlan';
+import {
+  buildMementoChapterSearchText,
+  buildMementoEntrySearchText,
+  buildMementoLexiconSearchText,
+  buildMementoReferenceValueSearchText,
+  normalizeMementoSearch,
+  textMatches,
+} from './mementoSearch';
 import MementoReadableEntry from './MementoReadableEntry';
 import MementoReadChapter from './MementoReadChapter';
-import type { MementoReferenceValueDomain } from '@/domain/settings-memento/referenceValues';
+import { CATALOG } from '@/domain/base-contrat/catalog';
+import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
+import {
+  DEFAULT_MEMENTO_REFERENCE_VALUES,
+  type MementoReferenceValueDomain,
+} from '@/domain/settings-memento/referenceValues';
+import type { MementoEntry } from '@/domain/settings-memento/types';
 
 const MementoValueTable = lazy(() => import('./MementoValueTable'));
 const BaseContratSettingsPanel = lazy(() => import('../BaseContrat/BaseContratSettingsPanel'));
@@ -44,24 +59,139 @@ function hasReadableContent(part: MementoDisplayPart): boolean {
   return part.chapters.length + part.entries.length + part.lexiconTerms.length > 0;
 }
 
+interface FilteredMementoPart {
+  part: MementoDisplayPart;
+  index: number;
+  isShown: boolean;
+  entries: readonly MementoEntry[];
+  chapters: readonly MementoDisplayChapter[];
+  lexiconTerms: readonly MementoLexiconTerm[];
+}
+
+function filterMementoPart(
+  part: MementoDisplayPart,
+  index: number,
+  normalizedQuery: string,
+  extraMatch: boolean,
+): FilteredMementoPart {
+  // Un match sur le titre/description de la partie révèle l'intégralité de son contenu.
+  if (textMatches(`${part.definition.title} ${part.definition.description}`, normalizedQuery)) {
+    return {
+      part,
+      index,
+      isShown: true,
+      entries: part.entries,
+      chapters: part.chapters,
+      lexiconTerms: part.lexiconTerms,
+    };
+  }
+
+  const entries = part.entries.filter((entry) =>
+    textMatches(buildMementoEntrySearchText(entry), normalizedQuery),
+  );
+
+  const chapters = part.chapters
+    .map((chapter) => {
+      const chapterMatch = textMatches(
+        buildMementoChapterSearchText(chapter.chapter),
+        normalizedQuery,
+      );
+      const chapterEntries = chapterMatch
+        ? chapter.entries
+        : chapter.entries.filter((entry) =>
+            textMatches(buildMementoEntrySearchText(entry), normalizedQuery),
+          );
+      return {
+        chapter: { ...chapter, entries: chapterEntries },
+        keep: chapterMatch || chapterEntries.length > 0,
+      };
+    })
+    .filter((candidate) => candidate.keep)
+    .map((candidate) => candidate.chapter);
+
+  const lexiconTerms = part.lexiconTerms.filter((term) =>
+    textMatches(buildMementoLexiconSearchText(term), normalizedQuery),
+  );
+
+  // `extraMatch` couvre le catalogue contrats (partie produits) et les tables de valeurs de
+  // référence (démembrement, international, social) que le filtre parent ne parcourt pas sinon.
+  const isShown =
+    extraMatch || entries.length > 0 || chapters.length > 0 || lexiconTerms.length > 0;
+
+  return { part, index, isShown, entries, chapters, lexiconTerms };
+}
+
 interface MementoReadViewProps {
   showStatus: boolean;
   isAdmin: boolean;
+  searchQuery?: string;
 }
 
 export default function MementoReadView({
   showStatus,
   isAdmin,
+  searchQuery = '',
 }: MementoReadViewProps): ReactElement {
   const displayPlan = useMemo(() => buildMementoDisplayPlan(), []);
   const [openPartId, setOpenPartId] = useState<MementoPartId | null>(null);
   const [openChapterKey, setOpenChapterKey] = useState<string | null>(null);
 
+  const normalizedQuery = normalizeMementoSearch(searchQuery);
+  const hasSearch = normalizedQuery.length > 0;
+
+  // Domaines de valeurs de référence (démembrement, international, social, chiffres clés) dont au
+  // moins une ligne correspond à la recherche — indexés sur les valeurs par défaut (libellés stables).
+  const matchedValueDomains = useMemo(() => {
+    const set = new Set<MementoReferenceValueDomain>();
+    if (!hasSearch) return set;
+    for (const value of DEFAULT_MEMENTO_REFERENCE_VALUES) {
+      if (textMatches(buildMementoReferenceValueSearchText(value), normalizedQuery)) {
+        set.add(value.domain);
+      }
+    }
+    return set;
+  }, [hasSearch, normalizedQuery]);
+
+  const catalogueMatches = useMemo(() => {
+    if (!hasSearch) return false;
+    if (matchedValueDomains.has('chiffres-cles')) return true;
+    return CATALOG.some((product) =>
+      textMatches(`${product.label} ${product.grandeFamille}`, normalizedQuery),
+    );
+  }, [hasSearch, matchedValueDomains, normalizedQuery]);
+
+  const visibleParts = useMemo<FilteredMementoPart[]>(() => {
+    if (!hasSearch) {
+      return displayPlan.map((part, index) => ({
+        part,
+        index,
+        isShown: true,
+        entries: part.entries,
+        chapters: part.chapters,
+        lexiconTerms: part.lexiconTerms,
+      }));
+    }
+
+    return displayPlan
+      .map((part, index) => {
+        const valueDomain = VALUE_TABLE_BY_PART[part.definition.id]?.domain;
+        const extraMatch =
+          part.definition.id === 'chiffres-cles'
+            ? catalogueMatches
+            : valueDomain !== undefined && matchedValueDomains.has(valueDomain);
+        return filterMementoPart(part, index, normalizedQuery, extraMatch);
+      })
+      .filter((item) => item.isShown);
+  }, [catalogueMatches, displayPlan, hasSearch, matchedValueDomains, normalizedQuery]);
+
   return (
     <div className="settings-memento-view settings-memento-read-view">
       <div className="settings-memento-parts" aria-label="Sommaire du mémento">
-        {displayPlan.map((part, index) => {
-          const isOpen = openPartId === part.definition.id;
+        {hasSearch && visibleParts.length === 0 ? (
+          <p className="settings-memento-empty">Aucun résultat pour « {searchQuery.trim()} ».</p>
+        ) : null}
+        {visibleParts.map(({ part, index, entries, chapters, lexiconTerms }) => {
+          const isOpen = hasSearch || openPartId === part.definition.id;
           const hasContent = hasReadableContent(part);
           const buttonId = `settings-memento-part-${part.definition.id}-button`;
           const panelId = `settings-memento-part-${part.definition.id}-panel`;
@@ -129,13 +259,13 @@ export default function MementoReadView({
                         </p>
                       }
                     >
-                      <BaseContratSettingsPanel />
+                      <BaseContratSettingsPanel searchQuery={searchQuery} />
                     </Suspense>
                   ) : null}
 
-                  {part.entries.length > 0 ? (
+                  {entries.length > 0 ? (
                     <div className="settings-memento-readable-list">
-                      {part.entries.map((entry) => (
+                      {entries.map((entry) => (
                         <MementoReadableEntry
                           key={entry.key}
                           kind="entry"
@@ -146,9 +276,9 @@ export default function MementoReadView({
                     </div>
                   ) : null}
 
-                  {part.lexiconTerms.length > 0 ? (
+                  {lexiconTerms.length > 0 ? (
                     <div className="settings-memento-lexicon" aria-label="Définitions du lexique">
-                      {groupMementoLexiconTerms(part.lexiconTerms).map((group) => (
+                      {groupMementoLexiconTerms(lexiconTerms).map((group) => (
                         <section key={group.id} className="settings-memento-lexicon-group">
                           <div className="settings-memento-lexicon-group__header">
                             <h4>{group.title}</h4>
@@ -169,16 +299,16 @@ export default function MementoReadView({
                     </div>
                   ) : null}
 
-                  {part.chapters.length > 0 ? (
+                  {chapters.length > 0 ? (
                     <div className="settings-memento-read-chapters">
-                      {part.chapters.map((chapter) => {
+                      {chapters.map((chapter) => {
                         const chapterKey = `${part.definition.id}-${chapter.chapter.id}`;
 
                         return (
                           <MementoReadChapter
                             key={chapterKey}
                             chapter={chapter}
-                            isOpen={openChapterKey === chapterKey}
+                            isOpen={hasSearch || openChapterKey === chapterKey}
                             showStatus={showStatus}
                             onToggle={() =>
                               setOpenChapterKey((current) =>

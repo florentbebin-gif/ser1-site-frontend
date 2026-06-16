@@ -5,7 +5,12 @@ import { getOptionalLegalReference, type LegalReferenceId } from '@/domain/legal
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
 
-import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
+import {
+  MEMENTO_LEXICON_PRUDENCE_LABELS,
+  MEMENTO_LEXICON_READER_PRUDENCE_LABELS,
+  MEMENTO_PRUDENCE_LABELS,
+  MEMENTO_READER_PRUDENCE_LABELS,
+} from './mementoDisplayPlan';
 
 type MementoReadableEntryProps =
   | {
@@ -43,13 +48,15 @@ function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): Re
 
 export default function MementoReadableEntry(props: MementoReadableEntryProps): ReactElement {
   if (props.kind === 'lexicon') {
-    const prudence = MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status];
+    const prudence = props.showStatus
+      ? MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status]
+      : MEMENTO_LEXICON_READER_PRUDENCE_LABELS[props.term.status];
 
     return (
       <article className="settings-memento-readable-entry settings-memento-readable-entry--lexicon">
         <div className="settings-memento-readable-entry__header">
           <h5>{props.term.term}</h5>
-          {props.showStatus && prudence ? <span>{prudence}</span> : null}
+          {prudence ? <span>{prudence}</span> : null}
         </div>
         <p>{props.term.shortDefinition}</p>
         <ReferenceLinks refIds={props.term.refIds} />
@@ -57,13 +64,15 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
     );
   }
 
-  const prudence = MEMENTO_PRUDENCE_LABELS[props.entry.status];
+  const prudence = props.showStatus
+    ? MEMENTO_PRUDENCE_LABELS[props.entry.status]
+    : MEMENTO_READER_PRUDENCE_LABELS[props.entry.status];
 
   return (
     <article className="settings-memento-readable-entry">
       <div className="settings-memento-readable-entry__header">
         <h5>{props.entry.label}</h5>
-        {props.showStatus && prudence ? <span>{prudence}</span> : null}
+        {prudence ? <span>{prudence}</span> : null}
       </div>
       <p>{props.entry.description}</p>
       <ReferenceLinks refIds={props.entry.refIds} />

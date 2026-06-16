@@ -435,7 +435,7 @@ function ContractsSection(): ReactElement {
         <RuleCard title="Contrats assurantiels">
           <RuleList
             items={[
-              'Les contrats décès, arrêt de travail et invalidité sont détaillés dans le Référentiel contrats.',
+              'Les contrats décès, arrêt de travail et invalidité sont détaillés dans la partie Produits & enveloppes réglementés.',
               'Cette entrée garde le lien métier entre garanties privées, régimes obligatoires et simulateur prévoyance.',
               'Les règles contractuelles restent administrées dans Base-Contrat ; aucun paramètre prévoyance supplémentaire n’est dupliqué ici.',
             ]}

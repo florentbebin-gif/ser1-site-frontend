@@ -155,7 +155,7 @@ describe('SettingsMemento — Impôts éclaté', () => {
     expect(screen.getByText('CEHR / CDHR')).toBeInTheDocument();
     expect(screen.getAllByText('Impôt sur la fortune immobilière').length).toBeGreaterThan(0);
     expect(screen.getByText('1 600 000 €')).toBeInTheDocument();
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: 'Enregistrer les paramètres impôts' }),
     ).not.toBeInTheDocument();

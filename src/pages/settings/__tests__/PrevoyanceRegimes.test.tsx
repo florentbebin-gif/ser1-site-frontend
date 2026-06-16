@@ -245,7 +245,7 @@ describe('MementoPrevoyanceEntrySection', () => {
     render(<MementoPrevoyanceEntrySection entryKey="prevoyance.contrats-assurantiels" />);
 
     expect(screen.getByText('Contrats assurantiels')).toBeInTheDocument();
-    expect(screen.getByText(/Référentiel contrats/i)).toBeInTheDocument();
+    expect(screen.getByText(/Produits & enveloppes réglementés/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
   });
 });

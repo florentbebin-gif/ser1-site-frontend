@@ -1,10 +1,11 @@
 /**
- * BaseContratSettingsPanel - Référentiel contrats.
+ * BaseContratSettingsPanel - catalogue produits & enveloppes réglementés.
  *
- * Panneau /settings/memento.
+ * Panneau de la partie « Produits & enveloppes réglementés » de /settings/memento.
  * Catalogue hardcode (domain/base-contrat/catalog.ts) + overrides Supabase.
  * Règles fiscales lues via domain/base-contrat/rules/.
  * UI de lecture : seules actions admin = valeurs de référence et clôture/réouverture.
+ * Le filtre mot-clé est piloté par la barre de recherche globale du mémento (prop `searchQuery`).
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -23,8 +24,10 @@ import {
 } from '@/domain/base-contrat/overrides';
 import type { BaseContratOverrideInput, OverrideMap } from '@/domain/base-contrat/overrides';
 import { buildBaseContratFiscalLabels, getRules } from '@/domain/base-contrat/rules/index';
-import type { Audience, RuleRenderContext } from '@/domain/base-contrat/rules/index';
+import type { Audience, ProductRules, RuleRenderContext } from '@/domain/base-contrat/rules/index';
 import { getReferenceValuesForProduct } from '@/domain/settings-memento/referenceValues';
+import type { MementoReferenceValue } from '@/domain/settings-memento/referenceValues';
+import { normalizeMementoSearch, textMatches } from '../memento/mementoSearch';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
@@ -102,7 +105,41 @@ function getFamilyIcon(famille: string): SettingsTitleIconName {
   return FAMILY_ICON_BY_NAME[famille] ?? 'sparkles';
 }
 
-export default function BaseContratSettingsPanel() {
+/**
+ * Texte recherchable d'un produit pour le filtre mot-clé global : libellé, famille, règles par
+ * phase (titres, puces, tags, sources) et chiffres clés associés. Permet de retrouver un produit
+ * via un terme contenu dans une règle ou une valeur de référence (plafond, PFU, usufruit, source…).
+ */
+function buildBaseContratSearchText(
+  product: CatalogProduct,
+  rules: ProductRules,
+  referenceValues: readonly MementoReferenceValue[],
+): string {
+  const ruleText = (['constitution', 'sortie', 'deces'] as const).flatMap((phase) =>
+    rules[phase].flatMap((block) => [
+      block.title,
+      ...block.bullets,
+      ...(block.tags ?? []),
+      ...(block.sources ?? []).map((source) => source.label),
+    ]),
+  );
+  const referenceText = referenceValues.flatMap((value) => [
+    value.label,
+    value.note ?? '',
+    value.value_text ?? '',
+    value.value_numeric === null ? '' : String(value.value_numeric),
+    String(value.year),
+  ]);
+  return [product.label, product.grandeFamille, ...ruleText, ...referenceText].join(' ');
+}
+
+interface BaseContratSettingsPanelProps {
+  searchQuery?: string;
+}
+
+export default function BaseContratSettingsPanel({
+  searchQuery = '',
+}: BaseContratSettingsPanelProps = {}) {
   const { isAdmin } = useUserRole();
   const { fiscalContext } = useFiscalContext();
   const { overrides, loading, reload } = useOverrides();
@@ -119,8 +156,6 @@ export default function BaseContratSettingsPanel() {
 
   const [openProductId, setOpenProductId] = useState<string | null>(null);
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterFamille, setFilterFamille] = useState('');
   const [togglePPPM, setTogglePPPM] = useState<Audience>('pp');
   const [overrideTarget, setOverrideTarget] = useState<CatalogProduct | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -133,20 +168,23 @@ export default function BaseContratSettingsPanel() {
     [fiscalContext],
   );
 
+  const normalizedQuery = normalizeMementoSearch(searchQuery);
+  const hasSearch = normalizedQuery.length > 0;
+
   const filteredCatalog = useMemo(() => {
     return CATALOG.filter((product) => {
       if (togglePPPM === 'pp' && !product.ppEligible) return false;
       if (togglePPPM === 'pm' && !product.pmEligible) return false;
-      if (filterFamille && product.grandeFamille !== filterFamille) return false;
+      if (!hasSearch) return true;
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        if (!product.label.toLowerCase().includes(query)) return false;
-      }
-
-      return true;
+      const rules = getRules(product.id, togglePPPM, ruleRenderContext);
+      const referenceValues = getReferenceValuesForProduct(referenceRows, product.id);
+      return textMatches(
+        buildBaseContratSearchText(product, rules, referenceValues),
+        normalizedQuery,
+      );
     });
-  }, [filterFamille, searchQuery, togglePPPM]);
+  }, [hasSearch, normalizedQuery, referenceRows, ruleRenderContext, togglePPPM]);
 
   const groupedByFamily = useMemo(() => {
     const map = new Map<string, CatalogProduct[]>();
@@ -191,16 +229,14 @@ export default function BaseContratSettingsPanel() {
   return (
     <div className="base-contrat-page">
       <div className="settings-stack settings-stack--spacious">
-        <section className="settings-premium-card base-contrat-header-card">
+        <section
+          className="settings-premium-card base-contrat-header-card"
+          aria-label="Produits et enveloppes réglementés"
+        >
           <div className="settings-reference-header">
-            <div className="settings-reference-header__copy">
-              <h2 className="settings-premium-title">
-                <SettingsTitleWithIcon icon="book">Référentiel contrats</SettingsTitleWithIcon>
-              </h2>
-              <p className="settings-premium-subtitle">
-                {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clôturés
-              </p>
-            </div>
+            <p className="settings-premium-subtitle base-contrat-header-card__meta">
+              {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clôturés
+            </p>
 
             <SimSegmentedControl<Audience>
               value={togglePPPM}
@@ -214,49 +250,17 @@ export default function BaseContratSettingsPanel() {
           </div>
         </section>
 
-        <div className="settings-reference-filters">
-          <input
-            className="settings-reference-field"
-            type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Rechercher un produit"
-          />
-          <select
-            className="settings-reference-field"
-            value={filterFamille}
-            onChange={(event) => setFilterFamille(event.target.value)}
-          >
-            <option value="">Toutes les familles</option>
-            {GRANDE_FAMILLE_OPTIONS.map((grandeFamille) => (
-              <option key={grandeFamille} value={grandeFamille}>
-                {grandeFamille}
-              </option>
-            ))}
-          </select>
-          {(searchQuery || filterFamille) && (
-            <button
-              type="button"
-              className="settings-reference-reset"
-              onClick={() => {
-                setSearchQuery('');
-                setFilterFamille('');
-              }}
-            >
-              Réinitialiser
-            </button>
-          )}
-        </div>
-
         {groupedByFamily.size === 0 && (
           <div className="settings-premium-card base-contrat-empty-state">
-            Aucun produit ne correspond aux filtres.
+            {hasSearch
+              ? 'Aucun produit ne correspond à la recherche.'
+              : 'Aucun produit disponible.'}
           </div>
         )}
 
         <div className="fisc-accordion">
           {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
-            const isFamilyOpen = openFamilyId === famille;
+            const isFamilyOpen = hasSearch || openFamilyId === famille;
             const closedInFamily = familyProducts.filter((product) =>
               isProductClosed(product.id, overrides, today),
             ).length;
@@ -291,7 +295,7 @@ export default function BaseContratSettingsPanel() {
                 {isFamilyOpen && (
                   <div className="base-contrat-family__body">
                     {familyProducts.map((product) => {
-                      const isProductOpen = openProductId === product.id;
+                      const isProductOpen = hasSearch || openProductId === product.id;
                       const closed = isProductClosed(product.id, overrides, today);
                       const override = overrides[product.id];
                       const reviewStatus = override?.review_status ?? 'ok';
