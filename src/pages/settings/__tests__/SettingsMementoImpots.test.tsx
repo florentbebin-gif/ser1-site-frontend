@@ -161,6 +161,8 @@ describe('SettingsMemento — Impôts éclaté', () => {
     ).not.toBeInTheDocument();
   });
 
+  // Flux lourd (chapitre lazy sous Suspense, ~13 frappes utilisateur, sauvegarde globale) :
+  // timeout élargi pour rester stable sous la charge CI parallèle, sans masquer de blocage réel.
   it('sauvegarde IFI/CDHR via le bouton global après fermeture du chapitre', async () => {
     isAdmin = true;
     const user = userEvent.setup();
@@ -205,5 +207,5 @@ describe('SettingsMemento — Impôts éclaté', () => {
         }),
       }),
     });
-  });
+  }, 15_000);
 });
