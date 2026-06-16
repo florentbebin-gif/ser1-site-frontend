@@ -147,7 +147,7 @@ describe('SettingsMemento — Comptables et sociétés éclaté', () => {
     expect(screen.getByText('Quote-part mère-fille')).toBeInTheDocument();
     expect(screen.getByText('Déductibilité des intérêts CCA')).toBeInTheDocument();
     expect(screen.getAllByText('25 %').length).toBeGreaterThan(0);
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
     expect(screen.queryByText('Comptables et sociétés')).not.toBeInTheDocument();
 
     await openReadPart(user, 'Social et protection sociale');
@@ -156,7 +156,7 @@ describe('SettingsMemento — Comptables et sociétés éclaté', () => {
     expect((await screen.findAllByText('Abattement dividendes au barème')).length).toBeGreaterThan(
       0,
     );
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
   });
 
   it('sauvegarde un champ IS via le bouton global après fermeture du chapitre', async () => {

@@ -92,7 +92,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await openReadPart(user, 'Produits & enveloppes réglementés');
 
     expect(screen.queryByRole('heading', { name: 'Valeurs de référence' })).not.toBeInTheDocument();
     expect(
@@ -116,7 +116,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await openReadPart(user, 'Produits & enveloppes réglementés');
     await screen.findByRole('radiogroup', { name: 'Audience' });
     await user.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
     await user.click(screen.getByRole('button', { name: /Livret A/i }));
@@ -134,7 +134,7 @@ describe('SettingsMemento — valeurs de référence', () => {
       expect(globalSaveButton).toBeEnabled();
     });
 
-    await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await openReadPart(user, 'Produits & enveloppes réglementés');
     await user.click(globalSaveButton);
 
     await waitFor(() => {

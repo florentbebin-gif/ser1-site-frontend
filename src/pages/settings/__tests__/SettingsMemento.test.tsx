@@ -271,7 +271,7 @@ describe('SettingsMemento', () => {
     expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
     expect(screen.getByText('Prélèvement forfaitaire unique')).toBeInTheDocument();
     expect(container).not.toHaveTextContent(/Lecture :|Écriture :/);
-    expect(container.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
     expect(
       screen.queryByRole('button', { name: /Enregistrer les paramètres impôts/i }),
     ).not.toBeInTheDocument();

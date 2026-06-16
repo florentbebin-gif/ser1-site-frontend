@@ -19,6 +19,7 @@ import {
 
 import MementoAuditChapter from './MementoAuditChapter';
 import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './MementoEntryRow';
+import { normalizeMementoSearch as normalizeSearchText } from './mementoSearch';
 import { MEMENTO_SETTINGS_SECTIONS, type MementoSettingsSection } from './mementoSettingsSections';
 import { auditSettingsSectionsForChapter } from './mementoValueSections';
 
@@ -36,14 +37,6 @@ interface FilteredChapter {
 
 const MEMENTO_ENTRY_LIST: readonly MementoEntry[] = MEMENTO_ENTRIES;
 const SIMULATOR_COVERAGE_LIST: readonly SimulatorCoverageEntry[] = SIMULATOR_MEMENTO_COVERAGE;
-
-function normalizeSearchText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
 
 function coverageTargetSearchText(entry: SimulatorCoverageEntry): string {
   switch (entry.target.kind) {

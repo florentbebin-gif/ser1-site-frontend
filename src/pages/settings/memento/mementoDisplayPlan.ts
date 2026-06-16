@@ -123,8 +123,9 @@ export function groupMementoLexiconTerms(
 export const MEMENTO_DISPLAY_PARTS = [
   {
     id: 'chiffres-cles',
-    title: 'Chiffres clés et produits réglementés',
-    description: 'Repères annuels, enveloppes réglementées et plafonds utiles à la lecture.',
+    title: 'Produits & enveloppes réglementés',
+    description:
+      'Enveloppes, contrats et dispositifs patrimoniaux ; chiffres clés et plafonds détaillés dans chaque fiche produit.',
     chapterIds: ['patrimoine'],
   },
   {
@@ -198,7 +199,26 @@ export const MEMENTO_PRUDENCE_LABELS: Record<MementoStatus, string | null> = {
   blocked_missing_official_source: 'Source officielle à compléter',
 };
 
+/**
+ * Libellés de prudence destinés au lecteur (non-admin) : seuls les statuts qui appellent une
+ * vraie vigilance métier sont exposés. Les statuts purement techniques (couverture, chantier)
+ * restent réservés à l'admin via {@link MEMENTO_PRUDENCE_LABELS}.
+ */
+export const MEMENTO_READER_PRUDENCE_LABELS: Record<MementoStatus, string | null> = {
+  couvert: null,
+  partiel: null,
+  planned: null,
+  absent: null,
+  a_verifier: 'À manier avec prudence',
+  blocked_missing_official_source: 'Source officielle à confirmer',
+};
+
 export const MEMENTO_LEXICON_PRUDENCE_LABELS: Record<MementoLexiconStatus, string | null> = {
+  sourced: null,
+  a_verifier: 'À manier avec prudence',
+};
+
+export const MEMENTO_LEXICON_READER_PRUDENCE_LABELS: Record<MementoLexiconStatus, string | null> = {
   sourced: null,
   a_verifier: 'À manier avec prudence',
 };

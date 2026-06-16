@@ -67,21 +67,23 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
 }
 
 describe('SettingsMemento — Base-Contrat', () => {
-  it('rend le référentiel contrats depuis la partie chiffres clés', async () => {
+  it('rend le catalogue produits depuis la partie produits & enveloppes', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
 
-    await openReadPart(user, 'Chiffres clés et produits réglementés');
+    await openReadPart(user, 'Produits & enveloppes réglementés');
 
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Référentiel contrats/i })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: /Référentiel contrats/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('ne rend plus le référentiel contrats dans la lecture placements', async () => {
+  it('ne rend plus le catalogue produits dans la lecture placements', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
@@ -89,6 +91,5 @@ describe('SettingsMemento — Base-Contrat', () => {
     await openReadChapter(user, 'Placements');
 
     expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Référentiel contrats')).not.toBeInTheDocument();
   });
 });

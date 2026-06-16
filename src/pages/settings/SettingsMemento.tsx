@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ReactElement } from 'react';
+import { Suspense, lazy, useState, type ReactElement } from 'react';
 
 import { useUserRole } from '@/auth/useUserRole';
 import SettingsTitleWithIcon from '@/components/settings/SettingsTitleWithIcon';
@@ -11,6 +11,7 @@ const MementoAuditView = lazy(() => import('./memento/MementoAuditView'));
 
 export default function SettingsMemento(): ReactElement {
   const { isAdmin } = useUserRole();
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <MementoSaveProvider>
@@ -29,9 +30,20 @@ export default function SettingsMemento(): ReactElement {
               </p>
             </div>
           </div>
+
+          <label className="settings-memento-hero__search" htmlFor="settings-memento-search-global">
+            <span className="settings-memento-hero__search-label">Rechercher dans le mémento</span>
+            <input
+              id="settings-memento-search-global"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Chapitre, produit, notion, plafond..."
+            />
+          </label>
         </section>
 
-        <MementoReadView showStatus={isAdmin} isAdmin={isAdmin} />
+        <MementoReadView showStatus={isAdmin} isAdmin={isAdmin} searchQuery={searchQuery} />
         <MementoGlobalSaveBar isAdmin={isAdmin} />
 
         {isAdmin ? (

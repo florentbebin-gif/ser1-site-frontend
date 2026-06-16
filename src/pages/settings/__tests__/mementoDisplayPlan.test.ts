@@ -24,7 +24,7 @@ function getEntry(key: string) {
 describe('mementoDisplayPlan', () => {
   it('expose le sommaire V8 sans remplacer les chapitres techniques', () => {
     expect(MEMENTO_DISPLAY_PARTS.map((part) => part.title)).toEqual([
-      'Chiffres clés et produits réglementés',
+      'Produits & enveloppes réglementés',
       'Droit civil',
       'Fiscalité',
       'Démembrement',

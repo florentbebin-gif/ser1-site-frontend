@@ -136,7 +136,7 @@ export const MEMENTO_SETTINGS_SECTIONS = [
   },
   {
     id: 'base-contrat',
-    label: 'Référentiel contrats',
+    label: 'Produits & enveloppes réglementés',
     targetPagePath: MEMENTO_SETTINGS_TARGET_PATH,
     targetSectionKey: 'base-contrat',
     sourceSectionKeys: [
