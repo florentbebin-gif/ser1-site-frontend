@@ -892,25 +892,28 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 
 ---
 
-### Identité fiscale & snapshot v4 — `FiscalIdentity`
+### Identité fiscale & snapshot — `FiscalIdentity`
 
-**Objectif** : détecter si les paramètres fiscaux ont changé entre la sauvegarde d'un dossier `.ser1` et son rechargement ultérieur.
+**Objectif** : détecter si les paramètres de référence ont changé entre la sauvegarde d'un dossier `.ser1` et son rechargement ultérieur.
 
-**Mécanisme** (PR #162) :
+**Mécanisme** :
 
-1. Au démarrage de l'app (`App.tsx`), `fingerprintSettingsData()` calcule un hash SHA-256 des 3 singletons fiscaux et de `pass_history`.
-2. Ce fingerprint (`FiscalIdentity`) est stocké dans chaque `.ser1` sauvegardé (snapshot schéma v4).
-3. Au chargement d'un `.ser1`, le fingerprint sauvegardé est comparé au fingerprint courant.
-4. En cas de mismatch → notification "Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde."
+1. Au démarrage de l'app (`App.tsx`), `buildFiscalIdentityCurrent()` calcule, via `fingerprintSettingsData()` (hash FNV-1a 64 bits), une empreinte stable de chaque volet de référence ainsi que son `updatedAt`.
+2. `FiscalIdentity` couvre **cinq volets** : `tax`, `ps`, `fiscality`, `pass` (historique PASS) et **`memento`** — l'empreinte du millésime courant de la base mémento (`memento_reference_values`).
+3. Cette empreinte est stockée dans chaque `.ser1` sauvegardé (`meta.fiscal`, schéma snapshot courant).
+4. Au chargement d'un `.ser1`, chaque hash sauvegardé est comparé au hash courant ; en cas de mismatch → notification « Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde. »
+
+**Volet mémento** : l'identité de la base mémento est fournie **hors `useFiscalContext`** (hook chaud des simulateurs), par le hook dédié `useMementoIdentity` qui s'appuie sur `getMementoIdentity()` du cache mémento (empreinte de **contenu** via `toPayload`, donc indépendante de `updated_at` — un ré-enregistrement à l'identique ne crée pas de faux écart). Le champ `memento` du schéma snapshot est **additif et optionnel** : les `.ser1` antérieurs qui en sont dépourvus restent valides, aucun bump de version n'est nécessaire. La comparaison au chargement n'est déclenchée que si le hash sauvegardé **et** le hash courant sont non vides, pour éviter un faux écart tant que l'identité mémento n'est pas encore chargée.
 
 **Fichiers** :
 
-| Rôle                      | Fichier                                                             |
-| ------------------------- | ------------------------------------------------------------------- |
-| Calcul du fingerprint     | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
-| Adaptateur fingerprint    | `src/utils/fiscalSettingsFingerprints.ts`                           |
-| Comparaison au chargement | `src/App.tsx`                                                       |
-| Migration snapshot v3→v4  | `src/reporting/snapshot/snapshotMigrations.ts`                      |
+| Rôle                         | Fichier                                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Calcul du fingerprint        | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`)                                                  |
+| Adaptateur fingerprint       | `src/utils/fiscalSettingsFingerprints.ts`                                                                            |
+| Identité base mémento        | `src/utils/cache/mementoReferenceValuesCache.ts` (`getMementoIdentity`) + `src/hooks/settings/useMementoIdentity.ts` |
+| Comparaison au chargement    | `src/App.tsx`                                                                                                        |
+| Schéma & migrations snapshot | `src/reporting/snapshot/snapshotSchema.ts`, `src/reporting/snapshot/snapshotMigrations.ts`                           |
 
 ---
 

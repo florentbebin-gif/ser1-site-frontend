@@ -186,7 +186,12 @@ export default function App(): React.ReactElement {
           (loaded.fiscality.hash != null &&
             loaded.fiscality.hash !== fiscalIdentity.fiscality.hash) ||
           (loaded.pass?.hash != null && loaded.pass.hash !== fiscalIdentity.pass.hash) ||
-          (loaded.memento?.hash != null && loaded.memento.hash !== fiscalIdentity.memento.hash);
+          // Mémento : ne comparer que si les deux empreintes sont non vides, pour éviter un faux
+          // écart tant que l'identité mémento n'est pas encore chargée (hash courant à '').
+          (loaded.memento?.hash != null &&
+            loaded.memento.hash !== '' &&
+            fiscalIdentity.memento.hash !== '' &&
+            loaded.memento.hash !== fiscalIdentity.memento.hash);
         if (mismatch) {
           setTimeout(() => {
             showNotification(
