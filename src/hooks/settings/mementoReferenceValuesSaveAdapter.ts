@@ -1,6 +1,7 @@
-import type {
-  MementoReferenceValue,
-  MementoReferenceValueDomain,
+import {
+  selectCurrentMementoMillesime,
+  type MementoReferenceValue,
+  type MementoReferenceValueDomain,
 } from '@/domain/settings-memento/referenceValues';
 import type { MementoSaveResult } from '@/hooks/settings/mementoSaveRegistry';
 import {
@@ -38,7 +39,8 @@ export async function loadMementoReferenceValuesDraft(
   options: MementoReferenceValuesDraftOptions & { force?: boolean } = {},
 ): Promise<MementoReferenceValue[]> {
   const values = await getMementoReferenceValues({ force: options.force });
-  return options.domain ? values.filter((value) => value.domain === options.domain) : values;
+  const current = selectCurrentMementoMillesime(values);
+  return options.domain ? current.filter((value) => value.domain === options.domain) : current;
 }
 
 export async function saveMementoReferenceValuesDraft(
@@ -56,7 +58,7 @@ export async function saveMementoReferenceValuesDraft(
   }
 
   try {
-    await upsertMementoReferenceValues(rows, { domain: options.domain });
+    await upsertMementoReferenceValues(rows);
     broadcastMementoReferenceValuesInvalidation();
     return { ok: true, message: 'Valeurs de référence enregistrées.' };
   } catch (error) {

@@ -145,7 +145,7 @@ describe('SettingsMemento — valeurs de référence', () => {
             value_numeric: 23000,
           }),
         ]),
-        { onConflict: 'key' },
+        { onConflict: 'key,year' },
       );
     });
     const payload = upsertMock.mock.calls[0]?.[0] as Array<{ domain: string }> | undefined;
@@ -229,7 +229,7 @@ describe('SettingsMemento — valeurs de référence', () => {
             value_text: 'Usufruit 90 % · nue-propriété 10 % — ligne revue',
           }),
         ]),
-        { onConflict: 'key' },
+        { onConflict: 'key,year' },
       );
     });
   });
@@ -293,7 +293,7 @@ describe('SettingsMemento — valeurs de référence', () => {
             value_text: 'Employeur 4,72 % / salarié 3,15 % / total 7,87 %',
           }),
         ]),
-        { onConflict: 'key' },
+        { onConflict: 'key,year' },
       );
     });
   });

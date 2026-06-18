@@ -7,6 +7,7 @@ import {
   DEFAULT_MEMENTO_REFERENCE_VALUES,
   getReferenceValuesForProduct,
   groupMementoReferenceValuesBySubdomain,
+  selectCurrentMementoMillesime,
   sortMementoReferenceValues,
 } from '../referenceValues';
 
@@ -190,5 +191,28 @@ describe('memento reference values', () => {
       'forfait-social-retraite',
       'pee-abondement-plafond',
     ]);
+  });
+
+  it('sélectionne le millésime le plus récent par repère', () => {
+    const base = DEFAULT_MEMENTO_REFERENCE_VALUES.find(
+      (value) => value.key === 'livret-a-plafond',
+    )!;
+    const v2026 = { ...base, year: 2026, value_numeric: 22950 };
+    const v2027 = { ...base, year: 2027, value_numeric: 24000 };
+    const ldds = DEFAULT_MEMENTO_REFERENCE_VALUES.find((value) => value.key === 'ldds-plafond')!;
+
+    const selected = selectCurrentMementoMillesime([v2026, v2027, ldds]);
+    const livretA = selected.filter((value) => value.key === 'livret-a-plafond');
+
+    // Une seule ligne par clé, au millésime le plus récent.
+    expect(livretA).toHaveLength(1);
+    expect(livretA[0]?.year).toBe(2027);
+    expect(livretA[0]?.value_numeric).toBe(24000);
+    expect(selected.some((value) => value.key === 'ldds-plafond')).toBe(true);
+  });
+
+  it('conserve toutes les valeurs par défaut (millésime unique 2026)', () => {
+    const selected = selectCurrentMementoMillesime(DEFAULT_MEMENTO_REFERENCE_VALUES);
+    expect(selected).toHaveLength(DEFAULT_MEMENTO_REFERENCE_VALUES.length);
   });
 });

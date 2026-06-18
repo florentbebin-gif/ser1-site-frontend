@@ -431,6 +431,25 @@ export function sortMementoReferenceValues(
   );
 }
 
+/**
+ * Sélectionne le millésime courant de chaque repère : pour chaque clé, la ligne d'année la plus
+ * récente disponible. La base conserve l'historique en append-only (clé `(key, year)`) ; l'affichage
+ * et l'édition portent sur un seul millésime. La lecture « à une date donnée » pour rejouer un
+ * dossier ancien viendra avec l'épinglage côté dossier client.
+ */
+export function selectCurrentMementoMillesime(
+  values: readonly MementoReferenceValue[],
+): MementoReferenceValue[] {
+  const latestByKey = new Map<string, MementoReferenceValue>();
+  for (const value of values) {
+    const current = latestByKey.get(value.key);
+    if (!current || value.year > current.year) {
+      latestByKey.set(value.key, value);
+    }
+  }
+  return sortMementoReferenceValues([...latestByKey.values()]);
+}
+
 export function getReferenceValuesForProduct(
   values: readonly MementoReferenceValue[],
   productId: string,

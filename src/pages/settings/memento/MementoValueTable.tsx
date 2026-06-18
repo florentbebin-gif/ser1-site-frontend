@@ -94,12 +94,16 @@ export default function MementoValueTable({
     },
   );
   const groups = groupMementoReferenceValuesBySubdomain(rows);
+  const millesime = rows.length > 0 ? Math.max(...rows.map((row) => row.year)) : null;
 
   return (
     <section className="settings-memento-reference-values" aria-labelledby={titleId}>
       <div className="settings-memento-reference-values__header">
         <h4 id={titleId}>{title}</h4>
         <p>{description}</p>
+        {millesime !== null ? (
+          <p className="settings-memento-reference-values__millesime">Millésime {millesime}</p>
+        ) : null}
       </div>
 
       {loading ? <p className="settings-memento-empty">Chargement des valeurs...</p> : null}
@@ -118,7 +122,6 @@ export default function MementoValueTable({
                 <tr>
                   <th scope="col">Repère</th>
                   <th scope="col">Valeur</th>
-                  <th scope="col">Année</th>
                   <th scope="col">Références</th>
                 </tr>
               </thead>
@@ -130,24 +133,6 @@ export default function MementoValueTable({
                       {row.note ? <small>{row.note}</small> : null}
                     </th>
                     <td>{valueCell(row, isAdmin, handleNumericChange, handleTextChange)}</td>
-                    <td>
-                      {isAdmin ? (
-                        <label className="settings-memento-reference-values__year">
-                          <input
-                            aria-label={`${row.label} — année`}
-                            type="number"
-                            value={row.year}
-                            onChange={(event) =>
-                              handleNumericChange(row.key, 'year', event.target.value)
-                            }
-                          />
-                        </label>
-                      ) : (
-                        <span className="settings-memento-reference-values__readonly">
-                          {row.year}
-                        </span>
-                      )}
-                    </td>
                     <td>
                       <LegalRefInlineList ids={row.ref_ids} />
                     </td>

@@ -182,24 +182,24 @@ export async function getMementoReferenceValues(options?: {
 
 export async function upsertMementoReferenceValues(
   values: readonly MementoReferenceValue[],
-  options?: { domain?: MementoReferenceValueDomain },
 ): Promise<void> {
   const payload = values.map(toPayload);
-  const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'key' });
+  const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'key,year' });
 
   if (error) {
     throw new Error("Erreur lors de l'enregistrement des valeurs du mémento.");
   }
 
-  if (options?.domain && cache) {
+  // Mise à jour incrémentale du cache par identité (key, year) : on ne remplace que les lignes
+  // réellement enregistrées, sans écraser les autres millésimes conservés en base (append-only).
+  if (cache) {
+    const savedIds = new Set(values.map((value) => `${value.key}@@${value.year}`));
     cache = sortMementoReferenceValues([
-      ...cache.filter((value) => value.domain !== options.domain),
+      ...cache.filter((value) => !savedIds.has(`${value.key}@@${value.year}`)),
       ...values.map(cloneValue),
     ]);
-  } else if (options?.domain) {
-    invalidateMementoReferenceValuesCache();
+    fetchedAt = Date.now();
   } else {
-    cache = sortMementoReferenceValues(values.map(cloneValue));
+    invalidateMementoReferenceValuesCache();
   }
-  fetchedAt = Date.now();
 }
