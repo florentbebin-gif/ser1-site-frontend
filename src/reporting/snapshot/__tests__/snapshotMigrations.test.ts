@@ -296,6 +296,24 @@ describe('SnapshotV2Schema (Zod)', () => {
     expect(result.success).toBe(true);
   });
 
+  it('validates a v5 snapshot whose fiscal identity carries a memento entry', () => {
+    const withMemento = {
+      ...V5_SNAPSHOT,
+      meta: {
+        ...V5_SNAPSHOT.meta,
+        fiscal: {
+          ...V5_SNAPSHOT.meta.fiscal,
+          memento: { updatedAt: '2026-02-01T00:00:00.000Z', hash: 'memento-hash' },
+        },
+      },
+    };
+    const result = SnapshotV2Schema.safeParse(withMemento);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.meta.fiscal?.memento?.hash).toBe('memento-hash');
+    }
+  });
+
   it('validates a migrated v1 snapshot', () => {
     const migrated = migrateSnapshot(V1_SNAPSHOT as Record<string, unknown>);
     const result = SnapshotV2Schema.safeParse(migrated.data);
