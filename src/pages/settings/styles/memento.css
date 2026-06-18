@@ -280,6 +280,8 @@
   cursor: pointer;
   font: inherit;
   text-align: left;
+  /* Marge de respiration quand l'en-tête est ramené dans le viewport à l'ouverture (scrollIntoView). */
+  scroll-margin-top: 16px;
 }
 
 .settings-memento-part {

@@ -3,11 +3,14 @@ import { Fragment, Suspense, useId, type ReactElement } from 'react';
 import type { MementoDisplayChapter } from './mementoDisplayPlan';
 import MementoReadableEntry from './MementoReadableEntry';
 import { readChapterWrappersForChapter, readEntrySectionsForKey } from './mementoEntrySections';
+import { useAccordionScroll } from './useAccordionScroll';
 
 interface MementoReadChapterProps {
   chapter: MementoDisplayChapter;
   isOpen: boolean;
   showStatus: boolean;
+  /** Désactivé en mode recherche (tout est déplié d'un coup) pour éviter le scroll en cascade. */
+  scrollOnOpen?: boolean;
   onToggle: () => void;
 }
 
@@ -15,11 +18,13 @@ export default function MementoReadChapter({
   chapter,
   isOpen,
   showStatus,
+  scrollOnOpen = true,
   onToggle,
 }: MementoReadChapterProps): ReactElement {
   const generatedId = useId();
   const buttonId = `${generatedId}-read-chapter-button`;
   const panelId = `${generatedId}-read-chapter-panel`;
+  const headerRef = useAccordionScroll(isOpen, scrollOnOpen);
   const ChapterWrappers = readChapterWrappersForChapter(chapter.chapter.id);
   const chapterBody = <MementoReadChapterBody chapter={chapter} showStatus={showStatus} />;
 
@@ -27,6 +32,7 @@ export default function MementoReadChapter({
     <section className="settings-memento-read-chapter">
       <button
         id={buttonId}
+        ref={headerRef}
         type="button"
         className="settings-memento-read-chapter__header"
         aria-expanded={isOpen}

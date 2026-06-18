@@ -126,15 +126,15 @@ describe('SettingsMemento — filtre mot-clé global', () => {
 });
 
 describe('SettingsMemento — prudence lecteur', () => {
-  it('montre la prudence métier au lecteur non-admin sans exposer les statuts techniques', async () => {
+  it("n'expose aucune pastille de statut au lecteur non-admin", async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Lexique');
 
-    const badges = await screen.findAllByText('À manier avec prudence');
-    expect(badges.length).toBeGreaterThan(0);
-
+    // Le contenu du lexique est rendu, mais le lecteur ne voit aucune pastille de statut.
+    expect(await screen.findByText('Acquêts')).toBeInTheDocument();
+    expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('Pas encore traité')).not.toBeInTheDocument();
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
