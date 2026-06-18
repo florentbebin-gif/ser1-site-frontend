@@ -122,6 +122,9 @@ export function buildBaseContratFiscalLabels(
   const avPlus8AnsAbattementAnnuel =
     avPlus8Ans.abattementAnnuel ?? avPlus8AnsDefaults.abattementAnnuel;
   const avPsRate = avRetraitsCapital.psRatePercent ?? psRateException;
+  // PFU au rachat d'assurance-vie : l'AV suit son taux PS propre (avPsRate, 17,2 %), pas le taux
+  // général (psRateGeneral, 18,6 %) — total et ventilation doivent rester cohérents.
+  const avPfuRateTotal = pfuRateIR + avPsRate;
   const avDeces = assuranceVie.deces ?? defaultAssuranceVie.deces;
   const avPrimesApres1998 = avDeces.primesApres1998 ?? defaultAssuranceVie.deces.primesApres1998;
   const av990IBrackets =
@@ -161,7 +164,7 @@ export function buildBaseContratFiscalLabels(
       avApres70Ans.globalAllowance ?? defaultAssuranceVie.deces.apres70ans.globalAllowance,
     )} partagé entre tous les bénéficiaires`,
     assuranceVie990IRates: av990IRates,
-    assuranceVieRachatMoins8Ans: `Avant 8 ans : PFU ${formatPercent(pfuRateTotal)} (${formatPercent(
+    assuranceVieRachatMoins8Ans: `Avant 8 ans : PFU ${formatPercent(avPfuRateTotal)} (${formatPercent(
       pfuRateIR,
     )} IR + ${formatPercent(avPsRate)} prélèvements sociaux), ou option barème IR.`,
     assuranceVieRachatPlus8Ans: `Après 8 ans : abattement annuel ${formatEuro(

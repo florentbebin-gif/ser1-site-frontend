@@ -71,4 +71,18 @@ describe('buildBaseContratFiscalLabels', () => {
       '123 456 € par bénéficiaire',
     );
   });
+
+  it('AV rachat < 8 ans : PFU 30 % (12,8 % IR + 17,2 % PS), distinct du PFU générique 31,4 %', () => {
+    const labels = buildBaseContratFiscalLabels();
+
+    // Assurance-vie : taux PS propre (17,2 %) avant comme après 8 ans → total cohérent à 30 %.
+    expect(labels.assuranceVieRachatMoins8Ans).toContain('PFU 30 %');
+    expect(labels.assuranceVieRachatMoins8Ans).toContain('12,8 % IR');
+    expect(labels.assuranceVieRachatMoins8Ans).toContain('17,2 % prélèvements sociaux');
+    expect(labels.assuranceVieRachatMoins8Ans).not.toContain('31,4');
+    expect(labels.assuranceVieRetraitsPs).toContain('17,2 %');
+
+    // Le PFU générique (CTO/RCM) reste au taux général 2026 (18,6 % PS → 31,4 %).
+    expect(labels.pfu).toContain('31,4 %');
+  });
 });

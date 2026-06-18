@@ -136,7 +136,9 @@ describe('getRules — contexte fiscal de rendu', () => {
       ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
     ].join(' ');
 
-    expect(texts).toContain('PFU 30 % (10 % IR + 20 % prélèvements sociaux)');
+    // AV < 8 ans utilise le taux PS propre de l'assurance-vie (17,2 %), pas le taux général injecté :
+    // l'injection est prouvée par le taux IR (10 %) qui se propage dans le total (27,2 %).
+    expect(texts).toContain('Avant 8 ans : PFU 27,2 % (10 % IR + 17,2 % prélèvements sociaux)');
     expect(texts).toContain('abattement 990 I de test');
   });
 

@@ -32,8 +32,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       title: 'Contrat de moins de 8 ans',
       bullets: [
         'Seuls les gains (intérêts et plus-values) sont imposés — pas le capital versé.',
-        '{pfu}.',
-        "Option possible pour l'imposition au barème progressif de l'IR.",
+        '{assuranceVieRachatMoins8Ans}',
       ],
       tags: ['pfu', 'ps'],
       confidence: 'elevee',
