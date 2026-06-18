@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState, type ReactElement } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 
 import {
   buildMementoDisplayPlan,
@@ -17,6 +17,7 @@ import {
 } from './mementoSearch';
 import MementoReadableEntry from './MementoReadableEntry';
 import MementoReadChapter from './MementoReadChapter';
+import { scrollAccordionHeaderIntoView } from './useAccordionScroll';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import {
@@ -132,12 +133,26 @@ export default function MementoReadView({
   isAdmin,
   searchQuery = '',
 }: MementoReadViewProps): ReactElement {
-  const displayPlan = useMemo(() => buildMementoDisplayPlan(), []);
+  const displayPlan = useMemo(
+    () => buildMementoDisplayPlan({ includeImmature: isAdmin }),
+    [isAdmin],
+  );
   const [openPartId, setOpenPartId] = useState<MementoPartId | null>(null);
   const [openChapterKey, setOpenChapterKey] = useState<string | null>(null);
+  const partHeaderRefs = useRef(new Map<MementoPartId, HTMLButtonElement | null>());
+  const lastOpenedPartId = useRef<MementoPartId | null>(null);
 
   const normalizedQuery = normalizeMementoSearch(searchQuery);
   const hasSearch = normalizedQuery.length > 0;
+
+  // Repositionne l'en-tête de la partie qu'on vient d'ouvrir (hors recherche, où tout est déplié
+  // d'un coup), en gardant le focus sur le bouton.
+  useEffect(() => {
+    if (!hasSearch && openPartId && openPartId !== lastOpenedPartId.current) {
+      scrollAccordionHeaderIntoView(partHeaderRefs.current.get(openPartId) ?? null);
+    }
+    lastOpenedPartId.current = openPartId;
+  }, [hasSearch, openPartId]);
 
   // Domaines de valeurs de référence (démembrement, international, social, chiffres clés) dont au
   // moins une ligne correspond à la recherche — indexés sur les valeurs par défaut (libellés stables).
@@ -207,6 +222,9 @@ export default function MementoReadView({
             >
               <button
                 id={buttonId}
+                ref={(el) => {
+                  partHeaderRefs.current.set(part.definition.id, el);
+                }}
                 type="button"
                 className="settings-memento-part__header"
                 aria-expanded={hasContent ? isOpen : undefined}
@@ -310,6 +328,7 @@ export default function MementoReadView({
                             chapter={chapter}
                             isOpen={hasSearch || openChapterKey === chapterKey}
                             showStatus={showStatus}
+                            scrollOnOpen={!hasSearch}
                             onToggle={() =>
                               setOpenChapterKey((current) =>
                                 current === chapterKey ? null : chapterKey,

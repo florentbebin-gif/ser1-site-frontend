@@ -21,6 +21,13 @@ function getEntry(key: string) {
   return entry;
 }
 
+function collectPlanEntries(plan: ReturnType<typeof buildMementoDisplayPlan>) {
+  return plan.flatMap((part) => [
+    ...part.entries,
+    ...part.chapters.flatMap((chapter) => chapter.entries),
+  ]);
+}
+
 describe('mementoDisplayPlan', () => {
   it('expose le sommaire V8 sans remplacer les chapitres techniques', () => {
     expect(MEMENTO_DISPLAY_PARTS.map((part) => part.title)).toEqual([
@@ -34,6 +41,26 @@ describe('mementoDisplayPlan', () => {
       'Lexique',
       'Social et protection sociale',
     ]);
+  });
+
+  it('masque les stubs sans contenu mais garde les entrées sourcées (même planned/partiel)', () => {
+    const adminEntries = collectPlanEntries(buildMementoDisplayPlan({ includeImmature: true }));
+    const readerEntries = collectPlanEntries(buildMementoDisplayPlan({ includeImmature: false }));
+    const readerKeys = new Set(readerEntries.map((entry) => entry.key));
+
+    // La vue lecteur est plus restreinte que la vue admin.
+    expect(readerEntries.length).toBeLessThan(adminEntries.length);
+
+    // Un vrai stub (planned, sans section de contenu) est masqué au lecteur.
+    expect(readerKeys.has('foyer.filiation')).toBe(false);
+
+    // Mais une entrée qui rend un référentiel sourcé reste visible, même planned (retraite.globale
+    // porte PASS/prélèvements) ou partiel (civil.regime-matrimonial porte les régimes matrimoniaux).
+    expect(readerKeys.has('retraite.globale')).toBe(true);
+    expect(readerKeys.has('civil.regime-matrimonial')).toBe(true);
+
+    // Le défaut (sans option) reste exhaustif — vue admin inchangée.
+    expect(collectPlanEntries(buildMementoDisplayPlan()).length).toBe(adminEntries.length);
   });
 
   it('classe chaque entrée mémento exactement une fois dans la lecture', () => {

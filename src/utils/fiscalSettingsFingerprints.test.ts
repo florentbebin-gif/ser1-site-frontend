@@ -34,4 +34,21 @@ describe('buildFiscalIdentityCurrent', () => {
     expect(identityA.pass.updatedAt).toBe('2026-01-04T00:00:00.000Z');
     expect(identityA.pass.hash).not.toBe(identityB.pass.hash);
   });
+
+  it("inclut l'identité mémento fournie en troisième argument", () => {
+    const base = fiscalContextWithPass({ 2025: 47_100 });
+    const identityDefault = buildFiscalIdentityCurrent(base, META);
+    const identityWithMemento = buildFiscalIdentityCurrent(base, META, {
+      updatedAt: '2026-02-01T00:00:00.000Z',
+      hash: 'memento-hash',
+    });
+
+    // Par défaut l'identité mémento est vide ; les autres volets restent inchangés.
+    expect(identityDefault.memento).toEqual({ updatedAt: null, hash: '' });
+    expect(identityWithMemento.tax).toEqual(identityDefault.tax);
+    expect(identityWithMemento.memento).toEqual({
+      updatedAt: '2026-02-01T00:00:00.000Z',
+      hash: 'memento-hash',
+    });
+  });
 });

@@ -1,12 +1,14 @@
 import { supabase } from '@/supabaseClient';
 import {
   DEFAULT_MEMENTO_REFERENCE_VALUES,
+  selectCurrentMementoMillesime,
   sortMementoReferenceValues,
   type MementoReferenceValue,
   type MementoReferenceValueDraft,
   type MementoReferenceValueDomain,
   type MementoReferenceValueUnit,
 } from '@/domain/settings-memento/referenceValues';
+import { fingerprintSettingsData } from '@/utils/export/exportFingerprint';
 
 const TABLE = 'memento_reference_values';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -182,24 +184,47 @@ export async function getMementoReferenceValues(options?: {
 
 export async function upsertMementoReferenceValues(
   values: readonly MementoReferenceValue[],
-  options?: { domain?: MementoReferenceValueDomain },
 ): Promise<void> {
   const payload = values.map(toPayload);
-  const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'key' });
+  const { error } = await supabase.from(TABLE).upsert(payload, { onConflict: 'key,year' });
 
   if (error) {
     throw new Error("Erreur lors de l'enregistrement des valeurs du mémento.");
   }
 
-  if (options?.domain && cache) {
+  // Mise à jour incrémentale du cache par identité (key, year) : on ne remplace que les lignes
+  // réellement enregistrées, sans écraser les autres millésimes conservés en base (append-only).
+  if (cache) {
+    const savedIds = new Set(values.map((value) => `${value.key}@@${value.year}`));
     cache = sortMementoReferenceValues([
-      ...cache.filter((value) => value.domain !== options.domain),
+      ...cache.filter((value) => !savedIds.has(`${value.key}@@${value.year}`)),
       ...values.map(cloneValue),
     ]);
-  } else if (options?.domain) {
-    invalidateMementoReferenceValuesCache();
+    fetchedAt = Date.now();
   } else {
-    cache = sortMementoReferenceValues(values.map(cloneValue));
+    invalidateMementoReferenceValuesCache();
   }
-  fetchedAt = Date.now();
+}
+
+export interface MementoIdentity {
+  updatedAt: string | null;
+  hash: string;
+}
+
+/**
+ * Identité du millésime courant de la base mémento, pour la traçabilité des snapshots `.ser1` :
+ * - `hash` : empreinte de contenu (via `toPayload`, donc sans `updated_at`) → un ré-enregistrement
+ *   à l'identique ne déclenche pas de faux écart ;
+ * - `updatedAt` : date de dernière mise à jour observée sur le millésime courant.
+ */
+export async function getMementoIdentity(options?: { force?: boolean }): Promise<MementoIdentity> {
+  const values = selectCurrentMementoMillesime(await getMementoReferenceValues(options));
+  const updatedAt = values.reduce<string | null>(
+    (latest, value) =>
+      value.updated_at !== null && (latest === null || value.updated_at > latest)
+        ? value.updated_at
+        : latest,
+    null,
+  );
+  return { updatedAt, hash: fingerprintSettingsData(values.map(toPayload)) };
 }

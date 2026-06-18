@@ -43,6 +43,9 @@ export const FiscalIdentitySchema = z
     ps: FiscalSettingEntrySchema.optional(),
     fiscality: FiscalSettingEntrySchema.optional(),
     pass: FiscalSettingEntrySchema.optional(),
+    // Champ additif et optionnel (millésime de la base mémento) : les fichiers antérieurs qui en
+    // sont dépourvus restent valides, donc aucun bump de version de schéma n'est nécessaire.
+    memento: FiscalSettingEntrySchema.optional(),
   })
   .nullable()
   .optional();

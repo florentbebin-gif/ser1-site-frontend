@@ -12,6 +12,7 @@ import {
   buildFiscalIdentityCurrent,
   type FiscalIdentityCurrent,
 } from './utils/fiscalSettingsFingerprints';
+import { useMementoIdentity } from './hooks/settings/useMementoIdentity';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
@@ -66,11 +67,12 @@ export default function App(): React.ReactElement {
 
   // Dossier fiscal (mode stale) — pour construire l'identité fiscale lors des sauvegardes
   const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
+  const mementoIdentity = useMementoIdentity();
 
-  // Identité fiscale : hashes stables + updated_at pour les tables et l'historique PASS.
+  // Identité fiscale : hashes stables + updated_at pour les tables, l'historique PASS et la base mémento.
   const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(
-    () => buildFiscalIdentityCurrent(fiscalContext, fiscalMeta),
-    [fiscalContext, fiscalMeta],
+    () => buildFiscalIdentityCurrent(fiscalContext, fiscalMeta, mementoIdentity),
+    [fiscalContext, fiscalMeta, mementoIdentity],
   );
 
   // P0-06: Session TTL (heartbeat 30s, grâce 3min, inactivité 1h)
@@ -183,7 +185,13 @@ export default function App(): React.ReactElement {
           (loaded.ps.hash != null && loaded.ps.hash !== fiscalIdentity.ps.hash) ||
           (loaded.fiscality.hash != null &&
             loaded.fiscality.hash !== fiscalIdentity.fiscality.hash) ||
-          (loaded.pass?.hash != null && loaded.pass.hash !== fiscalIdentity.pass.hash);
+          (loaded.pass?.hash != null && loaded.pass.hash !== fiscalIdentity.pass.hash) ||
+          // Mémento : ne comparer que si les deux empreintes sont non vides, pour éviter un faux
+          // écart tant que l'identité mémento n'est pas encore chargée (hash courant à '').
+          (loaded.memento?.hash != null &&
+            loaded.memento.hash !== '' &&
+            fiscalIdentity.memento.hash !== '' &&
+            loaded.memento.hash !== fiscalIdentity.memento.hash);
         if (mismatch) {
           setTimeout(() => {
             showNotification(

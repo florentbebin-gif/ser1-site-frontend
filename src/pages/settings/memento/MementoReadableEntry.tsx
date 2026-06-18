@@ -5,12 +5,7 @@ import { getOptionalLegalReference, type LegalReferenceId } from '@/domain/legal
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
 
-import {
-  MEMENTO_LEXICON_PRUDENCE_LABELS,
-  MEMENTO_LEXICON_READER_PRUDENCE_LABELS,
-  MEMENTO_PRUDENCE_LABELS,
-  MEMENTO_READER_PRUDENCE_LABELS,
-} from './mementoDisplayPlan';
+import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
 
 type MementoReadableEntryProps =
   | {
@@ -48,9 +43,8 @@ function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): Re
 
 export default function MementoReadableEntry(props: MementoReadableEntryProps): ReactElement {
   if (props.kind === 'lexicon') {
-    const prudence = props.showStatus
-      ? MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status]
-      : MEMENTO_LEXICON_READER_PRUDENCE_LABELS[props.term.status];
+    // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
+    const prudence = props.showStatus ? MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status] : null;
 
     return (
       <article className="settings-memento-readable-entry settings-memento-readable-entry--lexicon">
@@ -64,9 +58,8 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
     );
   }
 
-  const prudence = props.showStatus
-    ? MEMENTO_PRUDENCE_LABELS[props.entry.status]
-    : MEMENTO_READER_PRUDENCE_LABELS[props.entry.status];
+  // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
+  const prudence = props.showStatus ? MEMENTO_PRUDENCE_LABELS[props.entry.status] : null;
 
   return (
     <article className="settings-memento-readable-entry">

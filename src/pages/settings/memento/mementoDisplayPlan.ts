@@ -16,6 +16,8 @@ import type {
   MementoStatus,
 } from '@/domain/settings-memento/types';
 
+import { readEntrySectionsForKey } from './mementoEntrySections';
+
 export type MementoPartId =
   | 'chiffres-cles'
   | 'droit-civil'
@@ -199,29 +201,26 @@ export const MEMENTO_PRUDENCE_LABELS: Record<MementoStatus, string | null> = {
   blocked_missing_official_source: 'Source officielle à compléter',
 };
 
-/**
- * Libellés de prudence destinés au lecteur (non-admin) : seuls les statuts qui appellent une
- * vraie vigilance métier sont exposés. Les statuts purement techniques (couverture, chantier)
- * restent réservés à l'admin via {@link MEMENTO_PRUDENCE_LABELS}.
- */
-export const MEMENTO_READER_PRUDENCE_LABELS: Record<MementoStatus, string | null> = {
-  couvert: null,
-  partiel: null,
-  planned: null,
-  absent: null,
-  a_verifier: 'À manier avec prudence',
-  blocked_missing_official_source: 'Source officielle à confirmer',
-};
-
 export const MEMENTO_LEXICON_PRUDENCE_LABELS: Record<MementoLexiconStatus, string | null> = {
   sourced: null,
   a_verifier: 'À manier avec prudence',
 };
 
-export const MEMENTO_LEXICON_READER_PRUDENCE_LABELS: Record<MementoLexiconStatus, string | null> = {
-  sourced: null,
-  a_verifier: 'À manier avec prudence',
-};
+/**
+ * Statuts « stub » candidats au masquage en vue lecture (non-admin) : chantier planifié ou pas
+ * encore traité. L'admin voit tout et conserve les pastilles de statut.
+ */
+const READER_HIDDEN_STATUSES: ReadonlySet<MementoStatus> = new Set(['planned', 'absent']);
+
+/**
+ * Une entrée n'est masquée au lecteur que si elle est un vrai stub : statut planned/absent ET
+ * aucune section de contenu rattachée. Une entrée qui rend un référentiel sourcé reste visible même
+ * avec un statut planned (ex. `retraite.globale`, qui porte PASS et prélèvements sociaux).
+ */
+function isReaderVisibleEntry(entry: MementoEntry): boolean {
+  if (!READER_HIDDEN_STATUSES.has(entry.status)) return true;
+  return readEntrySectionsForKey(entry.key).length > 0;
+}
 
 const CHAPTER_BY_ID = new Map<MementoChapterId, MementoChapter>(
   MEMENTO_CHAPTERS.map((chapter) => [chapter.id, chapter]),
@@ -244,8 +243,12 @@ export function resolveMementoEntryPartId(entry: MementoEntry): MementoPartId {
   return partId;
 }
 
-function entriesForPart(partId: MementoPartId): MementoEntry[] {
-  return MEMENTO_ENTRIES.filter((entry) => resolveMementoEntryPartId(entry) === partId);
+function entriesForPart(partId: MementoPartId, includeImmature: boolean): MementoEntry[] {
+  return MEMENTO_ENTRIES.filter(
+    (entry) =>
+      resolveMementoEntryPartId(entry) === partId &&
+      (includeImmature || isReaderVisibleEntry(entry)),
+  );
 }
 
 function directEntriesForPart(
@@ -284,9 +287,12 @@ function chaptersForPart(
     .filter((chapter) => chapter.entries.length > 0 || chapter.editorial !== null);
 }
 
-export function buildMementoDisplayPlan(): readonly MementoDisplayPart[] {
+export function buildMementoDisplayPlan(
+  options: { includeImmature?: boolean } = {},
+): readonly MementoDisplayPart[] {
+  const includeImmature = options.includeImmature ?? true;
   return MEMENTO_DISPLAY_PARTS.map((definition) => {
-    const partEntries = entriesForPart(definition.id);
+    const partEntries = entriesForPart(definition.id, includeImmature);
 
     return {
       definition,

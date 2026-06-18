@@ -69,9 +69,7 @@ describe('mementoReferenceValuesSaveAdapter', () => {
     });
 
     expect(result).toEqual({ ok: true, message: 'Valeurs de référence enregistrées.' });
-    expect(upsertMementoReferenceValuesMock).toHaveBeenCalledWith([livretAPlafond], {
-      domain: 'chiffres-cles',
-    });
+    expect(upsertMementoReferenceValuesMock).toHaveBeenCalledWith([livretAPlafond]);
     expect(broadcastMementoReferenceValuesInvalidationMock).toHaveBeenCalledTimes(1);
   });
 
