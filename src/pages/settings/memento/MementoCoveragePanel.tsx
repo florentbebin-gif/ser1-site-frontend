@@ -5,19 +5,20 @@ import { getSettingsRegistryEntry, type SettingsOwnerPagePath } from '@/domain/s
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
 import type { SimulatorDefinition, SimulatorLifecycle } from '@/domain/simulators/types';
 
-import { canRenderMementoOwnerLink, MEMENTO_STATUS_LABELS } from './MementoEntryRow';
+import { canRenderMementoOwnerLink } from './MementoEntryRow';
+import { MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 
 interface MementoCoveragePanelProps {
   coverage: readonly SimulatorCoverageEntry[];
 }
 
 const SIMULATOR_LIFECYCLE_LABELS: Record<SimulatorLifecycle, string> = {
-  active: 'Actif',
-  hub: 'Hub',
-  placeholder: 'Placeholder',
-  planned: 'Planifié',
-  expertOnly: 'Expert',
-  internalOnly: 'Interne',
+  active: 'Simulateur : actif',
+  hub: 'Simulateur : hub',
+  placeholder: 'Simulateur : placeholder',
+  planned: 'Simulateur : planifié',
+  expertOnly: 'Simulateur : expert',
+  internalOnly: 'Simulateur : interne',
 };
 
 const LIFECYCLES_WITHOUT_OWNER_LINK = new Set<SimulatorLifecycle>([
@@ -115,7 +116,7 @@ function MementoCoverageRow({ entry }: { entry: SimulatorCoverageEntry }): React
           )}
           {!lifecycle && (
             <span className="settings-memento-lifecycle settings-memento-lifecycle--roadmap">
-              Roadmap
+              Simulateur : roadmap
             </span>
           )}
         </div>

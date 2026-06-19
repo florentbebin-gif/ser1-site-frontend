@@ -18,7 +18,7 @@ import {
 } from '@/domain/settings-memento/types';
 
 import MementoAuditChapter from './MementoAuditChapter';
-import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './MementoEntryRow';
+import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 import { normalizeMementoSearch as normalizeSearchText } from './mementoSearch';
 import { MEMENTO_SETTINGS_SECTIONS, type MementoSettingsSection } from './mementoSettingsSections';
 import { auditSettingsSectionsForChapter } from './mementoValueSections';
@@ -93,9 +93,11 @@ function coverageMatchesFilters(
   entry: SimulatorCoverageEntry,
   chapter: MementoChapter,
   search: string,
-  statusFilter: StatusFilter,
+  coverageStatusFilter: StatusFilter,
 ): boolean {
-  if (statusFilter !== 'all' && entry.expectedStatus !== statusFilter) return false;
+  if (coverageStatusFilter !== 'all' && entry.expectedStatus !== coverageStatusFilter) {
+    return false;
+  }
   return (
     coverageMatchesSearch(entry, search) || normalizeSearchText(chapter.label).includes(search)
   );
@@ -112,7 +114,8 @@ function chapterMatchesFilters(
 
 export function buildFilteredChapters(
   searchValue: string,
-  statusFilter: StatusFilter,
+  entryStatusFilter: StatusFilter,
+  coverageStatusFilter: StatusFilter,
   chapterFilter: ChapterFilter,
   priorityFilter: PriorityFilter,
   intentFilter: IntentFilter,
@@ -120,7 +123,11 @@ export function buildFilteredChapters(
   const search = normalizeSearchText(searchValue);
   const intentChapterIds =
     intentFilter === 'all' ? null : new Set<MementoChapterId>(chaptersForIntent(intentFilter));
-  const hasContentFilter = search !== '' || statusFilter !== 'all' || priorityFilter !== 'all';
+  const hasContentFilter =
+    search !== '' ||
+    entryStatusFilter !== 'all' ||
+    coverageStatusFilter !== 'all' ||
+    priorityFilter !== 'all';
 
   return MEMENTO_CHAPTERS.map((chapter) => {
     if (!chapterMatchesFilters(chapter, chapterFilter, intentChapterIds)) {
@@ -130,12 +137,12 @@ export function buildFilteredChapters(
     const entries = MEMENTO_ENTRY_LIST.filter(
       (entry) =>
         entry.chapterId === chapter.id &&
-        entryMatchesFilters(entry, chapter, search, statusFilter, priorityFilter),
+        entryMatchesFilters(entry, chapter, search, entryStatusFilter, priorityFilter),
     );
     const coverage = SIMULATOR_COVERAGE_LIST.filter(
       (entry) =>
         entry.chapterId === chapter.id &&
-        coverageMatchesFilters(entry, chapter, search, statusFilter),
+        coverageMatchesFilters(entry, chapter, search, coverageStatusFilter),
     );
     const settingsSections = auditSettingsSectionsForChapter(chapter.id);
 
@@ -159,7 +166,8 @@ function formatHeroCount(entryCount: number, coverageCount: number): string {
 
 export default function MementoAuditView(): ReactElement {
   const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [entryStatusFilter, setEntryStatusFilter] = useState<StatusFilter>('all');
+  const [coverageStatusFilter, setCoverageStatusFilter] = useState<StatusFilter>('all');
   const [chapterFilter, setChapterFilter] = useState<ChapterFilter>('all');
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
   const [intentFilter, setIntentFilter] = useState<IntentFilter>('all');
@@ -167,8 +175,22 @@ export default function MementoAuditView(): ReactElement {
 
   const filteredChapters = useMemo(
     () =>
-      buildFilteredChapters(searchValue, statusFilter, chapterFilter, priorityFilter, intentFilter),
-    [chapterFilter, intentFilter, priorityFilter, searchValue, statusFilter],
+      buildFilteredChapters(
+        searchValue,
+        entryStatusFilter,
+        coverageStatusFilter,
+        chapterFilter,
+        priorityFilter,
+        intentFilter,
+      ),
+    [
+      chapterFilter,
+      coverageStatusFilter,
+      entryStatusFilter,
+      intentFilter,
+      priorityFilter,
+      searchValue,
+    ],
   );
   const visibleEntryCount = filteredChapters.reduce(
     (total, section) => total + section.entries.length,
@@ -216,14 +238,30 @@ export default function MementoAuditView(): ReactElement {
           </select>
         </label>
 
-        <label className="settings-memento-filter" htmlFor="settings-memento-status">
-          <span>Statut</span>
+        <label className="settings-memento-filter" htmlFor="settings-memento-entry-status">
+          <span>Couverture entrée</span>
           <select
-            id="settings-memento-status"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+            id="settings-memento-entry-status"
+            value={entryStatusFilter}
+            onChange={(event) => setEntryStatusFilter(event.target.value as StatusFilter)}
           >
-            <option value="all">Tous les statuts</option>
+            <option value="all">Toutes les couvertures</option>
+            {MEMENTO_STATUS_VALUES.map((status) => (
+              <option key={status} value={status}>
+                {MEMENTO_STATUS_LABELS[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="settings-memento-filter" htmlFor="settings-memento-coverage-status">
+          <span>Attendu simulateur</span>
+          <select
+            id="settings-memento-coverage-status"
+            value={coverageStatusFilter}
+            onChange={(event) => setCoverageStatusFilter(event.target.value as StatusFilter)}
+          >
+            <option value="all">Tous les attendus</option>
             {MEMENTO_STATUS_VALUES.map((status) => (
               <option key={status} value={status}>
                 {MEMENTO_STATUS_LABELS[status]}

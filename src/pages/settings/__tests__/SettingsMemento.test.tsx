@@ -218,14 +218,14 @@ describe('SettingsMemento', () => {
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
   });
 
-  it('rend le mémento lisible avec références inline sans IDs bruts', async () => {
+  it('rend le mémento lisible avec références dans la zone sources sans IDs bruts', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
-    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
+    expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Références :').length).toBeGreaterThan(0);
     expect(screen.queryByText('Sources officielles')).not.toBeInTheDocument();
     expect(screen.queryByText('Utilisé par')).not.toBeInTheDocument();
@@ -234,15 +234,16 @@ describe('SettingsMemento', () => {
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('réserve les pastilles de prudence aux admins', async () => {
+  it('réserve les pastilles de couverture à la zone sources pour les admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
-    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
-    expect(screen.getAllByText('Périmètre en cours').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Couverture : partielle').length).toBeGreaterThan(0);
   });
 
   it('ne rend pas les pastilles de prudence pour un non-admin', async () => {
@@ -253,7 +254,7 @@ describe('SettingsMemento', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
-    expect(await screen.findByText('Impôt sur le revenu du foyer')).toBeInTheDocument();
+    expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
@@ -354,13 +355,13 @@ describe('SettingsMemento', () => {
     render(<SettingsMemento />);
 
     await openAdminSection(user, 'Audit & sources');
-    await user.selectOptions(await screen.findByLabelText('Statut'), 'couvert');
+    await user.selectOptions(await screen.findByLabelText('Attendu simulateur'), 'couvert');
     await openAuditChapter(user, 'Fiscalité foyer');
     await openSubAccordion(user, /Couverture simulateurs/);
 
     expect(await screen.findByTestId('memento-coverage-ir')).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText('Statut'), 'all');
+    await user.selectOptions(screen.getByLabelText('Attendu simulateur'), 'all');
     await user.selectOptions(screen.getByLabelText('Chapitre'), 'societe');
     await openAuditChapter(user, 'Société');
     await openSubAccordion(user, /Couverture simulateurs/);

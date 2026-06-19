@@ -133,7 +133,7 @@ describe('SettingsMemento — prudence lecteur', () => {
     await openReadPart(user, 'Lexique');
 
     // Le contenu du lexique est rendu, mais le lecteur ne voit aucune pastille de statut.
-    expect(await screen.findByText('Acquêts')).toBeInTheDocument();
+    expect((await screen.findAllByText('Acquêts')).length).toBeGreaterThan(0);
     expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('Pas encore traité')).not.toBeInTheDocument();
