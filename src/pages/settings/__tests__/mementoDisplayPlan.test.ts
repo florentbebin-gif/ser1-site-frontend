@@ -173,12 +173,16 @@ describe('mementoDisplayPlan', () => {
 
     expect(sectionTitles).toEqual(
       expect.arrayContaining([
+        'Impôt sur le revenu',
+        'Revenus du capital',
+        'IFI',
+        'Contributions spécifiques',
+        'Niches fiscales',
         'Revenus et détention',
         'Cession immobilière',
         'Cession ou conservation',
       ]),
     );
-    expect(sectionTitles).not.toContain('Impôt sur le revenu');
     expect(sectionTitles).not.toContain('Patrimoine immobilier taxable');
 
     const visibleTexts = fiscalite.chapters.flatMap((chapter) => [

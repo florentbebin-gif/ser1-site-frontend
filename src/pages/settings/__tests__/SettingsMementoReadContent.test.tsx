@@ -134,6 +134,11 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
+    expect(await screen.findByText('Impôt sur le revenu')).toBeInTheDocument();
+    expect(screen.getByText('Revenus du capital')).toBeInTheDocument();
+    expect(screen.getAllByText('IFI').length).toBeGreaterThan(0);
+    expect(screen.getByText('Contributions spécifiques')).toBeInTheDocument();
+    expect(screen.getByText('Niches fiscales')).toBeInTheDocument();
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
     expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
     expect(screen.getByText('Prélèvement forfaitaire unique')).toBeInTheDocument();

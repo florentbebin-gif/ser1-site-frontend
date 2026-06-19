@@ -94,6 +94,28 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer barème progressif, revenus du capital et contributions spécifiques.',
       'Relier la fiscalité courante à la détention immobilière taxable.',
     ],
+    sections: [
+      {
+        title: 'Impôt sur le revenu',
+        body: 'La lecture part du revenu imposable, du quotient familial et des mécanismes d’atténuation avant d’aborder les contributions sur hauts revenus.',
+      },
+      {
+        title: 'Revenus du capital',
+        body: 'Les revenus financiers se lisent en distinguant part d’impôt, prélèvements sociaux et option éventuelle pour le barème. Le détail des prélèvements sociaux reste rattaché au chapitre Placements.',
+      },
+      {
+        title: 'IFI',
+        body: 'L’impôt sur la fortune immobilière se lit à partir du patrimoine immobilier taxable, des dettes admises et des règles propres aux biens démembrés.',
+      },
+      {
+        title: 'Contributions spécifiques',
+        body: 'Les contributions sur hauts revenus complètent l’impôt courant lorsque la situation du foyer le justifie. Elles se lisent séparément du barème progressif et des revenus du capital.',
+      },
+      {
+        title: 'Niches fiscales',
+        body: 'Les réductions et crédits d’impôt s’apprécient avantage par avantage, avec le plafonnement global et les conditions propres à chaque dispositif.',
+      },
+    ],
   },
   {
     chapterId: 'transmission',
