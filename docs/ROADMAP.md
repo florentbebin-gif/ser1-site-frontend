@@ -1465,9 +1465,9 @@ dans les docs structurantes :
 - `docs/RUNBOOK.md` : workflow admin/agent IA de mise à jour et checks ;
 - `docs/METIER.md` : rôle métier du mémento et limites de lecture.
 
-`docs/MEMENTO_ROADMAP.md` reste seulement une trace historique tant qu'une PR dédiée n'a pas prouvé
-par `rg` que ses décisions utiles ont été transférées et qu'aucun lien prescriptif n'en dépend.
-Statut historique :
+L'ancienne macro-roadmap mémento a été retirée après transfert des décisions utiles dans ces docs
+structurantes. L'historique détaillé reste disponible dans Git et dans les PR livrées.
+Statut de livraison :
 
 - PR 1 Taxonomie mémento — livrée (PR #585) ;
 - PR 2 Mapping simulateurs — livrée (PR #586) ;
