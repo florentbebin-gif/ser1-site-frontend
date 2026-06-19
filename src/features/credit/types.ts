@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { ExportOption } from '../../components/export/exportTypes';
 import type { LoanParams, ScheduleRow } from '../../engine/credit/capitalDeces';
-import type { CreditData, UiSettingsForPptx } from '../../pptx/presets/creditDeckBuilder';
+import type { CreditExportData, UiSettingsForPptx } from '../../pptx/presets/creditDeckBuilder';
 import type { LogoPlacement } from '../../pptx/theme/types';
 
 export type CreditAssurMode = 'CI' | 'CRD';
@@ -154,7 +154,7 @@ export interface CreditExportHookParams {
 }
 
 export type CreditExportOption = ExportOption;
-export type CreditPptxData = CreditData;
+export type CreditPptxData = CreditExportData;
 
 export interface CreditLoanTabsProps {
   activeTab: number;

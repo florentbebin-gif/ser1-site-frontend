@@ -103,11 +103,17 @@ const calc: CreditCalcResult = {
   mensuBasePret1: 1330,
 };
 
-function renderCreditExports() {
+function renderCreditExports({
+  stateOverride = state,
+  calcOverride = calc,
+}: {
+  stateOverride?: CreditState;
+  calcOverride?: CreditCalcResult;
+} = {}) {
   return renderHook(() =>
     useCreditExports({
-      state,
-      calc,
+      state: stateOverride,
+      calc: calcOverride,
       themeColors: { c1: DEFAULT_COLORS.c1, c7: DEFAULT_COLORS.c7 },
       cabinetLogo: undefined,
       logoPlacement: undefined,
@@ -166,5 +172,91 @@ describe('Credit exports', () => {
     expect(deck.slides.some((slide) => slide.type === 'credit-amortization')).toBe(true);
     expect(deck.end.type).toBe('end');
     expect(filename).toMatch(/^simulation-credit-\d{8}\.pptx$/);
+  });
+
+  it('reprend la synthèse calculée pour le capital global PPTX multi-prêts', async () => {
+    const multiState: CreditState = {
+      ...state,
+      pret2: {
+        capital: 50000,
+        duree: 120,
+        taux: 2.8,
+        tauxAssur: 0.2,
+        quotite: 100,
+        type: 'amortissable',
+        startYM: '2026-01',
+        assurMode: 'CI',
+      },
+    };
+    const pret2Row: CreditScheduleRow = {
+      mois: 1,
+      interet: 120,
+      assurance: 8,
+      amort: 390,
+      mensu: 510,
+      mensuTotal: 518,
+      crd: 49610,
+      assuranceDeces: 50000,
+    };
+    const multiCalc: CreditCalcResult = {
+      ...calc,
+      pret2Rows: [pret2Row],
+      agrRows: [
+        {
+          ...row,
+          interet: 600,
+          assurance: 58,
+          amort: 1240,
+          mensu: 1840,
+          mensuTotal: 1898,
+          crd: 248760,
+          assuranceDeces: 250000,
+        },
+      ],
+      autresParams: [
+        {
+          ...calc.pret1Params,
+          capital: 50000,
+          duree: 120,
+          tauxAssur: 0.2,
+          rAn: 0.028,
+          rAss: 0.002,
+          r: 0.028 / 12,
+          rA: 0.002 / 12,
+        },
+      ],
+      hasPretsAdditionnels: true,
+      synthese: {
+        ...calc.synthese,
+        totalInterets: 14000,
+        totalAssurance: 10000,
+        coutTotalCredit: 24000,
+        capitalEmprunte: 240000,
+      },
+      synthesePeriodes: [{ from: 'Janvier 2026', p1: 1380, p2: 518, p3: 0, monthIndex: 0 }],
+    };
+
+    expect((multiState.pret1?.capital ?? 0) + (multiState.pret2?.capital ?? 0)).toBe(250000);
+
+    const { result } = renderCreditExports({ stateOverride: multiState, calcOverride: multiCalc });
+
+    await act(async () => {
+      await result.current.exportPowerPoint();
+    });
+
+    const [deck] = pptxMocks.exportAndDownloadStudyDeck.mock.calls[0] as [
+      StudyDeckSpec,
+      unknown,
+      string,
+    ];
+    const globalSlide = deck.slides.find(
+      (
+        slide,
+      ): slide is Extract<StudyDeckSpec['slides'][number], { type: 'credit-global-synthesis' }> =>
+        slide.type === 'credit-global-synthesis',
+    );
+
+    expect(globalSlide?.totalCapital).toBe(240000);
+    expect(globalSlide?.coutTotalCredit).toBe(24000);
   });
 });

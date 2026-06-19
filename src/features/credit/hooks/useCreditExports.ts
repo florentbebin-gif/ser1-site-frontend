@@ -370,16 +370,8 @@ export function useCreditExports({
         crd: row.crd,
       }));
 
-      const totalCapital =
-        p1Params.capital +
-        (state.pret2 ? toNum(state.pret2.capital) : 0) +
-        (state.pret3 ? toNum(state.pret3.capital) : 0);
-
-      const maxDureeMois = Math.max(
-        p1Params.duree,
-        state.pret2 ? toNum(state.pret2.duree) : 0,
-        state.pret3 ? toNum(state.pret3.duree) : 0,
-      );
+      const totalCapital = calc.synthese.capitalEmprunte;
+      const maxDureeMois = calc.agrRows.length;
 
       const pret1Interets = calc.pret1Rows.reduce((sum, row) => sum + (row.interet || 0), 0);
       const pret1Assurance = calc.pret1Rows.reduce((sum, row) => sum + (row.assurance || 0), 0);
@@ -473,15 +465,6 @@ export function useCreditExports({
         loans,
         paymentPeriods,
         amortizationRows: amortizationRowsTotal,
-        capitalEmprunte: totalCapital,
-        dureeMois: maxDureeMois,
-        tauxNominal: p1.taux,
-        tauxAssurance: p1.tauxAssur,
-        quotite: p1Params.quotite,
-        mensualiteHorsAssurance: calc.mensuBasePret1,
-        mensualiteTotale: calc.mensuBasePret1 + calc.synthese.primeAssMensuelle,
-        creditType: state.creditType,
-        assuranceMode: state.assurMode,
         clientName: undefined,
       };
 

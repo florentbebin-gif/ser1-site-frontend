@@ -38,12 +38,11 @@ const DEBUG_PPTX = isDebugEnabled('pptx');
 // ============================================================================
 
 /**
- * Credit Simulation Data (matches Credit.tsx state - multi-loan support)
+ * Données canoniques d'export Crédit, déjà calculées par la feature/engine.
  */
-export interface CreditData {
-  // Global totals
-  totalCapital?: number;
-  maxDureeMois?: number;
+export interface CreditExportData {
+  totalCapital: number;
+  maxDureeMois: number;
   startYM?: string; // point 6 — date de début réelle pour labels timeline PPTX
   coutTotalInterets: number;
   coutTotalAssurance: number;
@@ -54,29 +53,18 @@ export interface CreditData {
   smoothingEnabled?: boolean;
   smoothingMode?: 'mensu' | 'duree';
 
-  // Per-loan data (array of loan summaries)
-  loans?: LoanSummary[];
+  loans: LoanSummary[];
 
-  // Payment periods timeline (for multi-loan)
-  paymentPeriods?: PaymentPeriod[];
+  paymentPeriods: PaymentPeriod[];
 
   // Total amortization (aggregated all loans)
   amortizationRows: CreditAmortizationRow[];
 
-  // Legacy single-loan fields (for backward compatibility)
-  capitalEmprunte: number;
-  dureeMois: number;
-  tauxNominal: number;
-  tauxAssurance: number;
-  quotite?: number; // 0..1, défaut 1 (100%). Quotité assurée prêt principal
-  mensualiteHorsAssurance: number;
-  mensualiteTotale: number;
-  creditType: 'amortissable' | 'infine';
-  assuranceMode: 'CI' | 'CRD';
-
   // Client info
   clientName?: string;
 }
+
+export type CreditData = CreditExportData;
 
 /**
  * UI Settings (ThemeProvider format)
@@ -159,15 +147,16 @@ export function buildCreditStudyDeck(
   logoPlacement?: LogoPlacement,
   advisor?: AdvisorInfo,
 ): StudyDeckSpec {
-  // Determine if multi-loan scenario
-  const loans = creditData.loans || [];
+  const loans = creditData.loans;
+  if (loans.length === 0) {
+    throw new Error('Export Crédit invalide : aucun prêt fourni.');
+  }
   const isMultiLoan = loans.length > 1;
-  const paymentPeriods = creditData.paymentPeriods || [];
+  const paymentPeriods = creditData.paymentPeriods;
 
-  // Use provided totals or calculate from legacy fields
-  const totalCapital = creditData.totalCapital || creditData.capitalEmprunte;
-  const maxDureeMois = creditData.maxDureeMois || creditData.dureeMois;
-  const smoothingEnabled = creditData.smoothingEnabled || false;
+  const totalCapital = creditData.totalCapital;
+  const maxDureeMois = creditData.maxDureeMois;
+  const smoothingEnabled = creditData.smoothingEnabled ?? false;
   const smoothingMode = creditData.smoothingMode;
 
   if (DEBUG_PPTX) {
@@ -220,7 +209,6 @@ export function buildCreditStudyDeck(
       }
     });
   } else {
-    // Fallback to legacy single amortization array
     allAmortizationRows = creditData.amortizationRows.map((row) => ({
       ...row,
       loanIndex: row.loanIndex ?? 1, // Default to loan 1
@@ -290,19 +278,10 @@ export function buildCreditStudyDeck(
       });
     });
   } else {
-    // Single loan: Use legacy synthesis (or first loan from array)
-    const loan = loans[0] || {
-      capital: creditData.capitalEmprunte,
-      dureeMois: creditData.dureeMois,
-      tauxNominal: creditData.tauxNominal,
-      tauxAssurance: creditData.tauxAssurance,
-      mensualiteHorsAssurance: creditData.mensualiteHorsAssurance,
-      mensualiteTotale: creditData.mensualiteTotale,
-      coutInterets: creditData.coutTotalInterets,
-      coutAssurance: creditData.coutTotalAssurance,
-      creditType: creditData.creditType,
-      assuranceMode: creditData.assuranceMode,
-    };
+    const loan = loans[0];
+    if (!loan) {
+      throw new Error('Export Crédit invalide : aucun prêt fourni.');
+    }
 
     slides.push({
       type: 'credit-synthesis',
@@ -340,35 +319,9 @@ export function buildCreditStudyDeck(
     coutTotalAssurance: creditData.coutTotalAssurance,
     coutTotalCredit: creditData.coutTotalCredit,
     totalRembourse,
-    loans:
-      loans.length > 0
-        ? loans
-        : [
-            {
-              index: 1,
-              capital: creditData.capitalEmprunte,
-              dureeMois: creditData.dureeMois,
-              tauxNominal: creditData.tauxNominal,
-              tauxAssurance: creditData.tauxAssurance,
-              creditType: creditData.creditType,
-              assuranceMode: creditData.assuranceMode,
-              mensualiteHorsAssurance: creditData.mensualiteHorsAssurance,
-              mensualiteTotale: creditData.mensualiteTotale,
-              coutInterets: creditData.coutTotalInterets,
-              coutAssurance: creditData.coutTotalAssurance,
-            },
-          ],
+    loans,
     smoothingEnabled,
     smoothingMode,
-    // Legacy fields for backward compatibility
-    capitalEmprunte: creditData.capitalEmprunte,
-    dureeMois: creditData.dureeMois,
-    tauxNominal: creditData.tauxNominal,
-    tauxAssurance: creditData.tauxAssurance,
-    mensualiteHorsAssurance: creditData.mensualiteHorsAssurance,
-    mensualiteTotale: creditData.mensualiteTotale,
-    creditType: creditData.creditType,
-    assuranceMode: creditData.assuranceMode,
   });
 
   // Amortization tables (paginated by YEAR COLUMNS)
