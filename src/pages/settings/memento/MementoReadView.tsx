@@ -10,11 +10,17 @@ import {
 import {
   buildMementoChapterSearchText,
   buildMementoEntrySearchText,
+  buildMementoEntrySourcesSearchText,
   buildMementoLexiconSearchText,
+  buildMementoLexiconSourcesSearchText,
   buildMementoReferenceValueSearchText,
   normalizeMementoSearch,
   textMatches,
 } from './mementoSearch';
+import {
+  getEntrySectionRenderedReferenceIds,
+  getEntrySourceVisibleReferenceIds,
+} from './mementoReferenceDedup';
 import MementoReadableEntry, {
   MementoEntrySources,
   MementoLexiconSources,
@@ -78,6 +84,7 @@ function filterMementoPart(
   index: number,
   normalizedQuery: string,
   extraMatch: boolean,
+  includeAdminMetadata: boolean,
 ): FilteredMementoPart {
   // Un match sur le titre/description de la partie révèle l'intégralité de son contenu.
   if (textMatches(`${part.definition.title} ${part.definition.description}`, normalizedQuery)) {
@@ -92,7 +99,7 @@ function filterMementoPart(
   }
 
   const entries = part.entries.filter((entry) =>
-    textMatches(buildMementoEntrySearchText(entry), normalizedQuery),
+    mementoEntryMatchesSearch(entry, normalizedQuery, includeAdminMetadata),
   );
 
   const chapters = part.chapters
@@ -104,7 +111,7 @@ function filterMementoPart(
       const chapterEntries = chapterMatch
         ? chapter.entries
         : chapter.entries.filter((entry) =>
-            textMatches(buildMementoEntrySearchText(entry), normalizedQuery),
+            mementoEntryMatchesSearch(entry, normalizedQuery, includeAdminMetadata),
           );
       return {
         chapter: { ...chapter, entries: chapterEntries },
@@ -115,7 +122,7 @@ function filterMementoPart(
     .map((candidate) => candidate.chapter);
 
   const lexiconTerms = part.lexiconTerms.filter((term) =>
-    textMatches(buildMementoLexiconSearchText(term), normalizedQuery),
+    mementoLexiconTermMatchesSearch(term, normalizedQuery, includeAdminMetadata),
   );
 
   // `extraMatch` couvre le catalogue contrats (partie produits) et les tables de valeurs de
@@ -124,6 +131,38 @@ function filterMementoPart(
     extraMatch || entries.length > 0 || chapters.length > 0 || lexiconTerms.length > 0;
 
   return { part, index, isShown, entries, chapters, lexiconTerms };
+}
+
+function mementoEntryMatchesSearch(
+  entry: MementoEntry,
+  normalizedQuery: string,
+  includeAdminMetadata: boolean,
+): boolean {
+  return textMatches(
+    [
+      buildMementoEntrySearchText(entry),
+      buildMementoEntrySourcesSearchText(entry, {
+        includeAdminMetadata,
+        visibleSourceRefIds: getEntrySourceVisibleReferenceIds(entry),
+        renderedSectionRefIds: getEntrySectionRenderedReferenceIds(entry),
+      }),
+    ].join(' '),
+    normalizedQuery,
+  );
+}
+
+function mementoLexiconTermMatchesSearch(
+  term: MementoLexiconTerm,
+  normalizedQuery: string,
+  includeAdminMetadata: boolean,
+): boolean {
+  return textMatches(
+    [
+      buildMementoLexiconSearchText(term),
+      buildMementoLexiconSourcesSearchText(term, { includeAdminMetadata }),
+    ].join(' '),
+    normalizedQuery,
+  );
 }
 
 interface MementoReadViewProps {
@@ -198,10 +237,10 @@ export default function MementoReadView({
           part.definition.id === 'chiffres-cles'
             ? catalogueMatches
             : valueDomain !== undefined && matchedValueDomains.has(valueDomain);
-        return filterMementoPart(part, index, normalizedQuery, extraMatch);
+        return filterMementoPart(part, index, normalizedQuery, extraMatch, showStatus);
       })
       .filter((item) => item.isShown);
-  }, [catalogueMatches, displayPlan, hasSearch, matchedValueDomains, normalizedQuery]);
+  }, [catalogueMatches, displayPlan, hasSearch, matchedValueDomains, normalizedQuery, showStatus]);
 
   return (
     <div className="settings-memento-view settings-memento-read-view">

@@ -3,15 +3,18 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { UserRoleState } from '@/auth/useUserRole';
 import SettingsMemento from '../SettingsMemento';
 
+let isAdmin = false;
+
 vi.mock('@/auth/useUserRole', () => ({
-  useUserRole: () => ({
-    role: 'user',
+  useUserRole: (): UserRoleState => ({
+    role: isAdmin ? 'admin' : 'user',
     user: null,
-    isAdmin: false,
+    isAdmin,
     isLoading: false,
   }),
 }));
@@ -29,6 +32,8 @@ vi.mock('@/utils/cache/baseContratOverridesCache', () => ({
   getBaseContratOverrides: vi.fn(() => Promise.resolve({})),
   upsertBaseContratOverride: vi.fn(() => Promise.resolve()),
 }));
+
+const FISCALITE_FOYER_TABS = /Sections du chapitre Fiscalité foyer/i;
 
 async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
   const button = await waitFor(() => {
@@ -70,6 +75,10 @@ function partHeader(label: RegExp): HTMLButtonElement | undefined {
 }
 
 describe('SettingsMemento — filtre mot-clé global', () => {
+  beforeEach(() => {
+    isAdmin = false;
+  });
+
   it('réduit la lecture aux parties pertinentes', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
@@ -126,6 +135,76 @@ describe('SettingsMemento — filtre mot-clé global', () => {
     await waitFor(() => {
       expect(partHeader(/Social et protection sociale/)).toBeDefined();
     });
+  });
+
+  it('atteint une source visible au lecteur sans exposer les statuts admin', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
+    await user.type(search, 'CARPV');
+
+    await waitFor(() => {
+      expect(partHeader(/Social et protection sociale/)).toBeDefined();
+      expect(partHeader(/Fiscalité/)).toBeUndefined();
+    });
+
+    await selectMementoTab(user, /Sections du chapitre Retraite/i, 'Sources & couverture');
+
+    expect(
+      await screen.findByRole('link', { name: 'Statuts de la section professionnelle' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/A - Couverture :/)).not.toBeInTheDocument();
+    expect(screen.queryByText('carpv-statuts-retraite-prevoyance')).not.toBeInTheDocument();
+  });
+
+  it('ne recherche pas les libellés de statut pour un lecteur non-admin', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SettingsMemento />);
+
+    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
+    await user.type(search, 'A - Couverture : partielle');
+
+    expect(await screen.findByText(/Aucun résultat pour/)).toBeInTheDocument();
+    expect(container.querySelectorAll('.settings-memento-status')).toHaveLength(0);
+  });
+
+  it('atteint une source par refId brut en mode admin', async () => {
+    isAdmin = true;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
+    await user.type(search, 'carpv-statuts-retraite-prevoyance');
+
+    await waitFor(() => {
+      expect(partHeader(/Social et protection sociale/)).toBeDefined();
+      expect(partHeader(/Fiscalité/)).toBeUndefined();
+    });
+
+    await selectMementoTab(user, /Sections du chapitre Retraite/i, 'Sources & couverture');
+
+    expect(
+      await screen.findByRole('link', { name: 'Statuts de la section professionnelle' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('A - Couverture : partielle').length).toBeGreaterThan(0);
+  });
+
+  it('atteint les sources par statut en mode admin', async () => {
+    isAdmin = true;
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
+    await user.type(search, 'A - Couverture : partielle');
+
+    await waitFor(() => {
+      expect(partHeader(/Fiscalité/)).toBeDefined();
+    });
+
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
+
+    expect(screen.getAllByText('A - Couverture : partielle').length).toBeGreaterThan(0);
   });
 
   it('affiche un état vide global quand rien ne correspond', async () => {

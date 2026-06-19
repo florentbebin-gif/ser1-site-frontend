@@ -197,11 +197,14 @@ describe('SettingsMemento — Prélèvements sociaux éclaté', () => {
     expect(
       await screen.findByText('Prélèvements sociaux sur patrimoine et capital'),
     ).toBeInTheDocument();
-    expect(screen.getByText('18,6 %')).toBeInTheDocument();
     expect(screen.queryByText('Enregistrer les paramètres')).not.toBeInTheDocument();
     const patrimonyFrame = screen
       .getByText('Prélèvements sociaux sur patrimoine et capital')
       .closest('.settings-prelevements-entry-section');
+    if (!(patrimonyFrame instanceof HTMLElement)) {
+      throw new Error('Section prélèvements patrimoine introuvable');
+    }
+    expect(within(patrimonyFrame).getByText('18,6 %')).toBeInTheDocument();
     expect(patrimonyFrame?.querySelectorAll('input')).toHaveLength(0);
 
     await openReadPart(user, 'Social et protection sociale');

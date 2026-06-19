@@ -307,37 +307,6 @@ describe('SettingsMemento', () => {
     expect(container).not.toHaveTextContent(/\.pdf|support professionnel externe|source protégée/i);
   });
 
-  it('évite de répéter en source d’entrée les références déjà portées par les tables', async () => {
-    const user = userEvent.setup();
-    const { container } = render(<SettingsMemento />);
-
-    await openReadPart(user, 'Fiscalité');
-    await openReadChapter(user, 'Fiscalité foyer');
-
-    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Paramètres de référence');
-    expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
-    expect(container).toHaveTextContent('BOI-IR-LIQ-20-10');
-    expect(container).toHaveTextContent('BOI-PAT-IFI-40-10');
-    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
-
-    const sourceEntries = Array.from(container.querySelectorAll('.settings-memento-source-entry'));
-    const irSource = sourceEntries.find((entry) =>
-      entry.textContent?.includes('Impôt sur le revenu du foyer'),
-    );
-    const ifiSource = sourceEntries.find((entry) => entry.textContent?.includes('IFI'));
-    const nichesSource = sourceEntries.find((entry) =>
-      entry.textContent?.includes('Niches fiscales et réductions d’impôt'),
-    );
-
-    expect(irSource).toBeDefined();
-    expect(ifiSource).toBeDefined();
-    expect(nichesSource).toBeDefined();
-    expect(irSource).not.toHaveTextContent('BOI-IR-LIQ-20-10');
-    expect(ifiSource).not.toHaveTextContent('BOI-PAT-IFI-40-10');
-    expect(ifiSource).toHaveTextContent('Art. 972');
-    expect(nichesSource).toHaveTextContent('BOI-IR-RICI');
-  });
-
   it('réserve les pastilles de couverture à la zone sources pour les admins', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);

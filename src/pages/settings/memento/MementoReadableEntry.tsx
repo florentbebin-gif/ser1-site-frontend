@@ -9,7 +9,7 @@ import {
   getEntrySourceVisibleReferenceIds,
   hasEntryReferencesRenderedBySection,
 } from './mementoReferenceDedup';
-import { MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
+import { MEMENTO_LEXICON_SOURCE_LABELS, MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 
 type MementoReadableEntryProps =
   | {
@@ -46,11 +46,6 @@ export function MementoReferenceLinks({
     </p>
   );
 }
-
-const MEMENTO_LEXICON_SOURCE_LABELS: Record<MementoLexiconTerm['status'], string> = {
-  sourced: 'C1 - Source qualité : lexique sourcé',
-  a_verifier: 'C1 - Source qualité : lexique à relire',
-};
 
 function ReferenceFallback({
   refIds,
