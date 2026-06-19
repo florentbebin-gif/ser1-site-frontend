@@ -16,11 +16,11 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
   {
     chapterId: 'foyer',
     summary:
-      'Le foyer décrit les personnes concernées, leurs liens familiaux et leur capacité à porter les projets patrimoniaux.',
+      'Le foyer identifie les personnes concernées, leurs liens et les protections à organiser avant l’analyse patrimoniale.',
     keyPoints: [
-      'Qualifier la situation familiale, les personnes à charge et les liens de dépendance.',
+      'Qualifier le couple, les enfants, les personnes à charge et les dépendances.',
       'Distinguer composition du foyer, rattachement fiscal et organisation patrimoniale.',
-      'Situer les objectifs dans le temps pour lire correctement les autres dispositifs.',
+      'Situer les objectifs et les personnes à protéger dans le temps.',
     ],
     sections: [
       {
@@ -40,11 +40,25 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
   {
     chapterId: 'civil',
     summary:
-      'Le civil explique qui possède quoi, qui décide et comment le patrimoine circule en cas de séparation ou de décès.',
+      'Le droit civil fixe les pouvoirs sur les biens, la protection du couple et les règles de transmission.',
     keyPoints: [
-      'Lire le régime matrimonial avant toute analyse successorale.',
-      'Distinguer propriété, usufruit, nue-propriété et pouvoirs de gestion.',
-      'Repérer les clauses civiles utiles sans les assimiler à un acte notarié.',
+      'Identifier le régime matrimonial et les biens propres, communs ou indivis.',
+      'Lire les droits du conjoint survivant avant les outils de transmission.',
+      'Distinguer réserve héréditaire, quotité disponible et libéralités.',
+    ],
+    sections: [
+      {
+        title: 'Régime matrimonial',
+        body: 'Le régime matrimonial précise les masses de biens, les pouvoirs de gestion et les effets d’une séparation ou d’un décès. Il se lit avant les clauses de protection ou les arbitrages de transmission.',
+      },
+      {
+        title: 'Conjoint survivant',
+        body: 'La protection du conjoint se lit avec les droits légaux, les avantages matrimoniaux et les libéralités existantes. Cette lecture reste distincte du coût fiscal de la transmission.',
+      },
+      {
+        title: 'Réserve et libéralités',
+        body: 'La réserve héréditaire encadre la part qui ne peut pas être librement transmise. Les donations et testaments s’analysent avec la composition familiale et l’ordre des héritiers.',
+      },
     ],
   },
   {
