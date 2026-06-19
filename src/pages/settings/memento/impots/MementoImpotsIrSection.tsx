@@ -246,7 +246,7 @@ function PfuPeriodColumn({
   );
 }
 
-function PfuSection(): ReactElement {
+export function MementoImpotsPfuSection(): ReactElement {
   const { pfu, patrimony, incomeTax } = useImpotsContext();
 
   return (
@@ -370,7 +370,7 @@ export default function MementoImpotsIrSection(): ReactElement {
     <>
       <BaremeSection />
       <DomSection />
-      <PfuSection />
+      <MementoImpotsPfuSection />
       <CehrSection />
     </>
   );

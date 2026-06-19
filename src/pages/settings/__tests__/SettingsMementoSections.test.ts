@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { LEGAL_REFERENCES, isOfficialUrl } from '@/domain/legal-references';
 import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
 import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
 import { listSettingsForOwnerPage } from '@/domain/settings-registry';
@@ -27,11 +28,26 @@ import {
   getEntrySectionRenderedReferenceIds,
   getEntrySourceVisibleReferenceIds,
 } from '../memento/mementoReferenceDedup';
+import { buildMementoDisplayPlan } from '../memento/mementoDisplayPlan';
 
 function getEntry(key: string) {
   const entry = MEMENTO_ENTRIES.find((candidate) => candidate.key === key);
   if (!entry) throw new Error(`Entrée mémento introuvable : ${key}`);
   return entry;
+}
+
+function sourceRenderedReferenceIds(includeImmature: boolean): string[] {
+  return Array.from(
+    new Set(
+      buildMementoDisplayPlan({ includeImmature }).flatMap((part) => [
+        ...part.entries.flatMap((entry) => getEntrySourceVisibleReferenceIds(entry)),
+        ...part.chapters.flatMap((chapter) =>
+          chapter.entries.flatMap((entry) => getEntrySourceVisibleReferenceIds(entry)),
+        ),
+        ...part.lexiconTerms.flatMap((term) => term.refIds),
+      ]),
+    ),
+  ).sort();
 }
 
 describe('route settings mémento', () => {
@@ -231,6 +247,50 @@ describe('contrat des sections settings du mémento', () => {
       const renderedOrVisible = [...visibleRefIds, ...renderedBySectionRefIds];
 
       expect(renderedOrVisible, entry.key).toEqual(expect.arrayContaining([...entry.refIds]));
+    }
+  });
+
+  it('qualifie explicitement les PDF rendus dans Sources & couverture', () => {
+    const pdfReferenceIds = new Set(
+      LEGAL_REFERENCES.filter((reference) => /pdf/i.test(reference.officialUrl)).map(
+        (reference) => reference.id,
+      ),
+    );
+    const readerPdfRefIds = sourceRenderedReferenceIds(false).filter((refId) =>
+      pdfReferenceIds.has(refId),
+    );
+    const adminPdfRefIds = sourceRenderedReferenceIds(true).filter((refId) =>
+      pdfReferenceIds.has(refId),
+    );
+
+    expect(readerPdfRefIds).toEqual([
+      'boi-enr-dmtg-10-40-10-50',
+      'carpv-statuts-retraite-prevoyance',
+    ]);
+    expect(adminPdfRefIds).toEqual([
+      'boi-enr-dmtg-10-40-10-50',
+      'carpv-statuts-retraite-prevoyance',
+      'impots-guide-evaluation-entreprises-titres',
+    ]);
+
+    for (const refId of adminPdfRefIds) {
+      const reference = LEGAL_REFERENCES.find((candidate) => candidate.id === refId);
+      expect(reference, refId).toBeDefined();
+      if (!reference) continue;
+
+      expect(reference.sourceType, refId).not.toBe('Doctrine professionnelle');
+      expect(reference.articleOrSection, refId).toBeTruthy();
+      expect(reference.scope, refId).toBeTruthy();
+      expect(reference.lastCheckedAt, refId).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(isOfficialUrl(reference.officialUrl), refId).toBe(true);
+      expect(
+        [
+          ...(reference.relatedSettings ?? []),
+          ...(reference.relatedSimulatorIds ?? []),
+          ...(reference.relatedCatalogProducts ?? []),
+        ],
+        refId,
+      ).not.toHaveLength(0);
     }
   });
 });

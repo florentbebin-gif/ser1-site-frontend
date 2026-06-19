@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { useImpotsContext } from '../Impots/ImpotsProvider';
 import MementoImpotsIfiSection from './impots/MementoImpotsIfiSection';
-import MementoImpotsIrSection from './impots/MementoImpotsIrSection';
+import MementoImpotsIrSection, { MementoImpotsPfuSection } from './impots/MementoImpotsIrSection';
 import '../styles/impots.css';
 
 interface MementoImpotsEntrySectionProps {
@@ -19,6 +19,7 @@ export default function MementoImpotsEntrySection({
 
   if (entryKey === 'fiscalite-foyer.ir') return <MementoImpotsIrSection />;
   if (entryKey === 'fiscalite-foyer.ifi') return <MementoImpotsIfiSection />;
+  if (entryKey === 'placements.ps-pfu-revenus-capital') return <MementoImpotsPfuSection />;
 
   return null;
 }
