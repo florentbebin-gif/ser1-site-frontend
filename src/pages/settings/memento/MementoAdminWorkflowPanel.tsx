@@ -17,46 +17,46 @@ const STATUS_ORDER = [
 ] as const satisfies readonly SettingsRegistryStatus[];
 
 const STATUS_LABELS: Record<SettingsRegistryStatus, string> = {
-  ready: 'Paramètres prêts',
-  partial: 'Paramètres partiels',
-  planned: 'Paramètres prévus',
+  ready: 'D - Paramètres prêts',
+  partial: 'D - Paramètres partiels',
+  planned: 'D - Paramètres prévus',
 };
 
 const VOLATILITY_LABELS: Record<LegalReferenceVolatility, string> = {
-  annual: 'Révision annuelle',
-  lawChange: 'Changement de texte',
-  stable: 'Source stable',
+  annual: 'C2 - Fraîcheur : révision annuelle',
+  lawChange: 'C2 - Fraîcheur : changement de texte',
+  stable: 'C2 - Fraîcheur : source stable',
 };
 
 const WORKFLOW_STEPS = [
   {
     title: 'Détecter',
-    axis: 'Fraîcheur',
+    axis: 'C2 - Fraîcheur',
     body: 'Partir du rapport d’audit, d’un changement de texte connu ou d’un écart signalé par les checks.',
   },
   {
     title: 'Vérifier',
-    axis: 'Source',
+    axis: 'C1 - Source qualité',
     body: 'Relire la source officielle ou la raison d’absence de source avant toute modification.',
   },
   {
     title: 'Rattacher',
-    axis: 'Claims',
+    axis: 'C1 - Rattachement source',
     body: 'Mettre à jour refIds, claimKeys, notes de pertinence et dates d’attestation sans inventer de référence.',
   },
   {
     title: 'Éditer',
-    axis: 'Settings',
+    axis: 'D - Paramètre',
     body: 'Modifier les valeurs uniquement dans la zone Paramètres des calculateurs ou dans les defaults centralisés.',
   },
   {
     title: 'Contrôler',
-    axis: 'Checks',
+    axis: 'D - Contrôle paramètres',
     body: 'Lancer les checks de références, registry, hardcode fiscal et le gate complet avant publication.',
   },
   {
     title: 'Valider',
-    axis: 'Humain',
+    axis: 'B - Revue humaine',
     body: 'L’admin confirme la source officielle, la valeur et la publication ; l’agent ne valide pas seul.',
   },
 ] as const;

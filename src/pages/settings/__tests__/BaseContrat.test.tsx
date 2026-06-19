@@ -164,7 +164,7 @@ describe('BaseContratSettingsPanel', () => {
     await waitFor(() => {
       expect(screen.getByText('Fiscalité de test')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Qualité source : à vérifier')).not.toBeInTheDocument();
+    expect(screen.queryByText('C1 - Source qualité : à vérifier')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Art. 990 I CGI' })).toHaveAttribute(
       'href',
       getLegalReference('cgi-990-i').officialUrl,
@@ -177,7 +177,7 @@ describe('BaseContratSettingsPanel', () => {
 
     await openFirstProduct();
 
-    expect(await screen.findByText('Qualité source : à vérifier')).toBeInTheDocument();
+    expect(await screen.findByText('C1 - Source qualité : à vérifier')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Art. 990 I CGI' })).toHaveAttribute(
       'href',
       getLegalReference('cgi-990-i').officialUrl,
@@ -203,7 +203,7 @@ describe('BaseContratSettingsPanel', () => {
 
     await openFirstProduct();
 
-    expect(screen.queryByText('Revue : À revoir')).not.toBeInTheDocument();
+    expect(screen.queryByText('B - Revue : À revoir')).not.toBeInTheDocument();
     expect(screen.queryByText('Source fiscale à relire')).not.toBeInTheDocument();
     expect(screen.queryByText('2026-07-01')).not.toBeInTheDocument();
   });
@@ -224,7 +224,7 @@ describe('BaseContratSettingsPanel', () => {
 
     await openFirstProduct();
 
-    expect(await screen.findByText('Revue : À revoir')).toBeInTheDocument();
+    expect(await screen.findByText('B - Revue : À revoir')).toBeInTheDocument();
     expect(screen.getByText('Source fiscale à relire')).toBeInTheDocument();
     expect(screen.getByText('2026-07-01')).toBeInTheDocument();
   });

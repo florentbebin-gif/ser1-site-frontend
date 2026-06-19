@@ -17,9 +17,9 @@ const STATUS_ORDER = [
 ] as const satisfies readonly SettingsRegistryStatus[];
 
 const STATUS_LABELS: Record<SettingsRegistryStatus, string> = {
-  ready: 'Paramètre : prêt',
-  partial: 'Paramètre : partiel',
-  planned: 'Paramètre : prévu',
+  ready: 'D - Paramètre : prêt',
+  partial: 'D - Paramètre : partiel',
+  planned: 'D - Paramètre : prévu',
 };
 
 const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; plural: string }> = {
@@ -71,7 +71,7 @@ function groupByStatus(entries: readonly SettingsRegistryEntry[]) {
 
 function formatStatusCount(status: SettingsRegistryStatus, count: number): string {
   const labels = STATUS_COUNT_LABELS[status];
-  return `${count} ${count > 1 ? labels.plural : labels.singular}`;
+  return `D - ${count} ${count > 1 ? labels.plural : labels.singular}`;
 }
 
 function SettingsRegistryItem({ entry }: { entry: SettingsRegistryEntry }): ReactElement {

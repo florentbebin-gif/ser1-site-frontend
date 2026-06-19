@@ -146,6 +146,18 @@ describe('SettingsMemento — valeurs de référence', () => {
 
     await user.clear(livretAInput);
     await user.type(livretAInput, '23000');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Sources & couverture',
+    );
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
+    const preservedLivretAInput = await screen.findByLabelText('Livret A — plafond — valeur');
+    expect((preservedLivretAInput as HTMLInputElement).value).toBe('23000');
 
     const globalSaveButton = await screen.findByRole('button', {
       name: 'Enregistrer les modifications',
