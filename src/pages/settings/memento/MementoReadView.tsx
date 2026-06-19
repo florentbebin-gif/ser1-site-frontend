@@ -308,7 +308,6 @@ export default function MementoReadView({
                                 key={entry.key}
                                 kind="entry"
                                 entry={entry}
-                                showStatus={false}
                                 showReferences={false}
                               />
                             ))}
@@ -332,7 +331,6 @@ export default function MementoReadView({
                                       key={term.key}
                                       kind="lexicon"
                                       term={term}
-                                      showStatus={false}
                                       showReferences={false}
                                     />
                                   ))}

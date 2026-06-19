@@ -459,13 +459,15 @@ function SocialDirigeantScopeSection(): ReactElement {
     <SectionFrame title="Périmètres sociaux dirigeant à compléter">
       <>
         <p className="fisc-intro">
-          Le seuil dividendes TNS est consommable ; les autres périmètres restent à compléter avant
-          moteur dédié.
+          Le seuil dividendes TNS est disponible ; les autres périmètres restent à compléter avant
+          usage complet.
           <LegalRefInlineList ids={PRELEVEMENTS_SOCIAL_DIRIGEANT_REF_IDS} />
         </p>
         <div className="income-tax-block">
           <div className="settings-registry-status-panel__counts">
-            <span className="settings-registry-status-panel__count is-partial">Partiel</span>
+            <span className="settings-registry-status-panel__count is-partial">
+              Périmètre social à compléter
+            </span>
           </div>
           <div className="income-tax-block-title">Périmètres bloqués</div>
           <div className="income-tax-block-body">
@@ -487,9 +489,7 @@ export default function MementoPrelevementsEntrySection({
 }: MementoEntrySectionProps): ReactElement | null {
   const { loading } = usePrelevementsContext();
 
-  if (loading) {
-    return <p className="settings-memento-empty">Chargement des prélèvements sociaux...</p>;
-  }
+  if (loading) return <p className="settings-memento-empty">Chargement des prélèvements...</p>;
 
   if (entryKey === 'placements.ps-pfu-revenus-capital') return <PatrimonySection />;
   if (entryKey === 'retraite.globale') return <RetirementGlobalSection />;

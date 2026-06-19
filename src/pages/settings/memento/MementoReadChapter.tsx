@@ -128,7 +128,6 @@ function MementoReadChapterBody({
                 key={entry.key}
                 kind="entry"
                 entry={entry}
-                showStatus={false}
                 showReferences={false}
               />
             ))}

@@ -126,6 +126,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer donation, succession et clause bénéficiaire.',
       'Repérer la liquidité nécessaire au règlement de la transmission.',
     ],
+    sections: [
+      {
+        title: 'Dévolution',
+        body: 'La lecture commence par l’ordre des héritiers, la place du conjoint survivant et les droits de chacun dans la succession.',
+      },
+      {
+        title: 'Libéralités',
+        body: 'Donations, testaments et démembrement se lisent avec leur effet civil avant d’apprécier les conséquences fiscales.',
+      },
+      {
+        title: 'Assurance-vie',
+        body: 'Le contrat d’assurance-vie se rattache au bénéficiaire désigné et à son régime propre, sans se confondre avec la succession ordinaire.',
+      },
+    ],
   },
   {
     chapterId: 'placements',
@@ -251,6 +265,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Relier les garanties au besoin familial avant de parler cotisation.',
       'Distinguer arrêt de travail, invalidité, décès et maintien de revenu.',
     ],
+    sections: [
+      {
+        title: 'Revenus protégés',
+        body: 'La prévoyance identifie les revenus à protéger et les conséquences d’un décès, d’un arrêt de travail ou d’une invalidité.',
+      },
+      {
+        title: 'Régimes obligatoires',
+        body: 'La lecture distingue salariés, indépendants et dirigeants pour rattacher chaque garantie au bon régime social.',
+      },
+      {
+        title: 'Contrats complémentaires',
+        body: 'Les garanties complémentaires se lisent avec leurs exclusions, leurs délais et les bénéficiaires désignés avant tout arbitrage.',
+      },
+    ],
   },
   {
     chapterId: 'societe',
@@ -259,6 +287,20 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
       'Séparer fiscalité société, droit des associés et stratégie patrimoniale.',
       'Distinguer dividendes, réserves, compte courant et trésorerie disponible.',
       'Repérer les opérations sur titres et leurs effets pour les associés.',
+    ],
+    sections: [
+      {
+        title: 'Résultat et réserves',
+        body: 'Le résultat et les réserves indiquent ce qui peut être conservé, distribué ou réinvesti selon la situation de la société.',
+      },
+      {
+        title: 'Trésorerie',
+        body: 'La trésorerie disponible doit être distinguée des sommes nécessaires à l’exploitation et aux engagements de la société.',
+      },
+      {
+        title: 'Titres et opérations',
+        body: 'Cession, apport, donation ou réorganisation exigent de qualifier les titres, leur valeur et l’objectif patrimonial poursuivi.',
+      },
     ],
   },
   {
