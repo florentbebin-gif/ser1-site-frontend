@@ -8,6 +8,7 @@ import MementoAdminSection from './memento/MementoAdminSection';
 import MementoReadView from './memento/MementoReadView';
 
 const MementoAuditView = lazy(() => import('./memento/MementoAuditView'));
+const MementoAdminWorkflowPanel = lazy(() => import('./memento/MementoAdminWorkflowPanel'));
 
 export default function SettingsMemento(): ReactElement {
   const { isAdmin } = useUserRole();
@@ -48,6 +49,17 @@ export default function SettingsMemento(): ReactElement {
 
         {isAdmin ? (
           <div className="settings-memento-admin-zone" aria-label="Administration du mémento">
+            <MementoAdminSection
+              title="Pilotage mises à jour"
+              subtitle="Workflow sources, claims, settings et checks pour l’admin et l’agent IA."
+            >
+              <Suspense
+                fallback={<p className="settings-memento-empty">Chargement du pilotage...</p>}
+              >
+                <MementoAdminWorkflowPanel />
+              </Suspense>
+            </MementoAdminSection>
+
             <MementoAdminSection
               title="Audit & sources"
               subtitle="Contrôles techniques, registre settings et couverture simulateurs."

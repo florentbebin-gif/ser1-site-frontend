@@ -213,7 +213,27 @@ describe('SettingsMemento', () => {
     expect(
       screen.queryByRole('button', { name: /Paramètres calculateurs/i }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Pilotage mises à jour/i }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Audit & sources/i })).not.toBeInTheDocument();
+  });
+
+  it('affiche le pilotage admin de mise à jour sans champ de valeur', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SettingsMemento />);
+
+    await openAdminSection(user, 'Pilotage mises à jour');
+
+    expect(await screen.findByText('Chaîne de mise à jour')).toBeInTheDocument();
+    expect(screen.getByText('bindings settings-references')).toBeInTheDocument();
+    expect(screen.getByText('Agent IA dans le repo')).toBeInTheDocument();
+    expect(screen.getByText('Validation humaine')).toBeInTheDocument();
+    expect(screen.getByText('npm run check:settings-references')).toBeInTheDocument();
+    expect(screen.getByText('npm run check')).toBeInTheDocument();
+    expect(screen.getByText('Doit rester à zéro')).toBeInTheDocument();
+    expect(screen.getByText(/Paramètres prêts : \d+/)).toBeInTheDocument();
+    expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
   });
 
   it('garde les parties de lecture fermées par défaut sans métadonnées techniques', () => {
