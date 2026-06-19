@@ -37,7 +37,7 @@
     "check:supabase-rls": "node scripts/check-supabase-rls-policies.mjs",
     "check:storage-policies": "node scripts/check-storage-policies.mjs",
     "check:supabase-migrations": "node scripts/check-supabase-migrations.mjs",
-    "check:export-parity": "vitest run src/features/placement/__tests__/placementExportParity.test.ts src/pptx/presets/perTransfertDeckBuilder.test.ts src/engine/per/transfert/__tests__/rentProjection.test.ts src/features/tresorerie-societe/__tests__/tresorerieExport.pptx.test.ts src/features/tresorerie-societe/__tests__/tresorerieExport.xlsx.test.ts",
+    "check:export-parity": "vitest run src/features/placement/__tests__/placementExportParity.test.ts src/features/credit/__tests__/creditExport.test.tsx src/pptx/presets/perTransfertDeckBuilder.test.ts src/engine/per/transfert/__tests__/rentProjection.test.ts src/features/tresorerie-societe/__tests__/tresorerieExport.pptx.test.ts src/features/tresorerie-societe/__tests__/tresorerieExport.xlsx.test.ts",
     "check:pptx-images": "node scripts/check-pptx-image-budget.mjs",
     "check:asset-budget": "node scripts/check-ui-asset-budget.mjs",
     "check:base-cg-migration": "node scripts/check-base-cg-canonical-migration.mjs --check",
