@@ -107,6 +107,9 @@ describe('mementoDisplayPlan', () => {
       'Composition familiale',
       'Capacité patrimoniale',
       'Personnes à protéger',
+      'Régime matrimonial',
+      'Conjoint survivant',
+      'Réserve et libéralités',
     ]);
 
     const visibleTexts = partie.chapters.flatMap((chapter) => [

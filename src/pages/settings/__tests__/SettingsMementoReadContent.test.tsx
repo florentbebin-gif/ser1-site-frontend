@@ -158,6 +158,9 @@ describe('SettingsMemento — lecture éditoriale', () => {
 
     await openReadChapter(user, 'Civil');
 
+    expect(screen.getByText('Régime matrimonial')).toBeInTheDocument();
+    expect(screen.getByText('Conjoint survivant')).toBeInTheDocument();
+    expect(screen.getByText('Réserve et libéralités')).toBeInTheDocument();
     expect(await screen.findByText('Régimes matrimoniaux & PACS')).toBeInTheDocument();
     expect(screen.getByText('Avantages matrimoniaux')).toBeInTheDocument();
     expect(screen.queryByText('PACS et union libre')).not.toBeInTheDocument();
