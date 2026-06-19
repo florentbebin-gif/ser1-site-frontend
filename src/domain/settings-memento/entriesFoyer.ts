@@ -144,7 +144,7 @@ export const MEMENTO_FOYER_ENTRIES = [
     key: 'patrimoine.actif-passif',
     label: 'Synthèse actif-passif',
     description:
-      'Masses patrimoniales, dettes et démembrement rattachés au dossier central pour alimenter les simulateurs.',
+      'Masses patrimoniales, dettes et démembrement à relier aux objectifs de protection, de transmission ou d’arbitrage.',
     status: 'a_verifier',
     statusReason:
       'Étape interne du dossier sans moteur autonome ; périmètre et sources à confirmer avant toute couverture.',

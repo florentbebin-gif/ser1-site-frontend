@@ -83,6 +83,23 @@ describe('SettingsMemento — Base-Contrat', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('garde la synthèse actif-passif dans le lexique sans masquer Base-Contrat', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Produits & enveloppes réglementés');
+    expect(
+      await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
+    ).toBeInTheDocument();
+
+    await openReadChapter(user, 'Patrimoine');
+    expect(screen.getByText('Enveloppes et contrats')).toBeInTheDocument();
+    expect(screen.queryByText('Synthèse actif-passif')).not.toBeInTheDocument();
+
+    await openReadPart(user, 'Lexique');
+    expect(await screen.findAllByText('Synthèse actif-passif')).not.toHaveLength(0);
+  });
+
   it('ne rend plus le catalogue produits dans la lecture placements', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
