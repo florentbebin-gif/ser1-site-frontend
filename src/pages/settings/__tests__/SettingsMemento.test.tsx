@@ -10,6 +10,7 @@ import type { MementoEntry, MementoStatus } from '@/domain/settings-memento';
 
 import SettingsMemento from '../SettingsMemento';
 import MementoEntryRow from '../memento/MementoEntryRow';
+import { MementoReferenceLinks } from '../memento/MementoReadableEntry';
 
 // Les vues calculateurs et audit sont chargées en lazy (double `lazy()` en série) :
 // sous la charge de la suite complète en CI, le timeout async par défaut (1 s) expire avant
@@ -159,6 +160,20 @@ describe('MementoEntryRow', () => {
       expect(screen.getAllByText('Mémento').length).toBeGreaterThan(0);
     },
   );
+});
+
+describe('MementoReferenceLinks', () => {
+  it('rend une référence PDF institutionnelle qualifiée sans exposer son URL brute', () => {
+    const { container } = render(
+      <MementoReferenceLinks refIds={['carpv-statuts-retraite-prevoyance']} />,
+    );
+
+    const link = screen.getByRole('link', { name: 'Statuts de la section professionnelle' });
+
+    expect(link).toHaveAttribute('href', expect.stringContaining('.pdf'));
+    expect(container).not.toHaveTextContent(/\.pdf/i);
+    expect(screen.queryByText('Références à qualifier.')).not.toBeInTheDocument();
+  });
 });
 
 describe('SettingsMemento', () => {

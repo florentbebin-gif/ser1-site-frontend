@@ -26,14 +26,12 @@ type MementoReadableEntryProps =
       showReferences?: boolean;
     };
 
-function isUsableReferenceId(referenceId: LegalReferenceId): boolean {
-  const reference = getOptionalLegalReference(referenceId);
-  if (!reference) return false;
-  return !reference.officialUrl.toLowerCase().includes('.pdf');
+function isKnownReferenceId(referenceId: LegalReferenceId): boolean {
+  return getOptionalLegalReference(referenceId) !== undefined;
 }
 
-function usableReferenceIds(refIds: readonly LegalReferenceId[]): LegalReferenceId[] {
-  return refIds.filter(isUsableReferenceId);
+function visibleReferenceIds(refIds: readonly LegalReferenceId[]): LegalReferenceId[] {
+  return refIds.filter(isKnownReferenceId);
 }
 
 export function MementoReferenceLinks({
@@ -41,7 +39,7 @@ export function MementoReferenceLinks({
 }: {
   refIds: readonly LegalReferenceId[];
 }): ReactElement | null {
-  const references = usableReferenceIds(refIds);
+  const references = visibleReferenceIds(refIds);
 
   if (references.length === 0) return null;
 
@@ -66,7 +64,7 @@ function ReferenceFallback({
   claimKeys?: readonly string[];
   hasReferencesRenderedElsewhere?: boolean;
 }): ReactElement | null {
-  if (usableReferenceIds(refIds).length > 0) return null;
+  if (visibleReferenceIds(refIds).length > 0) return null;
   if (hasReferencesRenderedElsewhere) return null;
   if (claimKeys && claimKeys.length > 0) {
     return (
