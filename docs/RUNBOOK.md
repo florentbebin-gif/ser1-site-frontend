@@ -118,6 +118,37 @@ Pour ajouter une entrée mémento :
 4. Rattacher les règles opposables via `refIds` ou `claimKeys`; sinon conserver un statut attentiste.
 5. Lancer `npm run check:memento-coverage`, puis `npm run check` avant commit.
 
+### Workflow admin / agent IA pour `/settings/memento`
+
+La section admin `Pilotage mises à jour` de `/settings/memento` sert de tableau de bord. Elle agrège
+les bindings `settings-references`, la readiness `settings-registry`, les attestations `verifiedAt`
+et le dernier rapport `reference_audit_reports`. Elle n'édite aucune valeur.
+
+Workflow attendu :
+
+1. **Détecter** : partir d'un rapport `Settings reference audit`, d'un changement légal connu ou
+   d'un échec `check:*`.
+2. **Vérifier** : relire la source officielle ou le `noRefReason` avant toute modification.
+3. **Rattacher** : mettre à jour uniquement les `refIds`, `claimKeys`, `relevanceNote`,
+   `verifiedAt`, `volatility` ou `target` nécessaires.
+4. **Éditer** : modifier une valeur révisable seulement via la page settings/Supabase concernée ou
+   un fallback centralisé validé ; ne jamais écrire une valeur révisable dans la prose du mémento.
+5. **Contrôler** : lancer les checks ciblés, puis `npm run check`.
+6. **Valider** : l'admin humain confirme la source officielle, la valeur et la publication. L'agent
+   IA prépare le diff, signale les écarts et lance les checks, mais ne valide pas seul une valeur.
+
+Commandes minimales selon périmètre :
+
+```powershell
+npm run audit:settings-references -- --stale --with-db
+npm run check:settings-references
+npm run check:legal-references
+npm run check:settings-registry
+npm run check:fiscal-hardcode
+npm run check:memento-coverage
+npm run check
+```
+
 **Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
 
 **Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :

@@ -46,6 +46,9 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 - Les références juridiques vivent dans `src/domain/legal-references/` et servent à rattacher simulateurs, settings et catalogue à leurs sources officielles ; elles ne remplacent pas les settings fiscaux.
 - Le chaînage entre une valeur Settings affichée et sa source vérifiée vit dans `src/domain/settings-references/chain.json` ; il indique soit des `refIds`, soit une raison explicite d'absence de source qualifiée.
 - Le registry `src/domain/settings-registry/` distingue les paramètres `ready`, `partial` et `planned`. Un simulateur disponible ne consomme que des clés déclarées et non `planned`.
+- `/settings/memento` sert à la fois de guide de lecture, de surface de pilotage admin et de point
+  de rattachement des valeurs settings aux sources. Les statuts de couverture, de readiness settings,
+  de fraîcheur source et de lifecycle simulateur restent distincts.
 - Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
 - `/audit` porte la trajectoire P6 : dossier guide, export PPTX isolé dans la feature via `src/features/audit/export/exportAudit.ts`, hydratation depuis `DossierPatrimonial` relu puis projection inverse via adapters, et réutilisation attendue par la suite dans `strategy`.
 - `/strategy` porte la trajectoire Strategy : situation actuelle vs scénarios de réorientation patrimoniale, recommandations calculées par SER1 à partir de données validées, validation CGP et export PPTX isolé dans `src/features/strategy/export/exportStrategy.ts`.
@@ -175,6 +178,11 @@ Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les p
 
 - `/settings/memento` pour les paramètres fiscaux, sociaux, société et transmission.
 - `/settings/base-contrat-retraite` pour la base documentaire des contrats retraite.
+
+Dans `/settings/memento`, la lecture utilisateur doit rester un mémento : phrases courtes,
+références visibles au bon niveau et aucune valeur révisable dans la prose. Le pilotage admin vit
+dans les zones dédiées (`Paramètres des calculateurs`, `Sources et couverture`, `Pilotage mises à
+jour`, `Audit & sources`).
 
 ### Attestation des valeurs
 

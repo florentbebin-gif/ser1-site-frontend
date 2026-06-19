@@ -1455,10 +1455,19 @@ Interdits :
 - coder F5 dans cette PR documentaire ;
 - promettre une valorisation fiable sans moteur, méthode et sources.
 
-### Mémento settings — roadmap dédiée
+### Mémento settings — documentation durable
 
-Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre :
-`docs/MEMENTO_ROADMAP.md` (38 PR métier + PR6b de stabilisation, parties 1 à 5). Statut :
+Le chantier « Mémento patrimonial & social » est livré. Les décisions permanentes vivent désormais
+dans les docs structurantes :
+
+- `docs/ARCHITECTURE.md` : registres, axes de statut, rattachements sources/settings/calculateurs ;
+- `docs/DESIGN.md` : hiérarchie visuelle, zones de lecture/admin et règles de pastilles ;
+- `docs/RUNBOOK.md` : workflow admin/agent IA de mise à jour et checks ;
+- `docs/METIER.md` : rôle métier du mémento et limites de lecture.
+
+`docs/MEMENTO_ROADMAP.md` reste seulement une trace historique tant qu'une PR dédiée n'a pas prouvé
+par `rg` que ses décisions utiles ont été transférées et qu'aucun lien prescriptif n'en dépend.
+Statut historique :
 
 - PR 1 Taxonomie mémento — livrée (PR #585) ;
 - PR 2 Mapping simulateurs — livrée (PR #586) ;
@@ -1469,12 +1478,12 @@ Le chantier « Mémento patrimonial & social » a sa roadmap structurante propre
 - PR6b UX mémento et gouvernance sources — livrée ;
 - PR 7 Transmission — livrée ;
 - PR 8 Placements et Base-Contrat — livrée (PR #594) ;
-- lots R5 à R8 et clôture M0-M10 — livrés, décisions finales dans `docs/MEMENTO_ROADMAP.md`.
+- lots R5 à R8, refonte UX/statuts, pilotage admin et documentation durable — livrés.
 
 Rappels : `/settings/memento` est le mémento utilisateur et la surface d'édition fiscal/social
 unique ; la vue métier reste séparée de l'audit coverage, et les moteurs restent propriétaires des
 calculs.
-Le détail PR par PR vit uniquement dans `docs/MEMENTO_ROADMAP.md`.
+Le détail PR par PR de l'ancien chantier n'est plus prescriptif pour les prochaines PR.
 
 ## Ordre ferme de construction des moteurs
 

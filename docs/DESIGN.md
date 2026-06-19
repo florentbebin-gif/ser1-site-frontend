@@ -165,6 +165,22 @@ Settings UI :
 - champs natifs autorises pour saisies de baremes/admin quand le check l'autorise ;
 - objectif : edition fiable, lisibilite de tables, actions admin.
 
+Cas `/settings/memento` :
+
+- les accordéons principaux portent un titre court et un sous-titre d'une phrase ;
+- chaque chapitre suit la même hiérarchie : `Lire`, `Paramètres des calculateurs`, `Sources et
+couverture`, puis audit admin global ;
+- `Lire` reste une zone de lecture métier : pas de pastille de pilotage, pas de valeur révisable en
+  prose, pas de jargon technique type `claimKey` ou `registryKey` ;
+- les valeurs administrées et les champs éditables restent dans `Paramètres des calculateurs` ;
+- les références et pastilles de couverture restent dans `Sources et couverture` ou dans l'audit
+  admin, avec libellé d'axe explicite ;
+- les axes de statut ne sont pas distingués par la couleur seule : emplacement, préfixe et source de
+  donnée doivent rester lisibles (`Couverture`, `Revue`, `Source`, `Fraîcheur`, `Paramètre`,
+  `Simulateur`) ;
+- les panneaux admin comme `Pilotage mises à jour` et `Audit & sources` restent fermés par défaut,
+  denses mais sans scroll horizontal desktop/mobile.
+
 Simulator UI :
 
 - pages client/conseiller, restitution premium et pedagogique ;
