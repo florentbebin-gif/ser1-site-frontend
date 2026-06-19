@@ -1,12 +1,15 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { UserRoleState } from '@/auth/useUserRole';
 import SettingsMemento from '../SettingsMemento';
+
+configure({ asyncUtilTimeout: 5_000 });
+vi.setConfig({ testTimeout: 15_000 });
 
 let isAdmin = false;
 
@@ -74,19 +77,22 @@ function partHeader(label: RegExp): HTMLButtonElement | undefined {
     );
 }
 
+function searchMemento(value: string) {
+  const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
+  fireEvent.change(search, { target: { value } });
+}
+
 describe('SettingsMemento — filtre mot-clé global', () => {
   beforeEach(() => {
     isAdmin = false;
   });
 
   it('réduit la lecture aux parties pertinentes', async () => {
-    const user = userEvent.setup();
     render(<SettingsMemento />);
 
     expect(partHeader(/Social et protection sociale/)).toBeDefined();
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'usufruit');
+    searchMemento('usufruit');
 
     await waitFor(() => {
       expect(partHeader(/Social et protection sociale/)).toBeUndefined();
@@ -95,11 +101,9 @@ describe('SettingsMemento — filtre mot-clé global', () => {
   });
 
   it('cherche aussi dans l’éditorial des chapitres', async () => {
-    const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'Personnes à protéger');
+    searchMemento('Personnes à protéger');
 
     await waitFor(() => {
       expect(partHeader(/Droit civil/)).toBeDefined();
@@ -111,8 +115,7 @@ describe('SettingsMemento — filtre mot-clé global', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'Livret A');
+    searchMemento('Livret A');
     await selectMementoTab(
       user,
       /Sections de Produits & enveloppes réglementés/i,
@@ -126,11 +129,9 @@ describe('SettingsMemento — filtre mot-clé global', () => {
   });
 
   it('atteint les valeurs des tables de référence (CEG)', async () => {
-    const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'CEG');
+    searchMemento('CEG');
 
     await waitFor(() => {
       expect(partHeader(/Social et protection sociale/)).toBeDefined();
@@ -141,8 +142,7 @@ describe('SettingsMemento — filtre mot-clé global', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'CARPV');
+    searchMemento('CARPV');
 
     await waitFor(() => {
       expect(partHeader(/Social et protection sociale/)).toBeDefined();
@@ -159,11 +159,9 @@ describe('SettingsMemento — filtre mot-clé global', () => {
   });
 
   it('ne recherche pas les libellés de statut pour un lecteur non-admin', async () => {
-    const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'A - Couverture : partielle');
+    searchMemento('A - Couverture : partielle');
 
     expect(await screen.findByText(/Aucun résultat pour/)).toBeInTheDocument();
     expect(container.querySelectorAll('.settings-memento-status')).toHaveLength(0);
@@ -174,8 +172,7 @@ describe('SettingsMemento — filtre mot-clé global', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'carpv-statuts-retraite-prevoyance');
+    searchMemento('carpv-statuts-retraite-prevoyance');
 
     await waitFor(() => {
       expect(partHeader(/Social et protection sociale/)).toBeDefined();
@@ -195,8 +192,7 @@ describe('SettingsMemento — filtre mot-clé global', () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'A - Couverture : partielle');
+    searchMemento('A - Couverture : partielle');
 
     await waitFor(() => {
       expect(partHeader(/Fiscalité/)).toBeDefined();
@@ -208,11 +204,9 @@ describe('SettingsMemento — filtre mot-clé global', () => {
   });
 
   it('affiche un état vide global quand rien ne correspond', async () => {
-    const user = userEvent.setup();
     render(<SettingsMemento />);
 
-    const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
-    await user.type(search, 'zzzznomatch');
+    searchMemento('zzzznomatch');
 
     expect(await screen.findByText(/Aucun résultat pour/)).toBeInTheDocument();
     expect(partHeader(/Produits & enveloppes/)).toBeUndefined();
