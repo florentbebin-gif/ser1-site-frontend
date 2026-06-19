@@ -377,6 +377,61 @@
   animation: memento-reveal var(--transition-base) var(--easing-standard);
 }
 
+.settings-memento-tabs {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+}
+
+.settings-memento-tabs__tablist {
+  display: flex;
+  min-width: 0;
+  gap: 18px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-subtle);
+  scrollbar-width: thin;
+}
+
+.settings-memento-tabs__tab {
+  flex: 0 0 auto;
+  min-height: 38px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 0 2px 8px;
+  white-space: nowrap;
+}
+
+.settings-memento-tabs__tab:hover {
+  color: var(--text-primary);
+}
+
+.settings-memento-tabs__tab:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.settings-memento-tabs__tab[aria-selected='true'] {
+  border-bottom-color: var(--accent-signature);
+  color: var(--action-primary);
+}
+
+.settings-memento-tabs__panels,
+.settings-memento-tabs__panel {
+  min-width: 0;
+}
+
+.settings-memento-tabs__panel:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .settings-memento-read-chapter__header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1324,6 +1379,15 @@
 }
 
 @media (max-width: 720px) {
+  .settings-memento-tabs__tablist {
+    gap: 14px;
+    padding-bottom: 2px;
+  }
+
+  .settings-memento-tabs__tab {
+    min-height: 44px;
+  }
+
   .settings-memento-chapter__header,
   .settings-memento-subsection__header {
     grid-template-columns: auto minmax(0, 1fr) auto;

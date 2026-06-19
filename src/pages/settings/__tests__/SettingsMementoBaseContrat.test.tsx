@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -66,6 +66,16 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
   await user.click(button);
 }
 
+async function selectMementoTab(
+  user: ReturnType<typeof userEvent.setup>,
+  tablistName: RegExp | string,
+  tabName: RegExp | string,
+) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = await within(tablist).findByRole('tab', { name: tabName });
+  await user.click(tab);
+}
+
 describe('SettingsMemento — Base-Contrat', () => {
   it('rend le catalogue produits depuis la partie produits & enveloppes', async () => {
     const user = userEvent.setup();
@@ -74,6 +84,11 @@ describe('SettingsMemento — Base-Contrat', () => {
     expect(screen.queryByRole('radiogroup', { name: 'Audience' })).not.toBeInTheDocument();
 
     await openReadPart(user, 'Produits & enveloppes réglementés');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
 
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
@@ -88,6 +103,11 @@ describe('SettingsMemento — Base-Contrat', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Produits & enveloppes réglementés');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
     ).toBeInTheDocument();

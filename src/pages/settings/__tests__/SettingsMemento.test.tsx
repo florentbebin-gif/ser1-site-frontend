@@ -21,6 +21,8 @@ vi.setConfig({ testTimeout: 15_000 });
 let isAdmin = true;
 const fromMock = vi.hoisted(() => vi.fn());
 const rpcMock = vi.hoisted(() => vi.fn());
+type TestUser = ReturnType<typeof userEvent.setup>;
+type RoleName = RegExp | string;
 
 const ENTRY_COUVERTE: MementoEntry = {
   chapterId: 'fiscalite-foyer',
@@ -37,6 +39,7 @@ const ENTRY_COUVERTE: MementoEntry = {
   coverageSources: [],
   relatedSimulatorIds: ['ir'],
 };
+const FISCALITE_FOYER_TABS = /Sections du chapitre Fiscalité foyer/i;
 
 function makeSettingsBuilder() {
   const listResult = { data: [], error: null };
@@ -106,35 +109,41 @@ function findButtonByClass(className: string, label: string): HTMLButtonElement 
   return button;
 }
 
-async function openAdminSection(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function openAdminSection(user: TestUser, label: string) {
   const button = findButtonByClass('settings-memento-admin-section__header', label);
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
-async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function openReadPart(user: TestUser, label: string) {
   const button = findButtonByClass('settings-memento-part__header', label);
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
-async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function openReadChapter(user: TestUser, label: string) {
   const button = findButtonByClass('settings-memento-read-chapter__header', label);
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
-async function openAuditChapter(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function selectMementoTab(user: TestUser, tablistName: RoleName, tabName: RoleName) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = within(tablist).getByRole('tab', { name: tabName });
+  await user.click(tab);
+}
+
+async function openAuditChapter(user: TestUser, label: string) {
   const button = await waitFor(() => findButtonByClass('settings-memento-chapter__header', label));
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
   }
 }
 
-async function openSubAccordion(user: ReturnType<typeof userEvent.setup>, name: RegExp | string) {
+async function openSubAccordion(user: TestUser, name: RoleName) {
   const button = await screen.findByRole('button', { name });
   if (button.getAttribute('aria-expanded') !== 'true') {
     await user.click(button);
@@ -253,6 +262,34 @@ describe('SettingsMemento', () => {
     expect(screen.queryByText('Impôt sur le revenu du foyer')).not.toBeInTheDocument();
   });
 
+  it('structure un chapitre de lecture en onglets accessibles sans pastille dans Lire', async () => {
+    const user = userEvent.setup();
+    render(<SettingsMemento />);
+
+    await openReadPart(user, 'Fiscalité');
+    await openReadChapter(user, 'Fiscalité foyer');
+
+    const tablist = await screen.findByRole('tablist', { name: FISCALITE_FOYER_TABS });
+    const lireTab = within(tablist).getByRole('tab', { name: 'Lire' });
+    const parametersTab = within(tablist).getByRole('tab', {
+      name: 'Paramètres de référence',
+    });
+    const sourcesTab = within(tablist).getByRole('tab', { name: 'Sources & couverture' });
+
+    expect(lireTab).toHaveAttribute('aria-selected', 'true');
+    const lirePanel = screen.getByRole('tabpanel', { name: 'Lire' });
+    expect(within(lirePanel).queryByText(/Couverture :/)).not.toBeInTheDocument();
+
+    lireTab.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(parametersTab).toHaveAttribute('aria-selected', 'true');
+
+    await user.click(sourcesTab);
+    expect(sourcesTab).toHaveAttribute('aria-selected', 'true');
+    const sourcesPanel = screen.getByRole('tabpanel', { name: 'Sources & couverture' });
+    expect(within(sourcesPanel).getAllByText(/Couverture :/).length).toBeGreaterThan(0);
+  });
+
   it('rend le mémento lisible avec références dans la zone sources sans IDs bruts', async () => {
     const user = userEvent.setup();
     const { container } = render(<SettingsMemento />);
@@ -261,6 +298,7 @@ describe('SettingsMemento', () => {
     await openReadChapter(user, 'Fiscalité foyer');
 
     expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
     expect(screen.getAllByText('Références :').length).toBeGreaterThan(0);
     expect(screen.queryByText('Sources officielles')).not.toBeInTheDocument();
     expect(screen.queryByText('Utilisé par')).not.toBeInTheDocument();
@@ -276,9 +314,11 @@ describe('SettingsMemento', () => {
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
 
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Paramètres de référence');
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
     expect(container).toHaveTextContent('BOI-IR-LIQ-20-10');
     expect(container).toHaveTextContent('BOI-PAT-IFI-40-10');
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
 
     const sourceEntries = Array.from(container.querySelectorAll('.settings-memento-source-entry'));
     const irSource = sourceEntries.find((entry) =>
@@ -307,6 +347,7 @@ describe('SettingsMemento', () => {
 
     expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
     expect(screen.getAllByText('Couverture : partielle').length).toBeGreaterThan(0);
   });
 
@@ -319,6 +360,7 @@ describe('SettingsMemento', () => {
     await openReadChapter(user, 'Fiscalité foyer');
 
     expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
     expect(screen.queryByText('Chantier prévu')).not.toBeInTheDocument();
     expect(screen.queryByText('À manier avec prudence')).not.toBeInTheDocument();
@@ -331,6 +373,7 @@ describe('SettingsMemento', () => {
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Paramètres de référence');
 
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
     expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
@@ -348,6 +391,7 @@ describe('SettingsMemento', () => {
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
+    await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Paramètres de référence');
 
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
 

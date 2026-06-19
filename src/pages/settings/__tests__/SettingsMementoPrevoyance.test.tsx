@@ -139,6 +139,16 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
   }
 }
 
+async function selectMementoTab(
+  user: ReturnType<typeof userEvent.setup>,
+  tablistName: RegExp | string,
+  tabName: RegExp | string,
+) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = await within(tablist).findByRole('tab', { name: tabName });
+  await user.click(tab);
+}
+
 describe('SettingsMemento — prévoyance', () => {
   beforeEach(() => {
     isAdmin = false;
@@ -153,7 +163,7 @@ describe('SettingsMemento — prévoyance', () => {
     cacheMocks.upsertPrevoyanceMaintienEmployeurSettings.mockResolvedValue(undefined);
   });
 
-  it('rend les régimes prévoyance sous les entrées de lecture sans panneau monolithique', async () => {
+  it('rend les régimes prévoyance dans les paramètres sans panneau monolithique', async () => {
     const user = userEvent.setup();
     render(<SettingsMemento />);
 
@@ -163,6 +173,7 @@ describe('SettingsMemento — prévoyance', () => {
 
     await openReadPart(user, 'Social et protection sociale');
     await openReadChapter(user, 'Prévoyance');
+    await selectMementoTab(user, /Sections du chapitre Prévoyance/i, 'Paramètres de référence');
 
     expect(await screen.findByText('Revenus protégés')).toBeInTheDocument();
     expect(screen.getAllByText('Régimes obligatoires').length).toBeGreaterThan(0);
@@ -193,6 +204,7 @@ describe('SettingsMemento — prévoyance', () => {
 
     await openReadPart(user, 'Social et protection sociale');
     await openReadChapter(user, 'Prévoyance');
+    await selectMementoTab(user, /Sections du chapitre Prévoyance/i, 'Paramètres de référence');
 
     const regimeButton = await screen.findByRole('button', {
       name: /Salarié secteur privé — CPAM/i,

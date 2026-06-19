@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -46,6 +46,16 @@ async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: str
   });
 
   await user.click(button);
+}
+
+async function selectMementoTab(
+  user: ReturnType<typeof userEvent.setup>,
+  tablistName: RegExp | string,
+  tabName: RegExp | string,
+) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = await within(tablist).findByRole('tab', { name: tabName });
+  await user.click(tab);
 }
 
 function partHeader(label: RegExp): HTMLButtonElement | undefined {
@@ -94,6 +104,11 @@ describe('SettingsMemento — filtre mot-clé global', () => {
 
     const search = screen.getByRole('searchbox', { name: /Rechercher dans le mémento/i });
     await user.type(search, 'Livret A');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
 
     expect(
       await screen.findByRole('radiogroup', { name: 'Audience' }, { timeout: 5_000 }),
