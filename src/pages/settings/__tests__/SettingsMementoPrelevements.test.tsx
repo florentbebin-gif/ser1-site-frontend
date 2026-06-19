@@ -222,6 +222,14 @@ describe('SettingsMemento — Prélèvements sociaux éclaté', () => {
     expect(await screen.findByText('Seuil social des dividendes TNS')).toBeInTheDocument();
     expect(screen.getByText('Périmètres sociaux dirigeant à compléter')).toBeInTheDocument();
     expect(screen.getByText('Rémunération TNS - à compléter')).toBeInTheDocument();
+    const socialScopeFrame = screen
+      .getByText('Périmètres sociaux dirigeant à compléter')
+      .closest('.settings-prelevements-entry-section');
+    if (!(socialScopeFrame instanceof HTMLElement)) {
+      throw new Error('Section périmètres sociaux dirigeant introuvable');
+    }
+    expect(within(socialScopeFrame).getByText('Périmètre social à compléter')).toBeInTheDocument();
+    expect(within(socialScopeFrame).queryByText('Partiel')).not.toBeInTheDocument();
     const dirigeantFrames = Array.from(
       new Set(
         screen

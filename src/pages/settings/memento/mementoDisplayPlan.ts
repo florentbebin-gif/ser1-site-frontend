@@ -4,11 +4,7 @@ import {
   type MementoChapterEditorial,
 } from '@/domain/settings-memento/editorial';
 import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
-import {
-  MEMENTO_LEXICON_TERMS,
-  type MementoLexiconStatus,
-  type MementoLexiconTerm,
-} from '@/domain/settings-memento/lexicon';
+import { MEMENTO_LEXICON_TERMS, type MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type {
   MementoChapter,
   MementoChapterId,
@@ -192,20 +188,6 @@ export const MEMENTO_ENTRY_PART_OVERRIDES = {
 
 const MEMENTO_ENTRY_PART_OVERRIDE_MAP: Partial<Record<string, MementoPartId>> =
   MEMENTO_ENTRY_PART_OVERRIDES;
-
-export const MEMENTO_PRUDENCE_LABELS: Record<MementoStatus, string | null> = {
-  couvert: null,
-  partiel: 'Périmètre en cours',
-  planned: 'Chantier prévu',
-  absent: 'Pas encore traité',
-  a_verifier: 'À manier avec prudence',
-  blocked_missing_official_source: 'Source officielle à compléter',
-};
-
-export const MEMENTO_LEXICON_PRUDENCE_LABELS: Record<MementoLexiconStatus, string | null> = {
-  sourced: null,
-  a_verifier: 'À manier avec prudence',
-};
 
 /**
  * Statuts « stub » candidats au masquage en vue lecture (non-admin) : chantier planifié ou pas

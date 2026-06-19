@@ -174,6 +174,19 @@ describe('MementoPrevoyanceEntrySection', () => {
     expect(screen.queryByText('Note interne invisible aux users.')).not.toBeInTheDocument();
   });
 
+  it('affiche la qualité de source aux admins sans la confondre avec la date de consultation', async () => {
+    const user = userEvent.setup();
+    isAdmin = true;
+
+    render(<MementoPrevoyanceEntrySection entryKey="prevoyance.regimes-salaries" />);
+
+    const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
+    await user.click(cpam);
+
+    expect(screen.getByText('Qualité source : vérifiée')).toBeInTheDocument();
+    expect(screen.getByText(/consulté le 2026-05-24/i)).toBeInTheDocument();
+  });
+
   it('répartit les indépendants et les caisses libérales dans leurs entrées', () => {
     const { rerender } = render(
       <MementoPrevoyanceEntrySection entryKey="prevoyance.regimes-independants" />,

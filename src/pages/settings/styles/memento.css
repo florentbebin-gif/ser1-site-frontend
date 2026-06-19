@@ -556,6 +556,18 @@
   gap: 8px;
 }
 
+.settings-memento-parameter-group .income-tax-block,
+.settings-memento-parameter-group .settings-impots-entry-section,
+.settings-memento-parameter-group .settings-prelevements-entry-section {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.settings-memento-parameter-group .settings-table {
+  min-width: 560px;
+}
+
 .settings-memento-parameter-group + .settings-memento-parameter-group,
 .settings-memento-source-entry + .settings-memento-source-entry,
 .settings-memento-source-group + .settings-memento-source-group {

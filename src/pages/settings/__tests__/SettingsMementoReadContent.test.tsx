@@ -180,10 +180,12 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Impôt sur les sociétés et placements');
     await openReadChapter(user, 'Société');
 
+    expect(await screen.findByText('Résultat et réserves')).toBeInTheDocument();
+    expect(screen.getByText('Trésorerie')).toBeInTheDocument();
+    expect(screen.getByText('Titres et opérations')).toBeInTheDocument();
     expect(await screen.findByText('Taux IS')).toBeInTheDocument();
     expect(screen.getByText('Quote-part mère-fille')).toBeInTheDocument();
     expect(screen.getByText('Déductibilité des intérêts CCA')).toBeInTheDocument();
-    expect(screen.queryByText('Titres et opérations de capital')).not.toBeInTheDocument();
     expect(screen.queryByText('Comptables et sociétés')).not.toBeInTheDocument();
 
     await openReadChapter(user, 'Placements');
@@ -203,6 +205,9 @@ describe('SettingsMemento — lecture éditoriale', () => {
     await openReadPart(user, 'Successions et libéralités');
     await openReadChapter(user, 'Transmission');
 
+    expect(await screen.findByText('Dévolution')).toBeInTheDocument();
+    expect(screen.getAllByText('Libéralités').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Assurance-vie').length).toBeGreaterThan(0);
     expect(await screen.findByText('Ligne directe (enfants, petits-enfants)')).toBeInTheDocument();
     expect(await screen.findByText('Donation & rappel fiscal')).toBeInTheDocument();
     expect(await screen.findByText('Assurance-vie décès')).toBeInTheDocument();

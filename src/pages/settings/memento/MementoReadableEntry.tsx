@@ -5,7 +5,6 @@ import { getOptionalLegalReference, type LegalReferenceId } from '@/domain/legal
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
 
-import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
 import {
   getEntrySourceVisibleReferenceIds,
   hasEntryReferencesRenderedBySection,
@@ -16,13 +15,11 @@ type MementoReadableEntryProps =
   | {
       kind: 'entry';
       entry: MementoEntry;
-      showStatus: boolean;
       showReferences?: boolean;
     }
   | {
       kind: 'lexicon';
       term: MementoLexiconTerm;
-      showStatus: boolean;
       showReferences?: boolean;
     };
 
@@ -131,15 +128,12 @@ export function MementoLexiconSources({
 
 export default function MementoReadableEntry(props: MementoReadableEntryProps): ReactElement {
   if (props.kind === 'lexicon') {
-    // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
-    const prudence = props.showStatus ? MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status] : null;
     const showReferences = props.showReferences ?? true;
 
     return (
       <article className="settings-memento-readable-entry settings-memento-readable-entry--lexicon">
         <div className="settings-memento-readable-entry__header">
           <h5>{props.term.term}</h5>
-          {prudence ? <span>{prudence}</span> : null}
         </div>
         <p>{props.term.shortDefinition}</p>
         {showReferences ? <MementoReferenceLinks refIds={props.term.refIds} /> : null}
@@ -147,15 +141,12 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
     );
   }
 
-  // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
-  const prudence = props.showStatus ? MEMENTO_PRUDENCE_LABELS[props.entry.status] : null;
   const showReferences = props.showReferences ?? true;
 
   return (
     <article className="settings-memento-readable-entry">
       <div className="settings-memento-readable-entry__header">
         <h5>{props.entry.label}</h5>
-        {prudence ? <span>{prudence}</span> : null}
       </div>
       <p>{props.entry.description}</p>
       {showReferences ? <MementoReferenceLinks refIds={props.entry.refIds} /> : null}

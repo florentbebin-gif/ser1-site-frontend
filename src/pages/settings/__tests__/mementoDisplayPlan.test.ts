@@ -7,8 +7,6 @@ import {
   buildMementoDisplayPlan,
   groupMementoLexiconTerms,
   MEMENTO_DISPLAY_PARTS,
-  MEMENTO_LEXICON_PRUDENCE_LABELS,
-  MEMENTO_PRUDENCE_LABELS,
   resolveMementoEntryPartId,
 } from '../memento/mementoDisplayPlan';
 
@@ -75,14 +73,10 @@ describe('mementoDisplayPlan', () => {
     expect(new Set(entryKeys)).toEqual(new Set(MEMENTO_ENTRIES.map((entry) => entry.key)));
   });
 
-  it('garde les titres, descriptions et libellés prudence sans chiffre', () => {
+  it('garde les titres et descriptions du sommaire sans chiffre', () => {
     const displayTexts = MEMENTO_DISPLAY_PARTS.flatMap((part) => [part.title, part.description]);
-    const prudenceTexts = [
-      ...Object.values(MEMENTO_PRUDENCE_LABELS),
-      ...Object.values(MEMENTO_LEXICON_PRUDENCE_LABELS),
-    ].filter((value): value is string => value !== null);
 
-    expect([...displayTexts, ...prudenceTexts].filter((text) => /\d/.test(text))).toEqual([]);
+    expect(displayTexts.filter((text) => /\d/.test(text))).toEqual([]);
   });
 
   it('garde les descriptions du sommaire sans vocabulaire technique interne', () => {
@@ -249,10 +243,58 @@ describe('mementoDisplayPlan', () => {
     );
 
     expect(sectionTitles).toEqual(
-      expect.arrayContaining(['Pacte Dutreil', 'Donation de titres', 'Paiement des droits']),
+      expect.arrayContaining([
+        'Dévolution',
+        'Libéralités',
+        'Assurance-vie',
+        'Pacte Dutreil',
+        'Donation de titres',
+        'Paiement des droits',
+      ]),
     );
     expect(sectionTitles).not.toContain('Dévolution et réserve');
     expect(sectionTitles).not.toContain('Droits de mutation');
+
+    const visibleTexts = partie.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+      ...chapter.entries.flatMap((entry) => [entry.label, entry.description]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
+    }
+  });
+
+  it('présente social, prévoyance et dirigeant comme un aide-mémoire, sans méta-discours', () => {
+    const partie = buildMementoDisplayPlan().find(
+      (candidate) => candidate.definition.id === 'social-protection',
+    );
+    if (!partie) throw new Error('Partie Social et protection sociale introuvable');
+
+    expect(partie.chapters.map((chapter) => chapter.chapter.id)).toEqual([
+      'retraite',
+      'epargne-retraite',
+      'prevoyance',
+      'dirigeant',
+    ]);
+
+    const sectionTitles = partie.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual(
+      expect.arrayContaining([
+        'Revenus protégés',
+        'Régimes obligatoires',
+        'Contrats complémentaires',
+        'Statut social',
+        'Rémunération et dividendes',
+        'Protection du foyer',
+      ]),
+    );
 
     const visibleTexts = partie.chapters.flatMap((chapter) => [
       chapter.chapter.description,
