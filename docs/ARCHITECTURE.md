@@ -198,6 +198,9 @@ Les statuts ont un sens bloquant :
 | `partial` | Paramètre centralisé partiellement consommable, avec certains sous-claims ou références encore à compléter.      |
 | `planned` | Besoin inventorié sans valeur. `defaultValue` et `currentValue` doivent rester `null`, et la source à compléter. |
 
+Ces statuts forment l'axe **D — readiness settings** dans `/settings/memento`. Ils ne décrivent ni
+la couverture métier du mémento, ni la fraîcheur d'une source, ni le lifecycle d'un simulateur.
+
 `SimulatorDefinition.settingsKeys` déclare les paramètres réellement consommés par un simulateur.
 Toute clé doit exister dans `SETTINGS_REGISTRY`. Les simulateurs `active`, `hub` et `placeholder` ne
 peuvent pas déclarer de consommation d'un setting `planned`; les consommateurs futurs restent listés
@@ -244,18 +247,44 @@ Les statuts canoniques sont :
 | `a_verifier`                      | Sujet à qualifier avant usage métier ou affichage plus engageant.                          |
 | `blocked_missing_official_source` | Sujet bloqué tant qu'une source officielle nommée n'a pas été qualifiée.                   |
 
+Ces statuts forment l'axe **A — couverture métier/juridique**. Les autres axes affichés par
+`/settings/memento` restent séparés :
+
+| Axe | Objet                                      | Source canonique                                               | Emplacement UI                              |
+| --- | ------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------- |
+| A   | Couverture métier/juridique                | `MementoStatus`                                                | Sources et couverture, audit global         |
+| B   | Revue admin d'un override Base-Contrat     | `BaseContratReviewStatus`                                      | Paramètres / Base-Contrat, admin uniquement |
+| C1  | Qualité ou confiance déclarée d'une source | `confidence` Base-Contrat, `confiance` prévoyance              | Sources et couverture, audit admin          |
+| C2  | Fraîcheur d'attestation                    | `verifiedAt`, `volatility`, rapports `reference_audit_reports` | Pilotage mises à jour, Home admin, runbook  |
+| D   | Readiness d'un paramètre de calculateur    | `SettingsRegistryStatus`                                       | Paramètres des calculateurs, audit global   |
+| E   | Lifecycle simulateur                       | `SimulatorLifecycle`                                           | Audit coverage uniquement                   |
+
+Une pastille UI ne mélange jamais ces axes : une source à jour ne rend pas une entrée `couvert`,
+un setting `ready` ne rend pas un simulateur actif, et un lifecycle `planned` ne doit pas devenir
+cliquable par effet de lecture mémento.
+
 Les priorités métier (`critique`, `structurant`, `utile`, `complementaire`) qualifient
 l'importance CGP d'une entrée sans remplacer son statut de couverture. Les intentions métier
 projettent les chapitres existants vers des parcours utilisateur ; elles ne créent pas de seconde
 taxonomie.
 
-La page `/settings/memento` expose deux lectures distinctes de la même source TypeScript :
+La page `/settings/memento` expose des zones distinctes de la même source TypeScript :
 
-- vue métier : entrées mémento, intentions, priorités, statut, section propriétaire, simulateurs
-  liés et disponibilité des références officielles ;
-- édition settings : accordéons d'administration écrivant dans les tables Supabase existantes ;
-- audit coverage : lignes `SIMULATOR_MEMENTO_COVERAGE`, routes propriétaires, lifecycles, statuts
-  techniques et notes utiles aux checks.
+- **Lire** : synthèse, sections éditoriales et descriptions d'entrées, sans pastille de pilotage ni
+  valeur fiscale/sociale/comptable révisable en prose ;
+- **Paramètres des calculateurs** : tables et éditeurs raccordés aux settings existants, avec lecture
+  seule pour les profils non autorisés et écriture admin via les tables Supabase ;
+- **Sources et couverture** : références officielles, statut de couverture et disponibilité des
+  sources, sans afficher les `claimKeys` comme références utilisateur ;
+- **Pilotage mises à jour** : synthèse admin dérivée de `settings-references`, du registry settings
+  et du dernier rapport d'audit ;
+- **Audit & sources** : coverage technique, registry settings, lifecycles et notes utiles aux checks.
+
+Règle de rendu des références : les données conservent les `refIds` et `claimKeys`, mais l'UI
+affiche une référence au niveau le plus spécifique qui la rend actionnable. Une table de valeurs qui
+rend déjà ses `refIds` via `LegalRefInlineList` masque la répétition au niveau de l'entrée mémento ;
+une entrée sans table garde ses références visibles dans Sources et couverture. Les `claimKeys` sont
+contrôlés par `check:settings-references` et ne remplacent pas les liens juridiques affichés.
 
 Les `coverageSources` (`cadrage-externe`) décrivent seulement une aide de cadrage non officielle et
 non versionnée. Elles ne comptent jamais comme source officielle : une entrée `couvert` doit pointer
@@ -676,7 +705,10 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 Source de vérité : `src/domain/base-contrat/` (catalogue + règles).
 Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note + statut de revue juridique).
 
-UI : le panneau Base-Contrat de `/settings/memento` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
+UI : le panneau Base-Contrat de `/settings/memento` est un catalogue de lecture à 3 colonnes
+(Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise. Les admins
+peuvent piloter les overrides `base_contrat_overrides` depuis ce panneau (clôture/réouverture,
+note et statut de revue) sans changer la source catalogue `src/domain/base-contrat/`.
 
 ### Base CG retraite
 
