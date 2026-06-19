@@ -6,6 +6,10 @@ import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
 
 import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
+import {
+  getEntrySourceVisibleReferenceIds,
+  hasEntryReferencesRenderedBySection,
+} from './mementoReferenceDedup';
 import { MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 
 type MementoReadableEntryProps =
@@ -56,11 +60,14 @@ const MEMENTO_LEXICON_SOURCE_LABELS: Record<MementoLexiconTerm['status'], string
 function ReferenceFallback({
   refIds,
   claimKeys,
+  hasReferencesRenderedElsewhere = false,
 }: {
   refIds: readonly LegalReferenceId[];
   claimKeys?: readonly string[];
+  hasReferencesRenderedElsewhere?: boolean;
 }): ReactElement | null {
   if (usableReferenceIds(refIds).length > 0) return null;
+  if (hasReferencesRenderedElsewhere) return null;
   if (claimKeys && claimKeys.length > 0) {
     return (
       <p className="settings-memento-readable-entry__references">
@@ -78,6 +85,9 @@ export function MementoEntrySources({
   entry: MementoEntry;
   showStatus: boolean;
 }): ReactElement {
+  const visibleRefIds = getEntrySourceVisibleReferenceIds(entry);
+  const hasReferencesRenderedElsewhere = hasEntryReferencesRenderedBySection(entry);
+
   return (
     <article className="settings-memento-source-entry">
       <div className="settings-memento-source-entry__header">
@@ -88,8 +98,12 @@ export function MementoEntrySources({
           </span>
         ) : null}
       </div>
-      <MementoReferenceLinks refIds={entry.refIds} />
-      <ReferenceFallback refIds={entry.refIds} claimKeys={entry.claimKeys} />
+      <MementoReferenceLinks refIds={visibleRefIds} />
+      <ReferenceFallback
+        refIds={visibleRefIds}
+        claimKeys={entry.claimKeys}
+        hasReferencesRenderedElsewhere={hasReferencesRenderedElsewhere}
+      />
     </article>
   );
 }

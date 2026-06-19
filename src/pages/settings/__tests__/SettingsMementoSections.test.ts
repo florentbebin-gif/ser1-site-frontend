@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { MEMENTO_ENTRIES } from '@/domain/settings-memento/entries';
 import { SETTINGS_REFERENCE_CHAIN } from '@/domain/settings-references';
 import { listSettingsForOwnerPage } from '@/domain/settings-registry';
 import {
@@ -22,6 +23,16 @@ import {
   readEntrySectionForKey,
   readEntrySectionsForKey,
 } from '../memento/mementoEntrySections';
+import {
+  getEntrySectionRenderedReferenceIds,
+  getEntrySourceVisibleReferenceIds,
+} from '../memento/mementoReferenceDedup';
+
+function getEntry(key: string) {
+  const entry = MEMENTO_ENTRIES.find((candidate) => candidate.key === key);
+  if (!entry) throw new Error(`Entrée mémento introuvable : ${key}`);
+  return entry;
+}
 
 describe('route settings mémento', () => {
   it('expose l’onglet mémento à tous les utilisateurs', () => {
@@ -181,5 +192,45 @@ describe('contrat des sections settings du mémento', () => {
     expect(readEntrySectionForKey('prevoyance.regimes-independants')).toBeDefined();
     expect(readEntrySectionForKey('prevoyance.affiliation-caisses')).toBeDefined();
     expect(readEntrySectionForKey('prevoyance.contrats-assurantiels')).toBeDefined();
+  });
+
+  it('déduplique les références de source seulement quand une section les rend déjà', () => {
+    const ir = getEntry('fiscalite-foyer.ir');
+    const ifi = getEntry('fiscalite-foyer.ifi');
+    const niches = getEntry('fiscalite-foyer.niches-fiscales');
+    const prelevements = getEntry('placements.ps-pfu-revenus-capital');
+    const dmtg = getEntry('transmission.succession-dmtg');
+
+    expect(getEntrySectionRenderedReferenceIds(ir)).toEqual(
+      expect.arrayContaining(['boi-ir-liq-20-10', 'cgi-197', 'boi-ir-chr']),
+    );
+    expect(getEntrySourceVisibleReferenceIds(ir)).toEqual([]);
+
+    expect(getEntrySourceVisibleReferenceIds(ifi)).toEqual([
+      'cgi-972',
+      'cgi-974',
+      'cgi-979',
+      'cgi-669',
+      'base-source-art-973-cgi-ifi-abattement-residence-principale',
+    ]);
+    expect(getEntrySourceVisibleReferenceIds(niches)).toEqual(niches.refIds);
+    expect(getEntrySourceVisibleReferenceIds(prelevements)).toEqual([]);
+    expect(getEntrySourceVisibleReferenceIds(dmtg)).toEqual([
+      'cgi-790-h',
+      'cgi-790-i',
+      'code-civil-720',
+      'code-civil-912',
+      'code-civil-913',
+    ]);
+  });
+
+  it('ne retire aucun refId déclaré sans rendu de remplacement', () => {
+    for (const entry of MEMENTO_ENTRIES) {
+      const visibleRefIds = getEntrySourceVisibleReferenceIds(entry);
+      const renderedBySectionRefIds = getEntrySectionRenderedReferenceIds(entry);
+      const renderedOrVisible = [...visibleRefIds, ...renderedBySectionRefIds];
+
+      expect(renderedOrVisible, entry.key).toEqual(expect.arrayContaining([...entry.refIds]));
+    }
   });
 });
