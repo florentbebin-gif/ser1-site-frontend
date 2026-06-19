@@ -107,6 +107,16 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
   }
 }
 
+async function selectMementoTab(
+  user: ReturnType<typeof userEvent.setup>,
+  tablistName: RegExp | string,
+  tabName: RegExp | string,
+) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = await within(tablist).findByRole('tab', { name: tabName });
+  await user.click(tab);
+}
+
 function getNumberInput(label: string): HTMLInputElement {
   const fieldRow = screen.getAllByText(label)[0]?.closest('.settings-field-row');
   if (!(fieldRow instanceof HTMLElement)) {
@@ -148,6 +158,11 @@ describe('SettingsMemento — Impôts éclaté', () => {
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
+    await selectMementoTab(
+      user,
+      /Sections du chapitre Fiscalité foyer/i,
+      'Paramètres de référence',
+    );
 
     expect(await screen.findByText('Barème de l’impôt sur le revenu')).toBeInTheDocument();
     expect(screen.getByText('Abattement DOM sur l’IR')).toBeInTheDocument();
@@ -170,6 +185,11 @@ describe('SettingsMemento — Impôts éclaté', () => {
 
     await openReadPart(user, 'Fiscalité');
     await openReadChapter(user, 'Fiscalité foyer');
+    await selectMementoTab(
+      user,
+      /Sections du chapitre Fiscalité foyer/i,
+      'Paramètres de référence',
+    );
 
     const ifiThresholdInput = await screen.findByLabelText('Seuil d’entrée IFI');
     await user.clear(ifiThresholdInput);

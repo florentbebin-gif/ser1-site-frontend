@@ -20,6 +20,7 @@ import MementoReadableEntry, {
   MementoLexiconSources,
 } from './MementoReadableEntry';
 import MementoReadChapter from './MementoReadChapter';
+import MementoReadTabs from './MementoReadTabs';
 import { scrollAccordionHeaderIntoView } from './useAccordionScroll';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
@@ -264,112 +265,167 @@ export default function MementoReadView({
                   role="region"
                   aria-labelledby={buttonId}
                 >
-                  {valueTable || showBaseContrat ? (
-                    <section className="settings-memento-read-zone settings-memento-read-zone--parameters">
-                      <div className="settings-memento-read-zone__header">
-                        <h5>Paramètres des calculateurs</h5>
-                      </div>
-                      <div className="settings-memento-read-zone__body">
-                        {valueTable ? (
-                          <Suspense
-                            fallback={
-                              <p className="settings-memento-empty">Chargement des valeurs...</p>
-                            }
-                          >
-                            <MementoValueTable isAdmin={isAdmin} {...valueTable} />
-                          </Suspense>
-                        ) : null}
-
-                        {showBaseContrat ? (
-                          <Suspense
-                            fallback={
-                              <p className="settings-memento-empty">
-                                Chargement du référentiel contrats...
-                              </p>
-                            }
-                          >
-                            <BaseContratSettingsPanel searchQuery={searchQuery} />
-                          </Suspense>
-                        ) : null}
-                      </div>
-                    </section>
-                  ) : null}
-
-                  {entries.length + lexiconTerms.length > 0 ? (
-                    <section className="settings-memento-read-zone settings-memento-read-zone--lecture">
-                      <div className="settings-memento-read-zone__header">
-                        <h5>Lire</h5>
-                      </div>
-                      <div className="settings-memento-read-zone__body">
-                        {entries.length > 0 ? (
-                          <div className="settings-memento-readable-list">
-                            {entries.map((entry) => (
-                              <MementoReadableEntry
-                                key={entry.key}
-                                kind="entry"
-                                entry={entry}
-                                showReferences={false}
-                              />
-                            ))}
-                          </div>
-                        ) : null}
-
-                        {lexiconTerms.length > 0 ? (
-                          <div
-                            className="settings-memento-lexicon"
-                            aria-label="Définitions du lexique"
-                          >
-                            {groupMementoLexiconTerms(lexiconTerms).map((group) => (
-                              <section key={group.id} className="settings-memento-lexicon-group">
-                                <div className="settings-memento-lexicon-group__header">
-                                  <h4>{group.title}</h4>
-                                  <p>{group.description}</p>
+                  {valueTable || showBaseContrat || entries.length + lexiconTerms.length > 0 ? (
+                    <MementoReadTabs
+                      ariaLabel={`Sections de ${part.definition.title}`}
+                      panels={[
+                        {
+                          id: 'lire',
+                          label: 'Lire',
+                          content:
+                            entries.length + lexiconTerms.length > 0 ? (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--lecture">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Lire</h5>
                                 </div>
-                                <div className="settings-memento-readable-list">
-                                  {group.terms.map((term) => (
-                                    <MementoReadableEntry
-                                      key={term.key}
-                                      kind="lexicon"
-                                      term={term}
-                                      showReferences={false}
+                                <div className="settings-memento-read-zone__body">
+                                  {entries.length > 0 ? (
+                                    <div className="settings-memento-readable-list">
+                                      {entries.map((entry) => (
+                                        <MementoReadableEntry
+                                          key={entry.key}
+                                          kind="entry"
+                                          entry={entry}
+                                          showReferences={false}
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : null}
+
+                                  {lexiconTerms.length > 0 ? (
+                                    <div
+                                      className="settings-memento-lexicon"
+                                      aria-label="Définitions du lexique"
+                                    >
+                                      {groupMementoLexiconTerms(lexiconTerms).map((group) => (
+                                        <section
+                                          key={group.id}
+                                          className="settings-memento-lexicon-group"
+                                        >
+                                          <div className="settings-memento-lexicon-group__header">
+                                            <h4>{group.title}</h4>
+                                            <p>{group.description}</p>
+                                          </div>
+                                          <div className="settings-memento-readable-list">
+                                            {group.terms.map((term) => (
+                                              <MementoReadableEntry
+                                                key={term.key}
+                                                kind="lexicon"
+                                                term={term}
+                                                showReferences={false}
+                                              />
+                                            ))}
+                                          </div>
+                                        </section>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </section>
+                            ) : (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--lecture">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Lire</h5>
+                                </div>
+                                <p className="settings-memento-empty">
+                                  Aucun contenu de lecture direct à ce niveau.
+                                </p>
+                              </section>
+                            ),
+                        },
+                        {
+                          id: 'parametres',
+                          label: 'Paramètres de référence',
+                          content:
+                            valueTable || showBaseContrat ? (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--parameters">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Paramètres de référence</h5>
+                                </div>
+                                <div className="settings-memento-read-zone__body">
+                                  {valueTable ? (
+                                    <Suspense
+                                      fallback={
+                                        <p className="settings-memento-empty">
+                                          Chargement des valeurs...
+                                        </p>
+                                      }
+                                    >
+                                      <MementoValueTable isAdmin={isAdmin} {...valueTable} />
+                                    </Suspense>
+                                  ) : null}
+
+                                  {showBaseContrat ? (
+                                    <Suspense
+                                      fallback={
+                                        <p className="settings-memento-empty">
+                                          Chargement du référentiel contrats...
+                                        </p>
+                                      }
+                                    >
+                                      <BaseContratSettingsPanel searchQuery={searchQuery} />
+                                    </Suspense>
+                                  ) : null}
+                                </div>
+                              </section>
+                            ) : (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--parameters">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Paramètres de référence</h5>
+                                </div>
+                                <p className="settings-memento-empty">
+                                  Aucun paramètre de référence rattaché.
+                                </p>
+                              </section>
+                            ),
+                        },
+                        {
+                          id: 'sources',
+                          label: 'Sources & couverture',
+                          content:
+                            entries.length + lexiconTerms.length > 0 ? (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--sources">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Sources & couverture</h5>
+                                </div>
+                                <div className="settings-memento-read-zone__body settings-memento-source-list">
+                                  {entries.map((entry) => (
+                                    <MementoEntrySources
+                                      key={entry.key}
+                                      entry={entry}
+                                      showStatus={showStatus}
                                     />
+                                  ))}
+                                  {groupMementoLexiconTerms(lexiconTerms).map((group) => (
+                                    <section
+                                      key={group.id}
+                                      className="settings-memento-source-group"
+                                    >
+                                      <h5>{group.title}</h5>
+                                      {group.terms.map((term) => (
+                                        <MementoLexiconSources
+                                          key={term.key}
+                                          term={term}
+                                          showStatus={showStatus}
+                                        />
+                                      ))}
+                                    </section>
                                   ))}
                                 </div>
                               </section>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    </section>
-                  ) : null}
-
-                  {entries.length + lexiconTerms.length > 0 ? (
-                    <section className="settings-memento-read-zone settings-memento-read-zone--sources">
-                      <div className="settings-memento-read-zone__header">
-                        <h5>Sources & couverture</h5>
-                      </div>
-                      <div className="settings-memento-read-zone__body settings-memento-source-list">
-                        {entries.map((entry) => (
-                          <MementoEntrySources
-                            key={entry.key}
-                            entry={entry}
-                            showStatus={showStatus}
-                          />
-                        ))}
-                        {groupMementoLexiconTerms(lexiconTerms).map((group) => (
-                          <section key={group.id} className="settings-memento-source-group">
-                            <h5>{group.title}</h5>
-                            {group.terms.map((term) => (
-                              <MementoLexiconSources
-                                key={term.key}
-                                term={term}
-                                showStatus={showStatus}
-                              />
-                            ))}
-                          </section>
-                        ))}
-                      </div>
-                    </section>
+                            ) : (
+                              <section className="settings-memento-read-zone settings-memento-read-zone--sources">
+                                <div className="settings-memento-read-zone__header">
+                                  <h5>Sources & couverture</h5>
+                                </div>
+                                <p className="settings-memento-empty">
+                                  Aucune source dédiée à ce niveau.
+                                </p>
+                              </section>
+                            ),
+                        },
+                      ]}
+                    />
                   ) : null}
 
                   {chapters.length > 0 ? (

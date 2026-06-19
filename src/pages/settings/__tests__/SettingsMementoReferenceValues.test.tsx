@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -79,6 +79,16 @@ async function openReadPart(user: ReturnType<typeof userEvent.setup>, label: str
   await user.click(button);
 }
 
+async function selectMementoTab(
+  user: ReturnType<typeof userEvent.setup>,
+  tablistName: RegExp | string,
+  tabName: RegExp | string,
+) {
+  const tablist = await screen.findByRole('tablist', { name: tablistName });
+  const tab = await within(tablist).findByRole('tab', { name: tabName });
+  await user.click(tab);
+}
+
 describe('SettingsMemento — valeurs de référence', () => {
   beforeEach(() => {
     isAdmin = false;
@@ -93,6 +103,11 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Produits & enveloppes réglementés');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
 
     expect(screen.queryByRole('heading', { name: 'Valeurs de référence' })).not.toBeInTheDocument();
     expect(
@@ -117,6 +132,11 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Produits & enveloppes réglementés');
+    await selectMementoTab(
+      user,
+      /Sections de Produits & enveloppes réglementés/i,
+      'Paramètres de référence',
+    );
     await screen.findByRole('radiogroup', { name: 'Audience' });
     await user.click(screen.getByRole('button', { name: /Épargne bancaire/i }));
     await user.click(screen.getByRole('button', { name: /Livret A/i }));
@@ -160,6 +180,11 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Social et protection sociale');
+    await selectMementoTab(
+      user,
+      /Sections de Social et protection sociale/i,
+      'Paramètres de référence',
+    );
 
     expect(
       await screen.findByRole('heading', { name: 'Valeurs sociales de référence' }),
@@ -182,6 +207,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Démembrement');
+    await selectMementoTab(user, /Sections de Démembrement/i, 'Paramètres de référence');
 
     expect(
       await screen.findByRole('heading', { name: 'Valeurs de démembrement' }),
@@ -205,6 +231,7 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Démembrement');
+    await selectMementoTab(user, /Sections de Démembrement/i, 'Paramètres de référence');
 
     const usufruitInput = await screen.findByLabelText('Moins de vingt et un ans révolus — valeur');
     expect(usufruitInput).toBeEnabled();
@@ -239,6 +266,11 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Fiscalité internationale');
+    await selectMementoTab(
+      user,
+      /Sections de Fiscalité internationale/i,
+      'Paramètres de référence',
+    );
 
     expect(
       await screen.findByRole('heading', { name: 'Valeurs internationales' }),
@@ -270,6 +302,11 @@ describe('SettingsMemento — valeurs de référence', () => {
     render(<SettingsMemento />);
 
     await openReadPart(user, 'Social et protection sociale');
+    await selectMementoTab(
+      user,
+      /Sections de Social et protection sociale/i,
+      'Paramètres de référence',
+    );
 
     const agircInput = await screen.findByLabelText('AGIRC-ARRCO — tranche T1 — valeur');
     expect(agircInput).toBeEnabled();
