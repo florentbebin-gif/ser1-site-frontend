@@ -14,7 +14,7 @@ export const MEMENTO_CHAPTERS = [
   {
     id: 'patrimoine',
     label: 'Patrimoine',
-    description: 'Synthèse actif-passif, masses patrimoniales et rattachement au dossier central.',
+    description: 'Enveloppes, contrats, liquidité et repères de détention patrimoniale.',
   },
   {
     id: 'fiscalite-foyer',

@@ -122,6 +122,38 @@ describe('mementoDisplayPlan', () => {
     }
   });
 
+  it('présente les produits et enveloppes comme un aide-mémoire de détention', () => {
+    const partie = buildMementoDisplayPlan().find(
+      (candidate) => candidate.definition.id === 'chiffres-cles',
+    );
+    if (!partie) throw new Error('Partie Produits & enveloppes introuvable');
+
+    expect(partie.chapters.map((chapter) => chapter.chapter.id)).toEqual(['patrimoine']);
+    expect(partie.chapters.flatMap((chapter) => chapter.entries)).toEqual([]);
+
+    const sectionTitles = partie.chapters.flatMap(
+      (chapter) => chapter.editorial?.sections?.map((section) => section.title) ?? [],
+    );
+
+    expect(sectionTitles).toEqual([
+      'Enveloppes et contrats',
+      'Liquidité et horizon',
+      'Points de vigilance',
+    ]);
+
+    const visibleTexts = partie.chapters.flatMap((chapter) => [
+      chapter.chapter.description,
+      chapter.editorial?.summary ?? '',
+      ...(chapter.editorial?.keyPoints ?? []),
+      ...(chapter.editorial?.sections ?? []).flatMap((section) => [section.title, section.body]),
+    ]);
+
+    for (const text of visibleTexts) {
+      expect(text, text).not.toMatch(FORBIDDEN_META_WORDS);
+      expect(text, text).not.toMatch(/actif-passif/i);
+    }
+  });
+
   it('présente la fiscalité comme un aide-mémoire de dispositifs, sans méta-discours', () => {
     const fiscalite = buildMementoDisplayPlan().find((part) => part.definition.id === 'fiscalite');
     if (!fiscalite) throw new Error('Partie Fiscalité introuvable');
@@ -229,6 +261,7 @@ describe('mementoDisplayPlan', () => {
   });
 
   it('déplace seulement la présentation des entrées transverses', () => {
+    expect(resolveMementoEntryPartId(getEntry('patrimoine.actif-passif'))).toBe('lexique');
     expect(resolveMementoEntryPartId(getEntry('patrimoine.demembrement'))).toBe('demembrement');
     expect(resolveMementoEntryPartId(getEntry('fiscalite-foyer.non-residents'))).toBe(
       'fiscalite-internationale',
@@ -238,10 +271,10 @@ describe('mementoDisplayPlan', () => {
     );
   });
 
-  it('réserve la partie Lexique aux définitions éditoriales', () => {
+  it('réserve la partie Lexique aux définitions et au repère actif-passif', () => {
     const lexique = buildMementoDisplayPlan().find((part) => part.definition.id === 'lexique');
 
-    expect(lexique?.entries).toHaveLength(0);
+    expect(lexique?.entries.map((entry) => entry.key)).toEqual(['patrimoine.actif-passif']);
     expect(lexique?.chapters).toHaveLength(0);
     expect(lexique?.lexiconTerms).toHaveLength(MEMENTO_LEXICON_TERMS.length);
   });

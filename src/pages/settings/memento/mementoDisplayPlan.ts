@@ -183,6 +183,7 @@ export const MEMENTO_DISPLAY_PARTS = [
 
 export const MEMENTO_ENTRY_PART_OVERRIDES = {
   'patrimoine.demembrement': 'demembrement',
+  'patrimoine.actif-passif': 'lexique',
   'transmission.donation-demembrement': 'demembrement',
   'fiscalite-foyer.non-residents': 'fiscalite-internationale',
   'immobilier.non-residents': 'fiscalite-internationale',

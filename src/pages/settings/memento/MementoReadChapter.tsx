@@ -159,16 +159,18 @@ function MementoReadChapterBody({
         </section>
       ) : null}
 
-      <section className="settings-memento-read-zone settings-memento-read-zone--sources">
-        <div className="settings-memento-read-zone__header">
-          <h5>Sources & couverture</h5>
-        </div>
-        <div className="settings-memento-read-zone__body settings-memento-source-list">
-          {chapter.entries.map((entry) => (
-            <MementoEntrySources key={entry.key} entry={entry} showStatus={showStatus} />
-          ))}
-        </div>
-      </section>
+      {chapter.entries.length > 0 ? (
+        <section className="settings-memento-read-zone settings-memento-read-zone--sources">
+          <div className="settings-memento-read-zone__header">
+            <h5>Sources & couverture</h5>
+          </div>
+          <div className="settings-memento-read-zone__body settings-memento-source-list">
+            {chapter.entries.map((entry) => (
+              <MementoEntrySources key={entry.key} entry={entry} showStatus={showStatus} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

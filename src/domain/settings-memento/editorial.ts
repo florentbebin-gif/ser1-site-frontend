@@ -50,11 +50,25 @@ export const MEMENTO_EDITORIAL: readonly MementoChapterEditorial[] = [
   {
     chapterId: 'patrimoine',
     summary:
-      'Le patrimoine se lit comme une photo structurée : actifs, dettes, liquidités et masses à transmettre ou arbitrer.',
+      'Les produits patrimoniaux se lisent par leur usage, leur disponibilité, leur horizon et leur mode de détention.',
     keyPoints: [
-      'Rattacher chaque actif au bon détenteur et au bon objectif.',
-      'Séparer valeur de marché, valeur fiscale et valeur de conseil.',
-      'Distinguer les liquidités disponibles des actifs difficiles à céder.',
+      'Identifier l’objectif principal de chaque enveloppe avant de comparer les règles.',
+      'Distinguer disponibilité, risque, fiscalité et transmission.',
+      'Relier le produit au détenteur, au besoin de liquidité et à l’horizon prévu.',
+    ],
+    sections: [
+      {
+        title: 'Enveloppes et contrats',
+        body: 'Assurance-vie, capitalisation, plans d’épargne, comptes-titres et livrets n’ont pas le même rôle. La lecture commence par l’usage recherché avant d’examiner les conditions de détention et de sortie.',
+      },
+      {
+        title: 'Liquidité et horizon',
+        body: 'Un produit peut être adapté à une réserve disponible, à un placement de moyen terme ou à une transmission préparée. L’analyse sépare la disponibilité réelle, le risque et la cohérence avec l’objectif patrimonial.',
+      },
+      {
+        title: 'Points de vigilance',
+        body: 'La comparaison doit rester prudente lorsque la règle dépend du contrat, du statut du détenteur ou d’une source à confirmer. Le référentiel produit précise les limites et les références utiles.',
+      },
     ],
   },
   {
