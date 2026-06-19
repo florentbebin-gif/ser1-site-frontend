@@ -67,6 +67,9 @@
 }
 
 .settings-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -78,6 +81,7 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   letter-spacing: 0.3px;
+  line-height: var(--line-height-tight);
 }
 
 .settings-tab:hover {
@@ -138,4 +142,35 @@
 
 .settings-tab-content {
   margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    width: min(100%, calc(100% - var(--space-6)));
+    margin: var(--space-5) auto;
+  }
+
+  .settings-shell__card {
+    padding: var(--space-4);
+  }
+
+  .settings-tab-nav {
+    margin-bottom: var(--space-4);
+  }
+
+  .settings-tab-list {
+    gap: var(--space-1);
+  }
+
+  .settings-tab {
+    min-height: var(--touch-target-mobile);
+    padding: 0 var(--space-4);
+  }
+
+  .settings-tab-scroll-btn {
+    width: var(--touch-target-mobile);
+    min-width: var(--touch-target-mobile);
+    min-height: var(--touch-target-mobile);
+    padding: 0;
+  }
 }
