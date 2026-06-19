@@ -8,9 +8,9 @@ import { RuleSourcesList } from '../BaseContratRuleSources';
 import ReferenceValuesRow from './ReferenceValuesRow';
 
 const CONFIDENCE_LABELS: Record<Confidence, string> = {
-  elevee: 'Qualité source : vérifiée',
-  moyenne: 'Qualité source : à vérifier',
-  faible: 'Qualité source : non vérifiée',
+  elevee: 'C1 - Source qualité : vérifiée',
+  moyenne: 'C1 - Source qualité : à vérifier',
+  faible: 'C1 - Source qualité : non vérifiée',
 };
 
 function RuleBlockCard({ block, showAdminMeta }: { block: RuleBlock; showAdminMeta: boolean }) {

@@ -48,8 +48,8 @@ export function MementoReferenceLinks({
 }
 
 const MEMENTO_LEXICON_SOURCE_LABELS: Record<MementoLexiconTerm['status'], string> = {
-  sourced: 'Lexique : terme sourcé',
-  a_verifier: 'Lexique : terme à relire',
+  sourced: 'C1 - Source qualité : lexique sourcé',
+  a_verifier: 'C1 - Source qualité : lexique à relire',
 };
 
 function ReferenceFallback({

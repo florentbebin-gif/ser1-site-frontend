@@ -26,7 +26,7 @@ export function ReviewStatusDetails({ override }: { override: BaseContratOverrid
       <span
         className={`base-contrat-review__status base-contrat-review__status--${override.review_status}`}
       >
-        Revue : {reviewLabel}
+        B - Revue : {reviewLabel}
       </span>
       {override.review_reason && (
         <p className="base-contrat-review__line">

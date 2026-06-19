@@ -183,7 +183,7 @@ describe('MementoPrevoyanceEntrySection', () => {
     const cpam = screen.getByRole('button', { name: /Salarié secteur privé — CPAM/i });
     await user.click(cpam);
 
-    expect(screen.getByText('Qualité source : vérifiée')).toBeInTheDocument();
+    expect(screen.getByText('C1 - Source qualité : vérifiée')).toBeInTheDocument();
     expect(screen.getByText(/consulté le 2026-05-24/i)).toBeInTheDocument();
   });
 

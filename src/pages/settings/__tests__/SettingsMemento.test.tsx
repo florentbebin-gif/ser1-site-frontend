@@ -241,7 +241,7 @@ describe('SettingsMemento', () => {
     expect(screen.getByText('npm run check:settings-references')).toBeInTheDocument();
     expect(screen.getByText('npm run check')).toBeInTheDocument();
     expect(screen.getByText('Doit rester à zéro')).toBeInTheDocument();
-    expect(screen.getByText(/Paramètres prêts : \d+/)).toBeInTheDocument();
+    expect(screen.getByText(/D - Paramètres prêts : \d+/)).toBeInTheDocument();
     expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
   });
 
@@ -278,7 +278,7 @@ describe('SettingsMemento', () => {
 
     expect(lireTab).toHaveAttribute('aria-selected', 'true');
     const lirePanel = screen.getByRole('tabpanel', { name: 'Lire' });
-    expect(within(lirePanel).queryByText(/Couverture :/)).not.toBeInTheDocument();
+    expect(within(lirePanel).queryByText(/A - Couverture :/)).not.toBeInTheDocument();
 
     lireTab.focus();
     await user.keyboard('{ArrowRight}');
@@ -287,7 +287,7 @@ describe('SettingsMemento', () => {
     await user.click(sourcesTab);
     expect(sourcesTab).toHaveAttribute('aria-selected', 'true');
     const sourcesPanel = screen.getByRole('tabpanel', { name: 'Sources & couverture' });
-    expect(within(sourcesPanel).getAllByText(/Couverture :/).length).toBeGreaterThan(0);
+    expect(within(sourcesPanel).getAllByText(/A - Couverture :/).length).toBeGreaterThan(0);
   });
 
   it('rend le mémento lisible avec références dans la zone sources sans IDs bruts', async () => {
@@ -348,7 +348,7 @@ describe('SettingsMemento', () => {
     expect((await screen.findAllByText('Impôt sur le revenu du foyer')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Périmètre en cours')).not.toBeInTheDocument();
     await selectMementoTab(user, FISCALITE_FOYER_TABS, 'Sources & couverture');
-    expect(screen.getAllByText('Couverture : partielle').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('A - Couverture : partielle').length).toBeGreaterThan(0);
   });
 
   it('ne rend pas les pastilles de prudence pour un non-admin', async () => {

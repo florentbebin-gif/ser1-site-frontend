@@ -13,12 +13,12 @@ interface MementoCoveragePanelProps {
 }
 
 const SIMULATOR_LIFECYCLE_LABELS: Record<SimulatorLifecycle, string> = {
-  active: 'Simulateur : actif',
-  hub: 'Simulateur : hub',
-  placeholder: 'Simulateur : placeholder',
-  planned: 'Simulateur : planifié',
-  expertOnly: 'Simulateur : expert',
-  internalOnly: 'Simulateur : interne',
+  active: 'E - Simulateur : actif',
+  hub: 'E - Simulateur : hub',
+  placeholder: 'E - Simulateur : placeholder',
+  planned: 'E - Simulateur : planifié',
+  expertOnly: 'E - Simulateur : expert',
+  internalOnly: 'E - Simulateur : interne',
 };
 
 const LIFECYCLES_WITHOUT_OWNER_LINK = new Set<SimulatorLifecycle>([
@@ -116,7 +116,7 @@ function MementoCoverageRow({ entry }: { entry: SimulatorCoverageEntry }): React
           )}
           {!lifecycle && (
             <span className="settings-memento-lifecycle settings-memento-lifecycle--roadmap">
-              Simulateur : roadmap
+              E - Simulateur : roadmap
             </span>
           )}
         </div>
