@@ -6,17 +6,20 @@ import type { MementoLexiconTerm } from '@/domain/settings-memento/lexicon';
 import type { MementoEntry } from '@/domain/settings-memento/types';
 
 import { MEMENTO_LEXICON_PRUDENCE_LABELS, MEMENTO_PRUDENCE_LABELS } from './mementoDisplayPlan';
+import { MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 
 type MementoReadableEntryProps =
   | {
       kind: 'entry';
       entry: MementoEntry;
       showStatus: boolean;
+      showReferences?: boolean;
     }
   | {
       kind: 'lexicon';
       term: MementoLexiconTerm;
       showStatus: boolean;
+      showReferences?: boolean;
     };
 
 function isUsableReferenceId(referenceId: LegalReferenceId): boolean {
@@ -29,7 +32,11 @@ function usableReferenceIds(refIds: readonly LegalReferenceId[]): LegalReference
   return refIds.filter(isUsableReferenceId);
 }
 
-function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): ReactElement | null {
+export function MementoReferenceLinks({
+  refIds,
+}: {
+  refIds: readonly LegalReferenceId[];
+}): ReactElement | null {
   const references = usableReferenceIds(refIds);
 
   if (references.length === 0) return null;
@@ -41,10 +48,80 @@ function ReferenceLinks({ refIds }: { refIds: readonly LegalReferenceId[] }): Re
   );
 }
 
+const MEMENTO_LEXICON_SOURCE_LABELS: Record<MementoLexiconTerm['status'], string> = {
+  sourced: 'Lexique : terme sourcé',
+  a_verifier: 'Lexique : terme à relire',
+};
+
+function ReferenceFallback({
+  refIds,
+  claimKeys,
+}: {
+  refIds: readonly LegalReferenceId[];
+  claimKeys?: readonly string[];
+}): ReactElement | null {
+  if (usableReferenceIds(refIds).length > 0) return null;
+  if (claimKeys && claimKeys.length > 0) {
+    return (
+      <p className="settings-memento-readable-entry__references">
+        Source rattachée par preuve qualifiée.
+      </p>
+    );
+  }
+  return <p className="settings-memento-readable-entry__references">Références à qualifier.</p>;
+}
+
+export function MementoEntrySources({
+  entry,
+  showStatus,
+}: {
+  entry: MementoEntry;
+  showStatus: boolean;
+}): ReactElement {
+  return (
+    <article className="settings-memento-source-entry">
+      <div className="settings-memento-source-entry__header">
+        <h5>{entry.label}</h5>
+        {showStatus ? (
+          <span className={`settings-memento-status settings-memento-status--${entry.status}`}>
+            {MEMENTO_STATUS_LABELS[entry.status]}
+          </span>
+        ) : null}
+      </div>
+      <MementoReferenceLinks refIds={entry.refIds} />
+      <ReferenceFallback refIds={entry.refIds} claimKeys={entry.claimKeys} />
+    </article>
+  );
+}
+
+export function MementoLexiconSources({
+  term,
+  showStatus,
+}: {
+  term: MementoLexiconTerm;
+  showStatus: boolean;
+}): ReactElement {
+  return (
+    <article className="settings-memento-source-entry">
+      <div className="settings-memento-source-entry__header">
+        <h5>{term.term}</h5>
+        {showStatus ? (
+          <span className={`settings-memento-status settings-memento-status--${term.status}`}>
+            {MEMENTO_LEXICON_SOURCE_LABELS[term.status]}
+          </span>
+        ) : null}
+      </div>
+      <MementoReferenceLinks refIds={term.refIds} />
+      <ReferenceFallback refIds={term.refIds} />
+    </article>
+  );
+}
+
 export default function MementoReadableEntry(props: MementoReadableEntryProps): ReactElement {
   if (props.kind === 'lexicon') {
     // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
     const prudence = props.showStatus ? MEMENTO_LEXICON_PRUDENCE_LABELS[props.term.status] : null;
+    const showReferences = props.showReferences ?? true;
 
     return (
       <article className="settings-memento-readable-entry settings-memento-readable-entry--lexicon">
@@ -53,13 +130,14 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
           {prudence ? <span>{prudence}</span> : null}
         </div>
         <p>{props.term.shortDefinition}</p>
-        <ReferenceLinks refIds={props.term.refIds} />
+        {showReferences ? <MementoReferenceLinks refIds={props.term.refIds} /> : null}
       </article>
     );
   }
 
   // Lecteur non-admin : aucune pastille de statut. Les pastilles restent réservées à l'admin.
   const prudence = props.showStatus ? MEMENTO_PRUDENCE_LABELS[props.entry.status] : null;
+  const showReferences = props.showReferences ?? true;
 
   return (
     <article className="settings-memento-readable-entry">
@@ -68,7 +146,7 @@ export default function MementoReadableEntry(props: MementoReadableEntryProps): 
         {prudence ? <span>{prudence}</span> : null}
       </div>
       <p>{props.entry.description}</p>
-      <ReferenceLinks refIds={props.entry.refIds} />
+      {showReferences ? <MementoReferenceLinks refIds={props.entry.refIds} /> : null}
     </article>
   );
 }

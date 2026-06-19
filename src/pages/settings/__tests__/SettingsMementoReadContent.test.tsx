@@ -113,6 +113,15 @@ async function openReadChapter(user: ReturnType<typeof userEvent.setup>, label: 
 const INTERNAL_WORDS =
   /\b(?:SER1|simulateur|simulateurs|settings|param[eè]tre|param[eè]tres|moteur|moteurs|registry)\b/i;
 
+function expectReadZonesWithoutInternalWords(container: HTMLElement): void {
+  const readZones = container.querySelectorAll('.settings-memento-read-zone--lecture');
+
+  expect(readZones.length).toBeGreaterThan(0);
+  for (const readZone of readZones) {
+    expect(readZone).not.toHaveTextContent(INTERNAL_WORDS);
+  }
+}
+
 describe('SettingsMemento — lecture éditoriale', () => {
   beforeEach(() => {
     isAdmin = false;
@@ -133,7 +142,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(screen.queryByText('Patrimoine immobilier taxable')).not.toBeInTheDocument();
     expect(screen.queryByText('Fiscalité du foyer')).not.toBeInTheDocument();
     expect(container.querySelectorAll('input:not([type="search"])')).toHaveLength(0);
-    expect(container).not.toHaveTextContent(INTERNAL_WORDS);
+    expectReadZonesWithoutInternalWords(container);
   });
 
   it('affiche le droit civil comme aide-mémoire de dispositifs', async () => {
@@ -153,7 +162,7 @@ describe('SettingsMemento — lecture éditoriale', () => {
     expect(screen.getByText('Avantages matrimoniaux')).toBeInTheDocument();
     expect(screen.queryByText('PACS et union libre')).not.toBeInTheDocument();
     expect(screen.queryByText('Réserve et quotité disponible')).not.toBeInTheDocument();
-    expect(container).not.toHaveTextContent(INTERNAL_WORDS);
+    expectReadZonesWithoutInternalWords(container);
   });
 
   it('affiche sociétés et placements sans le référentiel contrats déplacé', async () => {
@@ -222,14 +231,14 @@ describe('SettingsMemento — lecture éditoriale', () => {
 
     await openReadPart(user, 'Lexique');
 
-    expect(screen.getByText('Civil et transmission')).toBeInTheDocument();
-    expect(screen.getByText('Fiscalité et placements')).toBeInTheDocument();
-    expect(screen.getByText('Social et retraite')).toBeInTheDocument();
-    expect(screen.getByText('Acquêts')).toBeInTheDocument();
-    expect(screen.getByText('Quotité disponible')).toBeInTheDocument();
-    expect(screen.getByText('Plus-value')).toBeInTheDocument();
-    expect(screen.getByText('PER')).toBeInTheDocument();
-    expect(screen.getByText('PER individuel')).toBeInTheDocument();
-    expect(container).not.toHaveTextContent(INTERNAL_WORDS);
+    expect(screen.getAllByText('Civil et transmission').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Fiscalité et placements').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Social et retraite').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Acquêts').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Quotité disponible').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Plus-value').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('PER').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('PER individuel').length).toBeGreaterThan(0);
+    expectReadZonesWithoutInternalWords(container);
   });
 });

@@ -1,27 +1,8 @@
 import type { ReactElement } from 'react';
 
-import type {
-  MementoBusinessPriority,
-  MementoEntry,
-  MementoStatus,
-} from '@/domain/settings-memento/types';
+import type { MementoEntry, MementoStatus } from '@/domain/settings-memento/types';
 import { getOptionalSimulatorDefinition } from '@/domain/simulators/registry';
-
-export const MEMENTO_STATUS_LABELS: Record<MementoStatus, string> = {
-  couvert: 'Couvert',
-  partiel: 'Partiel',
-  planned: 'Planifié',
-  absent: 'Absent',
-  a_verifier: 'À vérifier',
-  blocked_missing_official_source: 'Source officielle manquante',
-};
-
-export const MEMENTO_PRIORITY_LABELS: Record<MementoBusinessPriority, string> = {
-  critique: 'Priorité critique',
-  structurant: 'Priorité structurante',
-  utile: 'Priorité utile',
-  complementaire: 'Priorité complémentaire',
-};
+import { MEMENTO_PRIORITY_LABELS, MEMENTO_STATUS_LABELS } from './mementoStatusLabels';
 
 const STATUS_WITHOUT_OWNER_LINK = new Set<MementoStatus>([
   'planned',

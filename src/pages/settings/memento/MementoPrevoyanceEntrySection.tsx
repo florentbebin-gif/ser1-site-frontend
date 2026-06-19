@@ -42,9 +42,9 @@ function formatRange(from: number, to: number | null): string {
   return `${from} % à ${to ?? '+'} %`;
 }
 function formatConfidence(confidence: string): string {
-  if (confidence === 'haute') return 'Vérifié';
-  if (confidence === 'moyenne') return 'À vérifier';
-  return 'Non vérifié';
+  if (confidence === 'haute') return 'Qualité source : vérifiée';
+  if (confidence === 'moyenne') return 'Qualité source : à vérifier';
+  return 'Qualité source : non vérifiée';
 }
 function RuleCard({ title, children }: { title: string; children: ReactNode }): ReactElement {
   return (

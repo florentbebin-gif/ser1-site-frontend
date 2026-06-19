@@ -17,15 +17,15 @@ const STATUS_ORDER = [
 ] as const satisfies readonly SettingsRegistryStatus[];
 
 const STATUS_LABELS: Record<SettingsRegistryStatus, string> = {
-  ready: 'Prêt',
-  partial: 'Partiel',
-  planned: 'Planifié',
+  ready: 'Paramètre : prêt',
+  partial: 'Paramètre : partiel',
+  planned: 'Paramètre : prévu',
 };
 
 const STATUS_COUNT_LABELS: Record<SettingsRegistryStatus, { singular: string; plural: string }> = {
-  ready: { singular: 'prêt', plural: 'prêts' },
-  partial: { singular: 'partiel', plural: 'partiels' },
-  planned: { singular: 'planifié', plural: 'planifiés' },
+  ready: { singular: 'paramètre prêt', plural: 'paramètres prêts' },
+  partial: { singular: 'paramètre partiel', plural: 'paramètres partiels' },
+  planned: { singular: 'paramètre prévu', plural: 'paramètres prévus' },
 };
 
 const OWNER_PAGE_TITLES: Record<SettingsOwnerPagePath, string> = {
