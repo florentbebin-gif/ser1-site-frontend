@@ -1,7 +1,6 @@
-import type { ReactElement } from 'react';
+import { useId, type ReactElement } from 'react';
 
-import avatarFemmeUrl from '@/assets/audit/avatars/avatar-femme.png';
-import avatarHommeUrl from '@/assets/audit/avatars/avatar-homme.png';
+import { FoyerAvatarArt, FoyerAvatarClipDef } from '@/features/audit';
 import type { AuditLandingMember } from '@/features/audit';
 
 import './HomeFoyerAvatars.css';
@@ -20,6 +19,7 @@ export function HomeFoyerAvatars({
   principal,
   conjoint,
 }: HomeFoyerAvatarsProps): ReactElement | null {
+  const clipBase = useId();
   const members = [principal, conjoint].filter((member): member is AuditLandingMember =>
     Boolean(member),
   );
@@ -38,15 +38,22 @@ export function HomeFoyerAvatars({
 
   return (
     <span className="home-foyer-avatars" role="img" aria-label={label} title={label}>
-      {members.map((member) => (
-        <img
-          key={member.id}
-          className="home-foyer-avatars__img"
-          src={member.avatarKind === 'femme' ? avatarFemmeUrl : avatarHommeUrl}
-          alt=""
-          aria-hidden="true"
-        />
-      ))}
+      {members.map((member) => {
+        const clipId = `${clipBase}-${member.id}`;
+        return (
+          <svg
+            key={member.id}
+            className="home-foyer-avatars__img"
+            viewBox="-120 -120 240 240"
+            aria-hidden="true"
+          >
+            <defs>
+              <FoyerAvatarClipDef clipId={clipId} />
+            </defs>
+            <FoyerAvatarArt kind={member.avatarKind} clipId={clipId} />
+          </svg>
+        );
+      })}
     </span>
   );
 }

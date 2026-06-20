@@ -2413,6 +2413,41 @@ surface élevée dans une surface élevée, aucune estimation IFI avant moteur, 
 fondatrice, aucune version active sur données bloquantes manquantes, aucune règle design ouverte non
 reverrouillée, aucune fausse donnée pour un effet visuel.
 
+### Variantes d'avatars de filiation — différé (rattaché à UX-03)
+
+Statut : **design validé, intégration différée**. Le set d'avatars de base (4 silhouettes
+homme / femme / garçon / fille) est livré dans `src/features/audit/components/FoyerAvatarArt.tsx`
+et consommé par `FoyerFiliation.tsx` et `HomeFoyerAvatars.tsx`. Trois variantes supplémentaires
+ont été validées visuellement mais ne sont **pas** codées :
+
+- seniors (cheveux, barbe et sourcils blancs) — homme et femme uniquement ;
+- famille à peau foncée — les 4 silhouettes ;
+- seniors à peau foncée — homme et femme.
+
+Raison du report :
+
+- Sans sélecteur, ces variantes seraient du code sans consommateur, rejeté par `check:unused`.
+- La teinte de peau ne se déduit pas du dossier (≠ sexe/âge) : il faut un champ « apparence »
+  par membre, décision couplée au sélecteur. L'âge senior pourrait se déduire de la date de
+  naissance, mais le choix doit rester manuel.
+
+Cible technique (à brancher en un seul lot avec le sélecteur) :
+
+- `FoyerAvatarArt` passe **palette-driven** : `kind` reste la silhouette
+  (`homme | femme | garcon | fille`) ; on ajoute une dimension orthogonale
+  `appearance = { skinTone: 'clair' | 'fonce'; age: 'adulte' | 'senior' }` (senior limité aux
+  adultes). On évite l'explosion combinatoire d'un enum à plat et la duplication des tracés
+  (palette de couleurs, pas 8 jeux de portraits).
+- Palettes à introduire : peau foncée (peau + assombrissement bouche/sourcils/nez, joues
+  réchauffées) et senior (cheveux/barbe blanc cassé, sourcils gris clair).
+- Sélecteur sur la filiation `/audit` : choix de l'apparence par membre, persisté via le modèle
+  dossier (champ apparence par membre), provenance cohérente avec le reste du dossier.
+- Garde-fou couleurs déjà en place : `FoyerAvatarArt.tsx` est allowlisté dans
+  `tools/ser1-color-policy.mjs` (illustration « scène physique » non thémable) ; les nouvelles
+  palettes restent dans ce fichier, sans nouvelle exception.
+
+PR cible : UX-03 (pages famille / filiation) ou une PR UI dédiée proche.
+
 ## Workflow obligatoire par PR
 
 Chaque PR suit exactement cette séquence :

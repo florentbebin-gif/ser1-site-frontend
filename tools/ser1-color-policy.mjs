@@ -61,6 +61,13 @@ const PATH_ALLOWLIST = [
     label: 'assets de marque externes',
     test: (path) => path.startsWith('public/logos/'),
   },
+  {
+    // Illustration vectorielle (peau, cheveux, vêtements) : scène physique qui
+    // ne doit pas s'inverser en thème sombre. Couleurs figées par conception,
+    // pas des tokens UI. Portée volontairement limitée à ce seul fichier d'art.
+    label: 'illustration avatars foyer',
+    test: (path) => path === 'src/features/audit/components/FoyerAvatarArt.tsx',
+  },
 ];
 
 export function toRepoPath(filePath, root = process.cwd()) {

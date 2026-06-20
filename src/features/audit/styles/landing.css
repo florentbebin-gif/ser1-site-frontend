@@ -792,10 +792,6 @@
   stroke-linecap: round;
 }
 
-.audit-fil__node {
-  --audit-fil-avatar-color: var(--action-primary);
-}
-
 .audit-fil__node rect {
   stroke-width: 1;
 }
@@ -810,24 +806,7 @@
   stroke: color-mix(in srgb, var(--state-info) 30%, var(--border-default));
 }
 
-.audit-fil__node--homme {
-  --audit-fil-avatar-color: var(--action-primary);
-}
-
-.audit-fil__node--femme {
-  --audit-fil-avatar-color: var(--accent-signature);
-}
-
-.audit-fil__node--garcon {
-  --audit-fil-avatar-color: var(--state-info);
-}
-
-.audit-fil__node--fille {
-  --audit-fil-avatar-color: var(--data-secondary);
-}
-
 .audit-fil__avatar-image {
-  image-rendering: auto;
   pointer-events: none;
 }
 

@@ -9,7 +9,6 @@
   border: 2px solid var(--surface-card);
   border-radius: 50%;
   background: var(--surface-active);
-  object-fit: cover;
   box-shadow: 0 2px 6px color-mix(in srgb, var(--shadow-color) 14%, transparent);
 }
 
