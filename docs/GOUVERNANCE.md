@@ -85,7 +85,7 @@ Principes : épuré, lisible, respirant.
 
 ### Home — premier écran et entrée scan documentaire IA
 
-- La Home garde la hiérarchie : `PAR OÙ COMMENCER`, deux actions d'entrée, respiration visuelle, puis `SIMULATEURS`.
+- La Home garde la hiérarchie : en-tête d'accueil `Bonjour,`, deux actions d'entrée, respiration visuelle, puis `SIMULATEURS` sans sous-texte.
 - Le scan documentaire IA n'est pas un simulateur. Il prépare un dossier d'audit ; il doit donc être placé dans le bloc d'entrée, avant le séparateur et avant la section `SIMULATEURS`.
 - Le rail gauche Home reste léger : `Dossier de travail` et `Mode utilisateur` uniquement. Il ne remplace pas `DossierRail`, réservé à `/strategy` et `/sim/*` ; `/audit` UX-01 possède une colonne cockpit dédiée.
 - La section `SIMULATEURS` consomme la registry métier `src/domain/simulators/` : elle ne maintient pas de grille locale concurrente.
@@ -95,7 +95,8 @@ Principes : épuré, lisible, respirant.
 - **Repère d'onglet** : les trois onglets sont alignés gauche / centre / droite sur un rail bas, l'onglet actif marqué par un caret pointant vers le panneau ; `role="tablist"` / `role="tab"` conservés.
 - **Libellés amont/aval** : le rail de parcours (`DossierRail`) et le panneau détail Home (`HomeSimulatorPanel`) partagent `DOSSIER_CHAIN_LABELS` (`src/domain/dossier/chainLabels.ts`) pour nommer les étapes amont / actuelle / aval. Pas de vocabulaire divergent entre les deux surfaces.
 - En Home simplifiée, les simulateurs `planned` ne sont jamais rendus comme cartes actives. Le mode expert élargit la visibilité issue de la registry sans créer de second catalogue Home.
-- `Nouvelle stratégie` reste l'action dominante ; `Scan documentaire` reste une action secondaire visible sans faux workflow tant que l'OCR n'est pas livré.
+- L'action dossier reste dominante et son libellé vient du read-model Home : `Nouvelle analyse patrimoniale`, `Continuer le dossier`, `Reprendre la stratégie`, puis `Continuer le scénario` quand un signal fiable existe.
+- Le scan documentaire reste une action secondaire visible sans faux workflow tant que l'OCR n'est pas livré ; avec un dossier actif, il se présente comme ajout de pièces au dossier existant.
 - Le libellé public doit éviter "chat IA" ou "assistant". Préférer `Scan documentaire`, `Préparer un dossier par documents` ou `Traitement documentaire IA`.
 - Le flux ouvert par cette action doit afficher une revue guidée : documents, extraction, champs proposés, sources, score de confiance, actions `Valider`, `Corriger`, `Ignorer`, `Demander pièce complémentaire`. Pas de zone de chat libre CGP ↔ LLM.
 

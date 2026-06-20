@@ -15,12 +15,17 @@ test.describe('Smoke Tests - Surfaces stables', () => {
   });
 
   test('Home charge en mode smoke', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.sessionStorage.removeItem('ser1_audit_draft');
+    });
+
     await page.goto(ROUTES.home);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('home-start-eyebrow')).toHaveCount(0);
-    await expect(page.getByTestId('home-guide-subtitle')).toContainText(
-      'Sélectionnez votre objectif, SER1 vous guide pas à pas.',
-    );
+    await expect(page.getByText('SIMULATEURS')).toBeVisible();
+    await expect(
+      page.getByText('Sélectionnez votre objectif, SER1 vous guide pas à pas.'),
+    ).toHaveCount(0);
     await expect(page.getByTestId('home-primary-action-strategy')).toBeVisible();
     await expect(page.getByTestId('home-primary-action-scan')).toBeVisible();
     await expect(page.getByTestId('home-status-card')).toBeVisible();
@@ -34,6 +39,17 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.getByTestId('home-space-societe')).toHaveAttribute('data-open', 'false');
     await expect(page.getByTestId('home-simulator-card-actif-passif')).toHaveCount(0);
     await expect(page.getByText('Épargne salariale')).toHaveCount(0);
+    await expect(page.getByTestId('home-dossier-gauge')).toHaveCount(0);
+
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText(
+      'Nouvelle analyse patrimoniale',
+    );
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText('Démarrer');
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText('Scan documentaire');
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText(
+      'Importez les documents du client pour pré-remplir le dossier.',
+    );
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText('Importer');
 
     await expect(page.getByTestId('home-primary-action-scan')).toHaveAttribute(
       'aria-disabled',
@@ -42,6 +58,54 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page).toHaveURL(/\/$/);
     await page.getByTestId('home-primary-action-strategy').click();
     await expect(page).toHaveURL(/\/audit$/);
+  });
+
+  test('Home contextualise les actions avec un dossier actif partiel', async ({ page }) => {
+    const dossier = createEmptyDossier();
+    dossier.situationFamiliale.mr.prenom = 'Jean';
+    dossier.situationFamiliale.mr.nom = 'Martin';
+
+    await page.addInitScript((draft) => {
+      window.sessionStorage.setItem('ser1_audit_draft', JSON.stringify(draft));
+    }, dossier);
+
+    await page.goto(ROUTES.home);
+    await expect(page.locator('body')).not.toContainText('Application error');
+    await expect(page.getByTestId('home-dossier-gauge')).toBeVisible();
+    await expect(page.getByTestId('home-dossier-gauge')).toHaveAttribute(
+      'aria-label',
+      /Structuration du dossier : \d+ %/,
+    );
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText(
+      'Continuer le dossier',
+    );
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText('Continuer');
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText(
+      'Ajouter des documents au dossier',
+    );
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText(
+      'Complétez ou vérifiez les données déjà structurées à partir de nouvelles pièces client.',
+    );
+    await expect(page.getByTestId('home-primary-action-scan')).toContainText('Ajouter des pièces');
+  });
+
+  test('Home reprend la stratégie quand des objectifs sont définis', async ({ page }) => {
+    const dossier = createEmptyDossier();
+    dossier.situationFamiliale.mr.prenom = 'Jean';
+    dossier.situationFamiliale.mr.nom = 'Martin';
+    dossier.objectifs = ['preparer_transmission'];
+
+    await page.addInitScript((draft) => {
+      window.sessionStorage.setItem('ser1_audit_draft', JSON.stringify(draft));
+    }, dossier);
+
+    await page.goto(ROUTES.home);
+    await expect(page.locator('body')).not.toContainText('Application error');
+    await expect(page.getByTestId('home-dossier-gauge')).toBeVisible();
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText(
+      'Reprendre la stratégie',
+    );
+    await expect(page.getByTestId('home-primary-action-strategy')).toContainText('Reprendre');
   });
 
   test('Home conserve la densité cible à zoom navigateur 100 %', async ({ page }) => {

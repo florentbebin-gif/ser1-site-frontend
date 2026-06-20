@@ -1,3 +1,5 @@
+import { useSearchParams } from 'react-router';
+
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { useThemePaletteEditor } from './hooks/useThemePaletteEditor';
 import { useSettingsUser } from './hooks/useSettingsUser';
@@ -8,6 +10,8 @@ import { ThemeSourceSection } from './components/ThemeSourceSection';
 export default function SettingsGeneral() {
   const { user, loading } = useSettingsUser();
   const palette = useThemePaletteEditor();
+  const [searchParams] = useSearchParams();
+  const openAssistance = searchParams.get('focus') === 'assistance';
 
   if (loading) {
     return <p>Chargement…</p>;
@@ -105,7 +109,7 @@ export default function SettingsGeneral() {
         )}
       </section>
 
-      <SignalementsSection />
+      <SignalementsSection initialOpen={openAssistance} />
     </div>
   );
 }

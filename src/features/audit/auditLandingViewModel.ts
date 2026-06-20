@@ -23,6 +23,10 @@ export type AuditLandingAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
 
 export interface AuditLandingCompletionHint {
   ratio: number;
+  /** Nombre de contrôles satisfaits (réutilisable pour agréger d'autres jauges). */
+  completed: number;
+  /** Nombre total de contrôles évalués. */
+  total: number;
   label: string;
 }
 
@@ -269,6 +273,8 @@ function buildEtatCivilCompletion({
 
   return {
     ratio,
+    completed,
+    total: checks.length,
     label: `Données état civil renseignées : ${completed}/${checks.length}`,
   };
 }
