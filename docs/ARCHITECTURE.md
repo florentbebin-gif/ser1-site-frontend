@@ -945,7 +945,16 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Adaptateur fingerprint       | `src/utils/fiscalSettingsFingerprints.ts`                                                                            |
 | Identité base mémento        | `src/utils/cache/mementoReferenceValuesCache.ts` (`getMementoIdentity`) + `src/hooks/settings/useMementoIdentity.ts` |
 | Comparaison au chargement    | `src/App.tsx`                                                                                                        |
+| Contrat simulateurs snapshot | `src/reporting/snapshot/snapshotSimRegistry.ts` (`SIM_SNAPSHOT_CONTRACTS`)                                           |
+| Orchestration `.ser1`        | `src/reporting/snapshot/snapshotIO.ts`                                                                               |
 | Schéma & migrations snapshot | `src/reporting/snapshot/snapshotSchema.ts`, `src/reporting/snapshot/snapshotMigrations.ts`                           |
+
+`snapshotIO.ts` orchestre la sauvegarde/lecture `.ser1` mais ne porte plus seul le contrat des
+simulateurs. Chaque simulateur actif doit avoir une entrée explicite dans
+`SIM_SNAPSHOT_CONTRACTS` : soit un mode `storage` collecté/restauré, soit un mode `noSnapshot` avec
+justification. Le test `src/reporting/snapshot/__tests__/snapshotIO.activeSims.test.ts` compare ce
+registre aux routes actives et vérifie la sauvegarde, la restauration et la compatibilité des
+snapshots existants.
 
 ---
 
@@ -1010,6 +1019,7 @@ Les fichiers `src/domain/base-contrat/**` ne doivent pas importer React, Supabas
 | Registry Settings fiscaux/métier            | `src/domain/settings-registry/`                                                             |
 | Libellés fiscaux Base-Contrat               | `src/domain/base-contrat/rules/fiscalLabels.ts`                                             |
 | Profil fiscal par enveloppe                 | `src/domain/base-contrat/rules/fiscalProfile.ts`                                            |
+| Contrat simulateurs snapshot `.ser1`        | `src/reporting/snapshot/snapshotSimRegistry.ts`                                             |
 | Migration snapshot (v4 + identity)          | `src/reporting/snapshot/snapshotMigrations.ts`                                              |
 
 ---
