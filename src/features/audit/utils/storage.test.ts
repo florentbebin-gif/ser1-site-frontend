@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTrackedObjectURL } from '@/utils/export/createTrackedObjectURL';
 import { createEmptyDossier } from '@/domain/audit/types';
 import {
@@ -15,6 +15,8 @@ vi.mock('@/utils/export/createTrackedObjectURL', () => ({
 }));
 
 const SESSION_STORAGE_KEY = 'ser1_audit_draft';
+const EXPORT_DATE = new Date('2026-06-20T08:04:49.096Z');
+const IMPORT_DATE = new Date('2026-06-20T08:04:50.096Z');
 
 describe('storage audit', () => {
   beforeEach(() => {
@@ -24,6 +26,10 @@ describe('storage audit', () => {
       ...URL,
       revokeObjectURL: vi.fn(),
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('sauvegarde, recharge puis efface le brouillon de session', () => {
@@ -60,14 +66,20 @@ describe('storage audit', () => {
   });
 
   it('importe un export JSON valide et rejette un fichier invalide', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(EXPORT_DATE);
+
     const dossier = createEmptyDossier();
     dossier.situationFamiliale.mr.nom = 'Martin';
+
+    vi.setSystemTime(IMPORT_DATE);
 
     const imported = await importDossierFromFile(
       new File([JSON.stringify(dossier)], 'audit.json', { type: 'application/json' }),
     );
 
     expect(imported.situationFamiliale.mr.nom).toBe('Martin');
+    expect(imported.dateModification).toBe(IMPORT_DATE.toISOString());
     expect(imported.dateModification).not.toBe(dossier.dateModification);
 
     await expect(
