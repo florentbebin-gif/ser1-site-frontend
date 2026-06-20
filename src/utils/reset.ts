@@ -1,4 +1,11 @@
 // utils/reset.js
+import {
+  SNAPSHOT_LAST_SAVED_FILENAME_KEY,
+  SNAPSHOT_LAST_LOADED_KEY,
+  SNAPSHOT_LAST_SAVED_KEY,
+  SNAPSHOT_LOADED_FILENAME_KEY,
+} from '@/reporting/snapshot/snapshotKeys';
+import { SNAPSHOT_SAVE_HISTORY_KEY } from '@/reporting/snapshot/saveHistory';
 
 // 👉 On passe désormais un "simId" pour cibler un seul simulateur
 const RESET_EVENT = 'ser1:reset'; // CustomEvent envoyé aux pages { detail: { simId } }
@@ -22,6 +29,9 @@ export function triggerPageReset(simId: string): void {
     // Pour l'audit, effacer aussi la clé spécifique
     if (simId === 'audit' && typeof sessionStorage !== 'undefined') {
       sessionStorage.removeItem('ser1_audit_draft');
+    }
+    if (simId === 'audit' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(SNAPSHOT_SAVE_HISTORY_KEY);
     }
     // Pour la stratégie, effacer aussi la clé spécifique
     if (simId === 'strategy' && typeof sessionStorage !== 'undefined') {
@@ -79,8 +89,10 @@ export function triggerGlobalReset(): void {
 
   // Effacer aussi le nom du fichier chargé (sessionStorage)
   try {
-    sessionStorage.removeItem('ser1:loadedFilename');
-    sessionStorage.removeItem('ser1:lastSavedFilename');
+    sessionStorage.removeItem(SNAPSHOT_LOADED_FILENAME_KEY);
+    sessionStorage.removeItem(SNAPSHOT_LAST_SAVED_FILENAME_KEY);
+    sessionStorage.removeItem(SNAPSHOT_LAST_LOADED_KEY);
+    sessionStorage.removeItem(SNAPSHOT_LAST_SAVED_KEY);
     sessionStorage.removeItem('ser1:placement:lastSaved');
     sessionStorage.removeItem('ser1:placement:lastLoaded');
   } catch {}

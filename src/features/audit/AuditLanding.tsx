@@ -2,24 +2,21 @@
  * AuditLanding — cockpit /audit (UX-01).
  *
  * Cockpit pleine largeur : panneau contextuel gauche (encart dossier + gestion des
- * versions « à venir ») et zone principale en 3 cartes. Les cartes Synthèse et
- * Objectifs SONT les actions (vrai <button> plein-carte, libellé d'action, focus
- * visible). La Synthèse restitue l'état civil réel et la filiation F1. Les cartes
- * Masses, Organigramme société et Stratégie affichent un aperçu à venir explicite
- * tant que les données métier ne sont pas raccordées. Aucune donnée patrimoniale
+ * avancement) et zone principale en 3 cartes. Les cartes Synthèse et Objectifs
+ * SONT les actions (vrai <button> plein-carte, libellé d'action, focus visible).
+ * La Synthèse restitue l'état civil réel et la filiation F1. Les cartes Masses,
+ * Organigramme société et Stratégie affichent un aperçu à venir explicite tant
+ * que les données métier ne sont pas raccordées. Aucune donnée patrimoniale
  * inventée, aucune valeur par défaut comme certitude.
  */
 
 import type { ReactElement, ReactNode } from 'react';
 
-import { DossierLoadedCard } from '@/components/ui/dossier/DossierLoadedCard';
 import {
   IconBuilding,
   IconChevronRight,
   IconClipboardCheck,
-  IconCloud,
   IconFolder,
-  IconHardDrive,
   IconInfo,
   IconLock,
   IconNetwork,
@@ -33,6 +30,9 @@ import type {
   AuditLandingSyntheseCard,
   AuditLandingViewModel,
 } from './auditLandingViewModel';
+import { AuditProgressRail } from './components/AuditProgressRail';
+import { AuditStatusBar } from './components/AuditStatusBar';
+import { DossierTravailCard } from './components/DossierTravailCard';
 import { FoyerFiliation } from './components/FoyerFiliation';
 import '@/styles/sim/index.css';
 import './styles/index.css';
@@ -45,22 +45,18 @@ interface AuditLandingProps {
 }
 
 export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
-  const { hasDossier, synthese, objectifs, pilotage } = viewModel;
+  const { clientName, synthese, objectifs, pilotage, statusBar, progress } = viewModel;
 
   return (
     <div className="audit-landing premium-page">
       <div className="audit-landing__layout">
-        <aside className="dossier-rail-column audit-landing__rail" aria-label="Contexte de travail">
-          <DossierLoadedCard
-            testId="dossier-loaded-card"
-            filenameTestId="dossier-loaded-filename"
-            disclaimerTestId="dossier-loaded-disclaimer"
-            variant="rail"
-          />
-          {hasDossier && <DossierVersionsPlaceholder />}
+        <aside className="audit-landing__rail" aria-label="Contexte de travail">
+          <DossierTravailCard clientName={clientName} />
+          <AuditProgressRail sections={progress} />
         </aside>
 
         <main className="audit-landing__main">
+          <AuditStatusBar statusBar={statusBar} />
           <div className="audit-landing__title-divider" aria-hidden="true" />
 
           <div className="audit-landing__grid">
@@ -295,27 +291,70 @@ function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement 
       </CardHead>
       <CardDivider />
 
-      {card.objectifs.length > 0 ? (
-        <>
-          <ol className="audit-objectifs">
-            {card.objectifs.slice(0, 4).map((objectif) => (
-              <li key={objectif.id} className="audit-objectifs__item">
-                <span className="audit-objectifs__rank">{objectif.priority}</span>
-                <span className="audit-objectifs__label">{objectif.label}</span>
-              </li>
-            ))}
-          </ol>
-          {card.note && (
-            <p className="audit-objectifs__note">
-              <IconInfo className="audit-objectifs__note-icon" />
-              {card.note}
-            </p>
+      <div className="audit-objectifs__content">
+        <div className="audit-objectifs__text">
+          {card.objectifs.length > 0 ? (
+            <>
+              <ol className="audit-objectifs">
+                {card.objectifs.slice(0, 4).map((objectif) => (
+                  <li key={objectif.id} className="audit-objectifs__item">
+                    <span className="audit-objectifs__rank">{objectif.priority}</span>
+                    <span className="audit-objectifs__label">{objectif.label}</span>
+                  </li>
+                ))}
+              </ol>
+              {card.note && (
+                <p className="audit-objectifs__note">
+                  <IconInfo className="audit-objectifs__note-icon" />
+                  {card.note}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="audit-tile__empty">{card.emptyLabel}</p>
           )}
-        </>
-      ) : (
-        <p className="audit-tile__empty">{card.emptyLabel}</p>
-      )}
+        </div>
+        <ObjectifsIllustration />
+      </div>
     </section>
+  );
+}
+
+function ObjectifsIllustration(): ReactElement {
+  return (
+    <svg
+      className="audit-objectifs-visual"
+      viewBox="0 0 132 92"
+      role="img"
+      aria-label="Illustration d'une liste d'objectifs"
+    >
+      <path
+        className="audit-objectifs-visual__leaf audit-objectifs-visual__leaf--left"
+        d="M29 63 C11 51 8 33 28 40 C41 45 43 58 29 63 Z"
+      />
+      <path
+        className="audit-objectifs-visual__leaf audit-objectifs-visual__leaf--right"
+        d="M104 58 C124 43 126 26 106 34 C92 40 91 53 104 58 Z"
+      />
+      <path className="audit-objectifs-visual__stem" d="M35 73 C53 58 66 46 79 20" />
+      <path className="audit-objectifs-visual__stem" d="M98 73 C85 56 76 42 70 20" />
+      <rect
+        className="audit-objectifs-visual__board-shadow"
+        x="45"
+        y="17"
+        width="48"
+        height="64"
+        rx="4"
+      />
+      <rect className="audit-objectifs-visual__board" x="42" y="14" width="48" height="64" rx="4" />
+      <rect className="audit-objectifs-visual__clip" x="55" y="9" width="22" height="10" rx="3" />
+      <path className="audit-objectifs-visual__line" d="M58 31 H78" />
+      <path className="audit-objectifs-visual__line" d="M58 45 H78" />
+      <path className="audit-objectifs-visual__line" d="M58 59 H78" />
+      <path className="audit-objectifs-visual__check" d="M49 30 L52 33 L56 27" />
+      <path className="audit-objectifs-visual__check" d="M49 44 L52 47 L56 41" />
+      <path className="audit-objectifs-visual__check" d="M49 58 L52 61 L56 55" />
+    </svg>
   );
 }
 
@@ -397,35 +436,6 @@ function CardActionText({ label }: { label: string }): ReactElement {
 
 function PreviewBadge(): ReactElement {
   return <span className="audit-preview-badge">À venir</span>;
-}
-
-/** Gestion des versions / sauvegardes du dossier — placeholder honnête (F6). */
-function DossierVersionsPlaceholder(): ReactElement {
-  return (
-    <section className="dossier-rail audit-versions-rail" aria-label="Versions et sauvegardes">
-      <div className="dossier-rail__panel">
-        <header className="dossier-rail__header">
-          <span className="dossier-rail__eyebrow">Dossier</span>
-          <h2 className="dossier-rail__journey">Versions &amp; sauvegardes</h2>
-          <p className="dossier-rail__objective">
-            Historique, simulations et restauration du dossier — à venir.
-          </p>
-        </header>
-        <div className="audit-save-list" aria-label="Statut des sauvegardes">
-          <div className="audit-save-item">
-            <IconCloud className="audit-save-item__icon" />
-            <span>Cloud</span>
-            <small>Sauvegarde distante à venir</small>
-          </div>
-          <div className="audit-save-item">
-            <IconHardDrive className="audit-save-item__icon" />
-            <span>Local</span>
-            <small>Session locale active</small>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 function formatParts(parts: number): string {

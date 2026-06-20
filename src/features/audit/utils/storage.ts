@@ -1,7 +1,7 @@
 /**
  * Storage - Export/Import JSON pour sauvegarde locale RGPD
  *
- * RGPD : pas de stockage serveur des noms clients.
+ * RGPD : pas de stockage centralisé des noms clients.
  * Les dossiers sont sauvegardés localement (fichier JSON).
  */
 

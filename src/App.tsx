@@ -6,7 +6,12 @@ import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
 import { APP_ROUTES, getRouteMetadata, type AppRouteEntry } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
-import { saveGlobalState, loadGlobalStateWithDialog } from './reporting/snapshot';
+import {
+  loadGlobalStateWithDialog,
+  saveGlobalState,
+  SNAPSHOT_LAST_SAVED_FILENAME_KEY,
+  SNAPSHOT_LOADED_FILENAME_KEY,
+} from './reporting/snapshot';
 import { useFiscalContext } from './hooks/useFiscalContext';
 import {
   buildFiscalIdentityCurrent,
@@ -94,8 +99,8 @@ export default function App(): React.ReactElement {
       'ser1:sim:credit',
       'ser1:sim:ir',
       'ser1:sim:strategy',
-      'ser1:loadedFilename',
-      'ser1:lastSavedFilename',
+      SNAPSHOT_LOADED_FILENAME_KEY,
+      SNAPSHOT_LAST_SAVED_FILENAME_KEY,
     ];
     oldKeys.forEach((key) => {
       try {

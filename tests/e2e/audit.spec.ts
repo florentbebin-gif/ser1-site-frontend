@@ -26,11 +26,21 @@ test.describe('Audit Patrimonial', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('dossier-loaded-card')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { level: 2, name: 'Dossier de travail' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
+    ).toBeVisible();
+    await expect(page.getByText('Dossier renseigné')).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toBeVisible();
     await expect(page.getByText('À venir').first()).toBeVisible();
     await expect(page.getByText(/Audit global/i)).toHaveCount(0);
+    const forbiddenAuditWording = new RegExp(
+      [`Cl${'oud'}`, `dis${'tant'}`, `ser${'veur'}`, `Assistant ${'SER1'}`].join('|'),
+      'i',
+    );
+    await expect(page.getByText(forbiddenAuditWording)).toHaveCount(0);
   });
 
   test('ouvre le wizard depuis les cartes actives et garde la stratégie verrouillée', async ({
