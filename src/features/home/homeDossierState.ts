@@ -1,4 +1,4 @@
-import type { AuditLandingViewModel } from '@/features/audit';
+import type { AuditLandingViewModel } from '@/features/audit/shared';
 
 export type HomePrimaryActionState =
   | 'new-analysis'

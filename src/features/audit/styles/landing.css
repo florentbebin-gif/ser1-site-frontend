@@ -267,6 +267,11 @@
   line-height: var(--line-height-tight);
 }
 
+.dossier-travail__client-value,
+.dossier-travail__fact dd[data-state='unsaved'] {
+  color: var(--accent-signature);
+}
+
 .dossier-travail__fact-icon {
   width: 13px;
   height: 13px;

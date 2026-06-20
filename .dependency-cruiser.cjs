@@ -4,10 +4,10 @@
  * Règles enforced :
  *   1. engine/ et domain/ : pas de React, pas de features/, pas de pages/
  *   2. features/ : pas de pages/
- *   3. pages/ : features importées via index.ts uniquement (pas d'internals)
- *   4. routes/ : features importées via index.ts uniquement (pas d'internals)
+ *   3. pages/ : features importées via API publique uniquement (index.ts ou shared.ts)
+ *   4. routes/ : features importées via API publique uniquement (index.ts ou shared.ts)
  *   5. Pas de cross-feature internal imports (chaque feature A ne peut importer
- *      que le index.ts des autres features, pas leurs internals)
+ *      que l'API publique des autres features, pas leurs internals)
  *   6. Supabase : pas d'import client direct depuis features/, engine/ ou components/
  *   7. settings/admin : services only (adminClient, invokeAdmin, logoUpload)
  *      — pas d'import de composants UI depuis l'extérieur
@@ -36,9 +36,11 @@ const FEATURES = fs
   .filter((feature) => fs.existsSync(path.join(FEATURE_ROOT, feature, 'index.ts')))
   .sort();
 
+const PUBLIC_FEATURE_API_PATTERN = `^src/features/(${FEATURES.join('|')})/(index|shared)\\.ts$`;
+
 /**
  * Génère les règles cross-feature pour une feature donnée.
- * FROM: internals de la feature, TO: internals d'une AUTRE feature (pas son index.ts).
+ * FROM: internals de la feature, TO: internals d'une AUTRE feature (pas son API publique).
  */
 function crossFeatureRule(feature) {
   const others = FEATURES.filter((f) => f !== feature).join('|');
@@ -49,7 +51,7 @@ function crossFeatureRule(feature) {
     from: { path: `^src/features/${feature}/` },
     to: {
       path: `^src/features/(${others})/`,
-      pathNot: `^src/features/(${others})/index\\.ts$`,
+      pathNot: `^src/features/(${others})/(index|shared)\\.ts$`,
     },
   };
 }
@@ -82,7 +84,7 @@ module.exports = {
       to: { path: '^src/pages/' },
     },
 
-    // ── 3. pages/ : features importées via index.ts uniquement ───────────────────────────
+    // ── 3. pages/ : features importées via API publique uniquement ───────────────────────
     {
       name: 'pages-no-feature-internals',
       severity: 'error',
@@ -90,11 +92,11 @@ module.exports = {
       from: { path: '^src/pages/' },
       to: {
         path: `^src/features/(${FEATURES.join('|')})/`,
-        pathNot: `^src/features/(${FEATURES.join('|')})/index\\.ts$`,
+        pathNot: PUBLIC_FEATURE_API_PATTERN,
       },
     },
 
-    // ── 4. routes/ : features importées via index.ts uniquement ──────────────────────────
+    // ── 4. routes/ : features importées via API publique uniquement ──────────────────────
     {
       name: 'routes-no-feature-internals',
       severity: 'error',
@@ -102,7 +104,7 @@ module.exports = {
       from: { path: '^src/routes/' },
       to: {
         path: `^src/features/(${FEATURES.join('|')})/`,
-        pathNot: `^src/features/(${FEATURES.join('|')})/index\\.ts$`,
+        pathNot: PUBLIC_FEATURE_API_PATTERN,
       },
     },
 

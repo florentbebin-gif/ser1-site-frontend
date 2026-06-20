@@ -6,7 +6,7 @@ import {
   buildAuditLandingViewModel,
   loadDraftFromSession,
   type AuditLandingMember,
-} from '@/features/audit';
+} from '@/features/audit/shared';
 
 import {
   buildHomeDossierState,

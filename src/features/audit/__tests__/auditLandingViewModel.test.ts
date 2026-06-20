@@ -34,6 +34,7 @@ describe('buildAuditLandingViewModel', () => {
 
     expect(vm.hasDossier).toBe(false);
     expect(vm.clientName).toBeNull();
+    expect(vm.dossierClientLabel).toBeNull();
     expect(vm.synthese.principal).toBeNull();
     expect(vm.synthese.situationLabel).toBeNull();
     expect(vm.synthese.partsFiscales).toBeNull();
@@ -57,10 +58,24 @@ describe('buildAuditLandingViewModel', () => {
       avatarKind: 'homme',
     });
     expect(vm.clientName).toBe('Jean Martin');
+    expect(vm.dossierClientLabel).toBe('Jean Martin');
     expect(vm.synthese.situationLabel).toBe('Célibataire');
     expect(vm.synthese.partsFiscales).toBe(1);
     expect(vm.synthese.tmiLabel).toBe('à venir');
     expect(vm.synthese.etatCivilCompletion.label).toMatch(/^Données état civil renseignées/);
+  });
+
+  it('affiche le prénom nom pour une personne divorcée seule', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.situationMatrimoniale = 'divorce';
+    });
+
+    expect(vm.dossierClientLabel).toBe('Jean Martin');
   });
 
   it('expose les 18 sections canoniques sans fabriquer les fondations non livrées', () => {
@@ -164,12 +179,59 @@ describe('buildAuditLandingViewModel', () => {
       profession: 'Architecte',
       avatarKind: 'femme',
     });
+    expect(vm.dossierClientLabel).toBe('Famille Martin');
     expect(vm.synthese.enfants.map((enfant) => enfant.prenom)).toEqual(['Léa', 'Tom']);
     expect(vm.synthese.enfants.map((enfant) => enfant.avatarKind)).toEqual(['fille', 'garcon']);
     expect(vm.synthese.enfants[0]?.age).toBe(16);
     // Marié + 2 enfants à charge → 2 + 0,5 + 0,5 = 3 parts.
     expect(vm.synthese.partsFiscales).toBe(3);
     expect(vm.synthese.filiationHasData).toBe(true);
+  });
+
+  it('affiche la famille quand un parent seul a un enfant', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.enfants = [
+        { prenom: 'Léa', dateNaissance: '2010-05-01', estCommun: true },
+      ];
+    });
+
+    expect(vm.dossierClientLabel).toBe('Famille Martin');
+  });
+
+  it('affiche un fallback famille quand plusieurs membres existent sans nom principal', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: '',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.enfants = [
+        { prenom: 'Léa', dateNaissance: '2010-05-01', estCommun: true },
+      ];
+    });
+
+    expect(vm.dossierClientLabel).toBe('Famille à renseigner');
+  });
+
+  it('garde un avatar enfant robuste quand le prénom est encore vide', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.enfants = [{ prenom: '', dateNaissance: '', estCommun: true }];
+    });
+
+    expect(vm.synthese.enfants[0]).toMatchObject({
+      prenom: '—',
+      avatarKind: 'garcon',
+    });
   });
 
   it('compte une part de plus pour le troisième enfant (règle quotient familial)', () => {

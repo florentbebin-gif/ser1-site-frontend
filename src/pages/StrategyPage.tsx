@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Link } from 'react-router';
-import { loadDraftFromSession } from '../features/audit';
+import { loadDraftFromSession } from '../features/audit/shared';
 import { StrategyBuilder } from '../features/strategy';
 import './StrategyPage.css';
 
