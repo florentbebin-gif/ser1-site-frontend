@@ -63,11 +63,15 @@ export const SnapshotMetaSchema = z.object({
 export const SnapshotSimsSchema = z.object({
   placement: SimDataSchema.optional().default(null),
   credit: SimDataSchema.optional().default(null),
+  succession: SimDataSchema.optional().default(null),
   ir: SimDataSchema.optional().default(null),
+  'per-potentiel': SimDataSchema.optional().default(null),
+  'per-transfert': SimDataSchema.optional().default(null),
   strategy: SimDataSchema.optional().default(null),
   audit: SimDataSchema.optional().default(null),
   per: SimDataSchema.optional().default(null),
   'tresorerie-societe': SimDataSchema.optional().default(null),
+  prevoyance: SimDataSchema.optional().default(null),
 });
 
 export const SnapshotPayloadSchema = z.object({

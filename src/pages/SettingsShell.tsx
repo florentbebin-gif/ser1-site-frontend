@@ -1,17 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserRole } from '../auth/useUserRole';
 import {
-  SETTINGS_ROUTES,
   getActiveSettingsKey,
   getVisibleSettingsRoutes,
   isDeclaredSettingsPath,
-  type SettingsRouteEntry,
 } from '../routes/settingsRoutes';
 import '@/styles/sim/index.css';
 import './settings/styles/index.css';
 
 export default function SettingsShell(): React.ReactElement {
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isLoading: isRoleLoading } = useUserRole();
 
   const initialTab = useMemo(() => {
     const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
@@ -48,11 +46,23 @@ export default function SettingsShell(): React.ReactElement {
   }, []);
 
   const visibleTabs = useMemo(() => getVisibleSettingsRoutes(isAdmin), [isAdmin]);
+  const fallbackRoute = useMemo(
+    () => visibleTabs.find((route) => route.key === 'memento') ?? visibleTabs[0] ?? null,
+    [visibleTabs],
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isRoleLoading) return;
+    if (visibleTabs.some((tab) => tab.key === activeTab)) return;
+    if (!fallbackRoute) return;
+
+    window.history.replaceState({}, '', fallbackRoute.urlPath);
+    setActiveTab(fallbackRoute.key);
+  }, [activeTab, fallbackRoute, isRoleLoading, visibleTabs]);
 
   const activeRoute = useMemo(() => {
-    const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
-    return routes.find((tab) => tab.key === activeTab) ?? routes[0] ?? null;
-  }, [activeTab]);
+    return visibleTabs.find((tab) => tab.key === activeTab) ?? fallbackRoute;
+  }, [activeTab, fallbackRoute, visibleTabs]);
   const activeComponent = activeRoute?.component ?? null;
 
   const checkScroll = (): void => {
