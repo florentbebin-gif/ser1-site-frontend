@@ -52,6 +52,7 @@ export interface AuditLandingMember {
   id: string;
   fullName: string;
   prenom: string;
+  nom: string | null;
   age: number | null;
   profession: string | null;
   role: AuditLandingMemberRole;
@@ -98,6 +99,7 @@ export interface AuditLandingPilotageCard {
 export interface AuditLandingViewModel {
   hasDossier: boolean;
   clientName: string | null;
+  dossierClientLabel: string | null;
   synthese: AuditLandingSyntheseCard;
   objectifs: AuditLandingObjectifsCard;
   pilotage: AuditLandingPilotageCard;
@@ -139,6 +141,7 @@ export function buildAuditLandingViewModel(
   return {
     hasDossier: engaged,
     clientName: synthese.principal?.fullName ?? null,
+    dossierClientLabel: buildDossierClientLabel(synthese),
     synthese,
     objectifs,
     pilotage: buildPilotageCard(),
@@ -259,17 +262,30 @@ function toMember(
   now: Date,
 ): AuditLandingMember {
   const prenom = membre.prenom.trim();
-  const nom = membre.nom?.trim() ?? '';
+  const nom = membre.nom?.trim() || null;
   return {
     id: membre.id,
-    fullName: [prenom, nom].filter(Boolean).join(' ') || prenom || nom,
+    fullName: [prenom, nom].filter(Boolean).join(' ') || prenom || nom || '',
     prenom: prenom || nom || '—',
+    nom,
     age: computeAge(membre.dateNaissance, now),
     profession: membre.profession?.trim() || null,
     role,
     estCommun: membre.estCommun ?? true,
-    avatarKind: inferAvatarKind(role, prenom || nom),
+    avatarKind: inferAvatarKind(role, prenom || nom || ''),
   };
+}
+
+function buildDossierClientLabel(synthese: AuditLandingSyntheseCard): string | null {
+  const principal = synthese.principal;
+  if (!principal) return null;
+
+  const membersCount = 1 + (synthese.conjoint ? 1 : 0) + synthese.enfants.length;
+  if (membersCount > 1) {
+    return principal.nom ? `Famille ${principal.nom}` : 'Famille à renseigner';
+  }
+
+  return principal.prenom.trim() && principal.nom ? `${principal.prenom} ${principal.nom}` : null;
 }
 
 function buildEtatCivilCompletion({

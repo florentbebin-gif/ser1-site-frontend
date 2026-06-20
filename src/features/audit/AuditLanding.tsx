@@ -45,13 +45,13 @@ interface AuditLandingProps {
 }
 
 export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
-  const { clientName, synthese, objectifs, pilotage, statusBar, progress } = viewModel;
+  const { dossierClientLabel, synthese, objectifs, pilotage, statusBar, progress } = viewModel;
 
   return (
     <div className="audit-landing premium-page">
       <div className="audit-landing__layout">
         <aside className="audit-landing__rail" aria-label="Contexte de travail">
-          <DossierTravailCard clientName={clientName} />
+          <DossierTravailCard dossierClientLabel={dossierClientLabel} />
           <AuditProgressRail sections={progress} />
         </aside>
 

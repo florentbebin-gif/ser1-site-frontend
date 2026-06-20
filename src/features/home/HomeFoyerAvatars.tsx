@@ -1,7 +1,7 @@
 import { useId, type ReactElement } from 'react';
 
-import { FoyerAvatarArt, FoyerAvatarClipDef } from '@/features/audit';
-import type { AuditLandingMember } from '@/features/audit';
+import { FoyerAvatarArt, FoyerAvatarClipDef } from '@/features/audit/shared';
+import type { AuditLandingMember } from '@/features/audit/shared';
 
 import './HomeFoyerAvatars.css';
 

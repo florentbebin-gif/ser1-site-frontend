@@ -5,12 +5,15 @@ import { IconFileText, IconHardDrive, IconSave, IconUsers } from '@/icons/ui';
 import { useLocalSaveHistory } from '../hooks/useLocalSaveHistory';
 
 interface DossierTravailCardProps {
-  clientName: string | null;
+  dossierClientLabel: string | null;
 }
 
-export function DossierTravailCard({ clientName }: DossierTravailCardProps): ReactElement {
+const UNSAVED_LABEL = 'Non sauvegardé';
+
+export function DossierTravailCard({ dossierClientLabel }: DossierTravailCardProps): ReactElement {
   const { currentFilename, lastSavedFilename, history } = useLocalSaveHistory();
-  const filename = currentFilename ?? lastSavedFilename ?? 'Non sauvegardé';
+  const filename = currentFilename ?? lastSavedFilename ?? UNSAVED_LABEL;
+  const lastSavedLabel = lastSavedFilename ?? UNSAVED_LABEL;
 
   return (
     <section
@@ -36,21 +39,27 @@ export function DossierTravailCard({ clientName }: DossierTravailCardProps): Rea
             <IconUsers className="dossier-travail__fact-icon" />
             Client
           </dt>
-          <dd>{clientName ?? 'Client à renseigner'}</dd>
+          <dd className="dossier-travail__client-value" data-testid="dossier-client-label">
+            {dossierClientLabel ?? 'Client à renseigner'}
+          </dd>
         </div>
         <div className="dossier-travail__fact">
           <dt>
             <IconHardDrive className="dossier-travail__fact-icon" />
             Fichier courant
           </dt>
-          <dd data-testid="dossier-loaded-filename">{filename}</dd>
+          <dd data-testid="dossier-loaded-filename" data-state={saveValueState(filename)}>
+            {filename}
+          </dd>
         </div>
         <div className="dossier-travail__fact">
           <dt>
             <IconSave className="dossier-travail__fact-icon" />
             Dernière sauvegarde
           </dt>
-          <dd data-testid="dossier-loaded-disclaimer">{lastSavedFilename ?? 'Non sauvegardé'}</dd>
+          <dd data-testid="dossier-loaded-disclaimer" data-state={saveValueState(lastSavedLabel)}>
+            {lastSavedLabel}
+          </dd>
         </div>
       </dl>
 
@@ -69,6 +78,10 @@ export function DossierTravailCard({ clientName }: DossierTravailCardProps): Rea
       ) : null}
     </section>
   );
+}
+
+function saveValueState(value: string): 'unsaved' | undefined {
+  return value === UNSAVED_LABEL ? 'unsaved' : undefined;
 }
 
 function formatHistoryDate(value: string): string {

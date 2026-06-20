@@ -158,6 +158,10 @@ describe('AuditLanding', () => {
     expect(
       within(dossier).getByRole('heading', { level: 2, name: 'Dossier de travail' }),
     ).toBeInTheDocument();
+    expect(within(dossier).getByTestId('dossier-client-label')).toHaveTextContent('Famille Martin');
+    expect(within(dossier).getByTestId('dossier-client-label')).toHaveClass(
+      'dossier-travail__client-value',
+    );
     expect(within(dossier).getByTestId('dossier-loaded-filename')).toHaveTextContent(
       'famille-martin',
     );
@@ -173,6 +177,27 @@ describe('AuditLanding', () => {
       new RegExp([`Cl${'oud'}`, `dis${'tant'}`, `ser${'veur'}`].join('|'), 'i'),
     );
     expect(text).not.toMatch(new RegExp(`Assistant ${'SER1'}`, 'i'));
+  });
+
+  it('marque les valeurs non sauvegardées du dossier de travail avec l’état accentué', () => {
+    renderLanding(withFoyer);
+
+    const dossier = screen.getByTestId('dossier-loaded-card');
+    expect(within(dossier).getByTestId('dossier-client-label')).toHaveTextContent('Famille Martin');
+    expect(within(dossier).getByTestId('dossier-loaded-filename')).toHaveTextContent(
+      'Non sauvegardé',
+    );
+    expect(within(dossier).getByTestId('dossier-loaded-filename')).toHaveAttribute(
+      'data-state',
+      'unsaved',
+    );
+    expect(within(dossier).getByTestId('dossier-loaded-disclaimer')).toHaveTextContent(
+      'Non sauvegardé',
+    );
+    expect(within(dossier).getByTestId('dossier-loaded-disclaimer')).toHaveAttribute(
+      'data-state',
+      'unsaved',
+    );
   });
 
   it('n’affiche aucun score, /100 ni patrimoine net fabriqué', () => {

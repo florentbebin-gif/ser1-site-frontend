@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createEmptyDossier, type DossierAudit } from '@/domain/audit/types';
 import { buildDossierPatrimonialFromAudit } from '@/domain/dossier';
-import { buildAuditLandingViewModel } from '@/features/audit';
+import { buildAuditLandingViewModel } from '@/features/audit/shared';
 
 import { buildHomeDossierState } from '../homeDossierState';
 
