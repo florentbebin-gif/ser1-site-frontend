@@ -2,19 +2,16 @@
  * FoyerFiliation — schéma de filiation premium dérivé du dossier F1.
  *
  * SVG autonome (connecteurs en courbes de Bézier, pastilles de largeur égale,
- * avatars PNG importés). Lecture seule : seuls les membres réellement présents
- * dans le dossier sont rendus. La distinction fine des enfants d'une première
- * union sera reprise plus tard (voir roadmap famille).
+ * avatars vectoriels {@link FoyerAvatarArt}). Lecture seule : seuls les membres
+ * réellement présents dans le dossier sont rendus. La distinction fine des
+ * enfants d'une première union sera reprise plus tard (voir roadmap famille).
  */
 
-import type { ReactElement } from 'react';
-
-import avatarFemmeUrl from '@/assets/audit/avatars/avatar-femme.png';
-import avatarFilleUrl from '@/assets/audit/avatars/avatar-fille.png';
-import avatarGarconUrl from '@/assets/audit/avatars/avatar-garcon.png';
-import avatarHommeUrl from '@/assets/audit/avatars/avatar-homme.png';
+import { useId, type ReactElement } from 'react';
 
 import type { AuditLandingAvatarKind, AuditLandingMember } from '../auditLandingViewModel';
+
+import { FOYER_AVATAR_ART_RADIUS, FoyerAvatarArt, FoyerAvatarClipDef } from './FoyerAvatarArt';
 
 interface FoyerFiliationProps {
   principal: AuditLandingMember | null;
@@ -25,18 +22,11 @@ interface FoyerFiliationProps {
 
 const PILL_HEIGHT = 42;
 const AVATAR_R = 12;
-const AVATAR_IMAGE_SIZE = AVATAR_R * 2;
 const Y_PARENTS = 12;
 const Y_CHILDREN = 108;
 const BOND_GAP = 20;
 const CHILD_GAP = 12;
 const MARGIN = 8;
-const AVATAR_URLS: Record<AuditLandingAvatarKind, string> = {
-  homme: avatarHommeUrl,
-  femme: avatarFemmeUrl,
-  garcon: avatarGarconUrl,
-  fille: avatarFilleUrl,
-};
 type NodeVariant = 'parent' | 'enfant';
 
 interface LaidOutNode {
@@ -52,6 +42,8 @@ export function FoyerFiliation({
   enfants,
   hasData,
 }: FoyerFiliationProps): ReactElement {
+  const clipId = useId();
+
   if (!hasData) {
     return <p className="audit-tile__empty">Filiation à renseigner</p>;
   }
@@ -106,6 +98,10 @@ export function FoyerFiliation({
       role="img"
       aria-label="Schéma de filiation du foyer"
     >
+      <defs>
+        <FoyerAvatarClipDef clipId={clipId} />
+      </defs>
+
       {parentA && parentB && (
         <path
           className="audit-fil__edge"
@@ -130,7 +126,7 @@ export function FoyerFiliation({
         ...parentNodes.map((node) => ({ node, y: Y_PARENTS })),
         ...childNodes.map((node) => ({ node, y: Y_CHILDREN })),
       ].map(({ node, y }, index) => (
-        <FiliationPill key={`node-${index}`} node={node} y={y} width={pillWidth} />
+        <FiliationPill key={`node-${index}`} node={node} y={y} width={pillWidth} clipId={clipId} />
       ))}
     </svg>
   );
@@ -140,9 +136,10 @@ interface FiliationPillProps {
   node: LaidOutNode;
   y: number;
   width: number;
+  clipId: string;
 }
 
-function FiliationPill({ node, y, width }: FiliationPillProps): ReactElement {
+function FiliationPill({ node, y, width, clipId }: FiliationPillProps): ReactElement {
   const avatarCx = node.x + width / 2;
   const avatarCy = y + AVATAR_R + 4;
   return (
@@ -156,7 +153,7 @@ function FiliationPill({ node, y, width }: FiliationPillProps): ReactElement {
         height={PILL_HEIGHT}
         rx={PILL_HEIGHT / 2}
       />
-      <FiliationAvatar kind={node.avatarKind} cx={avatarCx} cy={avatarCy} />
+      <FiliationAvatar kind={node.avatarKind} cx={avatarCx} cy={avatarCy} clipId={clipId} />
       <text
         className="audit-fil__name"
         x={round(node.x + width / 2)}
@@ -174,23 +171,20 @@ interface FiliationAvatarProps {
   kind: AuditLandingAvatarKind;
   cx: number;
   cy: number;
+  clipId: string;
 }
 
-function FiliationAvatar({ kind, cx, cy }: FiliationAvatarProps): ReactElement {
-  const imageX = cx - AVATAR_IMAGE_SIZE / 2;
-  const imageY = cy - AVATAR_IMAGE_SIZE / 2;
+function FiliationAvatar({ kind, cx, cy, clipId }: FiliationAvatarProps): ReactElement {
+  const scale = AVATAR_R / FOYER_AVATAR_ART_RADIUS;
 
   return (
-    <g className={`audit-fil__avatar audit-fil__avatar--${kind}`}>
-      <image
-        className={`audit-fil__avatar-image audit-fil__avatar-image--${kind}`}
-        href={AVATAR_URLS[kind]}
-        x={round(imageX)}
-        y={round(imageY)}
-        width={round(AVATAR_IMAGE_SIZE)}
-        height={round(AVATAR_IMAGE_SIZE)}
-        preserveAspectRatio="xMidYMid meet"
-      />
+    <g
+      className={`audit-fil__avatar audit-fil__avatar--${kind}`}
+      transform={`translate(${round(cx)} ${round(cy)}) scale(${scale})`}
+    >
+      <g className={`audit-fil__avatar-image audit-fil__avatar-image--${kind}`}>
+        <FoyerAvatarArt kind={kind} clipId={clipId} />
+      </g>
     </g>
   );
 }

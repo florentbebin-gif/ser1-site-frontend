@@ -31,6 +31,8 @@ const BUSINESS_SVG_PATTERNS = [
   /sparkline/i,
   /visual/i,
   /track/i,
+  // Illustrations d'avatars du foyer (portraits dessinés, pas des icônes UI).
+  /avatar/i,
 ];
 
 function normalizeRel(path) {

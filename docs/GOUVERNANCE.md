@@ -1067,7 +1067,8 @@ et `tools/scripts/audit-colors.mjs`. Elle couvre uniquement :
 - tests, fixtures et stories ;
 - migrations de palette ;
 - exports PPTX controles ;
-- logos de marque externes.
+- logos de marque externes ;
+- illustration avatars foyer (`src/features/audit/components/FoyerAvatarArt.tsx`, scène physique non thémable).
 
 Le runtime UI ne hardcode pas `#FFFFFF`, `#996600`, `rgba(...)`, `rgb(...)` ou `hsl(...)`.
 Les cartes consomment `--surface-card`, les overlays `--overlay-modal`, les ombres
