@@ -8,15 +8,14 @@ import { describe, expect, it } from 'vitest';
 import { HomeGuide } from '../HomeGuide';
 import { buildHomeGuideState } from '../homeGuideModel';
 
-describe('HomeGuide — accordéon des familles (Piloter)', () => {
-  it('n’ouvre qu’une seule famille à la fois : ouvrir la suivante rétracte la précédente', async () => {
+describe('HomeGuide — onglet Piloter aplati', () => {
+  it('affiche toutes les cartes des familles à plat, sans sous-accordéon de famille', async () => {
     const state = buildHomeGuideState('expert');
     const foyer = state.spaces.find((space) => space.id === 'foyer');
     const piloter = foyer?.tabs.find((tab) => tab.id === 'piloter');
     const families = piloter?.families ?? [];
-    // La règle ne se vérifie qu'avec au moins deux familles repliables.
+    // Le scénario n'a de sens qu'avec plusieurs familles autrefois repliables.
     expect(families.length).toBeGreaterThanOrEqual(2);
-    const [first, second] = families;
 
     const user = userEvent.setup();
     render(<HomeGuide mode="expert" />);
@@ -24,14 +23,16 @@ describe('HomeGuide — accordéon des familles (Piloter)', () => {
     await user.click(screen.getByRole('button', { name: /Foyer & patrimoine privé/ }));
     await user.click(screen.getByRole('tab', { name: 'Piloter' }));
 
-    const firstHead = screen.getByRole('button', { name: first.name });
-    const secondHead = screen.getByRole('button', { name: second.name });
+    // Plus aucun bouton repliable de famille n'est rendu.
+    for (const family of families) {
+      expect(screen.queryByRole('button', { name: family.name })).toBeNull();
+    }
 
-    await user.click(firstHead);
-    expect(firstHead).toHaveAttribute('aria-expanded', 'true');
-
-    await user.click(secondHead);
-    expect(secondHead).toHaveAttribute('aria-expanded', 'true');
-    expect(firstHead).toHaveAttribute('aria-expanded', 'false');
+    // Toutes les cartes simulateur de toutes les familles sont visibles directement.
+    const cards = families.flatMap((family) => family.cards);
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+    for (const card of cards) {
+      expect(screen.getByTestId(`home-simulator-card-${card.definition.id}`)).toBeInTheDocument();
+    }
   });
 });

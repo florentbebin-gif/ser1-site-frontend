@@ -1,11 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SignalementsBlock from '@/components/settings/SignalementsBlock';
 
-export function SignalementsSection() {
-  const [showSignalements, setShowSignalements] = useState(false);
+interface SignalementsSectionProps {
+  /** Ouvre la section au montage (deep-link « Assistance & Suggestions »). */
+  initialOpen?: boolean;
+}
+
+export function SignalementsSection({ initialOpen = false }: SignalementsSectionProps) {
+  const [showSignalements, setShowSignalements] = useState(initialOpen);
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (initialOpen) {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [initialOpen]);
 
   return (
-    <section className="settings-premium-card settings-action-card">
+    <section ref={sectionRef} className="settings-premium-card settings-action-card">
       <header className="settings-premium-header">
         <div className="settings-action-icon">
           <svg

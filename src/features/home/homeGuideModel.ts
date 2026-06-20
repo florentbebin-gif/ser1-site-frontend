@@ -52,7 +52,7 @@ export interface HomeGuideState {
 export const HOME_PRIMARY_ACTIONS: readonly HomeGuideAction[] = [
   {
     id: 'strategy',
-    title: 'Nouvelle stratégie',
+    title: 'Nouvelle analyse patrimoniale',
     subtitle:
       'Le parcours complet pour analyser le foyer, la société et le patrimoine, projeter et recommander une stratégie.',
     cta: 'Démarrer',

@@ -24,6 +24,57 @@
   text-align: center;
 }
 
+.home-hero {
+  margin: 0 0 22px;
+  text-align: left;
+}
+
+.home-hero__eyebrow-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-hero__icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-active) 36%, var(--surface-card));
+  color: var(--action-primary);
+}
+
+.home-hero__icon-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.home-hero__eyebrow {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.home-hero__title {
+  margin: 2px 0 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.home-hero__subtitle {
+  max-width: 540px;
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
 .home-actions {
   display: grid;
   width: 100%;
@@ -31,6 +82,21 @@
   grid-template-columns: 2fr 1fr;
   gap: 12px;
   text-align: left;
+}
+
+/* Colonne droite : jauge de structuration au-dessus de la carte Scan quand un dossier existe. */
+.home-scan-column {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.home-scan-column .home-action {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
 }
 
 .home-action {
@@ -65,11 +131,20 @@
 }
 
 .home-action--primary {
+  position: relative;
   background: radial-gradient(
     120% 140% at 0% 0%,
     color-mix(in srgb, var(--action-primary) 9%, var(--surface-card)),
     var(--surface-card) 60%
   );
+}
+
+/* Avatars Mr/Mme : coin haut-droit de la carte stratégie quand un dossier est chargé. */
+.home-action__foyer {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
 }
 
 .home-action--secondary {
@@ -166,6 +241,45 @@
     var(--border-subtle),
     transparent
   );
+}
+
+/* Pied d'aide sous « Société & dirigeant ». */
+.home-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 28px;
+}
+
+.home-help__icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+.home-help__text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.home-help__link {
+  color: var(--action-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.home-help__link:hover {
+  text-decoration: underline;
+}
+
+.home-help__link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
 }
 
 .home-reference-audit-banner {
@@ -304,6 +418,10 @@
   .home-actions,
   .home-side-rail {
     grid-template-columns: 1fr;
+  }
+
+  .home-scan-column--with-gauge {
+    padding-top: 92px;
   }
 
   .home-action {

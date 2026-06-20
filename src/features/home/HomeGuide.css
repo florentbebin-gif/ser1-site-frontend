@@ -17,13 +17,6 @@
   text-transform: uppercase;
 }
 
-.home-guide__subtitle {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.35;
-}
-
 .home-guide__spaces {
   display: flex;
   flex-direction: column;
@@ -187,63 +180,6 @@
   opacity: 0.48;
 }
 
-/* Onglet Piloter : familles repliables. */
-.home-guide-families {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.home-guide-family {
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-muted) 70%, var(--surface-card));
-}
-
-.home-guide-family--open {
-  background: var(--surface-card);
-  border-color: var(--border-default);
-}
-
-.home-guide-family__head {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 9px 12px;
-  border: 0;
-  background: transparent;
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  text-align: left;
-}
-
-.home-guide-family__head:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.home-guide-family__name {
-  min-width: 0;
-}
-
-.home-guide-family__chevron {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  color: var(--text-secondary);
-  transition: transform 180ms ease;
-}
-
-.home-guide-family--open .home-guide-family__chevron {
-  transform: rotate(180deg);
-}
-
 /* Flex wrap (et non grid auto-fill) : l'alignement porte sur les cartes réelles,
    sans pistes vides qui neutraliseraient justify-content. */
 .home-guide-grid {
@@ -264,15 +200,6 @@
 
 .home-guide-grid--end {
   justify-content: flex-end;
-}
-
-.home-guide-family .home-guide-grid {
-  padding: 0 10px 10px;
-  justify-content: center;
-}
-
-.home-guide-family .home-guide-card {
-  flex-basis: 220px;
 }
 
 .home-guide-card {

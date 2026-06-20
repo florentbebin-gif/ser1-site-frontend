@@ -1,0 +1,19 @@
+.home-foyer-avatars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-foyer-avatars__img {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--surface-card);
+  border-radius: 50%;
+  background: var(--surface-active);
+  object-fit: cover;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--shadow-color) 14%, transparent);
+}
+
+/* Léger chevauchement quand le foyer comporte deux personnes. */
+.home-foyer-avatars__img + .home-foyer-avatars__img {
+  margin-left: -10px;
+}
