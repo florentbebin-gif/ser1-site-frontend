@@ -15,9 +15,13 @@ import {
   SnapshotEnvelopeSchema,
   SnapshotV2Schema,
 } from './snapshotSchema';
-import type { SnapshotV2, SnapshotSims, FiscalIdentity } from './snapshotSchema';
+import type { SnapshotV2, FiscalIdentity } from './snapshotSchema';
 import { migrateSnapshot } from './snapshotMigrations';
 import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
+import {
+  collectSnapshotSimsFromSession,
+  restoreSnapshotSimsToSession,
+} from './snapshotSimRegistry';
 
 // ---------------------------------------------------------------------------
 // Events & keys (backward-compatible with globalStorage.js)
@@ -27,34 +31,8 @@ export const SNAPSHOT_LOADED_EVENT = 'ser1:snapshot:loaded';
 export const SNAPSHOT_LAST_LOADED_KEY = 'ser1:snapshot:lastLoadedName';
 
 // ---------------------------------------------------------------------------
-// Sim storage map — sessionStorage keys per simulator
-// ---------------------------------------------------------------------------
-
-const SIM_STORAGE_MAP: Record<string, string> = {
-  placement: 'ser1:sim:placement',
-  credit: 'ser1:sim:credit',
-  ir: 'ser1:sim:ir',
-  strategy: 'ser1:sim:strategy',
-  audit: 'ser1_audit_draft',
-  per: 'ser1:sim:per',
-};
-
-// ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
-
-function collectSimulatorStates(): SnapshotSims {
-  const sims: Record<string, Record<string, unknown> | null> = {};
-  for (const [simId, storageKey] of Object.entries(SIM_STORAGE_MAP)) {
-    try {
-      const raw = sessionStorage.getItem(storageKey);
-      sims[simId] = raw ? JSON.parse(raw) : null;
-    } catch {
-      sims[simId] = null;
-    }
-  }
-  return sims as SnapshotSims;
-}
 
 function buildSnapshot(fiscalIdentity?: FiscalIdentity): SnapshotV2 {
   return {
@@ -67,7 +45,7 @@ function buildSnapshot(fiscalIdentity?: FiscalIdentity): SnapshotV2 {
       fiscal: fiscalIdentity ?? null,
     },
     payload: {
-      sims: collectSimulatorStates(),
+      sims: collectSnapshotSimsFromSession(),
     },
   };
 }
@@ -95,23 +73,7 @@ function hasFileSystemAccess(): boolean {
 
 function restoreData(snapshot: SnapshotV2): number {
   const sims = snapshot.payload?.sims ?? {};
-  let restoredCount = 0;
-
-  for (const [simId, storageKey] of Object.entries(SIM_STORAGE_MAP)) {
-    const value = (sims as Record<string, unknown>)[simId] ?? null;
-    try {
-      if (value !== null && value !== undefined) {
-        sessionStorage.setItem(storageKey, JSON.stringify(value));
-      } else {
-        sessionStorage.removeItem(storageKey);
-      }
-      restoredCount++;
-    } catch {
-      // sessionStorage full or unavailable — skip silently
-    }
-  }
-
-  return restoredCount;
+  return restoreSnapshotSimsToSession(sims);
 }
 
 /**
