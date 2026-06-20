@@ -2,9 +2,9 @@
  * FoyerFiliation — schéma de filiation premium dérivé du dossier F1.
  *
  * SVG autonome (connecteurs en courbes de Bézier, pastilles de largeur égale,
- * avatars PNG importés). Lecture seule : seuls les membres réellement
- * présents dans le dossier sont rendus. La distinction fine des enfants d'une
- * première union sera reprise plus tard (voir roadmap famille).
+ * avatars PNG importés). Lecture seule : seuls les membres réellement présents
+ * dans le dossier sont rendus. La distinction fine des enfants d'une première
+ * union sera reprise plus tard (voir roadmap famille).
  */
 
 import type { ReactElement } from 'react';
@@ -25,6 +25,7 @@ interface FoyerFiliationProps {
 
 const PILL_HEIGHT = 42;
 const AVATAR_R = 12;
+const AVATAR_IMAGE_SIZE = AVATAR_R * 2;
 const Y_PARENTS = 12;
 const Y_CHILDREN = 108;
 const BOND_GAP = 20;
@@ -36,7 +37,6 @@ const AVATAR_URLS: Record<AuditLandingAvatarKind, string> = {
   garcon: avatarGarconUrl,
   fille: avatarFilleUrl,
 };
-
 type NodeVariant = 'parent' | 'enfant';
 
 interface LaidOutNode {
@@ -177,20 +177,19 @@ interface FiliationAvatarProps {
 }
 
 function FiliationAvatar({ kind, cx, cy }: FiliationAvatarProps): ReactElement {
+  const imageX = cx - AVATAR_IMAGE_SIZE / 2;
+  const imageY = cy - AVATAR_IMAGE_SIZE / 2;
+
   return (
-    <g
-      className={`audit-fil__avatar audit-fil__avatar--${kind}`}
-      transform={`translate(${round(cx)} ${cy})`}
-    >
-      <circle className="audit-fil__avatar-frame" cx="0" cy="0" r={AVATAR_R} />
+    <g className={`audit-fil__avatar audit-fil__avatar--${kind}`}>
       <image
-        className="audit-fil__avatar-image"
+        className={`audit-fil__avatar-image audit-fil__avatar-image--${kind}`}
         href={AVATAR_URLS[kind]}
-        x={-AVATAR_R}
-        y={-AVATAR_R}
-        width={AVATAR_R * 2}
-        height={AVATAR_R * 2}
-        preserveAspectRatio="xMidYMid slice"
+        x={round(imageX)}
+        y={round(imageY)}
+        width={round(AVATAR_IMAGE_SIZE)}
+        height={round(AVATAR_IMAGE_SIZE)}
+        preserveAspectRatio="xMidYMid meet"
       />
     </g>
   );

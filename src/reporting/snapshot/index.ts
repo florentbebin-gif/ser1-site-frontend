@@ -33,7 +33,22 @@ export {
   loadGlobalState,
   loadGlobalStateWithDialog,
   openFileDialog,
-  SNAPSHOT_LOADED_EVENT,
-  SNAPSHOT_LAST_LOADED_KEY,
 } from './snapshotIO';
 export type { SaveResult, LoadResult } from './snapshotIO';
+
+export {
+  SNAPSHOT_LOADED_EVENT,
+  SNAPSHOT_SAVED_EVENT,
+  SNAPSHOT_LOADED_FILENAME_KEY,
+  SNAPSHOT_LAST_SAVED_FILENAME_KEY,
+  SNAPSHOT_LAST_LOADED_KEY,
+  SNAPSHOT_LAST_SAVED_KEY,
+} from './snapshotKeys';
+
+export {
+  clearSnapshotHistory,
+  readSnapshotHistory,
+  recordSnapshotHistory,
+  SNAPSHOT_SAVE_HISTORY_KEY,
+} from './saveHistory';
+export type { SnapshotHistoryAction, SnapshotHistoryEntry } from './saveHistory';

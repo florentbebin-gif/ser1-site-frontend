@@ -33,6 +33,7 @@ describe('buildAuditLandingViewModel', () => {
     const vm = vmFromAudit();
 
     expect(vm.hasDossier).toBe(false);
+    expect(vm.clientName).toBeNull();
     expect(vm.synthese.principal).toBeNull();
     expect(vm.synthese.situationLabel).toBeNull();
     expect(vm.synthese.partsFiscales).toBeNull();
@@ -55,10 +56,86 @@ describe('buildAuditLandingViewModel', () => {
       profession: 'Médecin',
       avatarKind: 'homme',
     });
+    expect(vm.clientName).toBe('Jean Martin');
     expect(vm.synthese.situationLabel).toBe('Célibataire');
     expect(vm.synthese.partsFiscales).toBe(1);
     expect(vm.synthese.tmiLabel).toBe('à venir');
     expect(vm.synthese.etatCivilCompletion.label).toMatch(/^Données état civil renseignées/);
+  });
+
+  it('expose les 18 sections canoniques sans fabriquer les fondations non livrées', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+        profession: 'Médecin',
+      };
+      audit.objectifs = ['proteger_conjoint'];
+    });
+
+    expect(vm.progress).toHaveLength(18);
+    expect(vm.progress.map((section) => section.label)).toEqual([
+      'Dossier',
+      'Situation familiale',
+      'Filiation',
+      'Régime matrimonial & donations',
+      'Situation professionnelle',
+      'Budget & capacité',
+      'Sociétés / organigramme',
+      'Patrimoine',
+      'Actifs',
+      'Passifs',
+      'Fiscalité',
+      'IFI conditionnel',
+      'Succession',
+      'Prévoyance',
+      'Retraite',
+      'Placements',
+      'Objectifs',
+      'Synthèse',
+    ]);
+
+    const fiscalite = vm.progress.find((section) => section.id === 'fiscalite');
+    expect(fiscalite).toMatchObject({
+      availability: 'gated',
+      status: null,
+      statusLabel: 'À venir',
+    });
+    expect(vm.progress.filter((section) => section.availability === 'gated')).toHaveLength(11);
+    expect(vm.progress.filter((section) => section.availability === 'gated')).not.toContainEqual(
+      expect.objectContaining({ status: 'complet' }),
+    );
+  });
+
+  it('calcule la barre d’état depuis les sections F1 disponibles uniquement', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.objectifs = ['proteger_conjoint'];
+    });
+
+    const f1Sections = vm.progress.filter(
+      (section) => section.foundation === 'F1' && section.availability === 'available',
+    );
+    const f1Metric = vm.statusBar.items.find((item) => item.id === 'f1');
+    const calculsMetric = vm.statusBar.items.find((item) => item.id === 'calculs');
+    const strategieMetric = vm.statusBar.items.find((item) => item.id === 'strategie');
+
+    expect(vm.statusBar.f1Total).toBe(f1Sections.length);
+    expect(vm.statusBar.f1Completed).toBe(
+      f1Sections.filter((section) => section.status === 'complet').length,
+    );
+    expect(f1Metric).toMatchObject({
+      label: 'Dossier renseigné',
+      value: `${vm.statusBar.f1Completed}/${vm.statusBar.f1Total}`,
+    });
+    expect(calculsMetric).toMatchObject({ value: 'À venir' });
+    expect(strategieMetric).toMatchObject({ value: 'Verrouillée' });
+    expect(vm.statusBar.items.map((item) => item.value).join(' ')).not.toMatch(/12\s*\/\s*18/);
   });
 
   it('restitue le couple, les enfants âgés et les parts fiscales dérivées de F1', () => {

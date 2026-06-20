@@ -22,13 +22,19 @@ import {
   collectSnapshotSimsFromSession,
   restoreSnapshotSimsToSession,
 } from './snapshotSimRegistry';
+import { recordSnapshotHistory } from './saveHistory';
+import {
+  SNAPSHOT_LAST_LOADED_KEY,
+  SNAPSHOT_LAST_SAVED_FILENAME_KEY,
+  SNAPSHOT_LAST_SAVED_KEY,
+  SNAPSHOT_LOADED_EVENT,
+  SNAPSHOT_LOADED_FILENAME_KEY,
+  SNAPSHOT_SAVED_EVENT,
+} from './snapshotKeys';
 
 // ---------------------------------------------------------------------------
 // Events & keys (backward-compatible with globalStorage.js)
 // ---------------------------------------------------------------------------
-
-export const SNAPSHOT_LOADED_EVENT = 'ser1:snapshot:loaded';
-export const SNAPSHOT_LAST_LOADED_KEY = 'ser1:snapshot:lastLoadedName';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -74,6 +80,42 @@ function hasFileSystemAccess(): boolean {
 function restoreData(snapshot: SnapshotV2): number {
   const sims = snapshot.payload?.sims ?? {};
   return restoreSnapshotSimsToSession(sims);
+}
+
+function trackSuccessfulSave(filename: string): void {
+  try {
+    sessionStorage.setItem(SNAPSHOT_LAST_SAVED_FILENAME_KEY, filename);
+    sessionStorage.setItem(SNAPSHOT_LAST_SAVED_KEY, filename);
+  } catch {
+    // ignore
+  }
+
+  recordSnapshotHistory('save');
+
+  try {
+    const evt = new CustomEvent(SNAPSHOT_SAVED_EVENT, { detail: { filename } });
+    window.dispatchEvent(evt);
+  } catch {
+    // ignore
+  }
+}
+
+function trackSuccessfulLoad(filename: string): void {
+  try {
+    sessionStorage.setItem(SNAPSHOT_LOADED_FILENAME_KEY, filename);
+    sessionStorage.setItem(SNAPSHOT_LAST_LOADED_KEY, filename);
+  } catch {
+    // ignore
+  }
+
+  recordSnapshotHistory('load');
+
+  try {
+    const evt = new CustomEvent(SNAPSHOT_LOADED_EVENT, { detail: { filename } });
+    window.dispatchEvent(evt);
+  } catch {
+    // ignore
+  }
 }
 
 /**
@@ -152,8 +194,7 @@ export async function saveGlobalState(options?: {
         await writable.close();
 
         const filename = handle.name;
-        sessionStorage.setItem('ser1:lastSavedFilename', filename);
-        sessionStorage.setItem('ser1:snapshot:lastSavedName', filename);
+        trackSuccessfulSave(filename);
 
         return { success: true, message: 'Dossier sauvegardé avec succès.', filename };
       } catch (err) {
@@ -174,8 +215,7 @@ export async function saveGlobalState(options?: {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      sessionStorage.setItem('ser1:lastSavedFilename', link.download);
-      sessionStorage.setItem('ser1:snapshot:lastSavedName', link.download);
+      trackSuccessfulSave(link.download);
 
       return { success: true, message: 'Dossier sauvegardé avec succès.', filename: link.download };
     }
@@ -274,19 +314,7 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
         const loadedFiscalIdentity = strictResult.data.meta?.fiscal ?? null;
 
         // 7. Track loaded file
-        try {
-          sessionStorage.setItem('ser1:loadedFilename', file.name);
-          sessionStorage.setItem(SNAPSHOT_LAST_LOADED_KEY, file.name);
-        } catch {
-          // ignore
-        }
-
-        try {
-          const evt = new CustomEvent(SNAPSHOT_LOADED_EVENT, { detail: { filename: file.name } });
-          window.dispatchEvent(evt);
-        } catch {
-          // ignore
-        }
+        trackSuccessfulLoad(file.name);
 
         const wasMigrated = migrationResult.steps > 0;
 

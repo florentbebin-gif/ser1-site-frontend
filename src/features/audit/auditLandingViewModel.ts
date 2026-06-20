@@ -12,6 +12,24 @@
 import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
 import type { DossierMembre, DossierPatrimonial } from '@/domain/dossier';
 
+import {
+  buildAuditProgressSections,
+  buildStatusBar,
+  type AuditProgressSection,
+  type AuditStatusBarViewModel,
+} from './auditLandingProgressViewModel';
+
+export type {
+  AuditFoundation,
+  AuditProgressSection,
+  AuditSectionAvailability,
+  AuditSectionStatus,
+  AuditStatusBarItem,
+  AuditStatusBarItemId,
+  AuditStatusBarTone,
+  AuditStatusBarViewModel,
+} from './auditLandingProgressViewModel';
+
 export type AuditLandingDestination = 'dossier' | 'objectifs';
 
 export interface AuditLandingAction {
@@ -79,9 +97,12 @@ export interface AuditLandingPilotageCard {
 
 export interface AuditLandingViewModel {
   hasDossier: boolean;
+  clientName: string | null;
   synthese: AuditLandingSyntheseCard;
   objectifs: AuditLandingObjectifsCard;
   pilotage: AuditLandingPilotageCard;
+  statusBar: AuditStatusBarViewModel;
+  progress: AuditProgressSection[];
 }
 
 interface BuildOptions {
@@ -111,12 +132,18 @@ export function buildAuditLandingViewModel(
 ): AuditLandingViewModel {
   const now = options.now ?? new Date();
   const engaged = isFamilyEngaged(dossier);
+  const synthese = buildSyntheseCard(dossier, now, engaged);
+  const objectifs = buildObjectifsCard(dossier);
+  const progress = buildAuditProgressSections(dossier, synthese, now, engaged);
 
   return {
     hasDossier: engaged,
-    synthese: buildSyntheseCard(dossier, now, engaged),
-    objectifs: buildObjectifsCard(dossier),
+    clientName: synthese.principal?.fullName ?? null,
+    synthese,
+    objectifs,
     pilotage: buildPilotageCard(),
+    statusBar: buildStatusBar(progress, synthese, dossier, now),
+    progress,
   };
 }
 

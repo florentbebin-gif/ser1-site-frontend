@@ -16,8 +16,62 @@ test.describe('DossierRail responsive', () => {
     // /audit est un cockpit pleine largeur : l'encart « Dossier de travail » est
     // rendu par la page elle-même, le rail partagé n'est plus monté.
     await expect(page.getByTestId('dossier-loaded-card')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Dossier de travail' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
+    ).toBeVisible();
     await expect(page.getByTestId('app-shell-dossier-rail')).toHaveCount(0);
     await expect(page.getByTestId('dossier-rail-panel')).toHaveCount(0);
+
+    const railBox = await page.locator('.audit-landing__rail').boundingBox();
+    const dossierBox = await page.getByTestId('dossier-loaded-card').boundingBox();
+    const objectifsBox = await page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { level: 2, name: 'Objectifs' }) })
+      .boundingBox();
+    const strategieBox = await page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { level: 2, name: 'Stratégie' }) })
+      .boundingBox();
+    expect(railBox).not.toBeNull();
+    expect(dossierBox).not.toBeNull();
+    expect(objectifsBox).not.toBeNull();
+    expect(strategieBox).not.toBeNull();
+    expect(railBox!.x).toBeLessThan(1);
+    expect(railBox!.width).toBeLessThanOrEqual(181);
+    expect(dossierBox!.x).toBeLessThan(16);
+    expect(dossierBox!.height).toBeLessThan(160);
+    expect(objectifsBox!.x + objectifsBox!.width).toBeLessThanOrEqual(1432);
+    expect(strategieBox!.x + strategieBox!.width).toBeLessThanOrEqual(1432);
+
+    const statusBox = await page.locator('.audit-status-bar').boundingBox();
+    await expect(page.locator('.audit-status-bar')).toHaveCSS('border-top-width', '0px');
+    await expect(page.locator('.audit-progress-rail__label').first()).toHaveCSS('font-size', '8px');
+    await expect(page.getByTestId('audit-export-menu-button')).toBeVisible();
+    await page.getByTestId('audit-export-menu-button').click();
+    await expect(page.getByRole('menuitem', { name: 'Word (.docx)' })).toBeDisabled();
+    await expect(page.getByRole('menuitem', { name: 'PowerPoint (.pptx)' })).toBeDisabled();
+    const railPathBackground = await page
+      .locator('.audit-progress-rail__list')
+      .evaluate((node) => getComputedStyle(node, '::before').backgroundImage);
+    expect(railPathBackground).not.toBe('none');
+    const dividerBox = await page.locator('.audit-landing__title-divider').boundingBox();
+    expect(statusBox).not.toBeNull();
+    expect(dividerBox).not.toBeNull();
+    expect(dividerBox!.y - (statusBox!.y + statusBox!.height)).toBeLessThan(10);
+  });
+
+  test('mobile /audit masque seulement l’avancement et garde le dossier visible', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(ROUTES.audit);
+
+    await expect(page.getByTestId('dossier-loaded-card')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Dossier de travail' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
+    ).toBeHidden();
   });
 
   test('desktop /strategy affiche le rail complet', async ({ page }) => {
