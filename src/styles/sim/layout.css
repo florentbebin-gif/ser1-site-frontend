@@ -18,8 +18,13 @@
 
 .sim-header--stacked {
   flex-direction: column;
-  align-items: stretch;
   gap: 6px;
+}
+
+@media (min-width: 901px) {
+  .sim-header.sim-header--stacked {
+    align-items: stretch;
+  }
 }
 
 .sim-header__actions {
