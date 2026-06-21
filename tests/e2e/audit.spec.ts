@@ -32,6 +32,11 @@ test.describe('Audit Patrimonial', () => {
     ).toBeVisible();
     await expect(page.getByText('Dossier renseigné')).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Masses successorales' }),
+    ).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toBeVisible();
     await expect(page.getByText('À venir').first()).toBeVisible();
@@ -53,8 +58,22 @@ test.describe('Audit Patrimonial', () => {
       has: page.getByRole('heading', { level: 2, name: 'Stratégie' }),
     });
     await expect(strategie.getByText('Verrouillé')).toBeVisible();
+    await expect(strategie.getByText('Objectifs définis')).toBeVisible();
+    await expect(strategie.getByText('Patrimoine structuré')).toBeVisible();
+    await expect(strategie.getByText('Aucun scénario disponible à ce stade.')).toBeVisible();
     await expect(strategie.getByRole('button')).toHaveCount(0);
     await expect(strategie.getByText(/radar|\/\s*100|score|scénario activable/i)).toHaveCount(0);
+
+    const carousel = page.getByRole('region', { name: 'Calculs à venir' });
+    await expect(carousel.getByRole('heading', { name: 'Masses successorales' })).toBeVisible();
+    await expect(carousel.getByRole('heading', { name: 'Organigramme société' })).toHaveCount(0);
+    await expect(page.locator('.audit-carousel__slide[aria-hidden="true"]')).toHaveCount(2);
+    await expect(page.locator('.audit-carousel__slide--prev')).toHaveCSS('pointer-events', 'none');
+    await carousel.getByRole('button', { name: /suivant/i }).click();
+    await expect(carousel.getByRole('heading', { name: 'Organigramme société' })).toBeVisible();
+    await page.keyboard.press('ArrowRight');
+    await expect(carousel.getByRole('heading', { name: 'Impôt sur le revenu' })).toBeVisible();
+    await expect(carousel.getByRole('link')).toHaveCount(0);
 
     await page.getByRole('button', { name: /^Voir l'audit complet/ }).click();
     await expect(page.getByRole('heading', { name: 'Situation familiale' })).toBeVisible();

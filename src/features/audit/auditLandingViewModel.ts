@@ -13,11 +13,17 @@ import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
 import type { DossierMembre, DossierPatrimonial } from '@/domain/dossier';
 
 import {
+  buildAuditPointsAConfirmer,
+  type AuditPointAConfirmer,
+} from './auditLandingPointsViewModel';
+import {
   buildAuditProgressSections,
   buildStatusBar,
   type AuditProgressSection,
   type AuditStatusBarViewModel,
 } from './auditLandingProgressViewModel';
+
+export type { AuditPointAConfirmer, AuditPointAConfirmerTone } from './auditLandingPointsViewModel';
 
 export type {
   AuditFoundation,
@@ -30,7 +36,7 @@ export type {
   AuditStatusBarViewModel,
 } from './auditLandingProgressViewModel';
 
-export type AuditLandingDestination = 'dossier' | 'objectifs';
+export type AuditLandingDestination = 'dossier' | 'civil' | 'objectifs';
 
 export interface AuditLandingAction {
   destination: AuditLandingDestination;
@@ -84,16 +90,42 @@ export interface AuditLandingObjectifItem {
 
 export interface AuditLandingObjectifsCard {
   objectifs: AuditLandingObjectifItem[];
+  visibleObjectifs: AuditLandingObjectifItem[];
+  totalObjectifs: number;
+  overflowCount: number;
   emptyLabel: string;
   note?: string;
   action: AuditLandingAction;
   ariaLabel: string;
 }
 
+export type AuditPreviewSlideId = 'masses' | 'societe' | 'ir';
+export type AuditPreviewSlideStatus = 'soon' | 'locked';
+
+export interface AuditPreviewSlide {
+  id: AuditPreviewSlideId;
+  title: string;
+  eyebrow: string;
+  badgeLabel: string;
+  status: AuditPreviewSlideStatus;
+  description: string;
+  caption: string;
+}
+
+export type AuditStrategyPrerequisiteStatus = 'satisfied' | 'missing' | 'future';
+
+export interface AuditStrategyPrerequisite {
+  id: string;
+  label: string;
+  status: AuditStrategyPrerequisiteStatus;
+  statusLabel: string;
+}
+
 export interface AuditLandingPilotageCard {
   title: string;
   description: string;
   caption: string;
+  prerequis: AuditStrategyPrerequisite[];
 }
 
 export interface AuditLandingViewModel {
@@ -103,6 +135,8 @@ export interface AuditLandingViewModel {
   synthese: AuditLandingSyntheseCard;
   objectifs: AuditLandingObjectifsCard;
   pilotage: AuditLandingPilotageCard;
+  pointsAConfirmer: AuditPointAConfirmer[];
+  previewSlides: AuditPreviewSlide[];
   statusBar: AuditStatusBarViewModel;
   progress: AuditProgressSection[];
 }
@@ -144,7 +178,9 @@ export function buildAuditLandingViewModel(
     dossierClientLabel: buildDossierClientLabel(synthese),
     synthese,
     objectifs,
-    pilotage: buildPilotageCard(),
+    pilotage: buildPilotageCard(dossier),
+    pointsAConfirmer: buildAuditPointsAConfirmer(dossier, progress, now),
+    previewSlides: buildPreviewSlides(),
     statusBar: buildStatusBar(progress, synthese, dossier, now),
     progress,
   };
@@ -196,6 +232,7 @@ function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsC
   const objectifs = [...dossier.objectifs]
     .sort((a, b) => a.priority - b.priority)
     .map((objectif) => ({ id: objectif.id, label: objectif.label, priority: objectif.priority }));
+  const visibleObjectifs = objectifs.slice(0, 3);
   const hasContraintes = dossier.contraintes.length > 0;
   const hasOperations = dossier.operationsPrevues.length > 0;
 
@@ -208,6 +245,9 @@ function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsC
 
   return {
     objectifs,
+    visibleObjectifs,
+    totalObjectifs: objectifs.length,
+    overflowCount: Math.max(0, objectifs.length - visibleObjectifs.length),
     emptyLabel: 'Aucun objectif consigné',
     note,
     action: { destination: 'objectifs' },
@@ -218,11 +258,69 @@ function buildObjectifsCard(dossier: DossierPatrimonial): AuditLandingObjectifsC
   };
 }
 
-function buildPilotageCard(): AuditLandingPilotageCard {
+function buildPreviewSlides(): AuditPreviewSlide[] {
+  return [
+    {
+      id: 'masses',
+      title: 'Masses successorales',
+      eyebrow: 'Répartition des masses successorales',
+      badgeLabel: 'À venir · F3',
+      status: 'soon',
+      description: 'Aperçu disponible après structuration du patrimoine.',
+      caption: 'F3 absent : aucune valeur patrimoniale ni calcul successoral affiché.',
+    },
+    {
+      id: 'societe',
+      title: 'Organigramme société',
+      eyebrow: 'Structure de détention',
+      badgeLabel: 'À venir · F5',
+      status: 'soon',
+      description: 'Aperçu disponible après raccordement du modèle société.',
+      caption: 'F5 absent : aucun lien de détention réel n’est représenté.',
+    },
+    {
+      id: 'ir',
+      title: 'Impôt sur le revenu',
+      eyebrow: 'Fiscalité',
+      badgeLabel: 'Verrouillé · IR',
+      status: 'locked',
+      description: 'Disponible après raccordement audit vers IR.',
+      caption: 'IR verrouillé : aucune estimation affichée sans raccordement validé.',
+    },
+  ];
+}
+
+function buildPilotageCard(dossier: DossierPatrimonial): AuditLandingPilotageCard {
   return {
     title: 'Stratégie',
-    description: 'Disponible après structuration du dossier.',
-    caption: 'Scénarios et pistes activés après structuration.',
+    description: 'Verrouillée tant que les prérequis métier ne sont pas disponibles.',
+    caption: 'Aucun scénario disponible à ce stade.',
+    prerequis: [
+      {
+        id: 'objectifs',
+        label: 'Objectifs définis',
+        status: dossier.objectifs.length > 0 ? 'satisfied' : 'missing',
+        statusLabel: dossier.objectifs.length > 0 ? 'Renseigné' : 'À compléter',
+      },
+      {
+        id: 'contraintes',
+        label: 'Contraintes précisées',
+        status: dossier.contraintes.length > 0 ? 'satisfied' : 'missing',
+        statusLabel: dossier.contraintes.length > 0 ? 'Renseigné' : 'À compléter',
+      },
+      {
+        id: 'patrimoine-f3',
+        label: 'Patrimoine structuré',
+        status: 'future',
+        statusLabel: 'À venir',
+      },
+      {
+        id: 'scenarios-f6',
+        label: 'Scénarios disponibles',
+        status: 'future',
+        statusLabel: 'À venir',
+      },
+    ],
   };
 }
 

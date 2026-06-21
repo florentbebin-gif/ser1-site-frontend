@@ -11,18 +11,22 @@ import {
 } from '@/reporting/snapshot';
 
 import AuditLanding from '../AuditLanding';
-import { buildAuditLandingViewModel } from '../auditLandingViewModel';
+import { buildAuditLandingViewModel, type AuditLandingViewModel } from '../auditLandingViewModel';
 
 const NOW = new Date('2026-06-09T10:00:00.000Z');
 
 function renderLanding(mutate: (audit: ReturnType<typeof createEmptyDossier>) => void = () => {}) {
   const audit = createEmptyDossier();
   mutate(audit);
-  const onOpenAudit = vi.fn();
   const viewModel = buildAuditLandingViewModel(
     buildDossierPatrimonialFromAudit(audit, { now: NOW.toISOString() }),
     { now: NOW },
   );
+  return renderLandingViewModel(viewModel);
+}
+
+function renderLandingViewModel(viewModel: AuditLandingViewModel) {
+  const onOpenAudit = vi.fn();
   const result = render(<AuditLanding viewModel={viewModel} onOpenAudit={onOpenAudit} />);
   return { onOpenAudit, ...result };
 }
@@ -108,21 +112,134 @@ describe('AuditLanding', () => {
     expect(container.querySelector('.audit-fil__avatar-face')).toBeNull();
   });
 
-  it('présente les aperçus visuels à venir masses successorales et organigramme société', () => {
+  it('affiche les points à confirmer déterministes et ouvre seulement les cibles réelles', () => {
+    const { onOpenAudit } = renderLanding();
+    const points = section('Points à confirmer');
+
+    expect(within(points).getByText('Client principal à compléter')).toBeVisible();
+    expect(within(points).getByText('Objectifs client à définir')).toBeVisible();
+    expect(within(points).queryByText(/Prénom, nom et date de naissance/)).toBeNull();
+    expect(within(points).queryByText(/Aucun objectif prioritaire/)).toBeNull();
+
+    const actions = within(points).getAllByRole('button', { name: 'Compléter' });
+    fireEvent.click(actions[0]!);
+    expect(onOpenAudit).toHaveBeenLastCalledWith('dossier');
+    fireEvent.click(actions[1]!);
+    expect(onOpenAudit).toHaveBeenLastCalledWith('objectifs');
+  });
+
+  it('relie un régime matrimonial manquant à l’étape civile réelle', () => {
+    const { onOpenAudit } = renderLanding((audit) => {
+      withFoyer(audit);
+      audit.objectifs = ['proteger_conjoint'];
+    });
+    const points = section('Points à confirmer');
+
+    expect(within(points).getByText('Régime matrimonial à confirmer')).toBeVisible();
+    fireEvent.click(within(points).getByRole('button', { name: 'Compléter' }));
+    expect(onOpenAudit).toHaveBeenLastCalledWith('civil');
+  });
+
+  it('compacte les points et objectifs à trois lignes avec un total réel', () => {
+    const audit = createEmptyDossier();
+    withFoyer(audit);
+    audit.objectifs = [
+      'proteger_proches',
+      'developper_patrimoine',
+      'proteger_revenus_sante',
+      'revenus_differes',
+    ];
+    const viewModel = buildAuditLandingViewModel(
+      buildDossierPatrimonialFromAudit(audit, { now: NOW.toISOString() }),
+      { now: NOW },
+    );
+
+    renderLandingViewModel({
+      ...viewModel,
+      pointsAConfirmer: [
+        {
+          id: 'point-1',
+          label: 'Premier point',
+          reason: 'Première phrase explicative masquée.',
+          action: { destination: 'dossier' },
+          tone: 'warning',
+        },
+        {
+          id: 'point-2',
+          label: 'Deuxième point',
+          reason: 'Deuxième phrase explicative masquée.',
+          action: { destination: 'civil' },
+          tone: 'warning',
+        },
+        {
+          id: 'point-3',
+          label: 'Troisième point',
+          reason: 'Troisième phrase explicative masquée.',
+          action: { destination: 'objectifs' },
+          tone: 'danger',
+        },
+        {
+          id: 'point-4',
+          label: 'Quatrième point',
+          reason: 'Quatrième phrase explicative masquée.',
+          action: null,
+          tone: 'warning',
+        },
+      ],
+    });
+
+    const points = section('Points à confirmer');
+    expect(within(points).getByLabelText('4 point(s) à confirmer')).toHaveTextContent('4');
+    expect(within(points).getByText('Premier point')).toBeVisible();
+    expect(within(points).getByText('Deuxième point')).toBeVisible();
+    expect(within(points).getByText('Troisième point')).toBeVisible();
+    expect(within(points).queryByText('Quatrième point')).toBeNull();
+    expect(within(points).queryByText(/phrase explicative masquée/)).toBeNull();
+
+    const objectifs = section('Objectifs');
+    expect(within(objectifs).getByLabelText('4 objectif(s) renseigné(s)')).toHaveTextContent('4');
+    expect(within(objectifs).getByText('Protéger mes proches')).toBeVisible();
+    expect(within(objectifs).getByText('Développer mon patrimoine')).toBeVisible();
+    expect(
+      within(objectifs).getByText('Protéger mes revenus en cas de problème de santé'),
+    ).toBeVisible();
+    expect(within(objectifs).queryByText('Préparer des revenus différés')).toBeNull();
+  });
+
+  it('rend un carrousel premium avec une seule fiche active accessible', () => {
     renderLanding(withFoyer);
 
-    const masses = section('Masses successorales');
-    const societe = section('Organigramme société');
+    const carousel = screen.getByRole('region', { name: 'Calculs à venir' });
 
-    expect(masses).toBeInTheDocument();
-    expect(societe).toBeInTheDocument();
-    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(2);
-    expect(
-      within(masses).getByText('Calcul disponible après structuration du patrimoine.'),
-    ).toBeInTheDocument();
-    expect(within(societe).getByText('Structure société à renseigner.')).toBeInTheDocument();
-    expect(within(masses).queryByRole('button')).toBeNull();
-    expect(within(societe).queryByRole('button')).toBeNull();
+    expect(within(carousel).getByRole('heading', { name: 'Masses successorales' })).toBeVisible();
+    expect(within(carousel).queryByRole('heading', { name: 'Organigramme société' })).toBeNull();
+    expect(within(carousel).queryByRole('heading', { name: 'Impôt sur le revenu' })).toBeNull();
+    expect(carousel.querySelectorAll('.audit-carousel__slide[aria-hidden="true"]')).toHaveLength(2);
+    expect(carousel.querySelector('[data-slide-position="prev"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(carousel.querySelector('[data-slide-position="next"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(within(carousel).queryByRole('link')).toBeNull();
+
+    fireEvent.click(within(carousel).getByRole('button', { name: /suivant/i }));
+    expect(within(carousel).getByRole('heading', { name: 'Organigramme société' })).toBeVisible();
+
+    fireEvent.keyDown(within(carousel).getByRole('button', { name: /suivant/i }), {
+      key: 'ArrowRight',
+    });
+    expect(within(carousel).getByRole('heading', { name: 'Impôt sur le revenu' })).toBeVisible();
+
+    fireEvent.keyDown(within(carousel).getByRole('button', { name: /suivant/i }), {
+      key: 'ArrowLeft',
+    });
+    expect(within(carousel).getByRole('heading', { name: 'Organigramme société' })).toBeVisible();
+
+    expect(within(carousel).getAllByRole('button', { name: /Voir / })).toHaveLength(3);
+    expect(carousel.textContent ?? '').not.toMatch(/patrimoine net|TMI\s+\d|\/\s*100|score|radar/i);
   });
 
   it('porte l’action par les libellés en en-tête des cartes', () => {
@@ -142,11 +259,19 @@ describe('AuditLanding', () => {
     const strategie = section('Stratégie');
 
     expect(
-      within(strategie).getByText('Disponible après structuration du dossier.'),
+      within(strategie).getByText(
+        'Verrouillée tant que les prérequis métier ne sont pas disponibles.',
+      ),
     ).toBeInTheDocument();
+    expect(within(strategie).getByText('Objectifs définis')).toBeVisible();
+    expect(within(strategie).getByText('Patrimoine structuré')).toBeVisible();
+    expect(within(strategie).getByText('Scénarios disponibles')).toBeVisible();
+    expect(within(strategie).getByText('Aucun scénario disponible à ce stade.')).toBeVisible();
     expect(within(strategie).getByText('Verrouillé')).toBeInTheDocument();
     expect(within(strategie).queryByText('Configurer')).toBeNull();
     expect(within(strategie).queryByRole('button')).toBeNull();
+    expect(within(strategie).queryByText('Protection')).toBeNull();
+    expect(within(strategie).queryByText('Transmission')).toBeNull();
   });
 
   it('affiche le dossier de travail dédié et l’avancement sans wording hors contrat', () => {

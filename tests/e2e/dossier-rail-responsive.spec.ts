@@ -33,8 +33,22 @@ test.describe('DossierRail responsive', () => {
       .locator('section')
       .filter({ has: page.getByRole('heading', { level: 2, name: 'Stratégie' }) })
       .boundingBox();
+    const syntheseBox = await page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { level: 2, name: 'Synthèse dossier' }) })
+      .boundingBox();
+    const pointsBox = await page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { level: 2, name: 'Points à confirmer' }) })
+      .boundingBox();
+    const carouselBox = await page.getByRole('region', { name: 'Calculs à venir' }).boundingBox();
+    const summarySideBox = await page.locator('.audit-landing__summary-side').boundingBox();
     expect(railBox).not.toBeNull();
     expect(dossierBox).not.toBeNull();
+    expect(syntheseBox).not.toBeNull();
+    expect(pointsBox).not.toBeNull();
+    expect(carouselBox).not.toBeNull();
+    expect(summarySideBox).not.toBeNull();
     expect(objectifsBox).not.toBeNull();
     expect(strategieBox).not.toBeNull();
     expect(railBox!.x).toBeLessThan(1);
@@ -43,6 +57,18 @@ test.describe('DossierRail responsive', () => {
     expect(dossierBox!.height).toBeLessThan(160);
     expect(objectifsBox!.x + objectifsBox!.width).toBeLessThanOrEqual(1432);
     expect(strategieBox!.x + strategieBox!.width).toBeLessThanOrEqual(1432);
+    expect(Math.abs(summarySideBox!.y - syntheseBox!.y)).toBeLessThan(1);
+    expect(Math.abs(summarySideBox!.height - syntheseBox!.height)).toBeLessThan(2);
+    expect(Math.abs(pointsBox!.height - objectifsBox!.height)).toBeLessThan(2);
+    expect(pointsBox!.y).toBeLessThan(carouselBox!.y);
+    expect(Math.abs(carouselBox!.y - strategieBox!.y)).toBeLessThan(2);
+    expect(Math.abs(carouselBox!.x - syntheseBox!.x)).toBeLessThan(1);
+    expect(Math.abs(carouselBox!.width - syntheseBox!.width)).toBeLessThan(2);
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Masses successorales' }),
+    ).toBeVisible();
+    await expect(page.locator('.audit-carousel__slide[aria-hidden="true"]')).toHaveCount(2);
+    await expect(page.locator('.audit-carousel__slide--prev')).toHaveCSS('pointer-events', 'none');
 
     const statusBox = await page.locator('.audit-status-bar').boundingBox();
     await expect(page.locator('.audit-status-bar')).toHaveCSS('border-top-width', '0px');
@@ -72,6 +98,11 @@ test.describe('DossierRail responsive', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
     ).toBeHidden();
+    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toBeVisible();
+    const carouselBox = await page.getByRole('region', { name: 'Calculs à venir' }).boundingBox();
+    expect(carouselBox).not.toBeNull();
+    expect(carouselBox!.x).toBeGreaterThanOrEqual(0);
+    expect(carouselBox!.x + carouselBox!.width).toBeLessThanOrEqual(390);
   });
 
   test('desktop /strategy affiche le rail complet', async ({ page }) => {

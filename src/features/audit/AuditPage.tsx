@@ -27,6 +27,7 @@ function readSessionDraft(): DossierAudit {
 
 const DESTINATION_TO_STEP: Record<AuditLandingDestination, AuditWizardStepId> = {
   dossier: 'famille',
+  civil: 'civil',
   objectifs: 'objectifs',
 };
 

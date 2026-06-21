@@ -13,14 +13,12 @@
 import type { ReactElement, ReactNode } from 'react';
 
 import {
-  IconBuilding,
   IconChevronRight,
   IconClipboardCheck,
   IconFolder,
   IconInfo,
   IconLock,
   IconNetwork,
-  IconPieChart,
   IconUsers,
 } from '@/icons/ui';
 
@@ -30,10 +28,12 @@ import type {
   AuditLandingSyntheseCard,
   AuditLandingViewModel,
 } from './auditLandingViewModel';
+import { AuditPreviewCarousel } from './components/AuditPreviewCarousel';
 import { AuditProgressRail } from './components/AuditProgressRail';
 import { AuditStatusBar } from './components/AuditStatusBar';
 import { DossierTravailCard } from './components/DossierTravailCard';
 import { FoyerFiliation } from './components/FoyerFiliation';
+import { PointsAConfirmerCard } from './components/PointsAConfirmerCard';
 import '@/styles/sim/index.css';
 import './styles/index.css';
 
@@ -45,7 +45,16 @@ interface AuditLandingProps {
 }
 
 export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
-  const { dossierClientLabel, synthese, objectifs, pilotage, statusBar, progress } = viewModel;
+  const {
+    dossierClientLabel,
+    synthese,
+    objectifs,
+    pilotage,
+    pointsAConfirmer,
+    previewSlides,
+    statusBar,
+    progress,
+  } = viewModel;
 
   return (
     <div className="audit-landing premium-page">
@@ -60,20 +69,13 @@ export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingPro
           <div className="audit-landing__title-divider" aria-hidden="true" />
 
           <div className="audit-landing__grid">
-            <div className="audit-landing__primary">
-              <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
-
-              <div className="audit-landing__preview-row">
-                <MassesPreviewCard />
-                <SocietePreviewCard />
-              </div>
-            </div>
-
-            <div className="audit-landing__side">
+            <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
+            <div className="audit-landing__summary-side">
+              <PointsAConfirmerCard points={pointsAConfirmer} onOpenAudit={onOpenAudit} />
               <ObjectifsCard card={objectifs} onOpenAudit={onOpenAudit} />
-
-              <StrategiePreviewCard card={pilotage} />
             </div>
+            <AuditPreviewCarousel slides={previewSlides} />
+            <StrategiePreviewCard card={pilotage} />
           </div>
         </main>
       </div>
@@ -89,7 +91,7 @@ interface SyntheseCardProps {
 function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
   return (
     <section
-      className="audit-card audit-card--hero audit-card--action"
+      className="audit-card audit-card--hero audit-card--action audit-card--synthese"
       aria-labelledby="audit-card-synthese"
     >
       <CardHead
@@ -177,62 +179,6 @@ function EtatCivil({ card }: { card: AuditLandingSyntheseCard }): ReactElement {
   );
 }
 
-function MassesPreviewCard(): ReactElement {
-  return (
-    <section
-      className="audit-card audit-card--preview audit-card--compact"
-      aria-labelledby="audit-card-masses"
-    >
-      <CardHead icon={<IconPieChart className="audit-card__icon-svg" />} action={<PreviewBadge />}>
-        <h2 className="audit-card__title" id="audit-card-masses">
-          Masses successorales
-        </h2>
-      </CardHead>
-      <CardDivider />
-      <div className="audit-masses-preview" aria-hidden="true">
-        <div className="audit-masses-preview__ring">
-          <span className="audit-masses-preview__center">
-            <IconLock className="audit-masses-preview__lock" />
-          </span>
-        </div>
-        <div className="audit-masses-preview__bars">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-      <p className="audit-card__caption">Calcul disponible après structuration du patrimoine.</p>
-    </section>
-  );
-}
-
-function SocietePreviewCard(): ReactElement {
-  return (
-    <section
-      className="audit-card audit-card--preview audit-card--compact"
-      aria-labelledby="audit-card-societe"
-    >
-      <CardHead icon={<IconBuilding className="audit-card__icon-svg" />} action={<PreviewBadge />}>
-        <h2 className="audit-card__title" id="audit-card-societe">
-          Organigramme société
-        </h2>
-      </CardHead>
-      <CardDivider />
-      <div className="audit-org-preview" aria-hidden="true">
-        <span className="audit-org-preview__node audit-org-preview__node--root">Détenteur</span>
-        <span className="audit-org-preview__line audit-org-preview__line--vertical" />
-        <span className="audit-org-preview__node audit-org-preview__node--main">Société</span>
-        <span className="audit-org-preview__line audit-org-preview__line--split" />
-        <span className="audit-org-preview__node">Filiale</span>
-        <span className="audit-org-preview__node">Participation</span>
-      </div>
-      <p className="audit-card__caption">Structure société à renseigner.</p>
-    </section>
-  );
-}
-
 function StrategiePreviewCard({ card }: { card: AuditLandingViewModel['pilotage'] }): ReactElement {
   return (
     <section
@@ -249,18 +195,19 @@ function StrategiePreviewCard({ card }: { card: AuditLandingViewModel['pilotage'
         </h2>
       </CardHead>
       <CardDivider />
-      <div className="audit-strategy-preview" aria-hidden="true">
-        <div className="audit-strategy-preview__timeline">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="audit-strategy-preview__matrix">
-          <span>Protection</span>
-          <span>Transmission</span>
-          <span>Fiscalité</span>
-        </div>
-      </div>
+      <ul className="audit-strategy-prereqs" aria-label="Prérequis de déblocage">
+        {card.prerequis.map((prerequis) => (
+          <li
+            className="audit-strategy-prereqs__item"
+            data-status={prerequis.status}
+            key={prerequis.id}
+          >
+            <span className="audit-strategy-prereqs__marker" aria-hidden="true" />
+            <span className="audit-strategy-prereqs__label">{prerequis.label}</span>
+            <span className="audit-strategy-prereqs__status">{prerequis.statusLabel}</span>
+          </li>
+        ))}
+      </ul>
       <p className="audit-card__sub">{card.description}</p>
       <p className="audit-card__caption">{card.caption}</p>
     </section>
@@ -273,13 +220,19 @@ interface ObjectifsCardProps {
 }
 
 function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement {
+  const actionLabel =
+    card.totalObjectifs === 0 ? 'Définir les objectifs client' : 'Compléter les objectifs client';
+
   return (
-    <section className="audit-card audit-card--action" aria-labelledby="audit-card-objectifs">
+    <section
+      className="audit-card audit-card--action audit-card--objectifs"
+      aria-labelledby="audit-card-objectifs"
+    >
       <CardHead
         icon={<IconClipboardCheck className="audit-card__icon-svg" />}
         action={
           <CardActionButton
-            label="Définir les objectifs client"
+            label={actionLabel}
             accessibleContext={card.ariaLabel}
             onClick={() => onOpenAudit(card.action.destination)}
           />
@@ -293,10 +246,10 @@ function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement 
 
       <div className="audit-objectifs__content">
         <div className="audit-objectifs__text">
-          {card.objectifs.length > 0 ? (
+          {card.totalObjectifs > 0 ? (
             <>
               <ol className="audit-objectifs">
-                {card.objectifs.slice(0, 4).map((objectif) => (
+                {card.visibleObjectifs.map((objectif) => (
                   <li key={objectif.id} className="audit-objectifs__item">
                     <span className="audit-objectifs__rank">{objectif.priority}</span>
                     <span className="audit-objectifs__label">{objectif.label}</span>
@@ -314,7 +267,17 @@ function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement 
             <p className="audit-tile__empty">{card.emptyLabel}</p>
           )}
         </div>
-        <ObjectifsIllustration />
+        <div className="audit-objectifs__visual-stack">
+          {card.totalObjectifs > 0 && (
+            <span
+              className="audit-objectifs__count"
+              aria-label={`${card.totalObjectifs} objectif(s) renseigné(s)`}
+            >
+              {card.totalObjectifs}
+            </span>
+          )}
+          <ObjectifsIllustration />
+        </div>
       </div>
     </section>
   );
@@ -432,10 +395,6 @@ function CardActionText({ label }: { label: string }): ReactElement {
       <span>{label}</span>
     </span>
   );
-}
-
-function PreviewBadge(): ReactElement {
-  return <span className="audit-preview-badge">À venir</span>;
 }
 
 function formatParts(parts: number): string {
