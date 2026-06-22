@@ -461,29 +461,35 @@ Jalons prospectifs conservés par UX-01 :
 | Hors-scope                                            | Création de nouvelles routes, changement `AppLayout`, réécriture du rail global.                                                                 |
 | PR cible d'implémentation                             | `UX-02`.                                                                                                                                         |
 
-### Famille / filiation / régime / objectifs
+### Foyer & famille et Objectifs F1
 
-| Champ                                                 | Contrat                                                                                                                                            |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page / section rail                                   | Pages ou sections : identité/foyer, filiation, régime matrimonial, donations synthétiques, objectifs/contraintes/opérations prévues.               |
-| Objectif CGP                                          | Stabiliser les données familiales et les objectifs qui conditionnent la suite de l'audit.                                                          |
-| Dépendances fondations                                | `F1` + `UX-00b`. Livrable après `UX-00b` si les drawers écrivent via adapter F1.                                                                   |
-| Source de vérité                                      | `DossierPatrimonial` F1.                                                                                                                           |
-| View model attendu                                    | Agrégat famille F1 : membres, liens, régime, donations synthétiques, objectifs et états de complétude.                                             |
-| Données lues                                          | Identité foyer, membres, personnes liées, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues, `sourceRefs` F1. |
-| Données éditables                                     | Membre foyer, enfant/personne liée, régime matrimonial, donation synthétique, objectif/contrainte/opération prévue.                                |
-| Écriture dossier                                      | Save via adapter F1 ; pas de modèle famille local concurrent.                                                                                      |
-| Drawers                                               | Membre foyer ; enfant/personne liée ; régime matrimonial ; donation synthétique ; objectif.                                                        |
-| SourceRefs / preuves                                  | Statut source par valeur structurante si disponible ; donnée manuelle = statut seul.                                                               |
-| États vide / partiel / complet / à vérifier / à venir | `vide`, `à compléter`, `partiel`, `complet F1`, `à vérifier` si source ou cohérence incertaine.                                                    |
-| CTA primaires                                         | Ajouter/éditer une personne, un régime, une donation ou un objectif.                                                                               |
-| CTA secondaires                                       | Voir les alertes de cohérence ; accéder aux pages Succession/Prévoyance quand disponibles.                                                         |
-| Simulateurs à auditer / réutiliser                    | `/sim/succession` pour filiation, donations, régime, warnings et modales ; `/sim/prevoyance` pour personnes à protéger si pertinent.               |
-| Patterns UI à reprendre                               | Warnings succession, modales structurées, listes de personnes, badges de relation.                                                                 |
-| Interdits spécifiques                                 | Pas de liquidation successorale exhaustive, pas de reconstitution notariale complète, pas de duplication d'un modèle famille local.                |
-| Tests attendus                                        | Lecture dossier F1, édition via drawer, sauvegarde dossier, états `à compléter`/`à vérifier`.                                                      |
-| Hors-scope                                            | Moteur succession complet, calcul de droits, vue client, scan documentaire.                                                                        |
-| PR cible d'implémentation                             | `UX-03`.                                                                                                                                           |
+État runtime : UX-03a a remplacé le wizard legacy par une expérience cockpit unique. `Foyer &
+famille` est une page en 4 cartes F1 (situation familiale, filiation, régime matrimonial &
+donations, situation professionnelle) ; `Objectifs` est une page séparée en fin de parcours. Les
+deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawerXL`, sans navigation
+horizontale d'étapes.
+
+| Champ                                                 | Contrat                                                                                                                                                        |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page / section rail                                   | Pages cockpit : `Foyer & famille` puis `Objectifs`, sans wizard horizontal ni sidebar locale concurrente.                                                      |
+| Objectif CGP                                          | Stabiliser les données familiales et les objectifs qui conditionnent la suite de l'audit.                                                                      |
+| Dépendances fondations                                | `F1` + `UX-00b`. Livrable après `UX-00b` si les drawers écrivent via adapter F1.                                                                               |
+| Source de vérité                                      | `DossierPatrimonial` F1.                                                                                                                                       |
+| View model attendu                                    | Agrégat F1 : membres, liens, régime, donations synthétiques, profession, objectifs et états de complétude.                                                     |
+| Données lues                                          | Identité foyer, membres, personnes liées, régime matrimonial, donations synthétiques, profession, objectifs, contraintes, opérations prévues, `sourceRefs` F1. |
+| Données éditables                                     | Membre foyer, enfant/personne liée, régime matrimonial, donation synthétique, profession, objectif/contrainte/opération prévue.                                |
+| Écriture dossier                                      | Save via adapter F1 ; pas de modèle famille local concurrent.                                                                                                  |
+| Drawers                                               | Membre foyer ; enfant/personne liée ; régime matrimonial ; donation synthétique ; profession ; objectif/contrainte/opération prévue.                           |
+| SourceRefs / preuves                                  | Statut source par valeur structurante si disponible ; donnée manuelle = statut seul.                                                                           |
+| États vide / partiel / complet / à vérifier / à venir | `vide`, `à compléter`, `partiel`, `complet F1`, `à vérifier` si source ou cohérence incertaine.                                                                |
+| CTA primaires                                         | Ajouter/éditer une personne, un régime, une donation, une profession ou un objectif.                                                                           |
+| CTA secondaires                                       | Voir les alertes de cohérence ; accéder aux pages Succession/Prévoyance quand disponibles.                                                                     |
+| Simulateurs à auditer / réutiliser                    | `/sim/succession` pour filiation, donations, régime, warnings et modales ; `/sim/prevoyance` pour personnes à protéger si pertinent.                           |
+| Patterns UI à reprendre                               | Warnings succession, modales structurées, listes de personnes, badges de relation.                                                                             |
+| Interdits spécifiques                                 | Pas de liquidation successorale exhaustive, pas de reconstitution notariale complète, pas de duplication d'un modèle famille local.                            |
+| Tests attendus                                        | Lecture dossier F1, édition via drawer, sauvegarde dossier, états `à compléter`/`à vérifier`.                                                                  |
+| Hors-scope                                            | Moteur succession complet, calcul de droits, vue client, scan documentaire.                                                                                    |
+| PR cible d'implémentation                             | `UX-03a.1` et `UX-03a.4` livrés ; extensions F1 futures à rattacher ici sans recréer de wizard.                                                                |
 
 ### Budget & capacité
 
@@ -535,6 +541,12 @@ Jalons prospectifs conservés par UX-01 :
 
 ### Patrimoine / actifs / passifs
 
+État runtime : UX-03a.2 livre déjà une page cockpit `Actifs / passifs` minimaliste. Elle porte un
+inventaire déclaratif et des états honnêtes (`inventaire saisi`, `données partielles`, `à structurer
+F3`) sans afficher patrimoine net, droits PP/US/NP, droits successoraux ou graphe patrimonial. Le
+contrat ci-dessous reste la cible **F3 réelle** qui remplacera cet inventaire déclaratif quand le
+graphe central sera disponible.
+
 | Champ                                                 | Contrat                                                                                                                                            |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Page / section rail                                   | Patrimoine, actifs, passifs.                                                                                                                       |
@@ -558,6 +570,11 @@ Jalons prospectifs conservés par UX-01 :
 | PR cible d'implémentation                             | `UX-05`.                                                                                                                                           |
 
 ### Fiscalité / IR / IFI conditionnel
+
+État runtime : UX-03a.3 livre déjà une page cockpit `Fiscalité` déclarative. Elle qualifie les
+données fiscales connues et les points à confirmer sans calculer l'IR depuis `/audit`, sans TMI
+calculée, sans optimisation réelle et sans hardcode fiscal. Le contrat ci-dessous décrit la cible
+fiscalité calculée, conditionnée par les moteurs et fondations concernés.
 
 | Champ                                                 | Contrat                                                                                                                                |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |

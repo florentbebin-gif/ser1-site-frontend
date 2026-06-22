@@ -2,7 +2,7 @@
 
 > Date de cadrage : 2026-05-22
 >
-> Objectif : construire dans SER1 un parcours d'analyse patrimoniale assistée par IA, avec lecture documentaire, complétion contrôlée de l'UX, validation ciblée par le CGP, calculs SER1 déterministes, génération PPTX existante et dossier de conformité RGPD exploitable commercialement.
+> Objectif : construire dans SER1 un parcours d'analyse patrimoniale assistée par IA, avec lecture documentaire, complétion contrôlée de l'UX, validation ciblée par le CGP, calculs SER1 déterministes, réutilisation éventuelle du pipeline PPTX existant des simulateurs via un cadrage export dédié, et dossier de conformité RGPD exploitable commercialement.
 >
 > Ce plan est l'explosion détaillée de **PR V2-14 — Scan documentaire** dans `docs/ROADMAP.md`.
 >
@@ -320,7 +320,7 @@ Remplacer le chat par une revue structurée des champs préremplis et des points
 
 ### Phase 9 — Génération PPTX
 
-Faire sortir l'étude par les templates actuels.
+Préparer l'étude par le pipeline PPTX existant, uniquement via un preset ou wrapper dédié validé pour l'analyse patrimoniale IA.
 
 1. Réutiliser le pipeline PPTX existant :
    - `src/pptx/export/exportStudyDeck.ts`.

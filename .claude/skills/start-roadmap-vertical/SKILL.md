@@ -26,7 +26,7 @@ Sortie attendue à chaque étape : chemin de fichier, commit, ou sortie de comma
 
 Refuser de continuer tant que le brief n'est pas écrit.
 
-**Artefact** : `docs/feature-<vertical-id>.md` (ex. `docs/feature-per-multi-enveloppes.md`, `docs/feature-scan-documentaire.md`).
+**Artefact durable** : compléter `docs/ROADMAP.md` et, si la verticale est un simulateur, produire ou référencer une fiche contrat durable conforme à `docs/templates/simulateur-contract.md`. Ne créer `docs/feature-<vertical-id>.md` que si ce fichier devient la fiche structurante permanente de la verticale ; ne jamais versionner une note de cadrage éphémère.
 
 **Contenu minimum (1 page max)** :
 
