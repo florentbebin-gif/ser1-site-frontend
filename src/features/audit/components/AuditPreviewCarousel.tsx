@@ -130,7 +130,7 @@ export function AuditPreviewCarousel({ slides }: AuditPreviewCarouselProps): Rea
             type="button"
             className="audit-carousel__dot"
             aria-current={slide.id === activeSlideId ? 'true' : undefined}
-            aria-label={`Voir ${slide.title}`}
+            aria-label={`Afficher l’aperçu ${index + 1} : ${slide.title}`}
             key={slide.id}
             onKeyDown={handleControlKeyDown}
             onClick={() => showSlide(index)}

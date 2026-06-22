@@ -15,6 +15,10 @@
   padding: 0;
 }
 
+.audit-landing.premium-page[data-state='empty'] {
+  --audit-synthese-block-size: auto;
+}
+
 .audit-landing__layout {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
@@ -434,9 +438,20 @@
   align-items: start;
 }
 
+.audit-landing__start-grid {
+  display: grid;
+  grid-template-columns: minmax(0, min(720px, 100%));
+  align-items: start;
+}
+
 .audit-card--synthese {
   grid-area: synthese;
   block-size: var(--audit-synthese-block-size);
+}
+
+.audit-card--synthese[data-state='empty'] {
+  block-size: auto;
+  min-block-size: 258px;
 }
 
 .audit-card--synthese .audit-card__tiles {
@@ -458,10 +473,25 @@
   min-height: 0;
 }
 
+.audit-landing[data-state='empty'] .audit-landing__summary-side {
+  grid-template-rows: auto auto;
+  align-content: start;
+  block-size: auto;
+}
+
 .audit-landing__summary-side > .audit-card {
   min-height: 0;
   overflow: hidden;
   padding: var(--space-5);
+}
+
+.audit-landing[data-state='empty'] .audit-landing__summary-side > .audit-card {
+  overflow: visible;
+  padding: var(--space-4);
+}
+
+.audit-landing[data-state='empty'] .audit-landing__summary-side .audit-card__divider {
+  margin: var(--space-2) 0;
 }
 
 .audit-landing__summary-side .audit-card__divider {
@@ -470,6 +500,10 @@
 
 .audit-card--strategy {
   grid-area: strategie;
+}
+
+.audit-card--new-analysis {
+  min-height: 0;
 }
 
 /* ── Carte (surface élevée) ────────────────────────────────────────────────── */
@@ -705,6 +739,53 @@
   color: var(--text-muted);
 }
 
+.audit-empty-start {
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  max-width: 520px;
+  min-height: 132px;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.audit-empty-start__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-empty-start--main {
+  max-width: none;
+  min-height: 108px;
+}
+
+.audit-empty-start__text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.audit-empty-start__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  justify-self: start;
+  margin-top: var(--space-1);
+  color: var(--action-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-empty-start__cta-icon {
+  width: 14px;
+  height: 14px;
+}
+
 /* ── État civil ────────────────────────────────────────────────────────────── */
 
 .audit-ec {
@@ -857,6 +938,14 @@
   background: var(--surface-muted);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.audit-points[data-state='empty'] {
+  justify-content: start;
+}
+
+.audit-points[data-state='empty'] .audit-points__empty {
+  padding: var(--space-2) var(--space-3);
 }
 
 .audit-points__list {
@@ -1104,12 +1193,12 @@
 }
 
 .audit-carousel__arrow--prev {
-  left: var(--space-2);
+  left: 12%;
   transform: translateY(-50%) rotate(180deg);
 }
 
 .audit-carousel__arrow--next {
-  right: var(--space-2);
+  right: 12%;
 }
 
 .audit-carousel__arrow-icon {
@@ -1294,7 +1383,8 @@
   align-items: center;
   justify-content: center;
   min-width: 22px;
-  height: 22px;
+  min-height: 22px;
+  padding: 0 var(--space-2);
   flex-shrink: 0;
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--action-primary) 12%, var(--surface-card));
@@ -1302,6 +1392,7 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .audit-objectifs__item {

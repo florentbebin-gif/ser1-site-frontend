@@ -16,7 +16,11 @@ export function PointsAConfirmerCard({
   const visiblePoints = points.slice(0, 3);
 
   return (
-    <section className="audit-card audit-points" aria-labelledby="audit-card-points">
+    <section
+      className="audit-card audit-points"
+      aria-labelledby="audit-card-points"
+      data-state={points.length === 0 ? 'empty' : 'active'}
+    >
       <header className="audit-points__head">
         <span className="audit-card__icon audit-card__icon--warning" aria-hidden="true">
           <IconInfo className="audit-card__icon-svg" />
@@ -33,7 +37,7 @@ export function PointsAConfirmerCard({
       <div className="audit-card__divider sim-divider sim-divider--soft" aria-hidden="true" />
 
       {points.length === 0 ? (
-        <p className="audit-points__empty">Aucun point à confirmer - F1 cohérent.</p>
+        <p className="audit-points__empty">Aucun point prioritaire.</p>
       ) : (
         <ul className="audit-points__list">
           {visiblePoints.map((point) => {

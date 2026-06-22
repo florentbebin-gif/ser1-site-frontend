@@ -50,6 +50,14 @@ function withFoyer(audit: ReturnType<typeof createEmptyDossier>) {
   ];
 }
 
+function withClientPartiel(audit: ReturnType<typeof createEmptyDossier>) {
+  audit.situationFamiliale.mr = {
+    prenom: 'Jean',
+    nom: 'Martin',
+    dateNaissance: '',
+  };
+}
+
 function section(name: string): HTMLElement {
   return screen.getByRole('heading', { level: 2, name }).closest('section') as HTMLElement;
 }
@@ -73,7 +81,7 @@ describe('AuditLanding', () => {
     const { container } = renderLanding(withFoyer);
 
     expect(screen.getByText('Dossier renseigné')).toBeVisible();
-    expect(screen.getByText('Points à compléter')).toBeVisible();
+    expect(screen.getByText('Champs F1 à compléter')).toBeVisible();
     expect(screen.getByText('Parts fiscales indicatives')).toBeVisible();
     expect(screen.getByText('IR · Patrimoine')).toBeVisible();
     expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(1);
@@ -112,8 +120,8 @@ describe('AuditLanding', () => {
     expect(container.querySelector('.audit-fil__avatar-face')).toBeNull();
   });
 
-  it('affiche les points à confirmer déterministes et ouvre seulement les cibles réelles', () => {
-    const { onOpenAudit } = renderLanding();
+  it('affiche les points à confirmer déterministes dès que le dossier est amorcé', () => {
+    const { onOpenAudit } = renderLanding(withClientPartiel);
     const points = section('Points à confirmer');
 
     expect(within(points).getByText('Client principal à compléter')).toBeVisible();
@@ -126,6 +134,35 @@ describe('AuditLanding', () => {
     expect(onOpenAudit).toHaveBeenLastCalledWith('dossier');
     fireEvent.click(actions[1]!);
     expect(onOpenAudit).toHaveBeenLastCalledWith('objectifs');
+  });
+
+  it('guide une nouvelle analyse vide sans rendre le cockpit prématuré', () => {
+    const { onOpenAudit } = renderLanding();
+    const start = section('Nouvelle analyse patrimoniale');
+
+    expect(
+      within(start).getByText('Renseignez d’abord le client principal pour structurer le foyer.'),
+    ).toBeVisible();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Objectifs' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Stratégie' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Calculs à venir' })).toBeNull();
+    expect(screen.queryByText('Foyer à renseigner')).toBeNull();
+    expect(screen.queryByText('Filiation à renseigner')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
+    expect(onOpenAudit).toHaveBeenLastCalledWith('dossier');
+  });
+
+  it('réaffiche le cockpit complet dès qu’un client est amorcé', () => {
+    renderLanding(withClientPartiel);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 2, name: 'Objectifs' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 2, name: 'Stratégie' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Calculs à venir' })).toBeVisible();
   });
 
   it('relie un régime matrimonial manquant à l’étape civile réelle', () => {
@@ -197,7 +234,9 @@ describe('AuditLanding', () => {
     expect(within(points).queryByText(/phrase explicative masquée/)).toBeNull();
 
     const objectifs = section('Objectifs');
-    expect(within(objectifs).getByLabelText('4 objectif(s) renseigné(s)')).toHaveTextContent('4');
+    expect(within(objectifs).getByLabelText('1 objectif non affiché sur 4')).toHaveTextContent(
+      '+1 objectif',
+    );
     expect(within(objectifs).getByText('Protéger mes proches')).toBeVisible();
     expect(within(objectifs).getByText('Développer mon patrimoine')).toBeVisible();
     expect(
@@ -238,12 +277,14 @@ describe('AuditLanding', () => {
     });
     expect(within(carousel).getByRole('heading', { name: 'Organigramme société' })).toBeVisible();
 
-    expect(within(carousel).getAllByRole('button', { name: /Voir / })).toHaveLength(3);
+    expect(within(carousel).getAllByRole('button', { name: /Afficher l’aperçu \d/ })).toHaveLength(
+      3,
+    );
     expect(carousel.textContent ?? '').not.toMatch(/patrimoine net|TMI\s+\d|\/\s*100|score|radar/i);
   });
 
   it('porte l’action par les libellés en en-tête des cartes', () => {
-    const { container, onOpenAudit } = renderLanding();
+    const { container, onOpenAudit } = renderLanding(withFoyer);
 
     screen.getByRole('button', { name: /^Voir l'audit complet/ }).click();
     expect(onOpenAudit).toHaveBeenLastCalledWith('dossier');
@@ -255,7 +296,7 @@ describe('AuditLanding', () => {
   });
 
   it('laisse la carte Stratégie verrouillée et non cliquable', () => {
-    renderLanding();
+    renderLanding(withFoyer);
     const strategie = section('Stratégie');
 
     expect(

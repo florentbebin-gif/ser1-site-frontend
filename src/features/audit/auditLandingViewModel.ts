@@ -10,7 +10,12 @@
  */
 
 import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
-import type { DossierMembre, DossierPatrimonial } from '@/domain/dossier';
+import {
+  evaluateDossierPatrimonialCompletion,
+  type DossierCompletionStatus,
+  type DossierMembre,
+  type DossierPatrimonial,
+} from '@/domain/dossier';
 
 import {
   buildAuditPointsAConfirmer,
@@ -130,6 +135,7 @@ export interface AuditLandingPilotageCard {
 
 export interface AuditLandingViewModel {
   hasDossier: boolean;
+  isNewAnalysisEmpty: boolean;
   clientName: string | null;
   dossierClientLabel: string | null;
   synthese: AuditLandingSyntheseCard;
@@ -171,9 +177,11 @@ export function buildAuditLandingViewModel(
   const synthese = buildSyntheseCard(dossier, now, engaged);
   const objectifs = buildObjectifsCard(dossier);
   const progress = buildAuditProgressSections(dossier, synthese, now, engaged);
+  const completion = evaluateDossierPatrimonialCompletion(dossier, { now: now.toISOString() });
 
   return {
     hasDossier: engaged,
+    isNewAnalysisEmpty: isNewAnalysisEmptyDossier(dossier, synthese, completion.status),
     clientName: synthese.principal?.fullName ?? null,
     dossierClientLabel: buildDossierClientLabel(synthese),
     synthese,
@@ -333,6 +341,10 @@ function computeParts(statut: string, enfantsCount: number): number {
 }
 
 function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
+  return isFoyerStarted(dossier) || dossier.objectifs.length > 0;
+}
+
+function isFoyerStarted(dossier: DossierPatrimonial): boolean {
   const principal = findMembre(dossier, dossier.foyer.membrePrincipalId);
   const principalHasData = Boolean(
     principal?.prenom.trim() || principal?.nom?.trim() || principal?.dateNaissance?.trim(),
@@ -344,8 +356,20 @@ function isFamilyEngaged(dossier: DossierPatrimonial): boolean {
     dossier.situationFamiliale.statut !== 'celibataire' ||
     dossier.situationFamiliale.nombreEnfants > 0 ||
     dossier.regimeMatrimonial !== null ||
-    dossier.donationsSynthetiques.length > 0 ||
-    dossier.objectifs.length > 0
+    dossier.donationsSynthetiques.length > 0
+  );
+}
+
+function isNewAnalysisEmptyDossier(
+  dossier: DossierPatrimonial,
+  synthese: AuditLandingSyntheseCard,
+  completionStatus: DossierCompletionStatus,
+): boolean {
+  return (
+    !isFoyerStarted(dossier) &&
+    !synthese.principal?.fullName.trim() &&
+    dossier.objectifs.length === 0 &&
+    completionStatus === 'empty'
   );
 }
 

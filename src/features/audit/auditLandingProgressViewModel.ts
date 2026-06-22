@@ -165,7 +165,7 @@ export function buildStatusBar(
       },
       {
         id: 'points',
-        label: 'Points à compléter',
+        label: 'Champs F1 à compléter',
         value: pointsToComplete === 0 ? 'Aucun' : String(pointsToComplete),
         tone: pointsToComplete === 0 ? 'success' : 'warning',
       },

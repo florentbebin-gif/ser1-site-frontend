@@ -47,6 +47,7 @@ interface AuditLandingProps {
 export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
   const {
     dossierClientLabel,
+    isNewAnalysisEmpty,
     synthese,
     objectifs,
     pilotage,
@@ -55,9 +56,10 @@ export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingPro
     statusBar,
     progress,
   } = viewModel;
+  const pageState = isNewAnalysisEmpty ? 'new' : synthese.hasData ? 'filled' : 'empty';
 
   return (
-    <div className="audit-landing premium-page">
+    <div className="audit-landing premium-page" data-state={pageState}>
       <div className="audit-landing__layout">
         <aside className="audit-landing__rail" aria-label="Contexte de travail">
           <DossierTravailCard dossierClientLabel={dossierClientLabel} />
@@ -68,15 +70,21 @@ export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingPro
           <AuditStatusBar statusBar={statusBar} />
           <div className="audit-landing__title-divider" aria-hidden="true" />
 
-          <div className="audit-landing__grid">
-            <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
-            <div className="audit-landing__summary-side">
-              <PointsAConfirmerCard points={pointsAConfirmer} onOpenAudit={onOpenAudit} />
-              <ObjectifsCard card={objectifs} onOpenAudit={onOpenAudit} />
+          {isNewAnalysisEmpty ? (
+            <div className="audit-landing__start-grid">
+              <NewAnalysisCard card={synthese} onOpenAudit={onOpenAudit} />
             </div>
-            <AuditPreviewCarousel slides={previewSlides} />
-            <StrategiePreviewCard card={pilotage} />
-          </div>
+          ) : (
+            <div className="audit-landing__grid">
+              <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
+              <div className="audit-landing__summary-side">
+                <PointsAConfirmerCard points={pointsAConfirmer} onOpenAudit={onOpenAudit} />
+                <ObjectifsCard card={objectifs} onOpenAudit={onOpenAudit} />
+              </div>
+              <AuditPreviewCarousel slides={previewSlides} />
+              <StrategiePreviewCard card={pilotage} />
+            </div>
+          )}
         </main>
       </div>
     </div>
@@ -88,17 +96,55 @@ interface SyntheseCardProps {
   onOpenAudit: (destination: AuditLandingDestination) => void;
 }
 
-function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
+function NewAnalysisCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
   return (
     <section
-      className="audit-card audit-card--hero audit-card--action audit-card--synthese"
-      aria-labelledby="audit-card-synthese"
+      className="audit-card audit-card--hero audit-card--action audit-card--new-analysis"
+      aria-labelledby="audit-card-new-analysis"
     >
       <CardHead
         icon={<IconFolder className="audit-card__icon-svg" />}
         action={
           <CardActionButton
-            label="Voir l'audit complet"
+            label="Commencer par le client"
+            accessibleContext={card.ariaLabel}
+            onClick={() => onOpenAudit(card.action.destination)}
+          />
+        }
+      >
+        <h2 className="audit-card__title" id="audit-card-new-analysis">
+          Nouvelle analyse patrimoniale
+        </h2>
+      </CardHead>
+      <CardDivider />
+
+      <div className="audit-empty-start audit-empty-start--main">
+        <p className="audit-empty-start__text">
+          Renseignez d’abord le client principal pour structurer le foyer.
+        </p>
+        <span className="audit-empty-start__cta" aria-hidden="true">
+          <span>Commencer par le client</span>
+          <IconChevronRight className="audit-empty-start__cta-icon" />
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
+  const actionLabel = card.hasData ? "Voir l'audit complet" : 'Commencer par le client';
+
+  return (
+    <section
+      className="audit-card audit-card--hero audit-card--action audit-card--synthese"
+      aria-labelledby="audit-card-synthese"
+      data-state={card.hasData ? 'filled' : 'empty'}
+    >
+      <CardHead
+        icon={<IconFolder className="audit-card__icon-svg" />}
+        action={
+          <CardActionButton
+            label={actionLabel}
             accessibleContext={card.ariaLabel}
             onClick={() => onOpenAudit(card.action.destination)}
           />
@@ -110,20 +156,33 @@ function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
       </CardHead>
       <CardDivider />
 
-      <div className="audit-card__tiles">
-        <Tile icon={<IconUsers className="audit-tile__icon-svg" />} label="État civil">
-          <EtatCivil card={card} />
-        </Tile>
+      {card.hasData ? (
+        <div className="audit-card__tiles">
+          <Tile icon={<IconUsers className="audit-tile__icon-svg" />} label="État civil">
+            <EtatCivil card={card} />
+          </Tile>
 
-        <Tile icon={<IconNetwork className="audit-tile__icon-svg" />} label="Filiation">
-          <FoyerFiliation
-            principal={card.principal}
-            conjoint={card.conjoint}
-            enfants={card.enfants}
-            hasData={card.filiationHasData}
-          />
-        </Tile>
-      </div>
+          <Tile icon={<IconNetwork className="audit-tile__icon-svg" />} label="Filiation">
+            <FoyerFiliation
+              principal={card.principal}
+              conjoint={card.conjoint}
+              enfants={card.enfants}
+              hasData={card.filiationHasData}
+            />
+          </Tile>
+        </div>
+      ) : (
+        <div className="audit-empty-start">
+          <p className="audit-empty-start__title">Nouvelle analyse patrimoniale</p>
+          <p className="audit-empty-start__text">
+            Renseignez d’abord le client principal pour structurer le foyer.
+          </p>
+          <span className="audit-empty-start__cta" aria-hidden="true">
+            <span>Commencer par le client</span>
+            <IconChevronRight className="audit-empty-start__cta-icon" />
+          </span>
+        </div>
+      )}
     </section>
   );
 }
@@ -222,11 +281,14 @@ interface ObjectifsCardProps {
 function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement {
   const actionLabel =
     card.totalObjectifs === 0 ? 'Définir les objectifs client' : 'Compléter les objectifs client';
+  const objectifsCountLabel = formatObjectifsCountLabel(card.totalObjectifs, card.overflowCount);
+  const objectifsCountAria = formatObjectifsCountAria(card.totalObjectifs, card.overflowCount);
 
   return (
     <section
       className="audit-card audit-card--action audit-card--objectifs"
       aria-labelledby="audit-card-objectifs"
+      data-state={card.totalObjectifs > 0 ? 'filled' : 'empty'}
     >
       <CardHead
         icon={<IconClipboardCheck className="audit-card__icon-svg" />}
@@ -268,12 +330,9 @@ function ObjectifsCard({ card, onOpenAudit }: ObjectifsCardProps): ReactElement 
           )}
         </div>
         <div className="audit-objectifs__visual-stack">
-          {card.totalObjectifs > 0 && (
-            <span
-              className="audit-objectifs__count"
-              aria-label={`${card.totalObjectifs} objectif(s) renseigné(s)`}
-            >
-              {card.totalObjectifs}
+          {objectifsCountLabel && objectifsCountAria && (
+            <span className="audit-objectifs__count" aria-label={objectifsCountAria}>
+              {objectifsCountLabel}
             </span>
           )}
           <ObjectifsIllustration />
@@ -404,4 +463,20 @@ function formatParts(parts: number): string {
         .toFixed(2)
         .replace(/\.?0+$/, '')
         .replace('.', ',');
+}
+
+function formatObjectifsCountLabel(total: number, overflow: number): string | null {
+  if (total <= 0) return null;
+  if (overflow > 0) return `+${overflow} objectif${overflow > 1 ? 's' : ''}`;
+  return `${total} objectif${total > 1 ? 's' : ''}`;
+}
+
+function formatObjectifsCountAria(total: number, overflow: number): string | null {
+  if (total <= 0) return null;
+  if (overflow > 0) {
+    return `${overflow} objectif${overflow > 1 ? 's' : ''} non affiché${
+      overflow > 1 ? 's' : ''
+    } sur ${total}`;
+  }
+  return `${total} objectif${total > 1 ? 's' : ''} renseigné${total > 1 ? 's' : ''}`;
 }
