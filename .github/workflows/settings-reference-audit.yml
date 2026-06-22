@@ -41,7 +41,7 @@ jobs:
           SER1_SUPABASE_SERVICE_KEY: ${{ secrets[format('{0}_{1}_{2}_{3}', 'SUPABASE', 'SERVICE', 'ROLE', 'KEY')] }}
         run: |
           set +e
-          npm run audit:settings-references -- --stale --with-db --fetch --json --write-supabase-report > audit-report.json
+          node scripts/audit-settings-references.mjs --stale --with-db --fetch --json --write-supabase-report > audit-report.json
           status=$?
           echo "status=${status}" >> "$GITHUB_OUTPUT"
           cat audit-report.json
