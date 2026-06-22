@@ -3,6 +3,7 @@
  */
 
 import type { RegimeMatrimonial } from '../../engine/succession/civil';
+import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier/patrimonial';
 
 // Situation familiale
 export interface PersonInfo {
@@ -41,7 +42,7 @@ export interface DonationInfo {
   id: string;
   type: 'donation_partage' | 'donation_simple' | 'donation_temporaire_usufruit';
   date: string;
-  montant: number;
+  montant?: number;
   beneficiaire: string;
   description?: string;
 }
@@ -191,6 +192,8 @@ export interface DossierAudit {
   passif: Passif;
   situationFiscale: SituationFiscale;
   objectifs: ObjectifClient[];
+  contraintes?: DossierContrainte[];
+  operationsPrevues?: DossierOperationPrevue[];
   notes?: string;
 }
 
@@ -237,5 +240,7 @@ export function createEmptyDossier(): DossierAudit {
       tmi: 0,
     },
     objectifs: [],
+    contraintes: [],
+    operationsPrevues: [],
   };
 }

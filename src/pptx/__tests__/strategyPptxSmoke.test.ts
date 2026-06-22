@@ -225,26 +225,9 @@ function allSlideTexts(pptx: RecordedPptx): string {
     .join('\n');
 }
 
-describe('Audit et strategie PPTX smoke tests', () => {
+describe('Strategie PPTX smoke tests', () => {
   beforeEach(() => {
     pptxMock.instances.length = 0;
-  });
-
-  it('genere le PPTX Audit avec les sections attendues', async () => {
-    const { generateAuditPptx } = await import('../auditPptx');
-
-    await generateAuditPptx({ dossier, colors: DEFAULT_COLORS });
-
-    const pptx = pptxMock.instances[0];
-    expect(pptx).toBeDefined();
-    expect(pptx.title).toBe('Audit Patrimonial');
-    expect(pptx.slides).toHaveLength(8);
-    expect(pptx.writeFileArgs?.fileName).toMatch(/^Audit_Ada_Dupont_\d{4}-\d{2}-\d{2}\.pptx$/);
-
-    const slideTexts = allSlideTexts(pptx);
-    expect(slideTexts).toContain('a) Situation familiale');
-    expect(slideTexts).toContain('e) Fiscalité');
-    expect(slideTexts).toContain('g) Pistes de réflexion');
   });
 
   it('genere le PPTX Strategie avec les sections attendues', async () => {

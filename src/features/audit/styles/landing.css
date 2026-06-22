@@ -114,74 +114,6 @@
   color: var(--text-muted);
 }
 
-.audit-status-export {
-  position: relative;
-  flex: 0 0 auto;
-}
-
-.audit-status-export__button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 28px;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-  color: var(--action-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  transition:
-    border-color 160ms ease,
-    color 160ms ease,
-    background-color 160ms ease;
-}
-
-.audit-status-export__button:hover {
-  border-color: color-mix(in srgb, var(--action-primary) 42%, var(--border-default));
-  background: color-mix(in srgb, var(--action-primary) 6%, var(--surface-card));
-}
-
-.audit-status-export__button:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.audit-status-export__button-icon,
-.audit-status-export__chevron {
-  width: 13px;
-  height: 13px;
-}
-
-.audit-status-export__menu {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + var(--space-1));
-  right: 0;
-  display: grid;
-  min-width: 154px;
-  padding: var(--space-1) 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-}
-
-.audit-status-export__item {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: not-allowed;
-  font: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-align: left;
-}
-
 /* ── Rail gauche /audit ───────────────────────────────────────────────────── */
 
 .dossier-travail {
@@ -1580,24 +1512,6 @@
   font-size: var(--font-size-xs);
   letter-spacing: 0.02em;
   color: var(--text-muted);
-}
-
-/* ── Retour vers la synthèse depuis le wizard ──────────────────────────────── */
-
-.audit-back-link {
-  align-self: flex-start;
-  margin-bottom: var(--space-2);
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--state-info);
-}
-
-.audit-back-link:hover {
-  text-decoration: underline;
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */

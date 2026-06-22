@@ -95,8 +95,8 @@ export function buildDossierPatrimonialFromAudit(
       priority: index + 1,
       sourceRefIds,
     })),
-    contraintes: [],
-    operationsPrevues: [],
+    contraintes: audit.contraintes ?? [],
+    operationsPrevues: audit.operationsPrevues ?? [],
     sourceRefs: [sourceRef],
     completion: {
       scope: 'f1_core',
@@ -156,12 +156,14 @@ export function mergeDossierPatrimonialIntoAuditDraft(
         id: donation.id,
         type: donation.type,
         date: donation.date,
-        montant: donation.montant ?? 0,
+        montant: donation.montant,
         beneficiaire: donation.beneficiaireLabel,
         description: donation.description,
       })),
     },
     objectifs: dossier.objectifs.map((objectif) => objectif.code).filter(isObjectifClient),
+    contraintes: dossier.contraintes,
+    operationsPrevues: dossier.operationsPrevues,
   };
 }
 
@@ -178,6 +180,8 @@ function buildAuditSourceRef(audit: DossierAudit): SourceRef {
       'regimeMatrimonial',
       'donationsSynthetiques',
       'objectifs',
+      'contraintes',
+      'operationsPrevues',
     ],
     createdAt: audit.dateModification,
     reviewStatus: 'validated',

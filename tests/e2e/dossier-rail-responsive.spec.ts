@@ -57,10 +57,8 @@ test.describe('DossierRail responsive', () => {
     const statusBox = await page.locator('.audit-status-bar').boundingBox();
     await expect(page.locator('.audit-status-bar')).toHaveCSS('border-top-width', '0px');
     await expect(page.locator('.audit-progress-rail__label').first()).toHaveCSS('font-size', '8px');
-    await expect(page.getByTestId('audit-export-menu-button')).toBeVisible();
-    await page.getByTestId('audit-export-menu-button').click();
-    await expect(page.getByRole('menuitem', { name: 'Word (.docx)' })).toBeDisabled();
-    await expect(page.getByRole('menuitem', { name: 'PowerPoint (.pptx)' })).toBeDisabled();
+    await expect(page.getByTestId('audit-export-menu-button')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Exporter/i })).toHaveCount(0);
     const railPathBackground = await page
       .locator('.audit-progress-rail__list')
       .evaluate((node) => getComputedStyle(node, '::before').backgroundImage);
