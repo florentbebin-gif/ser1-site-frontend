@@ -175,7 +175,7 @@ for (const routeId of Object.keys(simCssEntriesByRouteId)) {
 }
 
 assertIncludes('src/pages/SettingsShell.tsx', './settings/styles/index.css');
-assertIncludes('src/features/audit/AuditWizard.tsx', './styles/index.css');
+assertIncludes('src/features/audit/AuditPage.tsx', './styles/index.css');
 
 for (const absoluteFilePath of getCodeFiles()) {
   const relativeFilePath = normalize(path.relative(root, absoluteFilePath));

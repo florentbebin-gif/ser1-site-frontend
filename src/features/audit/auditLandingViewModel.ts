@@ -41,7 +41,12 @@ export type {
   AuditStatusBarViewModel,
 } from './auditLandingProgressViewModel';
 
-export type AuditLandingDestination = 'dossier' | 'civil' | 'objectifs';
+export type AuditLandingDestination =
+  | 'dossier'
+  | 'civil'
+  | 'actifs-passifs'
+  | 'fiscalite'
+  | 'objectifs';
 
 export interface AuditLandingAction {
   destination: AuditLandingDestination;

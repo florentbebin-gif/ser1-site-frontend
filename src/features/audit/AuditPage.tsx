@@ -1,59 +1,78 @@
 /**
- * AuditPage — composant racine de la route /audit (UX-01).
+ * AuditPage — route /audit.
  *
- * Restitue d'abord la landing 3 cartes (état du dossier F1), puis bascule vers
- * le wizard de saisie existant à la demande. Une seule route /audit : la
- * bascule landing ↔ saisie est un état interne, pas une nouvelle route métier.
+ * Une seule expérience cockpit : landing, rail gauche, barre d'état et pages
+ * internes sans wizard horizontal.
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import type { ReactElement } from 'react';
-
-import type { DossierAudit } from '@/domain/audit/types';
-import { createEmptyDossier, ensureDossierAuditUuid } from '@/domain/audit/types';
-import { buildDossierPatrimonialFromAudit } from '@/domain/dossier';
+import { useCallback, useState, type ReactElement } from 'react';
 
 import AuditLanding, { type AuditLandingDestination } from './AuditLanding';
-import AuditWizard, { type AuditWizardStepId } from './AuditWizard';
-import { buildAuditLandingViewModel } from './auditLandingViewModel';
-import { loadDraftFromSession } from './utils/storage';
+import { useAuditDossierController } from './hooks/useAuditDossierController';
+import { ActifsPassifsPage } from './cockpit/ActifsPassifsPage';
+import { FiscalitePage } from './cockpit/FiscalitePage';
+import { FoyerFamillePage } from './cockpit/FoyerFamillePage';
+import { ObjectifsPage } from './cockpit/ObjectifsPage';
+import type { AuditCockpitPageId } from './cockpit/auditCockpitShared';
+import '@/styles/sim/index.css';
+import './styles/index.css';
 
-type AuditView = 'landing' | 'wizard';
-
-function readSessionDraft(): DossierAudit {
-  const stored = loadDraftFromSession();
-  return stored ? ensureDossierAuditUuid(stored) : createEmptyDossier();
+function pageFromDestination(destination: AuditLandingDestination): AuditCockpitPageId {
+  if (destination === 'objectifs') return 'objectifs';
+  if (destination === 'actifs-passifs') return 'actifs-passifs';
+  if (destination === 'fiscalite') return 'fiscalite';
+  return 'foyer-famille';
 }
 
-const DESTINATION_TO_STEP: Record<AuditLandingDestination, AuditWizardStepId> = {
-  dossier: 'famille',
-  civil: 'civil',
-  objectifs: 'objectifs',
-};
+function pageFromSection(sectionId: string): AuditCockpitPageId {
+  if (sectionId === 'dossier' || sectionId === 'synthese') return 'landing';
+  if (sectionId === 'actifs' || sectionId === 'passifs') return 'actifs-passifs';
+  if (sectionId === 'fiscalite') return 'fiscalite';
+  if (sectionId === 'objectifs') return 'objectifs';
+  return 'foyer-famille';
+}
 
 export default function AuditPage(): ReactElement {
-  const [view, setView] = useState<AuditView>('landing');
-  const [initialStep, setInitialStep] = useState<AuditWizardStepId>('famille');
-  const [draft, setDraft] = useState<DossierAudit>(readSessionDraft);
-
-  const viewModel = useMemo(
-    () => buildAuditLandingViewModel(buildDossierPatrimonialFromAudit(draft)),
-    [draft],
-  );
+  const [page, setPage] = useState<AuditCockpitPageId>('landing');
+  const { dossier, viewModel, updateDossier, fileInputRef, handleImport } =
+    useAuditDossierController();
 
   const handleOpenAudit = useCallback((destination: AuditLandingDestination) => {
-    setInitialStep(DESTINATION_TO_STEP[destination]);
-    setView('wizard');
+    setPage(pageFromDestination(destination));
   }, []);
 
-  const handleBackToSynthese = useCallback(() => {
-    setDraft(readSessionDraft());
-    setView('landing');
+  const handleSelectSection = useCallback((sectionId: string) => {
+    setPage(pageFromSection(sectionId));
   }, []);
 
-  if (view === 'wizard') {
-    return <AuditWizard initialStep={initialStep} onBackToSynthese={handleBackToSynthese} />;
-  }
+  const cockpitProps = {
+    dossier,
+    viewModel,
+    updateDossier,
+    onSelectSection: handleSelectSection,
+  };
 
-  return <AuditLanding viewModel={viewModel} onOpenAudit={handleOpenAudit} />;
+  return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,application/json"
+        hidden
+        onChange={handleImport}
+      />
+      {page === 'landing' ? (
+        <AuditLanding
+          viewModel={viewModel}
+          onOpenAudit={handleOpenAudit}
+          currentSectionId="dossier"
+          onSelectSection={handleSelectSection}
+        />
+      ) : null}
+      {page === 'foyer-famille' ? <FoyerFamillePage {...cockpitProps} /> : null}
+      {page === 'actifs-passifs' ? <ActifsPassifsPage {...cockpitProps} /> : null}
+      {page === 'fiscalite' ? <FiscalitePage {...cockpitProps} /> : null}
+      {page === 'objectifs' ? <ObjectifsPage {...cockpitProps} /> : null}
+    </>
+  );
 }

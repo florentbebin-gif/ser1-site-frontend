@@ -23,6 +23,7 @@ export interface AuditProgressSection {
   label: string;
   foundation: AuditFoundation;
   availability: AuditSectionAvailability;
+  isNavigable: boolean;
   status: AuditSectionStatus | null;
   conditional: boolean;
   statusLabel: string;
@@ -112,9 +113,9 @@ export function buildAuditProgressSections(
     gatedSection('budget-capacite', 'Budget & capacité', 'F1.1'),
     gatedSection('societes-organigramme', 'Sociétés / organigramme', 'F5', true),
     gatedSection('patrimoine', 'Patrimoine', 'F3'),
-    gatedSection('actifs', 'Actifs', 'F3'),
-    gatedSection('passifs', 'Passifs', 'F3'),
-    gatedSection('fiscalite', 'Fiscalité', 'F1.1'),
+    gatedSection('actifs', 'Actifs', 'F3', false, true, 'Inventaire déclaratif'),
+    gatedSection('passifs', 'Passifs', 'F3', false, true, 'Inventaire déclaratif'),
+    gatedSection('fiscalite', 'Fiscalité', 'F1.1', false, true, 'Déclaratif'),
     gatedSection('ifi-conditionnel', 'IFI conditionnel', 'F3', true),
     gatedSection('succession', 'Succession', 'F3'),
     gatedSection('prevoyance', 'Prévoyance', 'F3', true),
@@ -206,6 +207,7 @@ function availableSection(
     label,
     foundation,
     availability: 'available',
+    isNavigable: true,
     status,
     conditional: false,
     statusLabel: explicitStatusLabel ?? SECTION_STATUS_LABELS[status],
@@ -217,15 +219,18 @@ function gatedSection(
   label: string,
   foundation: AuditFoundation,
   conditional = false,
+  isNavigable = false,
+  explicitStatusLabel?: string,
 ): AuditProgressSection {
   return {
     id,
     label,
     foundation,
     availability: 'gated',
+    isNavigable,
     status: null,
     conditional,
-    statusLabel: 'À venir',
+    statusLabel: explicitStatusLabel ?? 'À venir',
   };
 }
 

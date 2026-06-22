@@ -68,7 +68,7 @@ test.describe('Audit Patrimonial', () => {
     await expect(page.getByText(forbiddenAuditWording)).toHaveCount(0);
   });
 
-  test('ouvre le wizard depuis les cartes actives et garde la stratégie verrouillée', async ({
+  test('ouvre la page cockpit depuis les cartes actives et garde la stratégie verrouillée', async ({
     page,
   }) => {
     await page.goto(ROUTES.audit);
@@ -108,9 +108,10 @@ test.describe('Audit Patrimonial', () => {
     await page
       .getByRole('button', { name: /^(Voir l'audit complet|Commencer par le client)/ })
       .click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Situation familiale' })).toBeVisible();
 
-    await page.getByRole('button', { name: '← Synthèse du dossier' }).click();
+    await page.getByRole('button', { name: /^Dossier/ }).click();
 
     if (isNewAnalysis) {
       await expect(

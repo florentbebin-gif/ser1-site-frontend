@@ -138,9 +138,26 @@ describe('buildAuditLandingViewModel', () => {
     const fiscalite = vm.progress.find((section) => section.id === 'fiscalite');
     expect(fiscalite).toMatchObject({
       availability: 'gated',
+      isNavigable: true,
       status: null,
-      statusLabel: 'À venir',
+      statusLabel: 'Déclaratif',
     });
+    expect(vm.progress).toContainEqual(
+      expect.objectContaining({
+        id: 'actifs',
+        availability: 'gated',
+        isNavigable: true,
+        statusLabel: 'Inventaire déclaratif',
+      }),
+    );
+    expect(vm.progress).toContainEqual(
+      expect.objectContaining({
+        id: 'passifs',
+        availability: 'gated',
+        isNavigable: true,
+        statusLabel: 'Inventaire déclaratif',
+      }),
+    );
     expect(vm.progress.filter((section) => section.availability === 'gated')).toHaveLength(11);
     expect(vm.progress.filter((section) => section.availability === 'gated')).not.toContainEqual(
       expect.objectContaining({ status: 'complet' }),

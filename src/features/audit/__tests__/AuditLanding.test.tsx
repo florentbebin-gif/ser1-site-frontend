@@ -87,9 +87,8 @@ describe('AuditLanding', () => {
     expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Stratégie').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Verrouillée')).toBeVisible();
-    fireEvent.click(screen.getByTestId('audit-export-menu-button'));
-    expect(screen.getByRole('menuitem', { name: 'Word (.docx)' })).toBeDisabled();
-    expect(screen.getByRole('menuitem', { name: 'PowerPoint (.pptx)' })).toBeDisabled();
+    expect(screen.queryByTestId('audit-export-menu-button')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Exporter/i })).toBeNull();
     expect(container.textContent ?? '').not.toMatch(/12\s*\/\s*18/);
     expect(container.textContent ?? '').not.toMatch(/patrimoine net/i);
   });
@@ -334,7 +333,9 @@ describe('AuditLanding', () => {
     expect(within(dossier).queryByText('Session locale active')).toBeNull();
     expect(within(dossier).queryByText('Métadonnées locales non nominatives')).toBeNull();
     expect(screen.getByRole('heading', { level: 2, name: 'Avancement du dossier' })).toBeVisible();
-    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(12);
+    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(9);
+    expect(screen.getAllByText('Inventaire déclaratif')).toHaveLength(2);
+    expect(screen.getByText('Déclaratif')).toBeInTheDocument();
 
     const text =
       screen.getByText('Dossier de travail').closest('.audit-landing')?.textContent ?? '';

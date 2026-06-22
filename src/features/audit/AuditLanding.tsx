@@ -34,17 +34,22 @@ import { AuditStatusBar } from './components/AuditStatusBar';
 import { DossierTravailCard } from './components/DossierTravailCard';
 import { FoyerFiliation } from './components/FoyerFiliation';
 import { PointsAConfirmerCard } from './components/PointsAConfirmerCard';
-import '@/styles/sim/index.css';
-import './styles/index.css';
 
 export type { AuditLandingDestination } from './auditLandingViewModel';
 
 interface AuditLandingProps {
   viewModel: AuditLandingViewModel;
   onOpenAudit: (destination: AuditLandingDestination) => void;
+  currentSectionId?: string;
+  onSelectSection?: (sectionId: string) => void;
 }
 
-export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingProps): ReactElement {
+export default function AuditLanding({
+  viewModel,
+  onOpenAudit,
+  currentSectionId,
+  onSelectSection,
+}: AuditLandingProps): ReactElement {
   const {
     dossierClientLabel,
     isNewAnalysisEmpty,
@@ -63,7 +68,11 @@ export default function AuditLanding({ viewModel, onOpenAudit }: AuditLandingPro
       <div className="audit-landing__layout">
         <aside className="audit-landing__rail" aria-label="Contexte de travail">
           <DossierTravailCard dossierClientLabel={dossierClientLabel} />
-          <AuditProgressRail sections={progress} />
+          <AuditProgressRail
+            sections={progress}
+            currentSectionId={currentSectionId}
+            onSelectSection={onSelectSection}
+          />
         </aside>
 
         <main className="audit-landing__main">

@@ -45,9 +45,9 @@ Toute personne qui touche :
   doivent vivre dans `src/domain/**`, `src/engine/**`, `src/reporting/**` ou dans un module
   PPTX dédié selon leur responsabilité réelle.
 - Cette frontière est vérifiée par `npm run check:arch` via `pptx-no-features`.
-- Les wrappers feature-owned restent le point d’entrée runtime autorisé :
-  - `src/features/audit/export/exportAudit.ts` adapte `src/pptx/auditPptx.ts`
+- Les wrappers feature-owned restent le point d’entrée runtime autorisé pour les exports actifs :
   - `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`
+- `/audit` ne fournit plus d'export PPTX runtime ; la sauvegarde locale du brouillon audit reste hors périmètre PPTX.
 
 ### Architecture cible Serenity
 
@@ -272,7 +272,7 @@ Après génération :
 
 - Builder OOXML : `src/utils/export/xlsxBuilder.ts`
 - Fingerprint exports : `src/utils/export/exportFingerprint.ts`
-- Wrappers audit / strategy : `src/features/audit/export/exportAudit.ts`, `src/features/strategy/export/exportStrategy.ts`
+- Wrapper Strategy : `src/features/strategy/export/exportStrategy.ts`
 - Deck builders : `src/pptx/presets/**`
 - Slides : `src/pptx/slides/**`
 - Orchestrateur PPTX : `src/pptx/export/exportStudyDeck.ts`
