@@ -3,8 +3,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ExportMenu } from '../../components/ExportMenu';
-import type { ExportOption } from '../../components/export/exportTypes';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
@@ -26,9 +24,7 @@ import {
   compareScenarios,
 } from './utils/calculations';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
-import { useTheme } from '../../settings/ThemeProvider';
 import type { ComparaisonScenarios } from '@/domain/strategy/types';
-import { exportStrategyPptx } from './export/exportStrategy';
 import { onResetEvent } from '../../utils/reset';
 import './styles/StrategyBuilder.css';
 
@@ -81,12 +77,10 @@ function StrategyNumericField({
 
 export default function StrategyBuilder({ dossier }: StrategyBuilderProps): React.ReactElement {
   const { fiscalContext } = useFiscalContext();
-  const { colors } = useTheme();
   const [strategie, setStrategie] = useState<Strategie>(() => createEmptyStrategie(dossier.id));
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
   const [comparaison, setComparaison] = useState<ComparaisonScenarios | null>(null);
   const [showAddProduit, setShowAddProduit] = useState(false);
-  const [isExportingPptx, setIsExportingPptx] = useState(false);
 
   // Génération des recommandations au montage
   useEffect(() => {
@@ -154,30 +148,6 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
     }));
   };
 
-  const handleExportPptx = async () => {
-    if (!comparaison || strategie.produitsSelectionnes.length === 0) return;
-    try {
-      setIsExportingPptx(true);
-      await exportStrategyPptx({ dossier, strategie, comparaison, colors });
-    } catch (error) {
-      console.error('Erreur export PPTX:', error);
-      alert("Erreur lors de l'export PPTX");
-    } finally {
-      setIsExportingPptx(false);
-    }
-  };
-
-  const exportOptions: ExportOption[] = [
-    {
-      label: 'PowerPoint (.pptx)',
-      onClick: handleExportPptx,
-      disabled: isExportingPptx || !comparaison || strategie.produitsSelectionnes.length === 0,
-      tooltip:
-        !comparaison || strategie.produitsSelectionnes.length === 0
-          ? 'Ajoutez au moins un produit avant d’exporter.'
-          : undefined,
-    },
-  ];
   const baselineProjectionFinale = comparaison
     ? comparaison.baseline.projections[comparaison.baseline.projections.length - 1]
     : undefined;
@@ -187,7 +157,7 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
 
   return (
     <div className="strategy-builder premium-page" data-testid="strategy-page">
-      {/* Header avec titre et actions */}
+      {/* Header */}
       <header className="strategy-header premium-header">
         <div className="strategy-header-copy">
           <p className="premium-section-title">Workflow privé P7</p>
@@ -198,13 +168,6 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
           <div className="client-info">
             Client : {dossier.situationFamiliale.mr.prenom} {dossier.situationFamiliale.mr.nom}
           </div>
-        </div>
-        <div className="strategy-header-actions">
-          <ExportMenu
-            options={exportOptions}
-            loading={isExportingPptx}
-            loadingLabel="Export PPTX..."
-          />
         </div>
       </header>
 

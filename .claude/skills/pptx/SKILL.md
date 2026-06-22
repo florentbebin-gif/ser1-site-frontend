@@ -16,8 +16,7 @@ Dans SER1, le flux principal est le code :
 - orchestrateur : `src/pptx/export/exportStudyDeck.ts`
 - design system : `src/pptx/designSystem/serenity.ts`
 - slides : `src/pptx/slides/`
-- wrapper Strategy isolé : `src/features/strategy/export/exportStrategy.ts`
-- `/audit` ne fournit plus de wrapper PPTX runtime.
+- `/audit` et `/strategy` ne fournissent plus de wrapper PPTX runtime.
 
 ## Règles
 

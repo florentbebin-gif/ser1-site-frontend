@@ -17,7 +17,7 @@ test.describe('Strategy - scénario métier', () => {
     }, dossier);
   });
 
-  test('ajoute un produit cible et active l’export de stratégie', async ({ page }) => {
+  test('ajoute un produit cible sans exposer d’export PowerPoint Strategy', async ({ page }) => {
     await page.goto(ROUTES.strategy);
 
     await expect(page.getByTestId('strategy-page')).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Strategy - scénario métier', () => {
     await expect(page.getByRole('heading', { name: 'Comparaison des scénarios' })).toBeVisible();
     await expect(page.getByText('Gain patrimonial :')).toBeVisible();
 
-    await page.getByTestId('export-menu-button').click();
-    await expect(page.getByRole('menuitem', { name: 'PowerPoint (.pptx)' })).toBeEnabled();
+    await expect(page.getByTestId('export-menu-button')).toHaveCount(0);
+    await expect(page.getByRole('menuitem', { name: 'PowerPoint (.pptx)' })).toHaveCount(0);
   });
 });

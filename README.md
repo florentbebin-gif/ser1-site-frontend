@@ -10,11 +10,14 @@ Sources de vérité :
 
 - `docs/ROADMAP.md`
 - `docs/METIER.md`
+- `docs/AUDIT_COCKPIT.md` — contrat produit/design permanent du cockpit `/audit`
 - `docs/DESIGN.md` — contrat design system court pour UI, thème et `/sim/*`
 - `docs/GOUVERNANCE.md` — gouvernance UI web longue, baseline `/sim/*`, theming
 - `docs/GOUVERNANCE_EXPORTS.md` — contrat PPTX / Excel
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`
+- `docs/mode-simplifie-expert.md` — contrat du mode utilisateur pour `/sim/*`
+- `docs/AI_ACT_CADRAGE.md`, `docs/PLAN_IA_DOCUMENTAIRE_SER1.md`, `docs/RUNBOOK_MISTRAL_SER1.md` — cadrage IA documentaire, conformité et runbook fournisseur
 - `.github/CONTRIBUTING.md` — conventions code, workflow git, PR checklist
 
 Guidance agent / repo automation :

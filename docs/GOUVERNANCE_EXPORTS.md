@@ -45,9 +45,8 @@ Toute personne qui touche :
   doivent vivre dans `src/domain/**`, `src/engine/**`, `src/reporting/**` ou dans un module
   PPTX dédié selon leur responsabilité réelle.
 - Cette frontière est vérifiée par `npm run check:arch` via `pptx-no-features`.
-- Les wrappers feature-owned restent le point d’entrée runtime autorisé pour les exports actifs :
-  - `src/features/strategy/export/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts`
-- `/audit` ne fournit plus d'export PPTX runtime ; la sauvegarde locale du brouillon audit reste hors périmètre PPTX.
+- Les wrappers feature-owned restent le point d’entrée runtime autorisé pour les exports actifs.
+- `/audit` et `/strategy` ne fournissent plus d'export PPTX runtime ; la sauvegarde locale du brouillon audit reste hors périmètre PPTX. Un futur export Strategy devra passer par un cadrage premium dédié.
 
 ### Architecture cible Serenity
 
@@ -92,7 +91,7 @@ Cette règle est **inactive tant que PR V2-14 n'est pas livré**. Aucun export a
 - Afficher un **badge visuel** « assisté par IA » ou « extrait par IA » sur la slide cover et sur les sections où la donnée IA-extraite est utilisée.
 - Conserver la traçabilité au niveau du champ source (`sourceRef` documentaire) côté SER1, sans nécessairement la pousser dans l'export.
 
-Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engagement volontaire art. 95 documentés dans `docs/AI_ACT_CADRAGE.md` (sections « Déclinaison UI / UX art. 50 » et « Obligations techniques et engagement volontaire art. 95 »). Elle est posée ici en amont pour que les développements d'exports en cours (`/audit`, `PR V2-08` PER, `/strategy`) puissent l'anticiper sans rework, mais elle ne crée aucune dette tant que PR V2-14 n'a pas livré la première donnée IA-extraite.
+Cohérence : la règle matérialise la bonne pratique art. 50 § 2 et l'engagement volontaire art. 95 documentés dans `docs/AI_ACT_CADRAGE.md` (sections « Déclinaison UI / UX art. 50 » et « Obligations techniques et engagement volontaire art. 95 »). Elle est posée ici en amont pour que les développements d'exports en cours puissent l'anticiper sans rework, mais elle ne crée aucune dette tant que PR V2-14 n'a pas livré la première donnée IA-extraite.
 
 ### Alignement avec l'UI simulateur
 
@@ -272,7 +271,6 @@ Après génération :
 
 - Builder OOXML : `src/utils/export/xlsxBuilder.ts`
 - Fingerprint exports : `src/utils/export/exportFingerprint.ts`
-- Wrapper Strategy : `src/features/strategy/export/exportStrategy.ts`
 - Deck builders : `src/pptx/presets/**`
 - Slides : `src/pptx/slides/**`
 - Orchestrateur PPTX : `src/pptx/export/exportStudyDeck.ts`
