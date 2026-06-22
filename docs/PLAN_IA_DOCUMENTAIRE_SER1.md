@@ -323,9 +323,8 @@ Remplacer le chat par une revue structurée des champs préremplis et des points
 Faire sortir l'étude par les templates actuels.
 
 1. Réutiliser le pipeline PPTX existant :
-   - `src/pptx/export/exportStudyDeck.ts` ;
-   - `src/features/strategy/export/exportStrategy.ts`.
-2. `/audit` ne fournit plus de PPTX runtime ; ajouter un preset ou un wrapper dédié à l'analyse patrimoniale IA uniquement si un futur cadrage export le valide.
+   - `src/pptx/export/exportStudyDeck.ts`.
+2. `/audit` et `/strategy` ne fournissent plus de PPTX runtime ; ajouter un preset ou un wrapper dédié à l'analyse patrimoniale IA uniquement si un futur cadrage export le valide.
 3. Les slides ne recalculent jamais la fiscalité.
 4. Les slides affichent uniquement des données validées ou des hypothèses clairement nommées.
 5. Ajouter une annexe interne optionnelle pour le CGP :

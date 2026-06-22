@@ -7,18 +7,8 @@ import { triggerPageReset } from '@/utils/reset';
 import { createEmptyDossier, type DossierAudit } from '@/domain/audit/types';
 import StrategyBuilder from '../StrategyBuilder';
 
-vi.mock('../export/exportStrategy', () => ({
-  exportStrategyPptx: vi.fn().mockResolvedValue(undefined),
-}));
-
 vi.mock('@/hooks/useFiscalContext', () => ({
   useFiscalContext: () => ({ fiscalContext: null }),
-}));
-
-vi.mock('@/settings/ThemeProvider', () => ({
-  useTheme: () => ({
-    colors: {},
-  }),
 }));
 
 function createDossier(): DossierAudit {
@@ -79,5 +69,12 @@ describe('StrategyBuilder produits sélectionnés', () => {
       ).not.toBeInTheDocument();
     });
     expect(screen.getByText(/Aucun produit sélectionné/)).toBeInTheDocument();
+  });
+
+  it('n’affiche aucun menu export PowerPoint', () => {
+    render(<StrategyBuilder dossier={createDossier()} />);
+
+    expect(screen.queryByTestId('export-menu-button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'PowerPoint (.pptx)' })).not.toBeInTheDocument();
   });
 });

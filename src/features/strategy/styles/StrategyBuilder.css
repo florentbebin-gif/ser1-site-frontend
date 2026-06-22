@@ -23,13 +23,6 @@
   max-width: 720px;
 }
 
-.strategy-header-actions {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: 9px;
-}
-
 .client-info {
   font-size: 14px;
   color: var(--color-c9);
