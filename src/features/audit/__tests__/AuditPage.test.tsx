@@ -31,31 +31,36 @@ describe('AuditPage', () => {
     sessionStorage.clear();
   });
 
-  it('affiche d’abord la landing 3 cartes, pas le formulaire', () => {
+  it('affiche d’abord l’état nouvelle analyse, pas le formulaire', () => {
     render(<AuditPage />);
 
     expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
-    expect(screen.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Objectifs' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Stratégie' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Situation familiale' })).not.toBeInTheDocument();
   });
 
   it('bascule vers le wizard puis revient à la synthèse', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: /^Voir l'audit complet/ }));
+    await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
 
     expect(screen.getByRole('heading', { name: 'Situation familiale' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: '← Synthèse du dossier' }));
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Synthèse dossier' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+    ).toBeInTheDocument();
   });
 
-  it('ouvre directement l’étape Objectifs depuis la carte Objectifs', async () => {
+  it('ne propose pas l’étape Objectifs avant le démarrage du dossier', () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: /^Définir les objectifs client/ }));
-
-    expect(screen.getByRole('heading', { name: 'Objectifs client' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Définir les objectifs client/ })).toBeNull();
   });
 });

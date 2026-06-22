@@ -25,24 +25,34 @@ test.describe('DossierRail responsive', () => {
 
     const railBox = await page.locator('.audit-landing__rail').boundingBox();
     const dossierBox = await page.getByTestId('dossier-loaded-card').boundingBox();
-    const objectifsBox = await page
+    const startBox = await page
       .locator('section')
-      .filter({ has: page.getByRole('heading', { level: 2, name: 'Objectifs' }) })
-      .boundingBox();
-    const strategieBox = await page
-      .locator('section')
-      .filter({ has: page.getByRole('heading', { level: 2, name: 'Stratégie' }) })
+      .filter({
+        has: page.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+      })
       .boundingBox();
     expect(railBox).not.toBeNull();
     expect(dossierBox).not.toBeNull();
-    expect(objectifsBox).not.toBeNull();
-    expect(strategieBox).not.toBeNull();
+    expect(startBox).not.toBeNull();
     expect(railBox!.x).toBeLessThan(1);
     expect(railBox!.width).toBeLessThanOrEqual(181);
     expect(dossierBox!.x).toBeLessThan(16);
     expect(dossierBox!.height).toBeLessThan(160);
-    expect(objectifsBox!.x + objectifsBox!.width).toBeLessThanOrEqual(1432);
-    expect(strategieBox!.x + strategieBox!.width).toBeLessThanOrEqual(1432);
+    expect(startBox!.x + startBox!.width).toBeLessThanOrEqual(1432);
+    expect(startBox!.height).toBeLessThan(260);
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Commencer par le client/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Points à confirmer' })).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 2, name: 'Masses successorales' })).toHaveCount(
+      0,
+    );
 
     const statusBox = await page.locator('.audit-status-bar').boundingBox();
     await expect(page.locator('.audit-status-bar')).toHaveCSS('border-top-width', '0px');
@@ -72,6 +82,19 @@ test.describe('DossierRail responsive', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
     ).toBeHidden();
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+    ).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toHaveCount(0);
+    const startBox = await page
+      .locator('section')
+      .filter({
+        has: page.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
+      })
+      .boundingBox();
+    expect(startBox).not.toBeNull();
+    expect(startBox!.x).toBeGreaterThanOrEqual(0);
+    expect(startBox!.x + startBox!.width).toBeLessThanOrEqual(390);
   });
 
   test('desktop /strategy affiche le rail complet', async ({ page }) => {

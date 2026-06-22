@@ -33,6 +33,7 @@ describe('buildAuditLandingViewModel', () => {
     const vm = vmFromAudit();
 
     expect(vm.hasDossier).toBe(false);
+    expect(vm.isNewAnalysisEmpty).toBe(true);
     expect(vm.clientName).toBeNull();
     expect(vm.dossierClientLabel).toBeNull();
     expect(vm.synthese.principal).toBeNull();
@@ -58,6 +59,7 @@ describe('buildAuditLandingViewModel', () => {
       avatarKind: 'homme',
     });
     expect(vm.clientName).toBe('Jean Martin');
+    expect(vm.isNewAnalysisEmpty).toBe(false);
     expect(vm.dossierClientLabel).toBe('Jean Martin');
     expect(vm.synthese.situationLabel).toBe('Célibataire');
     expect(vm.synthese.partsFiscales).toBe(1);
@@ -76,6 +78,28 @@ describe('buildAuditLandingViewModel', () => {
     });
 
     expect(vm.dossierClientLabel).toBe('Jean Martin');
+  });
+
+  it('sort de l’état nouvelle analyse dès qu’un client principal est amorcé', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: '',
+        dateNaissance: '',
+      };
+    });
+
+    expect(vm.hasDossier).toBe(true);
+    expect(vm.isNewAnalysisEmpty).toBe(false);
+  });
+
+  it('sort de l’état nouvelle analyse dès qu’un objectif F1 existe', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.objectifs = ['developper_patrimoine'];
+    });
+
+    expect(vm.hasDossier).toBe(true);
+    expect(vm.isNewAnalysisEmpty).toBe(false);
   });
 
   it('expose les 18 sections canoniques sans fabriquer les fondations non livrées', () => {
@@ -137,6 +161,7 @@ describe('buildAuditLandingViewModel', () => {
       (section) => section.foundation === 'F1' && section.availability === 'available',
     );
     const f1Metric = vm.statusBar.items.find((item) => item.id === 'f1');
+    const pointsMetric = vm.statusBar.items.find((item) => item.id === 'points');
     const calculsMetric = vm.statusBar.items.find((item) => item.id === 'calculs');
     const strategieMetric = vm.statusBar.items.find((item) => item.id === 'strategie');
 
@@ -147,6 +172,10 @@ describe('buildAuditLandingViewModel', () => {
     expect(f1Metric).toMatchObject({
       label: 'Dossier renseigné',
       value: `${vm.statusBar.f1Completed}/${vm.statusBar.f1Total}`,
+    });
+    expect(pointsMetric).toMatchObject({
+      label: 'Champs F1 à compléter',
+      value: String(vm.statusBar.pointsToComplete),
     });
     expect(calculsMetric).toMatchObject({ value: 'À venir' });
     expect(strategieMetric).toMatchObject({ value: 'Verrouillée' });
@@ -256,14 +285,123 @@ describe('buildAuditLandingViewModel', () => {
 
   it('restitue les objectifs et une note qualitative', () => {
     const vm = vmFromAudit((audit) => {
-      audit.objectifs = ['proteger_conjoint', 'reduire_fiscalite'];
+      audit.objectifs = [
+        'proteger_conjoint',
+        'reduire_fiscalite',
+        'developper_patrimoine',
+        'revenus_differes',
+      ];
     });
 
     expect(vm.objectifs.objectifs.map((objectif) => objectif.label)).toEqual([
       'Protéger mon conjoint',
       'Réduire la fiscalité',
+      'Développer mon patrimoine',
+      'Préparer des revenus différés',
     ]);
+    expect(vm.objectifs.visibleObjectifs.map((objectif) => objectif.label)).toEqual([
+      'Protéger mon conjoint',
+      'Réduire la fiscalité',
+      'Développer mon patrimoine',
+    ]);
+    expect(vm.objectifs.totalObjectifs).toBe(4);
+    expect(vm.objectifs.overflowCount).toBe(1);
     expect(vm.objectifs.note).toBe('Contraintes à préciser');
+  });
+
+  it('produit les points à confirmer depuis les champs F1 requis manquants', () => {
+    const vm = vmFromAudit();
+
+    expect(vm.statusBar.items.find((item) => item.id === 'points')).toMatchObject({
+      label: 'Champs F1 à compléter',
+      value: '7',
+    });
+    expect(vm.pointsAConfirmer.map((point) => point.label)).toEqual([
+      'Client principal à compléter',
+      'Objectifs client à définir',
+    ]);
+    expect(vm.pointsAConfirmer.map((point) => point.action?.destination)).toEqual([
+      'dossier',
+      'objectifs',
+    ]);
+  });
+
+  it('ajoute le régime matrimonial à confirmer pour un couple sans régime renseigné', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.mme = {
+        prenom: 'Marie',
+        nom: 'Martin',
+        dateNaissance: '1982-03-01',
+      };
+      audit.situationFamiliale.situationMatrimoniale = 'marie';
+      audit.objectifs = ['proteger_conjoint'];
+    });
+
+    expect(vm.pointsAConfirmer).toContainEqual(
+      expect.objectContaining({
+        id: 'regime-matrimonial',
+        label: 'Régime matrimonial à confirmer',
+        action: { destination: 'civil' },
+      }),
+    );
+  });
+
+  it('ne crée aucun point à confirmer quand le socle F1 requis est cohérent', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.objectifs = ['developper_patrimoine'];
+    });
+
+    expect(vm.pointsAConfirmer).toEqual([]);
+  });
+
+  it('expose les slides verrouillées sans chiffre métier inventé ni route simulateur', () => {
+    const vm = vmFromAudit();
+    const text = vm.previewSlides
+      .map((slide) =>
+        [slide.title, slide.eyebrow, slide.badgeLabel, slide.description, slide.caption].join(' '),
+      )
+      .join(' ');
+
+    expect(vm.previewSlides.map((slide) => slide.id)).toEqual(['masses', 'societe', 'ir']);
+    expect(vm.previewSlides.map((slide) => slide.badgeLabel)).toEqual([
+      'À venir · F3',
+      'À venir · F5',
+      'Verrouillé · IR',
+    ]);
+    expect(text).not.toMatch(/\/sim\//);
+    expect(text).not.toMatch(/patrimoine net|TMI\s+\d|droits? successoraux|score|radar|€|%/i);
+  });
+
+  it('expose les prérequis de stratégie sans activation ni radar', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.objectifs = ['developper_patrimoine'];
+    });
+
+    expect(vm.pilotage.prerequis.map((prerequis) => prerequis.label)).toEqual([
+      'Objectifs définis',
+      'Contraintes précisées',
+      'Patrimoine structuré',
+      'Scénarios disponibles',
+    ]);
+    expect(vm.pilotage.prerequis[0]).toMatchObject({
+      status: 'satisfied',
+      statusLabel: 'Renseigné',
+    });
+    expect(vm.pilotage.prerequis.slice(1).map((prerequis) => prerequis.status)).toEqual([
+      'missing',
+      'future',
+      'future',
+    ]);
   });
 
   it('garde la stratégie verrouillée et n’expose aucun jargon interne', () => {
