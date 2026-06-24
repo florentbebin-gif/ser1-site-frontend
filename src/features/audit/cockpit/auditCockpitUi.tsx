@@ -29,6 +29,7 @@ function SummaryCard({
 }): ReactElement {
   const status = statusLabel(card.status, card.badgeLabel);
   const compact = variant === 'tiles';
+  const actionTone = card.ctaTone ?? (card.ctaLabel === 'Compléter' ? 'required' : undefined);
   const ariaLabel = [card.title, card.summaryLine, status, card.ctaLabel]
     .filter(Boolean)
     .join(' — ');
@@ -59,7 +60,7 @@ function SummaryCard({
               <StatusBadge status={card.status} label={status} compact />
               <span
                 className="audit-cockpit-card__head-action"
-                data-tone={card.ctaTone}
+                data-tone={actionTone}
                 aria-hidden="true"
               >
                 {card.ctaLabel}
@@ -78,7 +79,7 @@ function SummaryCard({
             </div>
             <span
               className="audit-cockpit-card__head-action"
-              data-tone={card.ctaTone}
+              data-tone={actionTone}
               aria-hidden="true"
             >
               {card.ctaLabel}

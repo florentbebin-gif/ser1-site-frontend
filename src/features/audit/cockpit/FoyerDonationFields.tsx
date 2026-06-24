@@ -6,12 +6,10 @@ import { IconTrash } from '@/icons/ui';
 
 import {
   AuditDrawerFieldGrid,
-  AuditDrawerSection,
   DateField,
   DONATION_TYPE_OPTIONS,
   emptyToUndefined,
   SelectField,
-  TextAreaField,
   TextField,
 } from './auditCockpitShared';
 
@@ -27,8 +25,15 @@ export function FoyerDonationFields({
   onRemove: () => void;
 }): ReactElement {
   return (
-    <AuditDrawerSection title={`Donation ${index + 1}`}>
-      <AuditDrawerFieldGrid>
+    <article className="audit-donation-card">
+      <header className="audit-donation-card__head">
+        <span className="audit-donation-card__title">Donation {index + 1}</span>
+        <button type="button" className="audit-drawer-remove" onClick={onRemove}>
+          <IconTrash />
+          <span>Retirer</span>
+        </button>
+      </header>
+      <AuditDrawerFieldGrid columns={4}>
         <SelectField
           label="Type"
           value={donation.type}
@@ -41,7 +46,7 @@ export function FoyerDonationFields({
           onChange={(date) => onChange({ ...donation, date })}
         />
         <SimAmountInputEuro
-          label="Montant renseigné"
+          label="Montant"
           value={donation.montant ?? 0}
           onChange={(montant) => onChange({ ...donation, montant })}
           onEmpty={() => onChange({ ...donation, montant: undefined })}
@@ -51,18 +56,16 @@ export function FoyerDonationFields({
           value={donation.beneficiaire}
           onChange={(beneficiaire) => onChange({ ...donation, beneficiaire })}
         />
-        <TextAreaField
+      </AuditDrawerFieldGrid>
+      <div className="audit-donation-card__description">
+        <TextField
           label="Description"
           value={donation.description ?? ''}
           onChange={(description) =>
             onChange({ ...donation, description: emptyToUndefined(description) })
           }
         />
-      </AuditDrawerFieldGrid>
-      <button type="button" className="audit-drawer-remove" onClick={onRemove}>
-        <IconTrash />
-        <span>Retirer</span>
-      </button>
-    </AuditDrawerSection>
+      </div>
+    </article>
   );
 }

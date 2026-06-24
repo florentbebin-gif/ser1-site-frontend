@@ -61,11 +61,11 @@ export interface SummaryCardData {
 
 export const SITUATION_OPTIONS: SimSelectOption[] = [
   { value: 'celibataire', label: 'Célibataire' },
-  { value: 'marie', label: 'Marié(e)' },
+  { value: 'concubinage', label: 'Union libre' },
   { value: 'pacse', label: 'Pacsé(e)' },
-  { value: 'concubinage', label: 'Concubinage' },
+  { value: 'marie', label: 'Marié(e)' },
   { value: 'divorce', label: 'Divorcé(e)' },
-  { value: 'veuf', label: 'Veuf / veuve' },
+  { value: 'veuf', label: 'Veuf/veuve' },
 ];
 
 export const REGIME_OPTIONS: SimSelectOption[] = [
@@ -175,18 +175,21 @@ export function TextField({
   label,
   value,
   onChange,
+  controlClassName,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  controlClassName?: string;
 }): ReactElement {
   const id = useId();
+  const className = ['sim-field__control', controlClassName].filter(Boolean).join(' ');
   return (
     <SimFieldShell label={label} controlId={id}>
       <input
         id={id}
         type="text"
-        className="sim-field__control"
+        className={className}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />

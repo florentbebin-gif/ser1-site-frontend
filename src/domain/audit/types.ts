@@ -9,6 +9,66 @@ import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier
 export type AuditAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
 export type AuditAvatarSkinTone = 'clair' | 'fonce';
 export type AuditAvatarAge = 'adulte' | 'senior';
+export type PersonCivilite = 'monsieur' | 'madame';
+export type ProcheLien =
+  | 'enfant_commun'
+  | 'enfant_union_precedente_mr'
+  | 'enfant_union_precedente_mme'
+  | 'petit_enfant'
+  | 'parent'
+  | 'frere_soeur'
+  | 'oncle_tante'
+  | 'tierce_personne';
+// Liens des proches non-enfants, saisis dans une collection distincte de `enfants`.
+export type ProcheLienNonEnfant =
+  | 'petit_enfant'
+  | 'parent'
+  | 'frere_soeur'
+  | 'oncle_tante'
+  | 'tierce_personne';
+export type NiveauScolaire = 'aucun' | 'college' | 'lycee' | 'enseignement_superieur';
+export type TypeAdoption = 'pleniere' | 'simple';
+export type RenonciationPortee = 'deux_parents' | 'client' | 'conjoint';
+export type ProcheRattachement = 'client' | 'conjoint';
+export type ProcheRattachementBranche =
+  | 'client_paternelle'
+  | 'client_maternelle'
+  | 'conjoint_paternelle'
+  | 'conjoint_maternelle';
+export type DdvOption =
+  | 'usufruit_total'
+  | 'quotite_disponible_pp'
+  | 'mixte_quart_pp_trois_quarts_us'
+  | 'pleine_propriete_totale';
+export type AvantageMatrimonial = 'partage_inegal' | 'attribution_integrale';
+export type ProfessionCsp =
+  | 'dirigeant'
+  | 'salarie_cadre'
+  | 'salarie_non_cadre'
+  | 'profession_liberale'
+  | 'independant'
+  | 'retraite'
+  | 'sans_activite';
+export type NatureActivite =
+  | 'salarie'
+  | 'periode_assimilee'
+  | 'tns_independant'
+  | 'micro_entreprise'
+  | 'sans_activite';
+export type StatutSocial =
+  | 'tns_article_62'
+  | 'gerant_minoritaire'
+  | 'assimile_salarie'
+  | 'non_renseigne';
+export type CaisseRetraite =
+  | 'carmf'
+  | 'carpimko'
+  | 'cipav'
+  | 'cnav'
+  | 'msa'
+  | 'ircantec'
+  | 'non_renseignee';
+export type StatutConventionnel = 'secteur_1' | 'secteur_2' | 'non_conventionne' | 'non_applicable';
 
 export interface AuditAvatarAppearance {
   skinTone: AuditAvatarSkinTone;
@@ -19,16 +79,69 @@ export interface PersonInfo {
   prenom: string;
   nom: string;
   dateNaissance: string; // ISO date
+  civilite?: PersonCivilite;
+  nomNaissance?: string;
+  lieuNaissance?: string;
+  departementNaissance?: string;
+  communeNaissance?: string;
+  paysNaissance?: string;
+  nationalite?: string;
+  handicap?: boolean;
   profession?: string;
+  csp?: ProfessionCsp;
+  natureActivite?: NatureActivite;
+  statutSocial?: StatutSocial;
+  caisseRetraite?: CaisseRetraite;
+  statutConventionnel?: StatutConventionnel;
+  tauxPriseEnChargeCpam?: number;
   avatarKind?: AuditAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
 }
 
 export interface EnfantInfo {
+  id?: string; // Identité stable (clés React + rattachement petit-enfant) ; rétro-comblée à l'ouverture du drawer
   prenom: string;
+  nom?: string;
   dateNaissance: string;
   estCommun: boolean; // Enfant commun ou d'une union précédente
   parentPrincipal?: 'mr' | 'mme'; // Si non commun
+  lienParente?: ProcheLien;
+  civilite?: PersonCivilite;
+  lieuNaissance?: string;
+  decede?: boolean;
+  fiscalementACharge?: boolean;
+  ageLimiteCharge?: number;
+  anneesSupplementairesCharge?: number;
+  niveauScolaire?: NiveauScolaire;
+  gardeAlternee?: boolean; // Révélé si fiscalement à charge
+  handicap?: boolean;
+  adopte?: boolean;
+  typeAdoption?: TypeAdoption; // Révélé si adopté
+  renoncantSuccession?: boolean;
+  renonciationPortee?: RenonciationPortee; // Révélé si renonçant à la succession
+  avatarKind?: AuditAvatarKind;
+  avatarAppearance?: AuditAvatarAppearance;
+}
+
+// Proche non-enfant du foyer (petit-enfant, parent, fratrie, oncle/tante, tierce personne).
+// Collection distincte de `enfants` pour ne pas polluer les compteurs/avatars enfants.
+export interface ProcheInfo {
+  id: string;
+  lienParente: ProcheLienNonEnfant;
+  prenom: string;
+  nom?: string;
+  dateNaissance: string;
+  decede?: boolean;
+  handicap?: boolean;
+  parentEnfantId?: string; // petit-enfant → EnfantInfo.id rattaché
+  rattachement?: ProcheRattachement; // parent, frère/sœur
+  rattachementBranche?: ProcheRattachementBranche; // oncle/tante
+  vivantSousMemeToit?: boolean; // frère/sœur
+  fiscalementACharge?: boolean; // petit-enfant
+  niveauScolaire?: NiveauScolaire; // petit-enfant, si à charge
+  gardeAlternee?: boolean; // petit-enfant, si à charge
+  adopte?: boolean; // petit-enfant
+  typeAdoption?: TypeAdoption; // petit-enfant, si adopté
   avatarKind?: AuditAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
 }
@@ -38,7 +151,12 @@ export interface SituationFamiliale {
   mme?: PersonInfo; // Optionnel si célibataire
   situationMatrimoniale: 'marie' | 'pacse' | 'concubinage' | 'celibataire' | 'divorce' | 'veuf';
   dateUnion?: string;
+  lieuUnion?: string;
+  impositionSepareeAnneeUnion?: boolean;
+  nonResidentFiscal?: boolean;
+  dureeMariagesPrecedents?: number;
   enfants: EnfantInfo[];
+  proches: ProcheInfo[];
 }
 
 // Situation civile
@@ -47,6 +165,11 @@ export interface SituationCivile {
   contratMariage: boolean;
   dateContrat?: string;
   notaire?: string;
+  donationDernierVivantMr?: boolean;
+  donationDernierVivantMme?: boolean;
+  ddvOptionMr?: DdvOption;
+  ddvOptionMme?: DdvOption;
+  avantagesMatrimoniaux?: AvantageMatrimonial[];
   donations: DonationInfo[];
   testaments: TestamentInfo[];
 }
@@ -233,6 +356,7 @@ export function createEmptyDossier(): DossierAudit {
       mr: { prenom: '', nom: '', dateNaissance: '' },
       situationMatrimoniale: 'celibataire',
       enfants: [],
+      proches: [],
     },
     situationCivile: {
       contratMariage: false,
