@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactElement } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 
 import type { SituationFiscale } from '@/domain/audit/types';
 import { IconBarChart, IconClipboardCheck, IconFileText, IconInfo, IconPieChart } from '@/icons/ui';
@@ -6,6 +6,7 @@ import { IconBarChart, IconClipboardCheck, IconFileText, IconInfo, IconPieChart 
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
+  AuditPageContinuation,
   formatEuroOrMissing,
   formatNumber,
   formatPercent,
@@ -39,7 +40,18 @@ export function FiscalitePage({
       onSelectSection={onSelectSection}
     >
       <SummaryCardGrid cards={cards} variant="five" />
-      <FiscalVisual situationFiscale={dossier.situationFiscale} />
+      <FiscalFactsBand situationFiscale={dossier.situationFiscale} />
+      <section className="audit-cockpit__summary-band sim-band" aria-label="Périmètre fiscalité">
+        <p>
+          Informations déclaratives collectées pour préparer les calculs fiscaux à venir. L’IR n’est
+          pas calculé depuis /audit et aucun taux marginal n’est affiché s’il n’est pas renseigné.
+        </p>
+      </section>
+      <AuditPageContinuation
+        label="Passer à Objectifs"
+        detail="Qualifier les priorités et contraintes avant la stratégie verrouillée."
+        onClick={() => onSelectSection('objectifs')}
+      />
       <FiscalDrawerContent
         drawer={drawer}
         situationFiscale={dossier.situationFiscale}
@@ -73,6 +85,7 @@ function buildFiscalCards(
       id: 'avis',
       title: 'Avis d’imposition / données fiscales connues',
       status: hasAvisData ? 'partiel' : 'vide',
+      badgeLabel: 'Déclaratif',
       known: [
         `Année : ${situationFiscale.anneeReference}`,
         positive(situationFiscale.revenuFiscalReference)
@@ -94,6 +107,7 @@ function buildFiscalCards(
       id: 'lecture',
       title: 'Lecture fiscale du foyer',
       status: hasRevenus || hasTmi ? 'partiel' : 'vide',
+      badgeLabel: 'Déclaratif',
       known: [
         hasRevenus ? `${situationFiscale.revenus.length} catégorie(s) de revenus` : '',
         positive(situationFiscale.nombreParts)
@@ -112,6 +126,7 @@ function buildFiscalCards(
       id: 'ifi',
       title: 'IFI / autres impôts à qualifier',
       status: hasAutres ? 'partiel' : 'vide',
+      badgeLabel: 'Déclaratif',
       known: [
         positive(situationFiscale.ifi)
           ? `IFI indiqué : ${formatEuroOrMissing(situationFiscale.ifi)}`
@@ -132,6 +147,7 @@ function buildFiscalCards(
       id: 'points',
       title: 'Points fiscaux à confirmer',
       status: hasAvisData && hasRevenus ? 'partiel' : 'a-verifier',
+      badgeLabel: hasAvisData && hasRevenus ? 'Déclaratif' : 'À compléter',
       known: hasAvisData || hasRevenus ? ['Données déclaratives amorcées'] : [],
       missing: [
         !hasAvisData ? 'Avis fiscal' : '',
@@ -146,35 +162,32 @@ function buildFiscalCards(
     {
       id: 'calculs',
       title: 'Calculs à venir',
-      status: 'vide',
+      status: 'a-venir',
+      badgeLabel: 'À venir',
       known: ['Aucun calcul IR runtime dans /audit'],
-      missing: ['Moteur et adapter dédiés hors périmètre UX-03a'],
+      missing: ['Moteur et adapter dédiés hors périmètre /audit'],
       icon: <IconBarChart />,
-      ctaLabel: 'Compléter',
+      ctaLabel: 'Ouvrir',
       onAction: () => openDrawer('avis'),
     },
   ];
 }
 
-function FiscalVisual({ situationFiscale }: { situationFiscale: SituationFiscale }): ReactElement {
+function FiscalFactsBand({
+  situationFiscale,
+}: {
+  situationFiscale: SituationFiscale;
+}): ReactElement {
   const totalRevenus = sumPositive(situationFiscale.revenus.map((revenu) => revenu.montantNet));
   const rfr = positive(situationFiscale.revenuFiscalReference)
     ? situationFiscale.revenuFiscalReference
     : 0;
-  const filled = Math.min(
-    100,
-    totalRevenus > 0 || rfr > 0
-      ? Math.round((totalRevenus / Math.max(totalRevenus, rfr, 1)) * 100)
-      : 0,
-  );
-  const style = { '--audit-tax-filled': `${filled}%` } as CSSProperties;
 
   return (
-    <section className="audit-fiscal-visual sim-band" aria-label="Restitution fiscale déclarative">
-      <div className="audit-fiscal-visual__donut" style={style} aria-hidden="true" />
+    <section className="audit-fiscal-facts sim-band" aria-label="Synthèse fiscale déclarative">
       <div>
         <h2>Synthèse fiscale déclarative</h2>
-        <p>Répartition issue uniquement des montants saisis.</p>
+        <p>Données factuelles renseignées, sans ratio revenus/RFR ni calcul runtime.</p>
         <dl>
           <div>
             <dt>Revenus nets renseignés</dt>

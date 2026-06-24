@@ -2,24 +2,39 @@ import type { ReactElement } from 'react';
 
 import { IconChevronRight, IconInfo } from '@/icons/ui';
 
-import type { AuditLandingDestination, AuditPointAConfirmer } from '../auditLandingViewModel';
+export type AuditPriorityTone = 'warning' | 'danger';
+
+export interface AuditPriorityItem {
+  id: string;
+  label: string;
+  statusLabel: string;
+  tone: AuditPriorityTone;
+  actionLabel?: string;
+  onAction?: () => void;
+}
 
 interface PointsAConfirmerCardProps {
-  points: AuditPointAConfirmer[];
-  onOpenAudit: (destination: AuditLandingDestination) => void;
+  title: string;
+  items: AuditPriorityItem[];
+  emptyLabel?: string;
+  countLabel?: (count: number) => string;
+  limit?: number;
 }
 
 export function PointsAConfirmerCard({
-  points,
-  onOpenAudit,
+  title,
+  items,
+  emptyLabel = 'Aucun point prioritaire.',
+  countLabel = (count) => `${count} point(s) prioritaire(s)`,
+  limit = 3,
 }: PointsAConfirmerCardProps): ReactElement {
-  const visiblePoints = points.slice(0, 3);
+  const visibleItems = items.slice(0, limit);
 
   return (
     <section
       className="audit-card audit-points"
       aria-labelledby="audit-card-points"
-      data-state={points.length === 0 ? 'empty' : 'active'}
+      data-state={items.length === 0 ? 'empty' : 'active'}
     >
       <header className="audit-points__head">
         <span className="audit-card__icon audit-card__icon--warning" aria-hidden="true">
@@ -27,41 +42,34 @@ export function PointsAConfirmerCard({
         </span>
         <div className="audit-points__title-group">
           <h2 className="audit-card__title" id="audit-card-points">
-            Points à confirmer
+            {title}
           </h2>
         </div>
-        <span className="audit-points__count" aria-label={`${points.length} point(s) à confirmer`}>
-          {points.length}
+        <span className="audit-points__count" aria-label={countLabel(items.length)}>
+          {items.length}
         </span>
       </header>
       <div className="audit-card__divider sim-divider sim-divider--soft" aria-hidden="true" />
 
-      {points.length === 0 ? (
-        <p className="audit-points__empty">Aucun point prioritaire.</p>
+      {items.length === 0 ? (
+        <p className="audit-points__empty">{emptyLabel}</p>
       ) : (
         <ul className="audit-points__list">
-          {visiblePoints.map((point) => {
-            const action = point.action;
-
-            return (
-              <li className="audit-points__item" data-tone={point.tone} key={point.id}>
-                <span className="audit-points__marker" aria-hidden="true" />
-                <div className="audit-points__body">
-                  <p className="audit-points__label">{point.label}</p>
-                </div>
-                {action && (
-                  <button
-                    type="button"
-                    className="audit-points__action"
-                    onClick={() => onOpenAudit(action.destination)}
-                  >
-                    <span>Compléter</span>
-                    <IconChevronRight className="audit-points__action-icon" />
-                  </button>
-                )}
-              </li>
-            );
-          })}
+          {visibleItems.map((item) => (
+            <li className="audit-points__item" data-tone={item.tone} key={item.id}>
+              <span className="audit-points__marker" aria-hidden="true" />
+              <div className="audit-points__body">
+                <p className="audit-points__label">{item.label}</p>
+                <p className="audit-points__status">{item.statusLabel}</p>
+              </div>
+              {item.onAction ? (
+                <button type="button" className="audit-points__action" onClick={item.onAction}>
+                  <span>{item.actionLabel ?? 'Compléter'}</span>
+                  <IconChevronRight className="audit-points__action-icon" />
+                </button>
+              ) : null}
+            </li>
+          ))}
         </ul>
       )}
     </section>

@@ -143,6 +143,8 @@ export function mergeDossierPatrimonialIntoAuditDraft(
         dateNaissance: enfant.dateNaissance ?? '',
         estCommun: enfant.estCommun ?? true,
         parentPrincipal: enfant.parentPrincipal === 'conjoint' ? 'mme' : 'mr',
+        avatarKind: enfant.avatarKind,
+        avatarAppearance: enfant.avatarAppearance,
       })),
     },
     situationCivile: {
@@ -201,6 +203,8 @@ function buildPersonMembre(
     nom: person.nom,
     dateNaissance: person.dateNaissance,
     profession: person.profession,
+    avatarKind: person.avatarKind,
+    avatarAppearance: person.avatarAppearance,
     sourceRefIds,
   };
 }
@@ -213,6 +217,8 @@ function buildEnfantMembre(id: string, enfant: EnfantInfo, sourceRefIds: string[
     dateNaissance: enfant.dateNaissance,
     estCommun: enfant.estCommun,
     parentPrincipal: enfant.parentPrincipal === 'mme' ? 'conjoint' : 'client',
+    avatarKind: enfant.avatarKind,
+    avatarAppearance: enfant.avatarAppearance,
     sourceRefIds,
   };
 }
@@ -232,6 +238,8 @@ function buildAuditPerson(membre: DossierMembre): PersonInfo {
     nom: membre.nom ?? '',
     dateNaissance: membre.dateNaissance ?? '',
     profession: membre.profession,
+    avatarKind: membre.avatarKind,
+    avatarAppearance: membre.avatarAppearance,
   };
 }
 

@@ -17,6 +17,8 @@ describe('buildDossierPatrimonialFromAudit', () => {
         nom: 'Martin',
         dateNaissance: '1980-01-01',
         profession: 'Dirigeante',
+        avatarKind: 'femme',
+        avatarAppearance: { skinTone: 'fonce', age: 'senior' },
       },
       mme: {
         prenom: 'Camille',
@@ -30,6 +32,8 @@ describe('buildDossierPatrimonialFromAudit', () => {
           prenom: 'Lou',
           dateNaissance: '2010-03-03',
           estCommun: true,
+          avatarKind: 'garcon',
+          avatarAppearance: { skinTone: 'clair', age: 'adulte' },
         },
       ],
     };
@@ -70,6 +74,8 @@ describe('buildDossierPatrimonialFromAudit', () => {
         role: 'client',
         prenom: 'Alice',
         nom: 'Martin',
+        avatarKind: 'femme',
+        avatarAppearance: { skinTone: 'fonce', age: 'senior' },
       }),
       expect.objectContaining({
         id: 'audit-1-mme',
@@ -80,6 +86,8 @@ describe('buildDossierPatrimonialFromAudit', () => {
         id: 'audit-1-enfant-1',
         role: 'enfant',
         prenom: 'Lou',
+        avatarKind: 'garcon',
+        avatarAppearance: { skinTone: 'clair', age: 'adulte' },
       }),
     ]);
     expect(dossier.regimeMatrimonial).toMatchObject({
@@ -118,7 +126,18 @@ describe('buildDossierPatrimonialFromAudit', () => {
       prenom: 'Alice',
       nom: 'Martin',
       dateNaissance: '1980-01-01',
+      avatarKind: 'femme',
+      avatarAppearance: { skinTone: 'fonce', age: 'senior' },
     };
+    audit.situationFamiliale.enfants = [
+      {
+        prenom: 'Lou',
+        dateNaissance: '2010-03-03',
+        estCommun: true,
+        avatarKind: 'homme',
+        avatarAppearance: { skinTone: 'fonce', age: 'adulte' },
+      },
+    ];
     audit.situationCivile.donations = [
       {
         id: 'donation-1',
@@ -146,6 +165,13 @@ describe('buildDossierPatrimonialFromAudit', () => {
       prenom: 'Alice',
       nom: 'Martin',
       dateNaissance: '1980-01-01',
+      avatarKind: 'femme',
+      avatarAppearance: { skinTone: 'fonce', age: 'senior' },
+    });
+    expect(restored.situationFamiliale.enfants[0]).toMatchObject({
+      prenom: 'Lou',
+      avatarKind: 'homme',
+      avatarAppearance: { skinTone: 'fonce', age: 'adulte' },
     });
     expect(restored.situationCivile.donations).toEqual([
       expect.objectContaining({
