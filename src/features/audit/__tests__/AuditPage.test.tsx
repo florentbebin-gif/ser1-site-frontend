@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -50,9 +50,21 @@ describe('AuditPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
 
     expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
+    expect(screen.getByText('Cartes de synthèse et de saisie du foyer.')).toBeInTheDocument();
+    expect(screen.queryByText(/raccordées au dossier patrimonial F1/i)).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Synthèse foyer' })).toBeInTheDocument();
+    const foyerSummary = screen.getByRole('region', { name: 'Synthèse foyer' });
+    expect(within(foyerSummary).queryByText('Conjoint')).toBeNull();
+    expect(within(foyerSummary).queryByText('Profession conjoint')).toBeNull();
+    expect(within(foyerSummary).queryByText('Union')).toBeNull();
+    expect(within(foyerSummary).queryByText('Enfants')).toBeNull();
     expect(screen.getByRole('region', { name: 'Filiation & proches' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Saisie du foyer' })).toBeInTheDocument();
+    const foyerTileActions = container.querySelectorAll(
+      '.audit-foyer-sections .audit-cockpit-card__head-action',
+    );
+    expect(foyerTileActions).toHaveLength(4);
+    foyerTileActions.forEach((action) => expect(action).toHaveAttribute('data-tone', 'required'));
     expect(screen.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
     expect(screen.queryByRole('button', { name: /Modifier les données/ })).toBeNull();
     expect(screen.queryByText(/Pivot patrimonial/i)).not.toBeInTheDocument();
@@ -111,12 +123,23 @@ describe('AuditPage', () => {
     const situationCard = getCockpitCardButton(/Situation familiale/);
     await userEvent.click(situationCard);
     expect(screen.getByRole('dialog', { name: 'Situation familiale' })).toBeVisible();
-    expect(screen.getByRole('group', { name: /Apparence client principal/ })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: /Modifier apparence client principal/i }),
+    ).toBeVisible();
+    expect(screen.getAllByRole('radio')).toHaveLength(6);
+    expect(screen.queryByText('Conjoint')).toBeNull();
+    expect(screen.queryByLabelText('Lieu de l’union')).toBeNull();
+    await userEvent.click(screen.getByRole('radio', { name: 'Marié(e)' }));
+    expect(screen.getByText('Conjoint')).toBeVisible();
+    expect(screen.getByLabelText('Date de l’union')).toBeVisible();
+    expect(screen.queryByLabelText('Lieu de l’union')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Fermer' }));
 
     const filiationCard = getCockpitCardButton(/Filiation/);
     await userEvent.click(filiationCard);
     expect(screen.getByRole('dialog', { name: 'Filiation & proches' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ajouter un enfant' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ajouter un proche' })).toBeVisible();
     await userEvent.click(screen.getByRole('button', { name: 'Ajouter un enfant' }));
     const childFirstNameInput = screen.getByLabelText('Prénom');
     await userEvent.type(childFirstNameInput, 'Eva');

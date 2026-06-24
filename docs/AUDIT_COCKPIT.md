@@ -494,6 +494,27 @@ changement du modèle métier.
 | Hors-scope                                            | Moteur succession complet, calcul de droits, vue client, scan documentaire.                                                                                    |
 | PR cible d'implémentation                             | `UX-03a.1` et `UX-03a.4` livrés ; extensions F1 futures à rattacher ici sans recréer de wizard.                                                                |
 
+#### Drawer « Filiation & proches »
+
+- Deux collections F1 distinctes : `situationFamiliale.enfants` (enfants uniquement) et
+  `situationFamiliale.proches` (`ProcheInfo`). Les proches sont projetés en membres `role: 'autre'`
+  par l'adapter F1 et **exclus** de `foyer.enfantIds` et `nombreEnfants` (le compteur « Enfants » de
+  la synthèse reste pur).
+- Deux boutons d'ajout en tête : **Ajouter un enfant** (lien `enfant_commun` par défaut) et
+  **Ajouter un proche** (type `parent` par défaut). Le select « Lien de parenté » d'un enfant ne
+  propose que les liens enfant ; celui d'un proche, les cinq types (petit-enfant, parent,
+  frère/sœur, oncle/tante, tierce personne).
+- Champs adaptés par type : carte allégée (identité + Décès + handicap, plus « Vivant sous le même
+  toit » pour la fratrie) pour parent/fratrie/oncle/tierce ; rattachement contextuel sur sa propre
+  ligne (enfant déclaré pour un petit-enfant — désactivé si aucun enfant, Client/Conjoint, ou
+  branche pour oncle/tante).
+- Sous-options révélées seulement quand utiles, avec nettoyage des valeurs masquées au repli :
+  Scolarité + Garde alternée si « Fiscalement à charge », type d'adoption si « Enfant adopté »,
+  portée si « Renonçant à la succession » (limitée au parent concerné pour un enfant d'union
+  précédente). « Situation civile & fiscale » est à gauche de « Scolarité ».
+- La date de décès reste un statut booléen (pas de champ date) tant qu'aucun moteur ne la consomme.
+  Aucune scrollbar horizontale : grilles `minmax(0, …)`, pastilles `flex-wrap`, reveals empilés.
+
 ### Budget & capacité
 
 | Champ                                                 | Contrat                                                                                                                                         |

@@ -1,25 +1,13 @@
-import { useMemo, useState, type ReactElement, type ReactNode } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 
 import type { DossierAudit } from '@/domain/audit/types';
-import {
-  IconBriefcase,
-  IconCalendar,
-  IconChevronRight,
-  IconClipboardCheck,
-  IconFileText,
-  IconGift,
-  IconHome,
-  IconNetwork,
-  IconShield,
-  IconUsers,
-} from '@/icons/ui';
+import { IconBriefcase, IconChevronRight, IconGift, IconNetwork, IconUsers } from '@/icons/ui';
 
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
 import { FoyerFiliation } from '../components/FoyerFiliation';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
   fullName,
-  emptyToUndefined,
   formatDate,
   hasCompletePerson,
   labelForOption,
@@ -27,22 +15,16 @@ import {
   SITUATION_OPTIONS,
   SummaryCardGrid,
 } from './auditCockpitShared';
+import { FoyerSummary } from './FoyerSummary';
 import {
   FiliationDrawer,
   ProfessionDrawer,
   RegimeDonationsDrawer,
   SituationFamilialeDrawer,
 } from './FoyerFamilleDrawers';
+import { relationLabel } from './filiationConfig';
 
 type FoyerDrawer = 'famille' | 'filiation' | 'regime' | 'profession';
-
-interface FoyerFact {
-  label: string;
-  value: string;
-  icon: ReactNode;
-  emphasis?: boolean;
-  tone?: 'missing';
-}
 
 export function FoyerFamillePage({
   dossier,
@@ -55,14 +37,13 @@ export function FoyerFamillePage({
     () => buildFoyerCards(dossier, (nextDrawer) => setDrawer(nextDrawer)),
     [dossier],
   );
-  const foyerFacts = useMemo(() => buildFoyerFacts(dossier), [dossier]);
 
   return (
     <AuditCockpitShell
       viewModel={viewModel}
       currentSectionId="situation-familiale"
       title="Foyer & famille"
-      subtitle="Cartes de synthèse et de saisie du foyer, raccordées au dossier patrimonial F1."
+      subtitle="Cartes de synthèse et de saisie du foyer."
       actions={
         <button
           type="button"
@@ -76,7 +57,7 @@ export function FoyerFamillePage({
       onSelectSection={onSelectSection}
     >
       <section className="audit-foyer-pivot" aria-label="Synthèse pivot du foyer">
-        <FoyerSummary facts={foyerFacts} />
+        <FoyerSummary dossier={dossier} />
         <FoyerMiniFiliation viewModel={viewModel} />
       </section>
       <section className="audit-foyer-sections" aria-labelledby="audit-foyer-sections-title">
@@ -107,10 +88,10 @@ export function FoyerFamillePage({
         open={drawer === 'filiation'}
         dossier={dossier}
         onClose={() => setDrawer(null)}
-        onSave={(enfants) => {
+        onSave={(enfants, proches) => {
           updateDossier((previous) => ({
             ...previous,
-            situationFamiliale: { ...previous.situationFamiliale, enfants },
+            situationFamiliale: { ...previous.situationFamiliale, enfants, proches },
           }));
           setDrawer(null);
         }}
@@ -128,128 +109,19 @@ export function FoyerFamillePage({
         open={drawer === 'profession'}
         dossier={dossier}
         onClose={() => setDrawer(null)}
-        onSave={(mrProfession, mmeProfession) => {
+        onSave={(mr, mme) => {
           updateDossier((previous) => ({
             ...previous,
             situationFamiliale: {
               ...previous.situationFamiliale,
-              mr: {
-                ...previous.situationFamiliale.mr,
-                profession: emptyToUndefined(mrProfession),
-              },
-              mme: previous.situationFamiliale.mme
-                ? {
-                    ...previous.situationFamiliale.mme,
-                    profession: emptyToUndefined(mmeProfession),
-                  }
-                : undefined,
+              mr,
+              mme,
             },
           }));
           setDrawer(null);
         }}
       />
     </AuditCockpitShell>
-  );
-}
-
-function FoyerSummary({ facts }: { facts: FoyerFact[] }): ReactElement {
-  return (
-    <section className="audit-foyer-summary" aria-labelledby="audit-foyer-summary-title">
-      <header className="audit-foyer-card-head">
-        <div className="audit-foyer-card-head__main">
-          <span className="audit-foyer-card-head__icon" aria-hidden="true">
-            <IconHome />
-          </span>
-          <h2 id="audit-foyer-summary-title">Synthèse foyer</h2>
-        </div>
-      </header>
-      <dl className="audit-key-value-grid">
-        {facts.map((fact) => (
-          <div
-            key={fact.label}
-            className="audit-key-value-grid__item"
-            data-emphasis={fact.emphasis ? 'true' : undefined}
-            data-tone={fact.tone}
-          >
-            <span className="audit-key-value-grid__icon" aria-hidden="true">
-              {fact.icon}
-            </span>
-            <div>
-              <dt>{fact.label}</dt>
-              <dd>{fact.value}</dd>
-            </div>
-          </div>
-        ))}
-      </dl>
-      <FoyerSummaryIllustration />
-    </section>
-  );
-}
-
-function FoyerSummaryIllustration(): ReactElement {
-  return (
-    <svg
-      className="audit-foyer-summary__illustration"
-      viewBox="0 0 150 112"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M35 62 L75 31 L115 62"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M45 58 V92 H105 V58"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M66 92 V72 H84 V92"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="58" cy="56" r="7" stroke="currentColor" strokeWidth="1.7" />
-      <path
-        d="M46 80 C48 69 68 69 70 80"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <circle cx="92" cy="56" r="7" stroke="currentColor" strokeWidth="1.7" />
-      <path
-        d="M80 80 C82 69 102 69 104 80"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <circle cx="75" cy="72" r="5" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M66 90 C68 82 82 82 84 90"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M22 95 C34 102 52 102 64 95 M88 95 C101 102 121 101 132 94"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M121 78 C127 72 137 75 136 84 C134 94 123 95 119 88"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -282,65 +154,6 @@ function FoyerMiniFiliation({
   );
 }
 
-function buildFoyerFacts(dossier: DossierAudit): FoyerFact[] {
-  const { situationFamiliale, situationCivile } = dossier;
-  const principal = fullName(situationFamiliale.mr);
-  const conjoint = situationFamiliale.mme ? fullName(situationFamiliale.mme) : '';
-  const enfants = situationFamiliale.enfants
-    .map((enfant) => enfant.prenom.trim())
-    .filter(Boolean)
-    .join(', ');
-
-  return [
-    {
-      label: 'Client principal',
-      value: principal || 'À compléter',
-      icon: <IconUsers />,
-      emphasis: true,
-      tone: principal ? undefined : 'missing',
-    },
-    { label: 'Conjoint', value: conjoint || 'Non renseigné', icon: <IconUsers />, emphasis: true },
-    {
-      label: 'Profession',
-      value: situationFamiliale.mr.profession || 'Non renseignée',
-      icon: <IconBriefcase />,
-    },
-    {
-      label: 'Profession conjoint',
-      value: situationFamiliale.mme?.profession || 'Non renseignée',
-      icon: <IconBriefcase />,
-    },
-    {
-      label: 'Situation',
-      value: labelForOption(SITUATION_OPTIONS, situationFamiliale.situationMatrimoniale),
-      icon: <IconClipboardCheck />,
-    },
-    {
-      label: 'Union',
-      value: situationFamiliale.dateUnion
-        ? formatDate(situationFamiliale.dateUnion)
-        : 'Non renseignée',
-      icon: <IconCalendar />,
-    },
-    {
-      label: 'Régime',
-      value: situationCivile.regimeMatrimonial
-        ? labelForOption(REGIME_OPTIONS, situationCivile.regimeMatrimonial)
-        : 'À compléter',
-      icon: <IconShield />,
-      tone: situationCivile.regimeMatrimonial ? undefined : 'missing',
-    },
-    {
-      label: 'Enfants',
-      value:
-        situationFamiliale.enfants.length > 0
-          ? `${situationFamiliale.enfants.length} - ${enfants || 'à nommer'}`
-          : 'Non renseigné',
-      icon: <IconFileText />,
-    },
-  ];
-}
-
 function buildFoyerCards(
   dossier: DossierAudit,
   openDrawer: (drawer: FoyerDrawer) => void,
@@ -350,6 +163,13 @@ function buildFoyerCards(
   const couple = situationFamiliale.mme;
   const situationKnown = hasPrincipal || Boolean(situationFamiliale.dateUnion);
   const childrenComplete = situationFamiliale.enfants.filter((enfant) => enfant.prenom.trim());
+  const proches = situationFamiliale.proches ?? [];
+  const prochesComplete = proches.filter((proche) => proche.prenom.trim());
+  const hasFiliationData = situationFamiliale.enfants.length > 0 || proches.length > 0;
+  const filiationCounts = [
+    situationFamiliale.enfants.length > 0 ? `${situationFamiliale.enfants.length} enfant(s)` : '',
+    proches.length > 0 ? `${proches.length} proche(s)` : '',
+  ].filter(Boolean);
   const coupleStatus = new Set(['marie', 'pacse']).has(situationFamiliale.situationMatrimoniale);
   const professionKnown = [
     situationFamiliale.mr.profession,
@@ -393,29 +213,38 @@ function buildFoyerCards(
     {
       id: 'filiation',
       title: 'Filiation & proches',
-      status:
-        situationFamiliale.enfants.length === 0
-          ? 'vide'
-          : childrenComplete.length === situationFamiliale.enfants.length
-            ? 'complet'
-            : 'partiel',
-      summaryLine:
-        situationFamiliale.enfants.length > 0
-          ? `${situationFamiliale.enfants.length} enfant(s) renseigné(s)`
-          : 'Aucun proche renseigné',
-      known: situationFamiliale.enfants.map((enfant) =>
-        [enfant.prenom || 'Enfant à nommer', enfant.estCommun ? 'commun' : 'union précédente']
-          .filter(Boolean)
-          .join(' · '),
-      ),
-      missing: situationFamiliale.enfants
-        .flatMap((enfant, index) => [
+      status: !hasFiliationData
+        ? 'vide'
+        : childrenComplete.length === situationFamiliale.enfants.length &&
+            prochesComplete.length === proches.length
+          ? 'complet'
+          : 'partiel',
+      summaryLine: hasFiliationData
+        ? `${filiationCounts.join(' · ')} renseigné(s)`
+        : 'Aucun enfant ni proche renseigné',
+      known: [
+        ...situationFamiliale.enfants.map((enfant) =>
+          [enfant.prenom || 'Enfant à nommer', enfant.estCommun ? 'commun' : 'union précédente']
+            .filter(Boolean)
+            .join(' · '),
+        ),
+        ...proches.map((proche) =>
+          [proche.prenom || 'Proche à nommer', relationLabel(proche.lienParente)]
+            .filter(Boolean)
+            .join(' · '),
+        ),
+      ],
+      missing: [
+        ...situationFamiliale.enfants.flatMap((enfant, index) => [
           !enfant.prenom.trim() ? `Prénom enfant ${index + 1}` : '',
           !enfant.dateNaissance.trim() ? `Date de naissance enfant ${index + 1}` : '',
-        ])
-        .filter(Boolean),
+        ]),
+        ...proches.flatMap((proche, index) =>
+          !proche.prenom.trim() ? [`Prénom proche ${index + 1}`] : [],
+        ),
+      ].filter(Boolean),
       icon: <IconNetwork />,
-      ctaLabel: situationFamiliale.enfants.length > 0 ? 'Modifier' : 'Compléter',
+      ctaLabel: hasFiliationData ? 'Modifier' : 'Compléter',
       onAction: () => openDrawer('filiation'),
     },
     {

@@ -1,4 +1,20 @@
-import type { AuditAvatarAppearance, AuditAvatarKind, ObjectifClient } from '@/domain/audit/types';
+import type {
+  AuditAvatarAppearance,
+  AuditAvatarKind,
+  AvantageMatrimonial,
+  CaisseRetraite,
+  DdvOption,
+  NatureActivite,
+  NiveauScolaire,
+  ObjectifClient,
+  ProcheLien,
+  ProcheRattachementBranche,
+  ProfessionCsp,
+  RenonciationPortee,
+  StatutConventionnel,
+  StatutSocial,
+  TypeAdoption,
+} from '@/domain/audit/types';
 import type { SourceRef } from './types';
 
 export type DossierPatrimonialStatus = 'draft' | 'active' | 'archived';
@@ -41,6 +57,7 @@ export interface DossierFoyer {
   membrePrincipalId: string | null;
   conjointId: string | null;
   enfantIds: string[];
+  procheIds: string[];
 }
 
 export interface DossierMembre {
@@ -49,25 +66,65 @@ export interface DossierMembre {
   prenom: string;
   nom?: string;
   dateNaissance?: string;
+  civilite?: 'monsieur' | 'madame';
+  nomNaissance?: string;
+  lieuNaissance?: string;
+  departementNaissance?: string;
+  communeNaissance?: string;
+  paysNaissance?: string;
+  nationalite?: string;
+  handicap?: boolean;
   profession?: string;
+  csp?: ProfessionCsp;
+  natureActivite?: NatureActivite;
+  statutSocial?: StatutSocial;
+  caisseRetraite?: CaisseRetraite;
+  statutConventionnel?: StatutConventionnel;
+  tauxPriseEnChargeCpam?: number;
+  lienParente?: ProcheLien;
+  decede?: boolean;
+  fiscalementACharge?: boolean;
+  ageLimiteCharge?: number;
+  anneesSupplementairesCharge?: number;
+  niveauScolaire?: NiveauScolaire;
+  gardeAlternee?: boolean;
+  adopte?: boolean;
+  typeAdoption?: TypeAdoption;
+  renoncantSuccession?: boolean;
+  renonciationPortee?: RenonciationPortee;
   avatarKind?: AuditAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
   parentPrincipal?: 'client' | 'conjoint';
   estCommun?: boolean;
+  // Identité audit-side stable (round-trip enfants/proches : EnfantInfo.id / ProcheInfo.id)
+  localId?: string;
+  // Proche non-enfant (role 'autre')
+  parentEnfantId?: string;
+  rattachementBranche?: ProcheRattachementBranche;
+  vivantSousMemeToit?: boolean;
   sourceRefIds: string[];
 }
 
 export interface DossierSituationFamiliale {
   statut: DossierSituationFamilialeStatut;
   dateUnion?: string;
+  lieuUnion?: string;
+  impositionSepareeAnneeUnion?: boolean;
+  nonResidentFiscal?: boolean;
+  dureeMariagesPrecedents?: number;
   nombreEnfants: number;
 }
 
 export interface DossierRegimeMatrimonial {
-  regime: DossierRegimeMatrimonialCode;
+  regime?: DossierRegimeMatrimonialCode;
   contratMariage: boolean;
   dateContrat?: string;
   notaire?: string;
+  donationDernierVivantMr?: boolean;
+  donationDernierVivantMme?: boolean;
+  ddvOptionMr?: DdvOption;
+  ddvOptionMme?: DdvOption;
+  avantagesMatrimoniaux?: AvantageMatrimonial[];
   sourceRefIds: string[];
 }
 
@@ -165,6 +222,7 @@ export function createEmptyDossierPatrimonial(
       membrePrincipalId: null,
       conjointId: null,
       enfantIds: [],
+      procheIds: [],
     },
     membres: [],
     situationFamiliale: {

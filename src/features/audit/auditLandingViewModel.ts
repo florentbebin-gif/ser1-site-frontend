@@ -154,10 +154,10 @@ const SITUATION_FAMILIALE_LABELS: Record<
 > = {
   marie: 'Marié(e)',
   pacse: 'Pacsé(e)',
-  concubinage: 'Concubinage',
+  concubinage: 'Union libre',
   celibataire: 'Célibataire',
   divorce: 'Divorcé(e)',
-  veuf: 'Veuf/Veuve',
+  veuf: 'Veuf/veuve',
 };
 
 /** Couple au sens du quotient familial (les concubins forment deux foyers). */

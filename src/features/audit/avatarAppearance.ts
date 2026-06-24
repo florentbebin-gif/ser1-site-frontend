@@ -8,11 +8,6 @@ export interface AuditAvatarVariant {
   appearance: AuditAvatarAppearance;
 }
 
-export interface AuditAvatarSelection {
-  kind: AuditAvatarKind;
-  appearance: AuditAvatarAppearance;
-}
-
 export const DEFAULT_AUDIT_AVATAR_APPEARANCE: AuditAvatarAppearance = {
   skinTone: 'clair',
   age: 'adulte',
@@ -61,29 +56,6 @@ export function normalizeAvatarKind(
   return subject === 'enfant' ? 'fille' : 'homme';
 }
 
-export function nextAvatarVariant({
-  kind,
-  appearance,
-  subject,
-  direction,
-}: {
-  kind: AuditAvatarKind | undefined;
-  appearance: AuditAvatarAppearance | undefined;
-  subject: AuditAvatarSubject;
-  direction: 1 | -1;
-}): AuditAvatarSelection {
-  const options = optionsForAvatarSubject(subject);
-  const current = {
-    kind: normalizeAvatarKind(kind, subject),
-    appearance: normalizeAvatarAppearance(appearance, subject),
-  };
-  const currentIndex = options.findIndex((option) => sameVariant(option, current));
-  const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-  const nextIndex = (safeIndex + direction + options.length) % options.length;
-  const next = options[nextIndex] ?? options[0]!;
-  return { kind: next.kind, appearance: next.appearance };
-}
-
 export function optionsForAvatarSubject(subject: AuditAvatarSubject): AuditAvatarVariant[] {
   return subject === 'adulte' ? ADULT_VARIANTS : CHILD_AND_CLOSE_VARIANTS;
 }
@@ -98,14 +70,6 @@ function avatarVariant(
     kind,
     appearance: { skinTone, age },
   };
-}
-
-function sameVariant(first: AuditAvatarSelection, second: AuditAvatarSelection): boolean {
-  return (
-    first.kind === second.kind &&
-    first.appearance.skinTone === second.appearance.skinTone &&
-    first.appearance.age === second.appearance.age
-  );
 }
 
 function normalizeAvatarAge(age: AuditAvatarAge | undefined): AuditAvatarAge {

@@ -19,6 +19,7 @@ const COUPLE_COMPLET: (audit: DossierAudit) => void = (audit) => {
     mme: { prenom: 'Camille', nom: 'Martin', dateNaissance: '1982-02-02' },
     situationMatrimoniale: 'marie',
     enfants: [],
+    proches: [],
   };
 };
 
