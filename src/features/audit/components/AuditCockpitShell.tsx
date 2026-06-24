@@ -2,13 +2,12 @@ import type { ReactElement, ReactNode } from 'react';
 
 import type { AuditLandingViewModel } from '../auditLandingViewModel';
 import { AuditProgressRail } from './AuditProgressRail';
-import { AuditStatusBar } from './AuditStatusBar';
 import { DossierTravailCard } from './DossierTravailCard';
 
 interface AuditCockpitShellProps {
   viewModel: AuditLandingViewModel;
   currentSectionId: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtitle?: string;
   actions?: ReactNode;
@@ -39,16 +38,15 @@ export function AuditCockpitShell({
         </aside>
 
         <main className="audit-landing__main">
-          <AuditStatusBar statusBar={viewModel.statusBar} />
-          <div className="audit-landing__title-divider" aria-hidden="true" />
           <header className="audit-cockpit__header">
             <div className="audit-cockpit__heading">
-              <p className="audit-cockpit__eyebrow">{eyebrow}</p>
+              {eyebrow ? <p className="audit-cockpit__eyebrow">{eyebrow}</p> : null}
               <h1 className="audit-cockpit__title">{title}</h1>
               {subtitle ? <p className="audit-cockpit__subtitle">{subtitle}</p> : null}
             </div>
             {actions ? <div className="audit-cockpit__actions">{actions}</div> : null}
           </header>
+          <div className="audit-landing__title-divider" aria-hidden="true" />
           {children}
         </main>
       </div>

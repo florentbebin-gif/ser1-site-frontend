@@ -17,9 +17,16 @@ import {
   SimTemporalField,
   type SimSelectOption,
 } from '@/components/ui/sim';
-import { IconInfo, IconPencil, IconPlus, IconTrash } from '@/icons/ui';
+import { IconPlus, IconTrash } from '@/icons/ui';
 
 import type { AuditLandingViewModel } from '../auditLandingViewModel';
+export {
+  AuditPageContinuation,
+  AuditDrawerFieldGrid,
+  AuditDrawerSection,
+  StatusBadge,
+  SummaryCardGrid,
+} from './auditCockpitUi';
 
 export type AuditCockpitPageId =
   | 'landing'
@@ -35,17 +42,20 @@ export interface AuditCockpitPageProps {
   onSelectSection: (sectionId: string) => void;
 }
 
-export type CardStatus = 'vide' | 'partiel' | 'complet' | 'a-verifier';
+export type CardStatus = 'vide' | 'partiel' | 'complet' | 'a-verifier' | 'a-venir' | 'verrouille';
 
 export interface SummaryCardData {
   id: string;
   title: string;
   status: CardStatus;
+  badgeLabel?: string;
+  ctaTone?: 'required';
+  summaryLine?: string;
   known: string[];
   missing: string[];
   alert?: string;
   icon: ReactNode;
-  ctaLabel: 'Compléter' | 'Modifier';
+  ctaLabel: 'Compléter' | 'Modifier' | 'Ouvrir';
   onAction: () => void;
 }
 
@@ -137,75 +147,6 @@ export const OPERATION_STATUS_OPTIONS: SimSelectOption[] = [
   { value: 'done', label: 'Réalisée' },
   { value: 'cancelled', label: 'Annulée' },
 ];
-
-export function SummaryCardGrid({
-  cards,
-  variant,
-}: {
-  cards: SummaryCardData[];
-  variant?: 'five';
-}): ReactElement {
-  return (
-    <section className="audit-cockpit__cards" data-variant={variant} aria-label="Cartes audit">
-      {cards.map((card) => (
-        <SummaryCard key={card.id} card={card} />
-      ))}
-    </section>
-  );
-}
-
-function SummaryCard({ card }: { card: SummaryCardData }): ReactElement {
-  return (
-    <article className="audit-cockpit-card sim-tile-flat" data-status={card.status}>
-      <header className="audit-cockpit-card__header">
-        <span className="audit-cockpit-card__icon" aria-hidden="true">
-          {card.icon}
-        </span>
-        <div>
-          <h2 className="audit-cockpit-card__title">{card.title}</h2>
-          <p className="audit-cockpit-card__status">{statusLabel(card.status)}</p>
-        </div>
-      </header>
-      <CardFacts label="Données connues" values={card.known} empty="Aucune donnée renseignée" />
-      <CardFacts label="Manques" values={card.missing} empty="Aucun manque identifié" />
-      {card.alert ? (
-        <p className="audit-cockpit-card__alert">
-          <IconInfo className="audit-cockpit-card__alert-icon" />
-          {card.alert}
-        </p>
-      ) : null}
-      <button type="button" className="audit-cockpit-card__cta" onClick={card.onAction}>
-        {card.ctaLabel === 'Modifier' ? <IconPencil /> : <IconPlus />}
-        <span>{card.ctaLabel}</span>
-      </button>
-    </article>
-  );
-}
-
-function CardFacts({
-  label,
-  values,
-  empty,
-}: {
-  label: string;
-  values: string[];
-  empty: string;
-}): ReactElement {
-  return (
-    <div className="audit-cockpit-card__facts">
-      <p className="audit-cockpit-card__facts-label">{label}</p>
-      {values.length > 0 ? (
-        <ul className="audit-cockpit-card__list">
-          {values.map((value) => (
-            <li key={value}>{value}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="audit-cockpit-card__empty">{empty}</p>
-      )}
-    </div>
-  );
-}
 
 export function EditableList({
   addLabel,
@@ -358,13 +299,6 @@ export function DrawerFooter({
       </button>
     </>
   );
-}
-
-function statusLabel(status: CardStatus): string {
-  if (status === 'complet') return 'Complet';
-  if (status === 'partiel') return 'Partiel';
-  if (status === 'a-verifier') return 'À vérifier';
-  return 'À compléter';
 }
 
 export function hasCompletePerson(person: PersonInfo): boolean {

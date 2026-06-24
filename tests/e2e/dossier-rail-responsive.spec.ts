@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { enableE2EMode } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
@@ -95,6 +95,64 @@ test.describe('DossierRail responsive', () => {
     expect(startBox!.x + startBox!.width).toBeLessThanOrEqual(390);
   });
 
+  test('mobile /audit garde les pages internes et un drawer dans le viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(ROUTES.audit);
+    await page.getByRole('button', { name: /^Commencer par le client/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole('heading', { level: 2, name: 'Points prioritaires' })).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole('heading', { level: 2, name: 'Synthèse foyer' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expectLocatorInsideViewport(page.locator('.audit-foyer-pivot').first(), 390);
+    await expectLocatorInsideViewport(page.locator('.audit-cockpit-card').first(), 390);
+
+    const situationFamilialeCard = page.locator('.audit-cockpit-card').filter({
+      has: page.getByRole('heading', { level: 2, name: 'Situation familiale' }),
+    });
+    await situationFamilialeCard.click();
+    const drawer = page.getByRole('dialog', { name: 'Situation familiale' });
+    await expect(drawer).toBeVisible();
+    await expect(drawer.getByRole('button', { name: 'Enregistrer' })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expectLocatorInsideViewport(drawer, 390);
+    await drawer.getByRole('button', { name: 'Fermer' }).click();
+    await expect(drawer).toBeHidden();
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const internalPages = [
+      { button: /Situation familiale/, heading: 'Foyer & famille' },
+      { button: /Actifs — Inventaire déclaratif/, heading: 'Actifs / passifs' },
+      { button: /Fiscalité — Déclaratif/, heading: 'Fiscalité' },
+      { button: /Objectifs/, heading: 'Objectifs' },
+    ];
+
+    for (const internalPage of internalPages) {
+      await page
+        .locator('.audit-landing__rail')
+        .getByRole('button', { name: internalPage.button })
+        .click();
+      await expect(
+        page.getByRole('heading', { level: 1, name: internalPage.heading }),
+      ).toBeVisible();
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(
+        page.getByRole('heading', { level: 2, name: 'Points prioritaires' }),
+      ).toHaveCount(0);
+      await expectNoHorizontalOverflow(page);
+      await expectLocatorInsideViewport(
+        page.locator('.audit-cockpit-card, .audit-inventory-panel').first(),
+        390,
+      );
+      await page.setViewportSize({ width: 1440, height: 900 });
+    }
+  });
+
   test('desktop /strategy affiche le rail complet', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(ROUTES.strategy);
@@ -144,3 +202,18 @@ test.describe('DossierRail responsive', () => {
     ).toHaveCount(0);
   });
 });
+
+async function expectNoHorizontalOverflow(page: Page) {
+  const overflow = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth);
+}
+
+async function expectLocatorInsideViewport(locator: Locator, width: number) {
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+}

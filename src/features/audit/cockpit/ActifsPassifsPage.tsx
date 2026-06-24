@@ -1,29 +1,18 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 
-import type { Actif, Passif, PassifEmprunt, ProprietaireType } from '@/domain/audit/types';
-import { SimAmountInputEuro, SimAmountInputPercent } from '@/components/ui/sim';
-import { IconBarChart, IconPencil, IconPlus } from '@/icons/ui';
+import { IconPencil, IconPlus } from '@/icons/ui';
 
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
+import { ActifDrawer, DetteDrawer, EmpruntDrawer } from './ActifsPassifsDrawers';
 import type { AuditCockpitPageProps } from './auditCockpitShared';
 import {
   ACTIF_TYPE_OPTIONS,
-  createActif,
-  createDette,
-  createEmprunt,
-  DateField,
-  DrawerFooter,
+  AuditPageContinuation,
   EMPRUNT_TYPE_OPTIONS,
-  emptyToUndefined,
   formatEuroOrMissing,
   labelForOption,
   ownerLabel,
-  PROPRIETAIRE_OPTIONS,
-  SelectField,
   sumPositive,
-  TextAreaField,
-  TextField,
   upsertById,
 } from './auditCockpitShared';
 
@@ -94,6 +83,20 @@ export function ActifsPassifsPage({
         />
         <InventorySynthesis totalActifs={totalActifs} totalPassifs={totalPassifs} />
       </section>
+      <section
+        className="audit-cockpit__summary-band sim-band"
+        aria-label="Périmètre actifs et passifs"
+      >
+        <p>
+          Inventaire déclaratif des actifs et passifs privés, non consolidé à ce stade. Les
+          valorisations restent à vérifier et la structuration patrimoniale relève de F3.
+        </p>
+      </section>
+      <AuditPageContinuation
+        label="Passer à Fiscalité"
+        detail="Poursuivre avec les données fiscales déclaratives du foyer."
+        onClick={() => onSelectSection('fiscalite')}
+      />
 
       <ActifDrawer
         open={drawer?.kind === 'actif'}
@@ -222,7 +225,7 @@ function InventoryPanel({
   onSecondaryAdd?: () => void;
 }): ReactElement {
   return (
-    <section className="audit-inventory-panel sim-tile-flat">
+    <section className="audit-inventory-panel">
       <header className="audit-inventory-panel__header">
         <h2>{title}</h2>
         <div className="audit-inventory-panel__actions">
@@ -272,213 +275,28 @@ function InventorySynthesis({
   totalActifs: number;
   totalPassifs: number;
 }): ReactElement {
-  const max = Math.max(totalActifs, totalPassifs, 1);
   return (
-    <section
-      className="audit-inventory-synthesis sim-band"
-      aria-label="Synthèse graphique déclarative"
-    >
+    <section className="audit-inventory-synthesis sim-band" aria-label="Synthèse déclarative">
       <header>
-        <IconBarChart />
         <div>
-          <h2>Synthèse graphique honnête</h2>
+          <h2>Synthèse déclarative</h2>
           <p>Inventaire saisi · données partielles · à structurer F3</p>
         </div>
       </header>
-      <div className="audit-inventory-bars">
-        <Bar label="Actifs saisis" value={totalActifs} max={max} />
-        <Bar label="Passifs saisis" value={totalPassifs} max={max} />
-      </div>
+      <dl className="audit-inventory-metrics">
+        <div>
+          <dt>Actifs saisis</dt>
+          <dd>{formatEuroOrMissing(totalActifs)}</dd>
+        </div>
+        <div>
+          <dt>Passifs saisis</dt>
+          <dd>{formatEuroOrMissing(totalPassifs)}</dd>
+        </div>
+        <div>
+          <dt>Consolidation</dt>
+          <dd>À venir avec F3</dd>
+        </div>
+      </dl>
     </section>
-  );
-}
-
-function Bar({ label, value, max }: { label: string; value: number; max: number }): ReactElement {
-  return (
-    <div className="audit-inventory-bar">
-      <span>{label}</span>
-      <div className="audit-inventory-bar__track">
-        <span style={{ inlineSize: `${Math.round((value / max) * 100)}%` }} />
-      </div>
-      <strong>{formatEuroOrMissing(value)}</strong>
-    </div>
-  );
-}
-
-function ActifDrawer({
-  open,
-  actif,
-  onClose,
-  onSave,
-  onDelete,
-}: {
-  open: boolean;
-  actif?: Actif;
-  onClose: () => void;
-  onSave: (actif: Actif) => void;
-  onDelete?: () => void;
-}): ReactElement {
-  const [form, setForm] = useState<Actif>(actif ?? createActif());
-  useEffect(() => {
-    if (open) setForm(actif ?? createActif());
-  }, [actif, open]);
-
-  return (
-    <AuditDrawerXL
-      open={open}
-      title={actif ? 'Modifier un actif' : 'Ajouter un actif'}
-      subtitle="Inventaire déclaratif, sans structuration F3."
-      onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} onDelete={onDelete} />}
-    >
-      <div className="audit-drawer-form">
-        <TextField
-          label="Libellé"
-          value={form.libelle}
-          onChange={(libelle) => setForm({ ...form, libelle })}
-        />
-        <SelectField
-          label="Type"
-          value={form.type}
-          options={ACTIF_TYPE_OPTIONS}
-          onChange={(type) => setForm({ ...form, type: type as Actif['type'] } as Actif)}
-        />
-        <SimAmountInputEuro
-          label="Valeur saisie"
-          value={form.valeur}
-          onChange={(valeur) => setForm({ ...form, valeur })}
-        />
-        <SelectField
-          label="Propriétaire"
-          value={form.proprietaire}
-          options={PROPRIETAIRE_OPTIONS}
-          onChange={(proprietaire) =>
-            setForm({ ...form, proprietaire: proprietaire as ProprietaireType })
-          }
-        />
-      </div>
-    </AuditDrawerXL>
-  );
-}
-
-function EmpruntDrawer({
-  open,
-  emprunt,
-  onClose,
-  onSave,
-  onDelete,
-}: {
-  open: boolean;
-  emprunt?: PassifEmprunt;
-  onClose: () => void;
-  onSave: (emprunt: PassifEmprunt) => void;
-  onDelete?: () => void;
-}): ReactElement {
-  const [form, setForm] = useState<PassifEmprunt>(emprunt ?? createEmprunt());
-  useEffect(() => {
-    if (open) setForm(emprunt ?? createEmprunt());
-  }, [emprunt, open]);
-
-  return (
-    <AuditDrawerXL
-      open={open}
-      title={emprunt ? 'Modifier un emprunt' : 'Ajouter un emprunt'}
-      subtitle="Capital et mensualité saisis, sans calcul de capacité."
-      onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} onDelete={onDelete} />}
-    >
-      <div className="audit-drawer-form">
-        <TextField
-          label="Libellé"
-          value={form.libelle}
-          onChange={(libelle) => setForm({ ...form, libelle })}
-        />
-        <SelectField
-          label="Type"
-          value={form.type}
-          options={EMPRUNT_TYPE_OPTIONS}
-          onChange={(type) => setForm({ ...form, type: type as PassifEmprunt['type'] })}
-        />
-        <SimAmountInputEuro
-          label="Capital initial"
-          value={form.capitalInitial}
-          onChange={(capitalInitial) => setForm({ ...form, capitalInitial })}
-        />
-        <SimAmountInputEuro
-          label="Capital restant dû"
-          value={form.capitalRestantDu}
-          onChange={(capitalRestantDu) => setForm({ ...form, capitalRestantDu })}
-        />
-        <SimAmountInputEuro
-          label="Mensualité"
-          value={form.mensualite}
-          onChange={(mensualite) => setForm({ ...form, mensualite })}
-        />
-        <SimAmountInputPercent
-          label="Taux renseigné"
-          value={form.tauxInteret}
-          onChange={(tauxInteret) => setForm({ ...form, tauxInteret })}
-        />
-        <DateField
-          label="Date de début"
-          value={form.dateDebut}
-          onChange={(dateDebut) => setForm({ ...form, dateDebut })}
-        />
-        <DateField
-          label="Date de fin"
-          value={form.dateFin}
-          onChange={(dateFin) => setForm({ ...form, dateFin })}
-        />
-      </div>
-    </AuditDrawerXL>
-  );
-}
-
-function DetteDrawer({
-  open,
-  dette,
-  onClose,
-  onSave,
-  onDelete,
-}: {
-  open: boolean;
-  dette?: Passif['autresDettes'][number];
-  onClose: () => void;
-  onSave: (dette: Passif['autresDettes'][number]) => void;
-  onDelete?: () => void;
-}): ReactElement {
-  const [form, setForm] = useState<Passif['autresDettes'][number]>(dette ?? createDette());
-  useEffect(() => {
-    if (open) setForm(dette ?? createDette());
-  }, [dette, open]);
-
-  return (
-    <AuditDrawerXL
-      open={open}
-      title={dette ? 'Modifier une dette' : 'Ajouter une dette'}
-      subtitle="Dette synthétique rattachée au passif déclaré."
-      onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} onDelete={onDelete} />}
-    >
-      <div className="audit-drawer-form">
-        <TextField
-          label="Libellé"
-          value={form.libelle}
-          onChange={(libelle) => setForm({ ...form, libelle })}
-        />
-        <SimAmountInputEuro
-          label="Montant saisi"
-          value={form.montant}
-          onChange={(montant) => setForm({ ...form, montant })}
-        />
-        <TextAreaField
-          label="Description"
-          value={form.description ?? ''}
-          onChange={(description) =>
-            setForm({ ...form, description: emptyToUndefined(description) })
-          }
-        />
-      </div>
-    </AuditDrawerXL>
   );
 }

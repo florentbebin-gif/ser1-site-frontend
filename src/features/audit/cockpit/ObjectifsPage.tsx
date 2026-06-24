@@ -17,6 +17,9 @@ import { AuditCockpitShell } from '../components/AuditCockpitShell';
 import { AuditDrawerXL } from '../components/AuditDrawerXL';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
+  AuditDrawerFieldGrid,
+  AuditDrawerSection,
+  AuditPageContinuation,
   CONTRAINTE_PRIORITY_OPTIONS,
   createContrainte,
   createOperation,
@@ -58,13 +61,29 @@ export function ObjectifsPage({
       onSelectSection={onSelectSection}
     >
       <SummaryCardGrid cards={cards} />
-      <section className="audit-cockpit__summary-band sim-band" aria-label="Rôle des objectifs">
+      <section
+        className="audit-cockpit__summary-band audit-objectifs-prereq-band sim-band"
+        aria-label="Prérequis stratégie"
+      >
         <IconInfo className="audit-cockpit__summary-icon" />
-        <p>
-          Les objectifs qualifient l’intention client et structurent les arbitrages futurs. Ils ne
-          déclenchent aucun plan d’action dans cette page.
-        </p>
+        <div>
+          <h2>Pré-requis stratégie</h2>
+          <ul className="audit-objectifs-prereqs">
+            {viewModel.pilotage.prerequis.map((prerequis) => (
+              <li key={prerequis.id} data-status={prerequis.status}>
+                <span>{prerequis.label}</span>
+                <strong>{prerequis.statusLabel}</strong>
+              </li>
+            ))}
+          </ul>
+          <p>Stratégie verrouillée, scénarios à venir après finalisation des contraintes.</p>
+        </div>
       </section>
+      <AuditPageContinuation
+        label="Revenir à la synthèse"
+        detail="Retourner au cockpit global pour relire le dossier et les blocages."
+        onClick={() => onSelectSection('dossier')}
+      />
       <ObjectifsDrawerContent
         drawer={drawer}
         objectifs={dossier.objectifs}
@@ -139,11 +158,12 @@ function buildObjectifsCards(
     {
       id: 'deblocage',
       title: 'Résumé de déblocage',
-      status: dossier.objectifs.length > 0 ? 'partiel' : 'vide',
+      status: 'verrouille',
+      badgeLabel: 'Verrouillé',
       known: dossier.objectifs.length > 0 ? ['Objectifs utilisables comme contexte futur'] : [],
       missing: ['F3, fiscalité calculée et stratégie restent hors périmètre'],
       icon: <IconNetwork />,
-      ctaLabel: dossier.objectifs.length > 0 ? 'Modifier' : 'Compléter',
+      ctaLabel: 'Ouvrir',
       onAction: () => openDrawer('objectifs'),
     },
   ];
@@ -225,26 +245,30 @@ function ObjectifsSelectionDrawer({
       onClose={onClose}
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(selected)} />}
     >
-      <div className="audit-objective-list">
-        {(Object.keys(OBJECTIFS_CLIENT_LABELS) as ObjectifClient[]).map((objectif) => {
-          const checked = selected.includes(objectif);
-          return (
-            <label key={objectif} className="audit-checkbox-row">
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={(event) =>
-                  setSelected((previous) =>
-                    event.target.checked
-                      ? [...previous, objectif]
-                      : previous.filter((item) => item !== objectif),
-                  )
-                }
-              />
-              <span>{OBJECTIFS_CLIENT_LABELS[objectif]}</span>
-            </label>
-          );
-        })}
+      <div className="audit-drawer-form">
+        <AuditDrawerSection title="Priorités client">
+          <div className="audit-objective-list">
+            {(Object.keys(OBJECTIFS_CLIENT_LABELS) as ObjectifClient[]).map((objectif) => {
+              const checked = selected.includes(objectif);
+              return (
+                <label key={objectif} className="audit-checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(event) =>
+                      setSelected((previous) =>
+                        event.target.checked
+                          ? [...previous, objectif]
+                          : previous.filter((item) => item !== objectif),
+                      )
+                    }
+                  />
+                  <span>{OBJECTIFS_CLIENT_LABELS[objectif]}</span>
+                </label>
+              );
+            })}
+          </div>
+        </AuditDrawerSection>
       </div>
     </AuditDrawerXL>
   );
@@ -280,40 +304,41 @@ function ContraintesDrawer({
         onAdd={() => setItems((previous) => [...previous, createContrainte()])}
       >
         {items.map((contrainte, index) => (
-          <fieldset className="audit-drawer-fieldset" key={contrainte.id}>
-            <legend>Contrainte {index + 1}</legend>
-            <TextField
-              label="Libellé"
-              value={contrainte.label}
-              onChange={(label) =>
-                setItems((previous) => updateAt(previous, index, { ...contrainte, label }))
-              }
-            />
-            <TextAreaField
-              label="Description"
-              value={contrainte.description ?? ''}
-              onChange={(description) =>
-                setItems((previous) =>
-                  updateAt(previous, index, {
-                    ...contrainte,
-                    description: emptyToUndefined(description),
-                  }),
-                )
-              }
-            />
-            <SelectField
-              label="Priorité"
-              value={contrainte.priority}
-              options={CONTRAINTE_PRIORITY_OPTIONS}
-              onChange={(priority) =>
-                setItems((previous) =>
-                  updateAt(previous, index, {
-                    ...contrainte,
-                    priority: priority as DossierContraintePriority,
-                  }),
-                )
-              }
-            />
+          <AuditDrawerSection title={`Contrainte ${index + 1}`} key={contrainte.id}>
+            <AuditDrawerFieldGrid>
+              <TextField
+                label="Libellé"
+                value={contrainte.label}
+                onChange={(label) =>
+                  setItems((previous) => updateAt(previous, index, { ...contrainte, label }))
+                }
+              />
+              <TextAreaField
+                label="Description"
+                value={contrainte.description ?? ''}
+                onChange={(description) =>
+                  setItems((previous) =>
+                    updateAt(previous, index, {
+                      ...contrainte,
+                      description: emptyToUndefined(description),
+                    }),
+                  )
+                }
+              />
+              <SelectField
+                label="Priorité"
+                value={contrainte.priority}
+                options={CONTRAINTE_PRIORITY_OPTIONS}
+                onChange={(priority) =>
+                  setItems((previous) =>
+                    updateAt(previous, index, {
+                      ...contrainte,
+                      priority: priority as DossierContraintePriority,
+                    }),
+                  )
+                }
+              />
+            </AuditDrawerFieldGrid>
             <button
               type="button"
               className="audit-drawer-remove"
@@ -324,7 +349,7 @@ function ContraintesDrawer({
               <IconTrash />
               <span>Retirer</span>
             </button>
-          </fieldset>
+          </AuditDrawerSection>
         ))}
       </EditableList>
     </AuditDrawerXL>
@@ -361,49 +386,50 @@ function OperationsDrawer({
         onAdd={() => setItems((previous) => [...previous, createOperation()])}
       >
         {items.map((operation, index) => (
-          <fieldset className="audit-drawer-fieldset" key={operation.id}>
-            <legend>Opération {index + 1}</legend>
-            <TextField
-              label="Libellé"
-              value={operation.label}
-              onChange={(label) =>
-                setItems((previous) => updateAt(previous, index, { ...operation, label }))
-              }
-            />
-            <TextField
-              label="Horizon"
-              value={operation.horizon ?? ''}
-              onChange={(horizon) =>
-                setItems((previous) =>
-                  updateAt(previous, index, { ...operation, horizon: emptyToUndefined(horizon) }),
-                )
-              }
-            />
-            <SelectField
-              label="Statut"
-              value={operation.status}
-              options={OPERATION_STATUS_OPTIONS}
-              onChange={(status) =>
-                setItems((previous) =>
-                  updateAt(previous, index, {
-                    ...operation,
-                    status: status as DossierOperationStatus,
-                  }),
-                )
-              }
-            />
-            <TextAreaField
-              label="Description"
-              value={operation.description ?? ''}
-              onChange={(description) =>
-                setItems((previous) =>
-                  updateAt(previous, index, {
-                    ...operation,
-                    description: emptyToUndefined(description),
-                  }),
-                )
-              }
-            />
+          <AuditDrawerSection title={`Opération ${index + 1}`} key={operation.id}>
+            <AuditDrawerFieldGrid>
+              <TextField
+                label="Libellé"
+                value={operation.label}
+                onChange={(label) =>
+                  setItems((previous) => updateAt(previous, index, { ...operation, label }))
+                }
+              />
+              <TextField
+                label="Horizon"
+                value={operation.horizon ?? ''}
+                onChange={(horizon) =>
+                  setItems((previous) =>
+                    updateAt(previous, index, { ...operation, horizon: emptyToUndefined(horizon) }),
+                  )
+                }
+              />
+              <SelectField
+                label="Statut"
+                value={operation.status}
+                options={OPERATION_STATUS_OPTIONS}
+                onChange={(status) =>
+                  setItems((previous) =>
+                    updateAt(previous, index, {
+                      ...operation,
+                      status: status as DossierOperationStatus,
+                    }),
+                  )
+                }
+              />
+              <TextAreaField
+                label="Description"
+                value={operation.description ?? ''}
+                onChange={(description) =>
+                  setItems((previous) =>
+                    updateAt(previous, index, {
+                      ...operation,
+                      description: emptyToUndefined(description),
+                    }),
+                  )
+                }
+              />
+            </AuditDrawerFieldGrid>
             <button
               type="button"
               className="audit-drawer-remove"
@@ -414,7 +440,7 @@ function OperationsDrawer({
               <IconTrash />
               <span>Retirer</span>
             </button>
-          </fieldset>
+          </AuditDrawerSection>
         ))}
       </EditableList>
     </AuditDrawerXL>

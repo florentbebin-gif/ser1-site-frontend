@@ -1,15 +1,3 @@
-/**
- * AuditLanding — cockpit /audit (UX-01).
- *
- * Cockpit pleine largeur : panneau contextuel gauche (encart dossier + gestion des
- * avancement) et zone principale en 3 cartes. Les cartes Synthèse et Objectifs
- * SONT les actions (vrai <button> plein-carte, libellé d'action, focus visible).
- * La Synthèse restitue l'état civil réel et la filiation F1. Les cartes Masses,
- * Organigramme société et Stratégie affichent un aperçu à venir explicite tant
- * que les données métier ne sont pas raccordées. Aucune donnée patrimoniale
- * inventée, aucune valeur par défaut comme certitude.
- */
-
 import type { ReactElement, ReactNode } from 'react';
 
 import {
@@ -33,7 +21,7 @@ import { AuditProgressRail } from './components/AuditProgressRail';
 import { AuditStatusBar } from './components/AuditStatusBar';
 import { DossierTravailCard } from './components/DossierTravailCard';
 import { FoyerFiliation } from './components/FoyerFiliation';
-import { PointsAConfirmerCard } from './components/PointsAConfirmerCard';
+import { PointsAConfirmerCard, type AuditPriorityItem } from './components/PointsAConfirmerCard';
 
 export type { AuditLandingDestination } from './auditLandingViewModel';
 
@@ -62,6 +50,17 @@ export default function AuditLanding({
     progress,
   } = viewModel;
   const pageState = isNewAnalysisEmpty ? 'new' : synthese.hasData ? 'filled' : 'empty';
+  const priorityItems: AuditPriorityItem[] = pointsAConfirmer.map((point) => {
+    const action = point.action;
+    return {
+      id: point.id,
+      label: point.label,
+      statusLabel: 'À confirmer',
+      tone: point.tone,
+      actionLabel: action ? 'Compléter' : undefined,
+      onAction: action ? () => onOpenAudit(action.destination) : undefined,
+    };
+  });
 
   return (
     <div className="audit-landing premium-page" data-state={pageState}>
@@ -87,7 +86,12 @@ export default function AuditLanding({
             <div className="audit-landing__grid">
               <SyntheseCard card={synthese} onOpenAudit={onOpenAudit} />
               <div className="audit-landing__summary-side">
-                <PointsAConfirmerCard points={pointsAConfirmer} onOpenAudit={onOpenAudit} />
+                <PointsAConfirmerCard
+                  title="Points à confirmer"
+                  items={priorityItems}
+                  emptyLabel="Aucun point prioritaire."
+                  countLabel={(count) => `${count} point(s) à confirmer`}
+                />
                 <ObjectifsCard card={objectifs} onOpenAudit={onOpenAudit} />
               </div>
               <AuditPreviewCarousel slides={previewSlides} />

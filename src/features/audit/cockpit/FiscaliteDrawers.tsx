@@ -10,6 +10,8 @@ import { IconPlus, IconTrash } from '@/icons/ui';
 
 import { AuditDrawerXL } from '../components/AuditDrawerXL';
 import {
+  AuditDrawerFieldGrid,
+  AuditDrawerSection,
   BENEFICIAIRE_OPTIONS,
   createRevenu,
   DrawerFooter,
@@ -87,23 +89,27 @@ function AvisFiscalDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <SimAmountInputNumeric
-          label="Année de référence"
-          value={form.anneeReference}
-          onChange={(anneeReference) => setForm({ ...form, anneeReference })}
-        />
-        <SimAmountInputEuro
-          label="Revenu fiscal de référence"
-          value={form.revenuFiscalReference}
-          onChange={(revenuFiscalReference) => setForm({ ...form, revenuFiscalReference })}
-          onEmpty={() => setForm({ ...form, revenuFiscalReference: 0 })}
-        />
-        <SimAmountInputEuro
-          label="IR indiqué sur avis"
-          value={form.impotRevenu}
-          onChange={(impotRevenu) => setForm({ ...form, impotRevenu })}
-          onEmpty={() => setForm({ ...form, impotRevenu: 0 })}
-        />
+        <AuditDrawerSection title="Données de l’avis">
+          <AuditDrawerFieldGrid>
+            <SimAmountInputNumeric
+              label="Année de référence"
+              value={form.anneeReference}
+              onChange={(anneeReference) => setForm({ ...form, anneeReference })}
+            />
+            <SimAmountInputEuro
+              label="Revenu fiscal de référence"
+              value={form.revenuFiscalReference}
+              onChange={(revenuFiscalReference) => setForm({ ...form, revenuFiscalReference })}
+              onEmpty={() => setForm({ ...form, revenuFiscalReference: 0 })}
+            />
+            <SimAmountInputEuro
+              label="IR indiqué sur avis"
+              value={form.impotRevenu}
+              onChange={(impotRevenu) => setForm({ ...form, impotRevenu })}
+              onEmpty={() => setForm({ ...form, impotRevenu: 0 })}
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
       </div>
     </AuditDrawerXL>
   );
@@ -176,39 +182,40 @@ function RevenuFields({
   onRemove: () => void;
 }): ReactElement {
   return (
-    <fieldset className="audit-drawer-fieldset">
-      <legend>Revenu {index + 1}</legend>
-      <SelectField
-        label="Catégorie"
-        value={revenu.categorie}
-        options={REVENU_CATEGORIE_OPTIONS}
-        onChange={(categorie) =>
-          onChange({ ...revenu, categorie: categorie as RevenuCategorie['categorie'] })
-        }
-      />
-      <SelectField
-        label="Bénéficiaire"
-        value={revenu.beneficiaire}
-        options={BENEFICIAIRE_OPTIONS}
-        onChange={(beneficiaire) =>
-          onChange({ ...revenu, beneficiaire: beneficiaire as RevenuCategorie['beneficiaire'] })
-        }
-      />
-      <SimAmountInputEuro
-        label="Montant brut"
-        value={revenu.montantBrut}
-        onChange={(montantBrut) => onChange({ ...revenu, montantBrut })}
-      />
-      <SimAmountInputEuro
-        label="Montant net"
-        value={revenu.montantNet}
-        onChange={(montantNet) => onChange({ ...revenu, montantNet })}
-      />
+    <AuditDrawerSection title={`Revenu ${index + 1}`}>
+      <AuditDrawerFieldGrid>
+        <SelectField
+          label="Catégorie"
+          value={revenu.categorie}
+          options={REVENU_CATEGORIE_OPTIONS}
+          onChange={(categorie) =>
+            onChange({ ...revenu, categorie: categorie as RevenuCategorie['categorie'] })
+          }
+        />
+        <SelectField
+          label="Bénéficiaire"
+          value={revenu.beneficiaire}
+          options={BENEFICIAIRE_OPTIONS}
+          onChange={(beneficiaire) =>
+            onChange({ ...revenu, beneficiaire: beneficiaire as RevenuCategorie['beneficiaire'] })
+          }
+        />
+        <SimAmountInputEuro
+          label="Montant brut"
+          value={revenu.montantBrut}
+          onChange={(montantBrut) => onChange({ ...revenu, montantBrut })}
+        />
+        <SimAmountInputEuro
+          label="Montant net"
+          value={revenu.montantNet}
+          onChange={(montantNet) => onChange({ ...revenu, montantNet })}
+        />
+      </AuditDrawerFieldGrid>
       <button type="button" className="audit-drawer-remove" onClick={onRemove}>
         <IconTrash />
         <span>Retirer</span>
       </button>
-    </fieldset>
+    </AuditDrawerSection>
   );
 }
 
@@ -232,19 +239,23 @@ function LectureFiscaleDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <SimAmountInputNumeric
-          label="Nombre de parts renseigné"
-          value={form.nombreParts}
-          onChange={(nombreParts) => setForm({ ...form, nombreParts })}
-          minimumFractionDigits={0}
-          maximumFractionDigits={2}
-        />
-        <SimAmountInputPercent
-          label="TMI renseignée"
-          value={form.tmi}
-          onChange={(tmi) => setForm({ ...form, tmi })}
-          onEmpty={() => setForm({ ...form, tmi: 0 })}
-        />
+        <AuditDrawerSection title="Lecture déclarative">
+          <AuditDrawerFieldGrid>
+            <SimAmountInputNumeric
+              label="Nombre de parts renseigné"
+              value={form.nombreParts}
+              onChange={(nombreParts) => setForm({ ...form, nombreParts })}
+              minimumFractionDigits={0}
+              maximumFractionDigits={2}
+            />
+            <SimAmountInputPercent
+              label="TMI renseignée"
+              value={form.tmi}
+              onChange={(tmi) => setForm({ ...form, tmi })}
+              onEmpty={() => setForm({ ...form, tmi: 0 })}
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
       </div>
     </AuditDrawerXL>
   );
@@ -270,24 +281,28 @@ function AutresImpotsDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <SimAmountInputEuro
-          label="IFI indiqué"
-          value={form.ifi ?? 0}
-          onChange={(ifi) => setForm({ ...form, ifi })}
-          onEmpty={() => setForm({ ...form, ifi: undefined })}
-        />
-        <SimAmountInputEuro
-          label="CEHR indiquée"
-          value={form.cehr ?? 0}
-          onChange={(cehr) => setForm({ ...form, cehr })}
-          onEmpty={() => setForm({ ...form, cehr: undefined })}
-        />
-        <SimAmountInputEuro
-          label="Taxe foncière indiquée"
-          value={form.taxeFonciere ?? 0}
-          onChange={(taxeFonciere) => setForm({ ...form, taxeFonciere })}
-          onEmpty={() => setForm({ ...form, taxeFonciere: undefined })}
-        />
+        <AuditDrawerSection title="Autres impôts indiqués">
+          <AuditDrawerFieldGrid>
+            <SimAmountInputEuro
+              label="IFI indiqué"
+              value={form.ifi ?? 0}
+              onChange={(ifi) => setForm({ ...form, ifi })}
+              onEmpty={() => setForm({ ...form, ifi: undefined })}
+            />
+            <SimAmountInputEuro
+              label="CEHR indiquée"
+              value={form.cehr ?? 0}
+              onChange={(cehr) => setForm({ ...form, cehr })}
+              onEmpty={() => setForm({ ...form, cehr: undefined })}
+            />
+            <SimAmountInputEuro
+              label="Taxe foncière indiquée"
+              value={form.taxeFonciere ?? 0}
+              onChange={(taxeFonciere) => setForm({ ...form, taxeFonciere })}
+              onEmpty={() => setForm({ ...form, taxeFonciere: undefined })}
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
       </div>
     </AuditDrawerXL>
   );

@@ -1,15 +1,5 @@
-/**
- * View model de la landing /audit (UX-01).
- *
- * Lecture pure du dossier patrimonial F1 : aucune donnée inventée, aucune valeur
- * par défaut présentée comme certitude. Les parts fiscales sont dérivées de la
- * composition du foyer F1 via le moteur IR (pas de duplication de règle). La TMI
- * dépend des revenus (hors F1) et reste « à venir ». Les blocs masses
- * successorales (F3) et organigramme société (F5) restent des placeholders
- * honnêtes. Aucun jargon interne, aucun radar ni score.
- */
-
 import { computeAutoPartsWithChildren } from '@/engine/ir/parts';
+import type { AuditAvatarAppearance, AuditAvatarKind } from '@/domain/audit/types';
 import {
   evaluateDossierPatrimonialCompletion,
   type DossierCompletionStatus,
@@ -53,7 +43,7 @@ export interface AuditLandingAction {
 }
 
 export type AuditLandingMemberRole = 'principal' | 'conjoint' | 'enfant';
-export type AuditLandingAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
+export type AuditLandingAvatarKind = AuditAvatarKind;
 
 export interface AuditLandingCompletionHint {
   ratio: number;
@@ -73,7 +63,9 @@ export interface AuditLandingMember {
   profession: string | null;
   role: AuditLandingMemberRole;
   estCommun: boolean;
+  parentPrincipal?: 'client' | 'conjoint';
   avatarKind: AuditLandingAvatarKind;
+  avatarAppearance?: AuditAvatarAppearance;
 }
 
 export interface AuditLandingSyntheseCard {
@@ -399,7 +391,9 @@ function toMember(
     profession: membre.profession?.trim() || null,
     role,
     estCommun: membre.estCommun ?? true,
-    avatarKind: inferAvatarKind(role, prenom || nom || ''),
+    parentPrincipal: membre.parentPrincipal,
+    avatarKind: membre.avatarKind ?? inferAvatarKind(role, prenom || nom || ''),
+    avatarAppearance: membre.avatarAppearance,
   };
 }
 

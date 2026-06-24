@@ -6,11 +6,22 @@ import type { RegimeMatrimonial } from '../../engine/succession/civil';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier/patrimonial';
 
 // Situation familiale
+export type AuditAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
+export type AuditAvatarSkinTone = 'clair' | 'fonce';
+export type AuditAvatarAge = 'adulte' | 'senior';
+
+export interface AuditAvatarAppearance {
+  skinTone: AuditAvatarSkinTone;
+  age: AuditAvatarAge;
+}
+
 export interface PersonInfo {
   prenom: string;
   nom: string;
   dateNaissance: string; // ISO date
   profession?: string;
+  avatarKind?: AuditAvatarKind;
+  avatarAppearance?: AuditAvatarAppearance;
 }
 
 export interface EnfantInfo {
@@ -18,6 +29,8 @@ export interface EnfantInfo {
   dateNaissance: string;
   estCommun: boolean; // Enfant commun ou d'une union précédente
   parentPrincipal?: 'mr' | 'mme'; // Si non commun
+  avatarKind?: AuditAvatarKind;
+  avatarAppearance?: AuditAvatarAppearance;
 }
 
 export interface SituationFamiliale {

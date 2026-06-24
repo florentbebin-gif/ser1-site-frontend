@@ -467,7 +467,10 @@ Jalons prospectifs conservés par UX-01 :
 famille` est une page en 4 cartes F1 (situation familiale, filiation, régime matrimonial &
 donations, situation professionnelle) ; `Objectifs` est une page séparée en fin de parcours. Les
 deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawerXL`, sans navigation
-horizontale d'étapes.
+horizontale d'étapes. UX-03a.5 ajoute le polish visuel commun des pages internes ; UX-03a.6 pose le
+redesign pivot de `Foyer & famille` avec synthèse typographique, filiation sobre, cartes de saisie
+compactes et drawers structurés, sans bande `Points prioritaires` sur les pages internes et sans
+changement du modèle métier.
 
 | Champ                                                 | Contrat                                                                                                                                                        |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -544,6 +547,7 @@ horizontale d'étapes.
 État runtime : UX-03a.2 livre déjà une page cockpit `Actifs / passifs` minimaliste. Elle porte un
 inventaire déclaratif et des états honnêtes (`inventaire saisi`, `données partielles`, `à structurer
 F3`) sans afficher patrimoine net, droits PP/US/NP, droits successoraux ou graphe patrimonial. Le
+polish UX-03a.5 conserve deux montants saisis distincts, sans total consolidé ni ratio trompeur. Le
 contrat ci-dessous reste la cible **F3 réelle** qui remplacera cet inventaire déclaratif quand le
 graphe central sera disponible.
 
@@ -573,8 +577,10 @@ graphe central sera disponible.
 
 État runtime : UX-03a.3 livre déjà une page cockpit `Fiscalité` déclarative. Elle qualifie les
 données fiscales connues et les points à confirmer sans calculer l'IR depuis `/audit`, sans TMI
-calculée, sans optimisation réelle et sans hardcode fiscal. Le contrat ci-dessous décrit la cible
-fiscalité calculée, conditionnée par les moteurs et fondations concernés.
+calculée, sans optimisation réelle et sans hardcode fiscal. UX-03a.5 remplace le visuel fiscal par
+une synthèse factuelle compacte (RFR, revenus nets, TMI renseignée/non renseignée), sans donut ni
+ratio revenus/RFR. Le contrat ci-dessous décrit la cible fiscalité calculée, conditionnée par les
+moteurs et fondations concernés.
 
 | Champ                                                 | Contrat                                                                                                                                |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -760,20 +766,23 @@ section « Track UX Cockpit /audit ». Ici, seul l'ordre logique est rappelé :
 3. **UX-00b** — Tokens, showroom, checks design system.
 4. **UX-01** — Landing 3 cartes.
 5. **UX-02** — Rail dynamique.
-6. **F1.1** — budgetSynthese.
-7. **UX-03** — famille / filiation / régime / objectifs.
-8. **UX-03b** — budget & capacité.
-9. **F2** — evidence.
-10. **F3** — patrimoine PP/US/NP.
-11. **UX-05** — patrimoine / actifs / passifs.
-12. **UX-06a** — fiscalité / prévoyance / retraite.
-13. **pilote IFI**.
-14. **UX-06b** — IFI conditionnel.
-15. **F5** — société / organigramme / bilans.
-16. **UX-04** — sociétés / org-chart.
-17. **F6** — scénarios / radar / versioning.
-18. **UX-07** — pilotage réel.
-19. **UX-08** — polish.
+6. **UX-03a.0** — suppression export PPTX audit legacy.
+7. **UX-03a.1 → UX-03a.4** — pages internes Foyer, Actifs/passifs, Fiscalité, Objectifs et suppression finale du wizard.
+8. **UX-03a.5** — polish visuel des pages internes `/audit`.
+9. **UX-03a.6** — redesign pivot `Foyer & famille` et drawers premium.
+10. **F1.1** — budgetSynthese.
+11. **UX-03b** — budget & capacité.
+12. **F2** — evidence.
+13. **F3** — patrimoine PP/US/NP.
+14. **UX-05** — patrimoine / actifs / passifs.
+15. **UX-06a** — fiscalité / prévoyance / retraite.
+16. **pilote IFI**.
+17. **UX-06b** — IFI conditionnel.
+18. **F5** — société / organigramme / bilans.
+19. **UX-04** — sociétés / org-chart.
+20. **F6** — scénarios / radar / versioning.
+21. **UX-07** — pilotage réel.
+22. **UX-08** — polish final.
 
 > `docs/AUDIT_COCKPIT.md` est le contrat produit/design ; `docs/ROADMAP.md` porte le séquencement. Ne
 > pas créer de `docs/AUDIT_COCKPIT_ROADMAP.md`.

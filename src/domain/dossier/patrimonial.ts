@@ -1,4 +1,4 @@
-import type { ObjectifClient } from '@/domain/audit/types';
+import type { AuditAvatarAppearance, AuditAvatarKind, ObjectifClient } from '@/domain/audit/types';
 import type { SourceRef } from './types';
 
 export type DossierPatrimonialStatus = 'draft' | 'active' | 'archived';
@@ -50,6 +50,8 @@ export interface DossierMembre {
   nom?: string;
   dateNaissance?: string;
   profession?: string;
+  avatarKind?: AuditAvatarKind;
+  avatarAppearance?: AuditAvatarAppearance;
   parentPrincipal?: 'client' | 'conjoint';
   estCommun?: boolean;
   sourceRefIds: string[];

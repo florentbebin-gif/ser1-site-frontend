@@ -44,14 +44,24 @@ describe('AuditPage', () => {
     expect(screen.queryByRole('heading', { name: 'Situation familiale' })).not.toBeInTheDocument();
   });
 
-  it('ouvre la page Foyer & famille sans wizard puis revient par le rail', async () => {
-    render(<AuditPage />);
+  it('ouvre la page Foyer & famille en pivot sans wizard puis revient par le rail', async () => {
+    const { container } = render(<AuditPage />);
 
     await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
 
     expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Synthèse foyer' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Filiation & proches' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Saisie du foyer' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
+    expect(screen.queryByRole('button', { name: /Modifier les données/ })).toBeNull();
+    expect(screen.queryByText(/Pivot patrimonial/i)).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Situation familiale' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Filiation' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Filiation & proches' }).length).toBeGreaterThan(
+      1,
+    );
+    expect(container.querySelector('.audit-foyer-pivot')).not.toBeNull();
+    expect(container.querySelectorAll('.audit-status-badge').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Étape\s+1\s+sur\s+6/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Précédent/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Suivant/i })).not.toBeInTheDocument();
@@ -68,27 +78,56 @@ describe('AuditPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Situation familiale/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
+    expect(screen.queryByText('Dossier renseigné')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: /Continuer l.audit/ }));
 
-    await userEvent.click(screen.getByRole('button', { name: /Actifs — Inventaire déclaratif/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Actifs / passifs' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.getByText(/données partielles/)).toBeInTheDocument();
     expect(screen.queryByText(/patrimoine net/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Passer à Fiscalité/ })).toBeVisible();
 
     await userEvent.click(screen.getByRole('button', { name: /Fiscalité — Déclaratif/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Fiscalité' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.getByText(/sans calcul IR runtime depuis \/audit/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Répartition issue/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/TMI calculée/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Passer à Objectifs/ })).toBeVisible();
 
-    await userEvent.click(screen.getByRole('button', { name: /Objectifs/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Passer à Objectifs/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Objectifs' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.queryByText(/stratégie activable/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Revenir à la synthèse/ })).toBeVisible();
+  });
+
+  it('ouvre les drawers par clic sur les cartes internes premium', async () => {
+    render(<AuditPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
+
+    const situationCard = getCockpitCardButton(/Situation familiale/);
+    await userEvent.click(situationCard);
+    expect(screen.getByRole('dialog', { name: 'Situation familiale' })).toBeVisible();
+    expect(screen.getByRole('group', { name: /Apparence client principal/ })).toBeVisible();
+    await userEvent.click(screen.getByRole('button', { name: 'Fermer' }));
+
+    const filiationCard = getCockpitCardButton(/Filiation/);
+    await userEvent.click(filiationCard);
+    expect(screen.getByRole('dialog', { name: 'Filiation & proches' })).toBeVisible();
+    await userEvent.click(screen.getByRole('button', { name: 'Ajouter un enfant' }));
+    const childFirstNameInput = screen.getByLabelText('Prénom');
+    await userEvent.type(childFirstNameInput, 'Eva');
+    expect(childFirstNameInput).toHaveValue('Eva');
   });
 
   it('ouvre un drawer canonique depuis une carte F1', async () => {
     render(<AuditPage />);
 
     await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
-    await userEvent.click(screen.getAllByRole('button', { name: 'Compléter' })[0]!);
+    await userEvent.click(getCockpitCardButton(/Situation familiale/));
 
     expect(screen.getByRole('dialog', { name: 'Situation familiale' })).toHaveClass(
       'sim-drawer',
@@ -100,7 +139,7 @@ describe('AuditPage', () => {
     render(<AuditPage />);
 
     await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
-    const opener = screen.getAllByRole('button', { name: 'Compléter' })[0]!;
+    const opener = getCockpitCardButton(/Situation familiale/);
     await userEvent.click(opener);
 
     const closeButton = screen.getByRole('button', { name: 'Fermer' });
@@ -123,3 +162,11 @@ describe('AuditPage', () => {
     expect(screen.queryByRole('button', { name: /^Définir les objectifs client/ })).toBeNull();
   });
 });
+
+function getCockpitCardButton(name: RegExp): HTMLElement {
+  const card = screen
+    .getAllByRole('button', { name })
+    .find((element) => element.classList.contains('audit-cockpit-card'));
+  expect(card).toBeDefined();
+  return card!;
+}
