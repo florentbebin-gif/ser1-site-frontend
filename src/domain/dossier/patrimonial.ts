@@ -121,7 +121,6 @@ export interface DossierSituationFamiliale {
 export interface DossierRegimeMatrimonial {
   regime?: DossierRegimeMatrimonialCode;
   contratMariage: boolean;
-  dateContrat?: string;
   notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;

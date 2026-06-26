@@ -165,7 +165,6 @@ export interface SituationFamiliale {
 export interface SituationCivile {
   regimeMatrimonial?: RegimeMatrimonial;
   contratMariage: boolean;
-  dateContrat?: string;
   notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;

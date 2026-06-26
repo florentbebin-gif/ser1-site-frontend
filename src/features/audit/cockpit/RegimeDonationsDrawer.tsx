@@ -17,7 +17,6 @@ import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
   createDonation,
-  DateField,
   DrawerFooter,
   emptyToUndefined,
   fullName,
@@ -161,7 +160,7 @@ function RegimeMatrimonialSection({
 }): ReactElement {
   return (
     <AuditDrawerSection title="Régime matrimonial">
-      <AuditDrawerFieldGrid columns={2}>
+      <AuditDrawerFieldGrid>
         <SelectField
           label="Régime matrimonial"
           value={form.regimeMatrimonial ?? ''}
@@ -170,16 +169,6 @@ function RegimeMatrimonialSection({
             onChange((previous) => ({
               ...previous,
               regimeMatrimonial: emptyToUndefined(value) as SituationCivile['regimeMatrimonial'],
-            }))
-          }
-        />
-        <DateField
-          label="Date d’effet"
-          value={form.dateContrat ?? ''}
-          onChange={(dateContrat) =>
-            onChange((previous) => ({
-              ...previous,
-              dateContrat: emptyToUndefined(dateContrat),
             }))
           }
         />
@@ -341,7 +330,6 @@ function sanitizeHiddenCivilFields(
       ...form,
       regimeMatrimonial: undefined,
       contratMariage: false,
-      dateContrat: undefined,
       notaire: undefined,
       donationDernierVivantMr: undefined,
       donationDernierVivantMme: undefined,

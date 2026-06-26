@@ -2090,17 +2090,20 @@
 .audit-testament-grid {
   display: grid;
   grid-template-columns: 1fr;
+  align-items: start;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .audit-testament-grid[data-columns='2'] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
 }
 
 .audit-testament-card {
   display: grid;
   gap: var(--space-3);
-  min-height: 100%;
+  min-width: 0;
+  min-height: 0;
   padding: var(--space-3);
   border: 1px solid color-mix(in srgb, var(--border-subtle) 76%, transparent);
   border-radius: var(--radius-lg);
@@ -2109,14 +2112,17 @@
 
 .audit-testament-card__head {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .audit-testament-card__body {
   display: grid;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 /* Bandes « module verrouillé / à venir » — calmes et fines. */

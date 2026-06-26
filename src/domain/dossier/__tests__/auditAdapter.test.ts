@@ -74,7 +74,6 @@ describe('buildDossierPatrimonialFromAudit', () => {
     audit.situationCivile = {
       regimeMatrimonial: 'separation_biens',
       contratMariage: true,
-      dateContrat: '2005-05-01',
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
       donationDernierVivantMme: true,
@@ -177,7 +176,6 @@ describe('buildDossierPatrimonialFromAudit', () => {
     expect(dossier.regimeMatrimonial).toMatchObject({
       regime: 'separation_biens',
       contratMariage: true,
-      dateContrat: '2005-05-01',
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
       donationDernierVivantMme: true,

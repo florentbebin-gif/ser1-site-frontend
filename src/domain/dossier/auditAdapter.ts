@@ -101,7 +101,6 @@ export function buildDossierPatrimonialFromAudit(
       ? {
           regime: audit.situationCivile.regimeMatrimonial,
           contratMariage: audit.situationCivile.contratMariage,
-          dateContrat: audit.situationCivile.dateContrat,
           notaire: audit.situationCivile.notaire,
           donationDernierVivantMr: audit.situationCivile.donationDernierVivantMr,
           donationDernierVivantMme: audit.situationCivile.donationDernierVivantMme,
@@ -205,7 +204,6 @@ export function mergeDossierPatrimonialIntoAuditDraft(
       regimeMatrimonial: dossier.regimeMatrimonial?.regime,
       contratMariage:
         dossier.regimeMatrimonial?.contratMariage ?? draft.situationCivile.contratMariage,
-      dateContrat: dossier.regimeMatrimonial?.dateContrat,
       notaire: dossier.regimeMatrimonial?.notaire,
       donationDernierVivantMr: dossier.regimeMatrimonial?.donationDernierVivantMr,
       donationDernierVivantMme: dossier.regimeMatrimonial?.donationDernierVivantMme,
@@ -272,7 +270,6 @@ function hasRegimeBlockData(situationCivile: SituationCivile): boolean {
   return Boolean(
     situationCivile.regimeMatrimonial ||
     situationCivile.contratMariage ||
-    situationCivile.dateContrat ||
     situationCivile.notaire ||
     situationCivile.donationDernierVivantMr ||
     situationCivile.donationDernierVivantMme ||
