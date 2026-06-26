@@ -130,7 +130,7 @@ function FoyerMiniFiliation({
 }: {
   viewModel: AuditCockpitPageProps['viewModel'];
 }): ReactElement {
-  const { principal, conjoint, enfants, filiationHasData } = viewModel.synthese;
+  const { principal, conjoint, enfants, proches, filiationHasData } = viewModel.synthese;
   return (
     <section className="audit-foyer-filiation" aria-labelledby="audit-foyer-filiation-title">
       <header className="audit-foyer-card-head">
@@ -146,6 +146,7 @@ function FoyerMiniFiliation({
           principal={principal}
           conjoint={conjoint}
           enfants={enfants}
+          proches={proches}
           hasData={filiationHasData}
           mode="compact"
         />

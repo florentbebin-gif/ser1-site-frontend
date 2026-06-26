@@ -249,6 +249,65 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.dossierClientLabel).toBe('Famille Martin');
   });
 
+  it('remonte les proches utiles au schéma de filiation', () => {
+    const vm = vmFromAudit((audit) => {
+      audit.situationFamiliale.mr = {
+        prenom: 'Jean',
+        nom: 'Martin',
+        dateNaissance: '1980-01-01',
+      };
+      audit.situationFamiliale.enfants = [
+        {
+          id: 'enfant-lea',
+          prenom: 'Léa',
+          nom: 'Martin',
+          dateNaissance: '2010-05-01',
+          estCommun: true,
+        },
+      ];
+      audit.situationFamiliale.proches = [
+        {
+          id: 'proche-parent',
+          lienParente: 'parent',
+          prenom: 'Anne',
+          nom: 'Martin',
+          dateNaissance: '1950-01-01',
+          rattachement: 'client',
+        },
+        {
+          id: 'proche-petit-enfant',
+          lienParente: 'petit_enfant',
+          prenom: 'Noé',
+          nom: 'Martin',
+          dateNaissance: '2030-01-01',
+          parentEnfantId: 'enfant-lea',
+        },
+        {
+          id: 'proche-oncle',
+          lienParente: 'oncle_tante',
+          prenom: 'Paul',
+          nom: 'Martin',
+          dateNaissance: '1972-01-01',
+          rattachementBranche: 'client_paternelle',
+        },
+      ];
+    });
+
+    expect(vm.synthese.proches.map((proche) => proche.prenom)).toEqual(['Anne', 'Noé', 'Paul']);
+    expect(vm.synthese.proches.map((proche) => proche.lienParente)).toEqual([
+      'parent',
+      'petit_enfant',
+      'oncle_tante',
+    ]);
+    expect(vm.synthese.proches.map((proche) => proche.avatarKind)).toEqual([
+      'femme',
+      'garcon',
+      'homme',
+    ]);
+    expect(vm.synthese.proches[1]?.parentEnfantId).toBe('enfant-lea');
+    expect(vm.synthese.filiationHasData).toBe(true);
+  });
+
   it('affiche un fallback famille quand plusieurs membres existent sans nom principal', () => {
     const vm = vmFromAudit((audit) => {
       audit.situationFamiliale.mr = {

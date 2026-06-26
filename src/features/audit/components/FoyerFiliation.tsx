@@ -10,7 +10,7 @@
 
 import { useId, type ReactElement } from 'react';
 
-import type { AuditAvatarAppearance } from '@/domain/audit/types';
+import type { AuditAvatarAppearance, ProcheLien } from '@/domain/audit/types';
 
 import type { AuditLandingAvatarKind, AuditLandingMember } from '../auditLandingViewModel';
 
@@ -20,6 +20,7 @@ interface FoyerFiliationProps {
   principal: AuditLandingMember | null;
   conjoint: AuditLandingMember | null;
   enfants: AuditLandingMember[];
+  proches?: AuditLandingMember[];
   hasData: boolean;
   mode?: 'landing' | 'compact';
 }
@@ -27,11 +28,10 @@ interface FoyerFiliationProps {
 const PILL_HEIGHT = 42;
 const AVATAR_R = 12;
 const Y_PARENTS = 12;
-const Y_CHILDREN = 108;
 const BOND_GAP = 20;
 const CHILD_GAP = 12;
 const MARGIN = 8;
-type NodeVariant = 'parent' | 'enfant';
+type NodeVariant = 'parent' | 'enfant' | 'proche';
 
 interface LaidOutNode {
   x: number;
@@ -40,14 +40,20 @@ interface LaidOutNode {
   variant: NodeVariant;
   avatarKind: AuditLandingAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
+  memberId: string;
+  localId?: string;
   estCommun?: boolean;
   parentPrincipal?: 'client' | 'conjoint';
+  lienParente?: ProcheLien;
+  parentEnfantId?: string;
+  rattachementBranche?: string;
 }
 
 export function FoyerFiliation({
   principal,
   conjoint,
   enfants,
+  proches = [],
   hasData,
   mode = 'landing',
 }: FoyerFiliationProps): ReactElement {
@@ -61,18 +67,31 @@ export function FoyerFiliation({
   const parents = [principal, conjoint].filter((member): member is AuditLandingMember =>
     Boolean(member),
   );
-  const labels = [...parents, ...enfants].flatMap((member) => [
+  const ascendants = proches.filter((member) => member.lienParente !== 'petit_enfant');
+  const petitsEnfants = proches.filter((member) => member.lienParente === 'petit_enfant');
+  const labels = [...parents, ...enfants, ...proches].flatMap((member) => [
     labelForMember(member, member.role === 'enfant' ? 'enfant' : 'parent', isCompact),
     ageLabel(member),
+    member.lienParente ? relationLabel(member.lienParente) : '',
   ]);
   const pillWidth = isCompact
     ? clamp(132, Math.max(...labels.map((label) => label.length)) * 5.8 + 58, 172)
     : clamp(66, Math.max(...labels.map((label) => label.length)) * 6.2 + 30, 86);
   const pillHeight = isCompact ? 54 : PILL_HEIGHT;
-  const yChildren = isCompact ? 128 : Y_CHILDREN;
+  const hasAscendants = ascendants.length > 0;
+  const hasPetitsEnfants = petitsEnfants.length > 0;
+  const yAscendants = MARGIN;
+  const yParents = hasAscendants ? (isCompact ? 84 : 68) : Y_PARENTS;
+  const yChildren = enfants.length > 0 ? yParents + (isCompact ? 116 : 96) : 0;
+  const yPetitsEnfants = hasPetitsEnfants
+    ? enfants.length > 0
+      ? yChildren + (isCompact ? 88 : 64)
+      : yParents + (isCompact ? 116 : 96)
+    : 0;
 
   const parentsWidth =
     parents.length === 2 ? pillWidth * 2 + BOND_GAP : parents.length === 1 ? pillWidth : 0;
+  const ascendantsWidth = groupWidth(ascendants.length, pillWidth);
   const commonMembers = enfants.filter((member) => member.estCommun);
   const clientPreviousMembers = enfants.filter(
     (member) => !member.estCommun && member.parentPrincipal !== 'conjoint',
@@ -94,13 +113,39 @@ export function FoyerFiliation({
         conjointPreviousWidth +
         (clientPreviousWidth > 0 && conjointPreviousWidth > 0 ? CHILD_GAP : 0);
   const childrenWidth = enfants.length > 0 ? centeredChildrenWidth : 0;
+  const petitsEnfantsWidth = groupWidth(petitsEnfants.length, pillWidth);
   const groupPadding = isCompact && commonMembers.length > 0 ? 12 : 0;
-  const innerWidth = Math.max(parentsWidth, childrenWidth, pillWidth);
+  const innerWidth = Math.max(
+    ascendantsWidth,
+    parentsWidth,
+    childrenWidth,
+    petitsEnfantsWidth,
+    pillWidth,
+  );
   const width = innerWidth + MARGIN * 2 + groupPadding * 2;
-  const height =
-    enfants.length > 0
-      ? yChildren + pillHeight + MARGIN + groupPadding
-      : Y_PARENTS + pillHeight + MARGIN;
+  const height = Math.max(
+    hasPetitsEnfants ? yPetitsEnfants + pillHeight + MARGIN : 0,
+    enfants.length > 0 ? yChildren + pillHeight + MARGIN + groupPadding : 0,
+    yParents + pillHeight + MARGIN,
+  );
+
+  const ascendantNodes: LaidOutNode[] = [];
+  const ascendantsStart = (width - ascendantsWidth) / 2;
+  ascendants.forEach((member, index) => {
+    ascendantNodes.push({
+      x: ascendantsStart + index * (pillWidth + CHILD_GAP),
+      label: labelForMember(member, 'parent', isCompact),
+      sublabel: sublabelForProche(member),
+      variant: 'proche',
+      avatarKind: member.avatarKind,
+      avatarAppearance: member.avatarAppearance,
+      memberId: member.id,
+      localId: member.localId,
+      lienParente: member.lienParente,
+      parentPrincipal: member.parentPrincipal,
+      rattachementBranche: member.rattachementBranche,
+    });
+  });
 
   const parentNodes: LaidOutNode[] = [];
   const parentsStart = (width - parentsWidth) / 2;
@@ -112,6 +157,8 @@ export function FoyerFiliation({
       variant: 'parent',
       avatarKind: member.avatarKind,
       avatarAppearance: member.avatarAppearance,
+      memberId: member.id,
+      localId: member.localId,
     });
   });
 
@@ -164,14 +211,33 @@ export function FoyerFiliation({
         variant: 'enfant',
         avatarKind: member.avatarKind,
         avatarAppearance: member.avatarAppearance,
+        memberId: member.id,
+        localId: member.localId,
         estCommun: member.estCommun,
         parentPrincipal: member.parentPrincipal,
       });
     });
   }
 
+  const petitEnfantNodes: LaidOutNode[] = [];
+  const petitsEnfantsStart = (width - petitsEnfantsWidth) / 2;
+  petitsEnfants.forEach((member, index) => {
+    petitEnfantNodes.push({
+      x: petitsEnfantsStart + index * (pillWidth + CHILD_GAP),
+      label: labelForMember(member, 'enfant', isCompact),
+      sublabel: sublabelForProche(member),
+      variant: 'proche',
+      avatarKind: member.avatarKind,
+      avatarAppearance: member.avatarAppearance,
+      memberId: member.id,
+      localId: member.localId,
+      lienParente: member.lienParente,
+      parentEnfantId: member.parentEnfantId,
+    });
+  });
+
   const junctionX = width / 2;
-  const junctionY = Y_PARENTS + pillHeight;
+  const junctionY = yParents + pillHeight;
   const childTopY = yChildren;
   const [parentA, parentB] = parentNodes;
   const commonChildNodes = childNodes.filter((node) => node.estCommun);
@@ -208,10 +274,27 @@ export function FoyerFiliation({
         <FoyerAvatarClipDef clipId={clipId} />
       </defs>
 
+      {ascendantNodes.map((node, index) => {
+        const target = targetParentFor(node, parentA, parentB);
+        if (!target) return null;
+        return (
+          <path
+            key={`ascendant-edge-${index}`}
+            className="audit-fil__edge audit-fil__edge--proche"
+            d={verticalCurve(
+              node.x + pillWidth / 2,
+              yAscendants + pillHeight,
+              target.x + pillWidth / 2,
+              yParents,
+            )}
+          />
+        );
+      })}
+
       {parentA && parentB && (
         <path
           className="audit-fil__edge"
-          d={`M ${round(parentA.x + pillWidth)} ${Y_PARENTS + pillHeight / 2} H ${round(parentB.x)}`}
+          d={`M ${round(parentA.x + pillWidth)} ${yParents + pillHeight / 2} H ${round(parentB.x)}`}
         />
       )}
 
@@ -253,7 +336,7 @@ export function FoyerFiliation({
               ? (parentB ?? parentA)
               : (parentA ?? parentB);
         const startX = parentSource ? parentSource.x + pillWidth / 2 : junctionX;
-        const startY = parentSource ? Y_PARENTS + pillHeight : junctionY;
+        const startY = parentSource ? yParents + pillHeight : junctionY;
         const c1 = startY + (childTopY - startY) * 0.45;
         const c2 = childTopY - (childTopY - startY) * 0.45;
         return (
@@ -267,9 +350,28 @@ export function FoyerFiliation({
         );
       })}
 
+      {petitEnfantNodes.map((node, index) => {
+        const parentSource =
+          childNodes.find(
+            (child) =>
+              child.memberId === node.parentEnfantId || child.localId === node.parentEnfantId,
+          ) ?? null;
+        const startX = parentSource ? parentSource.x + pillWidth / 2 : junctionX;
+        const startY = parentSource ? yChildren + pillHeight : yParents + pillHeight;
+        return (
+          <path
+            key={`petit-enfant-edge-${index}`}
+            className="audit-fil__edge audit-fil__edge--proche"
+            d={verticalCurve(startX, startY, node.x + pillWidth / 2, yPetitsEnfants)}
+          />
+        );
+      })}
+
       {[
-        ...parentNodes.map((node) => ({ node, y: Y_PARENTS })),
+        ...ascendantNodes.map((node) => ({ node, y: yAscendants })),
+        ...parentNodes.map((node) => ({ node, y: yParents })),
         ...childNodes.map((node) => ({ node, y: yChildren })),
+        ...petitEnfantNodes.map((node) => ({ node, y: yPetitsEnfants })),
       ].map(({ node, y }, index) => (
         <FiliationPill
           key={`node-${index}`}
@@ -395,6 +497,36 @@ function labelForMember(
 
 function ageLabel(member: AuditLandingMember): string {
   return member.age == null ? 'Âge à compléter' : `${member.age} ans`;
+}
+
+function sublabelForProche(member: AuditLandingMember): string {
+  const relation = member.lienParente ? relationLabel(member.lienParente) : 'Proche';
+  const age = ageLabel(member);
+  return age === 'Âge à compléter' ? relation : `${relation} · ${age}`;
+}
+
+function relationLabel(lien: ProcheLien): string {
+  if (lien === 'petit_enfant') return 'Petit-enfant';
+  if (lien === 'parent') return 'Parent';
+  if (lien === 'frere_soeur') return 'Frère/Sœur';
+  if (lien === 'oncle_tante') return 'Oncle/Tante';
+  return 'Proche';
+}
+
+function targetParentFor(
+  node: LaidOutNode,
+  principal: LaidOutNode | undefined,
+  conjoint: LaidOutNode | undefined,
+): LaidOutNode | undefined {
+  if (node.parentPrincipal === 'conjoint') return conjoint ?? principal;
+  if (node.rattachementBranche?.startsWith('conjoint')) return conjoint ?? principal;
+  return principal ?? conjoint;
+}
+
+function verticalCurve(startX: number, startY: number, endX: number, endY: number): string {
+  const c1 = startY + (endY - startY) * 0.45;
+  const c2 = endY - (endY - startY) * 0.45;
+  return `M ${round(startX)} ${round(startY)} C ${round(startX)} ${round(c1)} ${round(endX)} ${round(c2)} ${round(endX)} ${round(endY)}`;
 }
 
 function round(value: number): number {

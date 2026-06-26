@@ -111,10 +111,45 @@ describe('AuditLanding', () => {
   });
 
   it('rend un schéma de filiation', () => {
-    const { container } = renderLanding(withFoyer);
+    const { container } = renderLanding((audit) => {
+      withFoyer(audit);
+      audit.situationFamiliale.enfants[0] = {
+        ...audit.situationFamiliale.enfants[0]!,
+        id: 'enfant-lea',
+      };
+      audit.situationFamiliale.proches = [
+        {
+          id: 'proche-parent',
+          lienParente: 'parent',
+          prenom: 'Anne',
+          nom: 'Martin',
+          dateNaissance: '1950-01-01',
+          rattachement: 'client',
+        },
+        {
+          id: 'proche-petit-enfant',
+          lienParente: 'petit_enfant',
+          prenom: 'Noé',
+          nom: 'Martin',
+          dateNaissance: '2025-01-01',
+          parentEnfantId: 'enfant-lea',
+        },
+        {
+          id: 'proche-oncle',
+          lienParente: 'oncle_tante',
+          prenom: 'Paul',
+          nom: 'Martin',
+          dateNaissance: '1972-01-01',
+          rattachementBranche: 'client_paternelle',
+        },
+      ];
+    });
     const synthese = within(section('Synthèse dossier'));
 
     expect(synthese.getByRole('img', { name: 'Schéma de filiation du foyer' })).toBeInTheDocument();
+    expect(container).toHaveTextContent('Anne');
+    expect(container).toHaveTextContent('Noé');
+    expect(container).toHaveTextContent('Paul');
     expect(container.querySelector('.audit-fil__avatar-image')).toBeInTheDocument();
     expect(container.querySelector('.audit-fil__avatar-face')).toBeNull();
   });

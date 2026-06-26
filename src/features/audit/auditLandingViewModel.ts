@@ -42,7 +42,7 @@ export interface AuditLandingAction {
   destination: AuditLandingDestination;
 }
 
-export type AuditLandingMemberRole = 'principal' | 'conjoint' | 'enfant';
+export type AuditLandingMemberRole = 'principal' | 'conjoint' | 'enfant' | 'proche';
 export type AuditLandingAvatarKind = AuditAvatarKind;
 
 export interface AuditLandingCompletionHint {
@@ -66,6 +66,10 @@ export interface AuditLandingMember {
   parentPrincipal?: 'client' | 'conjoint';
   avatarKind: AuditLandingAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
+  lienParente?: DossierMembre['lienParente'];
+  localId?: string;
+  parentEnfantId?: string;
+  rattachementBranche?: DossierMembre['rattachementBranche'];
 }
 
 export interface AuditLandingSyntheseCard {
@@ -73,6 +77,7 @@ export interface AuditLandingSyntheseCard {
   principal: AuditLandingMember | null;
   conjoint: AuditLandingMember | null;
   enfants: AuditLandingMember[];
+  proches: AuditLandingMember[];
   situationLabel: string | null;
   /** Parts de quotient familial dérivées de F1 (hypothèse enfants à charge). */
   partsFiscales: number | null;
@@ -201,10 +206,12 @@ function buildSyntheseCard(
   const principalRaw = findMembre(dossier, dossier.foyer.membrePrincipalId);
   const conjointRaw = isCouple ? findMembre(dossier, dossier.foyer.conjointId) : undefined;
   const enfantsRaw = dossier.membres.filter((membre) => membre.role === 'enfant');
+  const prochesRaw = collectProches(dossier);
 
   const principal = principalRaw ? toMember(principalRaw, 'principal', now) : null;
   const conjoint = conjointRaw ? toMember(conjointRaw, 'conjoint', now) : null;
   const enfants = enfantsRaw.map((enfant) => toMember(enfant, 'enfant', now));
+  const proches = prochesRaw.map((proche) => toMember(proche, 'proche', now));
 
   const partsFiscales = engaged ? computeParts(statut, enfants.length) : null;
   const situationLabel = engaged ? SITUATION_FAMILIALE_LABELS[statut] : null;
@@ -214,10 +221,11 @@ function buildSyntheseCard(
     principal,
     conjoint,
     enfants,
+    proches,
     situationLabel,
     partsFiscales,
     tmiLabel: 'à venir',
-    filiationHasData: Boolean(principal) || enfants.length > 0,
+    filiationHasData: Boolean(principal) || enfants.length > 0 || proches.length > 0,
     etatCivilCompletion: buildEtatCivilCompletion({
       principal,
       conjoint,
@@ -376,6 +384,18 @@ function findMembre(dossier: DossierPatrimonial, id: string | null): DossierMemb
   return dossier.membres.find((membre) => membre.id === id);
 }
 
+function collectProches(dossier: DossierPatrimonial): DossierMembre[] {
+  const byId = new Map(dossier.membres.map((membre) => [membre.id, membre]));
+  const ordered = dossier.foyer.procheIds
+    .map((id) => byId.get(id))
+    .filter((membre): membre is DossierMembre => Boolean(membre));
+  const orderedIds = new Set(ordered.map((membre) => membre.id));
+  const remaining = dossier.membres.filter(
+    (membre) => membre.role === 'autre' && !orderedIds.has(membre.id),
+  );
+  return [...ordered, ...remaining];
+}
+
 function toMember(
   membre: DossierMembre,
   role: AuditLandingMemberRole,
@@ -393,8 +413,12 @@ function toMember(
     role,
     estCommun: membre.estCommun ?? true,
     parentPrincipal: membre.parentPrincipal,
-    avatarKind: membre.avatarKind ?? inferAvatarKind(role, prenom || nom || ''),
+    avatarKind: membre.avatarKind ?? inferAvatarKind(role, prenom || nom || '', membre.lienParente),
     avatarAppearance: membre.avatarAppearance,
+    lienParente: membre.lienParente,
+    localId: membre.localId,
+    parentEnfantId: membre.parentEnfantId,
+    rattachementBranche: membre.rattachementBranche,
   };
 }
 
@@ -444,9 +468,14 @@ function buildEtatCivilCompletion({
   };
 }
 
-function inferAvatarKind(role: AuditLandingMemberRole, label: string): AuditLandingAvatarKind {
+function inferAvatarKind(
+  role: AuditLandingMemberRole,
+  label: string,
+  lienParente?: DossierMembre['lienParente'],
+): AuditLandingAvatarKind {
   if (role === 'principal') return 'homme';
   if (role === 'conjoint') return 'femme';
+  if (role === 'proche' && lienParente !== 'petit_enfant') return inferAdultAvatarKind(label);
 
   const normalized = label
     .normalize('NFD')
@@ -472,6 +501,7 @@ function inferAvatarKind(role: AuditLandingMemberRole, label: string): AuditLand
     'louis',
     'marc',
     'noah',
+    'noe',
     'paul',
     'pierre',
     'thomas',
@@ -481,6 +511,19 @@ function inferAvatarKind(role: AuditLandingMemberRole, label: string): AuditLand
   if (feminineFirstNames.has(normalized)) return 'fille';
   if (masculineFirstNames.has(normalized)) return 'garcon';
   return normalized.endsWith('a') || normalized.endsWith('e') ? 'fille' : 'garcon';
+}
+
+function inferAdultAvatarKind(label: string): AuditLandingAvatarKind {
+  const normalized = label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  const feminineFirstNames = new Set(['alice', 'anne', 'camille', 'claire', 'marie', 'sophie']);
+  const masculineFirstNames = new Set(['jean', 'marc', 'paul', 'pierre', 'thomas']);
+  if (feminineFirstNames.has(normalized)) return 'femme';
+  if (masculineFirstNames.has(normalized)) return 'homme';
+  return normalized.endsWith('a') || normalized.endsWith('e') ? 'femme' : 'homme';
 }
 
 function computeAge(dateNaissance: string | undefined, now: Date): number | null {

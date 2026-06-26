@@ -180,6 +180,7 @@ function SyntheseCard({ card, onOpenAudit }: SyntheseCardProps): ReactElement {
               principal={card.principal}
               conjoint={card.conjoint}
               enfants={card.enfants}
+              proches={card.proches}
               hasData={card.filiationHasData}
             />
           </Tile>

@@ -826,6 +826,15 @@
   stroke: color-mix(in srgb, var(--state-info) 30%, var(--border-default));
 }
 
+.audit-fil__node--proche rect {
+  fill: color-mix(in srgb, var(--surface-muted) 72%, var(--surface-card));
+  stroke: color-mix(in srgb, var(--data-secondary) 30%, var(--border-default));
+}
+
+.audit-fil__edge--proche {
+  stroke: color-mix(in srgb, var(--data-secondary) 40%, var(--border-strong));
+}
+
 .audit-fil__avatar-image {
   pointer-events: none;
 }
