@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 
 import { SimAmountInputPercent } from '@/components/ui/sim';
-import { IconLock } from '@/icons/ui';
 
 export function PercentField({
   label,
@@ -59,30 +58,6 @@ export function TagToggle({
 /** Rangée de pastilles (wrap, pas de scroll horizontal). */
 export function TagRow({ children }: { children: ReactNode }): ReactElement {
   return <div className="audit-tag-row">{children}</div>;
-}
-
-/** Bande fine « module verrouillé / à venir » — alternative calme à un gros panneau. */
-export function LockedRow({
-  icon,
-  title,
-  detail,
-}: {
-  icon: ReactElement;
-  title: string;
-  detail: string;
-}): ReactElement {
-  return (
-    <div className="audit-locked-row" aria-disabled="true">
-      <span className="audit-locked-row__icon" aria-hidden="true">
-        {icon}
-      </span>
-      <div className="audit-locked-row__copy">
-        <strong>{title}</strong>
-        <span>{detail}</span>
-      </div>
-      <IconLock className="audit-locked-row__lock" />
-    </div>
-  );
 }
 
 export function ChipMultiSelect<T extends string>({

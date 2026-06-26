@@ -2,16 +2,22 @@ import type {
   AuditAvatarAppearance,
   AuditAvatarKind,
   AuditPersonRef,
+  AncienneteCnbf,
+  AtexaClasse,
   AvantageMatrimonial,
+  ClassePrevoyance,
+  ClasseRetraite,
   CaisseRetraite,
   DdvOption,
   DonationQualificationRapport,
+  FichePaieAssimileSalarie,
+  ModeExerciceTns,
   NatureActivite,
   NiveauScolaire,
   ObjectifClient,
   ProcheLien,
   ProcheRattachementBranche,
-  ProfessionCsp,
+  ProfessionLiberaleCategorie,
   RenonciationPortee,
   StatutConventionnel,
   StatutSocial,
@@ -78,12 +84,25 @@ export interface DossierMembre {
   nationalite?: string;
   handicap?: boolean;
   profession?: string;
-  csp?: ProfessionCsp;
   natureActivite?: NatureActivite;
   statutSocial?: StatutSocial;
   caisseRetraite?: CaisseRetraite;
+  modeExercice?: ModeExerciceTns;
+  remunerationMandatPct?: number;
   statutConventionnel?: StatutConventionnel;
   tauxPriseEnChargeCpam?: number;
+  classePrevoyance?: ClassePrevoyance;
+  classeRetraite?: ClasseRetraite;
+  biologisteConventionne?: boolean;
+  ancienneteCnbf?: AncienneteCnbf;
+  prestationSermentAvant2014?: boolean;
+  regimeColmarMetz?: boolean;
+  moyenneProduitsEtude?: number;
+  commissionsBrutes?: number;
+  atexa?: AtexaClasse;
+  professionLiberaleReglementee?: boolean;
+  professionLiberaleCategorie?: ProfessionLiberaleCategorie;
+  fichePaieAssimileSalarie?: FichePaieAssimileSalarie;
   lienParente?: ProcheLien;
   decede?: boolean;
   fiscalementACharge?: boolean;

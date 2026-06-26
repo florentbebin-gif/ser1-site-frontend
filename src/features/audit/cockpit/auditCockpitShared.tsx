@@ -241,17 +241,26 @@ export function SelectField({
   label,
   value,
   options,
+  forced = false,
   onChange,
 }: {
   label: string;
   value: string;
   options: SimSelectOption[];
+  forced?: boolean;
   onChange: (value: string) => void;
 }): ReactElement {
   const id = useId();
   return (
     <SimFieldShell label={label} controlId={id}>
-      <SimSelect id={id} value={value} options={options} onChange={onChange} align="left" />
+      <SimSelect
+        id={id}
+        value={value}
+        options={options}
+        onChange={onChange}
+        align="left"
+        forced={forced}
+      />
     </SimFieldShell>
   );
 }

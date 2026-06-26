@@ -29,6 +29,8 @@ function expectTextBefore(first: string, second: string) {
 describe('FiliationDrawer', () => {
   it('propose deux boutons distincts et un état vide combiné', () => {
     renderDrawer();
+    expect(screen.getByText('Enfants et autres proches rattachés au foyer.')).toBeVisible();
+    expect(screen.queryByText('Enfants et autres proches rattachés au foyer F1.')).toBeNull();
     expect(screen.getByRole('button', { name: 'Ajouter un enfant' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Ajouter un proche' })).toBeVisible();
     expect(screen.getByText('Aucun enfant ni proche renseigné.')).toBeVisible();

@@ -159,13 +159,20 @@ export function AuditDrawerSection({
   title,
   description,
   children,
+  className,
+  density,
 }: {
-  title: string;
+  title: ReactNode;
   description?: string;
   children: ReactNode;
+  className?: string;
+  density?: 'simple' | 'rich';
 }): ReactElement {
   return (
-    <section className="audit-drawer-section">
+    <section
+      className={['audit-drawer-section', className].filter(Boolean).join(' ')}
+      data-density={density}
+    >
       <header className="audit-drawer-section__header">
         <h3 className="audit-drawer-section__title">{title}</h3>
       </header>

@@ -30,6 +30,10 @@ describe('RegimeDonationsDrawer', () => {
     });
 
     expect(screen.getByRole('heading', { name: 'Libéralités & transmission' })).toBeVisible();
+    expect(screen.getByText('Régime, donations et testaments.')).toBeVisible();
+    expect(
+      screen.queryByText('Régime, donations et testaments consignés dans le socle F1.'),
+    ).toBeNull();
   });
 
   it('masque régime, DDV et avantages matrimoniaux pour un célibataire', () => {

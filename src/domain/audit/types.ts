@@ -1,11 +1,6 @@
-/**
- * Types pour l'Audit Patrimonial
- */
-
 import type { DonationDernierVivantOption, RegimeMatrimonial } from '../../engine/succession/civil';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier/patrimonial';
 
-// Situation familiale
 export type AuditAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
 export type AuditAvatarSkinTone = 'clair' | 'fonce';
 export type AuditAvatarAge = 'adulte' | 'senior';
@@ -43,14 +38,6 @@ export type TestamentDispositionType =
   | 'legs_universel'
   | 'legs_titre_universel'
   | 'legs_particulier';
-export type ProfessionCsp =
-  | 'dirigeant'
-  | 'salarie_cadre'
-  | 'salarie_non_cadre'
-  | 'profession_liberale'
-  | 'independant'
-  | 'retraite'
-  | 'sans_activite';
 export type NatureActivite =
   | 'salarie'
   | 'periode_assimilee'
@@ -58,19 +45,118 @@ export type NatureActivite =
   | 'micro_entreprise'
   | 'sans_activite';
 export type StatutSocial =
+  | 'salarie_non_cadre_prive'
+  | 'salarie_cadre_prive'
+  | 'salarie_non_cadre_agricole'
+  | 'salarie_cadre_agricole'
+  | 'salarie_non_titulaire_etat'
+  | 'clerc_notaire'
+  | 'fonctionnaire'
+  | 'expert_comptable_salarie'
+  | 'avocat_salarie'
   | 'tns_article_62'
-  | 'gerant_minoritaire'
+  | 'tns_individuel'
   | 'assimile_salarie'
-  | 'non_renseigne';
+  | 'micro_entrepreneur'
+  | 'chomage'
+  | 'maladie_invalidite'
+  | 'retraite'
+  | 'militaire'
+  | 'sans_activite';
 export type CaisseRetraite =
+  | 'ssi_commercant'
+  | 'ssi_artisan'
+  | 'carcd'
+  | 'carsf'
   | 'carmf'
   | 'carpimko'
+  | 'carpv'
+  | 'cavamac'
+  | 'cavec'
+  | 'cavp'
   | 'cipav'
-  | 'cnav'
+  | 'cnbf'
+  | 'crn'
   | 'msa'
-  | 'ircantec'
-  | 'non_renseignee';
-export type StatutConventionnel = 'secteur_1' | 'secteur_2' | 'non_conventionne' | 'non_applicable';
+  | 'regime_general';
+export type StatutConventionnel = 'secteur_1' | 'secteur_2' | 'oui' | 'non_conventionne';
+export type ModeExerciceTns = 'entreprise_individuelle_ir' | 'societe_is';
+export type ProfessionLiberaleCategorie = 'sante' | 'juridique_judiciaire' | 'technique_cadre_vie';
+export type ClassePrevoyance =
+  | 'carpv_minimum'
+  | 'carpv_medium'
+  | 'carpv_maximum'
+  | 'cavec_nc'
+  | 'cavec_1'
+  | 'cavec_2'
+  | 'cavec_3'
+  | 'cavec_4';
+export type ClasseRetraite =
+  | 'carpv_nc'
+  | 'carpv_ss1'
+  | 'carpv_ss2'
+  | 'carpv_s1'
+  | 'carpv_s2'
+  | 'carpv_a'
+  | 'carpv_b'
+  | 'carpv_c'
+  | 'carpv_d'
+  | 'carpv_e'
+  | 'cavec_nc'
+  | 'cavec_a'
+  | 'cavec_b'
+  | 'cavec_c'
+  | 'cavec_d'
+  | 'cavec_e'
+  | 'cavec_f'
+  | 'cavec_g'
+  | 'cavec_h'
+  | 'cavec_i'
+  | 'cavp_3'
+  | 'cavp_4'
+  | 'cavp_5'
+  | 'cavp_6'
+  | 'cavp_7'
+  | 'cavp_8'
+  | 'cavp_9'
+  | 'cavp_10'
+  | 'cavp_11'
+  | 'cavp_12'
+  | 'cavp_13'
+  | 'cnbf_c1'
+  | 'cnbf_c2'
+  | 'cnbf_c2_plus'
+  | 'crn_nc'
+  | 'crn_1'
+  | 'crn_2'
+  | 'crn_3'
+  | 'crn_4'
+  | 'crn_5'
+  | 'crn_6'
+  | 'crn_7'
+  | 'crn_8';
+export type AncienneteCnbf = '1' | '2' | '3' | '4' | '5' | '6_plus';
+export type AtexaClasse = 'a' | 'b' | 'c' | 'd' | 'e';
+export type EffectifSalarie = 'moins_11' | 'entre_11_49' | 'a_partir_50';
+export type AffiliationCavecAssimile = 'non' | 'classe_c' | 'classe_d';
+
+export interface FichePaieAssimileSalarie {
+  tauxActivitePct?: number;
+  accidentTravailPct?: number;
+  versementTransportPct?: number;
+  contributionFormation?: boolean;
+  taxeApprentissage?: boolean;
+  assuranceChomage?: boolean;
+  reductionGenerale?: boolean;
+  taxeSalaires?: boolean;
+  regimeAlsaceMoselle?: boolean;
+  effectifSalarie?: EffectifSalarie;
+  affiliationCavec?: AffiliationCavecAssimile;
+  affiliationCnbf?: boolean;
+  ancienneteCnbf?: AncienneteCnbf;
+  classeRetraiteCnbf?: ClasseRetraite;
+  avantagesNatureFichePaie?: number;
+}
 
 export interface AuditAvatarAppearance {
   skinTone: AuditAvatarSkinTone;
@@ -90,12 +176,25 @@ export interface PersonInfo {
   nationalite?: string;
   handicap?: boolean;
   profession?: string;
-  csp?: ProfessionCsp;
   natureActivite?: NatureActivite;
   statutSocial?: StatutSocial;
   caisseRetraite?: CaisseRetraite;
+  modeExercice?: ModeExerciceTns;
+  remunerationMandatPct?: number;
   statutConventionnel?: StatutConventionnel;
   tauxPriseEnChargeCpam?: number;
+  classePrevoyance?: ClassePrevoyance;
+  classeRetraite?: ClasseRetraite;
+  biologisteConventionne?: boolean;
+  ancienneteCnbf?: AncienneteCnbf;
+  prestationSermentAvant2014?: boolean;
+  regimeColmarMetz?: boolean;
+  moyenneProduitsEtude?: number;
+  commissionsBrutes?: number;
+  atexa?: AtexaClasse;
+  professionLiberaleReglementee?: boolean;
+  professionLiberaleCategorie?: ProfessionLiberaleCategorie;
+  fichePaieAssimileSalarie?: FichePaieAssimileSalarie;
   avatarKind?: AuditAvatarKind;
   avatarAppearance?: AuditAvatarAppearance;
 }
@@ -161,7 +260,6 @@ export interface SituationFamiliale {
   proches: ProcheInfo[];
 }
 
-// Situation civile
 export interface SituationCivile {
   regimeMatrimonial?: RegimeMatrimonial;
   donationDernierVivantMr?: boolean;
@@ -201,7 +299,6 @@ export interface TestamentInfo {
   description?: string;
 }
 
-// Actifs
 export type ProprietaireType = 'mr' | 'mme' | 'commun' | 'indivision';
 
 export interface ActifBase {
@@ -243,7 +340,6 @@ export interface ActifDivers extends ActifBase {
 
 export type Actif = ActifImmobilier | ActifFinancier | ActifProfessionnel | ActifDivers;
 
-// Passif
 export interface PassifEmprunt {
   id: string;
   libelle: string;
@@ -271,7 +367,6 @@ export interface Passif {
   }>;
 }
 
-// Fiscalité
 export interface RevenuCategorie {
   id: string;
   categorie:
@@ -299,7 +394,6 @@ export interface SituationFiscale {
   taxeFonciere?: number;
 }
 
-// Objectifs client (liste fixe)
 export type ObjectifClient =
   | 'proteger_conjoint'
   | 'proteger_proches'
@@ -327,7 +421,6 @@ export const OBJECTIFS_CLIENT_LABELS: Record<ObjectifClient, string> = {
   reduire_droits_succession: 'Réduire les droits de succession',
 };
 
-// Dossier Audit complet
 export interface DossierAudit {
   id: string;
   version: string;
@@ -356,7 +449,6 @@ export function ensureDossierAuditUuid(dossier: DossierAudit): DossierAudit {
   };
 }
 
-// État initial vide
 export function createEmptyDossier(): DossierAudit {
   return {
     id: crypto.randomUUID(),

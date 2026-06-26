@@ -16,6 +16,7 @@ function member(
     nom: null,
     age: 40,
     profession: null,
+    statutSocial: null,
     role,
     estCommun: true,
     avatarKind: role === 'conjoint' ? 'femme' : role === 'enfant' ? 'garcon' : 'homme',

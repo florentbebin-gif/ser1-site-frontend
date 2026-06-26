@@ -6,6 +6,7 @@ import {
 } from '@/domain/dossier';
 
 import type { AuditLandingMember, AuditLandingSyntheseCard } from './auditLandingViewModel';
+import { isProfessionalSituationComplete } from './professionalSituation';
 
 export type AuditSectionStatus =
   | 'vide'
@@ -247,10 +248,9 @@ function statusLabelFromCompletion(status: DossierCompletionStatus): string {
 
 function statusFromProfessionalData(membres: AuditLandingMember[]): AuditSectionStatus {
   if (membres.length === 0) return 'vide';
-  const professionsCount = membres.filter((membre) => membre.profession).length;
-  if (professionsCount === membres.length) return 'complet';
-  if (professionsCount > 0 || membres.length > 0) return 'partiel';
-  return 'vide';
+  const completeCount = membres.filter(isProfessionalSituationComplete).length;
+  if (completeCount === membres.length) return 'complet';
+  return 'partiel';
 }
 
 function formatParts(parts: number): string {

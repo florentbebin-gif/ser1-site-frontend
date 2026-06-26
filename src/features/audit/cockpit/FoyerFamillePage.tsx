@@ -1,10 +1,14 @@
 import { useMemo, useState, type ReactElement } from 'react';
 
-import type { DossierAudit } from '@/domain/audit/types';
+import type { DossierAudit, PersonInfo } from '@/domain/audit/types';
 import { IconBriefcase, IconChevronRight, IconGift, IconNetwork, IconUsers } from '@/icons/ui';
 
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
 import { FoyerFiliation } from '../components/FoyerFiliation';
+import {
+  isProfessionalSituationComplete,
+  professionalSituationMissingLabel,
+} from '../professionalSituation';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
   fullName,
@@ -23,6 +27,7 @@ import {
   SituationFamilialeDrawer,
 } from './FoyerFamilleDrawers';
 import { relationLabel } from './filiationConfig';
+import { getProfessionalSituationLabel } from './professionFieldRules';
 
 type FoyerDrawer = 'famille' | 'filiation' | 'regime' | 'profession';
 
@@ -183,10 +188,12 @@ function buildFoyerCards(
     proches.length > 0 ? `${proches.length} proche(s)` : '',
   ].filter(Boolean);
   const coupleStatus = new Set(['marie', 'pacse']).has(situationFamiliale.situationMatrimoniale);
-  const professionKnown = [
-    situationFamiliale.mr.profession,
-    situationFamiliale.mme?.profession,
-  ].filter((profession): profession is string => Boolean(profession?.trim()));
+  const professionalProfiles = [
+    buildProfessionalProfileLine(situationFamiliale.mr, 'Client principal'),
+    couple ? buildProfessionalProfileLine(couple, 'Conjoint') : null,
+  ].filter((profile): profile is ProfessionalProfileLine => Boolean(profile));
+  const professionalKnown = professionalProfiles.filter((profile) => profile.statusKnown);
+  const professionalLabels = professionalKnown.map((profile) => profile.label);
   const isMarried = situationFamiliale.situationMatrimoniale === 'marie';
   const hasTransmissionData =
     situationCivile.donations.length > 0 || situationCivile.testaments.length > 0;
@@ -314,34 +321,52 @@ function buildFoyerCards(
       id: 'situation-professionnelle',
       title: 'Situation professionnelle',
       status:
-        professionKnown.length === 0
+        professionalKnown.length === 0
           ? 'vide'
-          : professionKnown.length === (couple ? 2 : 1)
+          : professionalKnown.length === professionalProfiles.length
             ? 'complet'
             : 'partiel',
-      summaryLine: buildProfessionSummary(professionKnown),
-      known: [
-        situationFamiliale.mr.profession
-          ? `${fullName(situationFamiliale.mr) || 'Client principal'} : ${situationFamiliale.mr.profession}`
-          : '',
-        couple?.profession ? `${fullName(couple) || 'Conjoint'} : ${couple.profession}` : '',
-      ].filter(Boolean),
-      missing: [
-        !situationFamiliale.mr.profession?.trim() ? 'Profession client principal' : '',
-        couple && !couple.profession?.trim() ? 'Profession conjoint' : '',
-      ].filter(Boolean),
+      summaryLine: buildProfessionSummary(professionalLabels),
+      known: professionalKnown.map(
+        (profile) => `${fullName(profile.person) || profile.fallbackName} : ${profile.label}`,
+      ),
+      missing: professionalProfiles
+        .filter((profile) => !profile.statusKnown)
+        .map((profile) => profile.missingLabel),
       icon: <IconBriefcase />,
-      ctaLabel: professionKnown.length > 0 ? 'Modifier' : 'Compléter',
+      ctaLabel: professionalKnown.length === professionalProfiles.length ? 'Modifier' : 'Compléter',
       onAction: () => openDrawer('profession'),
     },
   ];
 }
 
+interface ProfessionalProfileLine {
+  person: PersonInfo;
+  fallbackName: string;
+  label: string;
+  statusKnown: boolean;
+  missingLabel: string;
+}
+
+function buildProfessionalProfileLine(
+  person: PersonInfo,
+  fallbackName: string,
+): ProfessionalProfileLine {
+  return {
+    person,
+    fallbackName,
+    label: getProfessionalSituationLabel(person),
+    statusKnown: isProfessionalSituationComplete(person),
+    missingLabel: professionalSituationMissingLabel(person, fallbackName),
+  };
+}
+
 function buildProfessionSummary(professions: string[]): string {
   const cleaned = professions.map((profession) => profession.trim()).filter(Boolean);
-  if (cleaned.length === 0) return 'Professions à compléter';
+  if (cleaned.length === 0) return 'Situation professionnelle à compléter';
   const unique = Array.from(new Set(cleaned));
   if (cleaned.length === 1) return cleaned[0] ?? 'Profession renseignée';
+  if (unique.length > 1 && unique.length <= 2) return unique.join(' · ');
   if (unique.length === 1) return `${cleaned.length} ${pluralizeLabel(unique[0]!)}`;
   return `${cleaned.length} situations renseignées`;
 }

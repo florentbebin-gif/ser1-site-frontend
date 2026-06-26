@@ -62,6 +62,7 @@ export interface AuditLandingMember {
   nom: string | null;
   age: number | null;
   profession: string | null;
+  statutSocial: DossierMembre['statutSocial'] | null;
   role: AuditLandingMemberRole;
   estCommun: boolean;
   parentPrincipal?: 'client' | 'conjoint';
@@ -411,6 +412,7 @@ function toMember(
     nom,
     age: computeAge(membre.dateNaissance, now),
     profession: membre.profession?.trim() || null,
+    statutSocial: membre.statutSocial ?? null,
     role,
     estCommun: membre.estCommun ?? true,
     parentPrincipal: membre.parentPrincipal,

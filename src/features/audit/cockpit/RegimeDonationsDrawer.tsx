@@ -76,7 +76,7 @@ export function RegimeDonationsDrawer({
     <AuditDrawerXL
       open={open}
       title="Libéralités & transmission"
-      subtitle="Régime, donations et testaments consignés dans le socle F1."
+      subtitle="Régime, donations et testaments."
       onClose={onClose}
       footer={
         <DrawerFooter
