@@ -52,6 +52,25 @@ describe('storage audit', () => {
     expect(loadDraftFromSession()).toBeNull();
   });
 
+  it('normalise les anciennes valeurs DDV au chargement session', () => {
+    const dossier = createEmptyDossier();
+    dossier.situationCivile.donationDernierVivantMr = true;
+    dossier.situationCivile.donationDernierVivantMme = true;
+    const legacySituationCivile = dossier.situationCivile as unknown as {
+      ddvOptionMr: string;
+      ddvOptionMme: string;
+    };
+    legacySituationCivile.ddvOptionMr = 'quotite_disponible_pp';
+    legacySituationCivile.ddvOptionMme = 'mixte_quart_pp_trois_quarts_us';
+
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(dossier));
+
+    expect(loadDraftFromSession()?.situationCivile).toMatchObject({
+      ddvOptionMr: 'pleine_propriete_quotite',
+      ddvOptionMme: 'mixte',
+    });
+  });
+
   it('exporte un JSON local avec le nom fourni', () => {
     const dossier = createEmptyDossier();
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
@@ -87,5 +106,24 @@ describe('storage audit', () => {
     ).rejects.toThrow(
       "Impossible de lire le fichier. Vérifiez qu'il s'agit d'un export audit valide.",
     );
+  });
+
+  it('normalise les anciennes valeurs DDV à l’import JSON', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(IMPORT_DATE);
+    const dossier = createEmptyDossier();
+    const legacySituationCivile = dossier.situationCivile as unknown as {
+      ddvOptionMr: string;
+      ddvOptionMme: string;
+    };
+    legacySituationCivile.ddvOptionMr = 'quotite_disponible_pp';
+    legacySituationCivile.ddvOptionMme = 'mixte_quart_pp_trois_quarts_us';
+
+    const imported = await importDossierFromFile(
+      new File([JSON.stringify(dossier)], 'audit.json', { type: 'application/json' }),
+    );
+
+    expect(imported.situationCivile.ddvOptionMr).toBe('pleine_propriete_quotite');
+    expect(imported.situationCivile.ddvOptionMme).toBe('mixte');
   });
 });

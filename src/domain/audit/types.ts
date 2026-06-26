@@ -2,7 +2,7 @@
  * Types pour l'Audit Patrimonial
  */
 
-import type { RegimeMatrimonial } from '../../engine/succession/civil';
+import type { DonationDernierVivantOption, RegimeMatrimonial } from '../../engine/succession/civil';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier/patrimonial';
 
 // Situation familiale
@@ -35,12 +35,14 @@ export type ProcheRattachementBranche =
   | 'client_maternelle'
   | 'conjoint_paternelle'
   | 'conjoint_maternelle';
-export type DdvOption =
-  | 'usufruit_total'
-  | 'quotite_disponible_pp'
-  | 'mixte_quart_pp_trois_quarts_us'
-  | 'pleine_propriete_totale';
-export type AvantageMatrimonial = 'partage_inegal' | 'attribution_integrale';
+export type DdvOption = DonationDernierVivantOption;
+export type AvantageMatrimonial = 'partage_inegal' | 'attribution_integrale' | 'preciput';
+export type AuditPersonRef = 'client' | 'conjoint' | `enfant:${string}` | `proche:${string}`;
+export type DonationQualificationRapport = 'rapportable' | 'hors_part';
+export type TestamentDispositionType =
+  | 'legs_universel'
+  | 'legs_titre_universel'
+  | 'legs_particulier';
 export type ProfessionCsp =
   | 'dirigeant'
   | 'salarie_cadre'
@@ -162,9 +164,6 @@ export interface SituationFamiliale {
 // Situation civile
 export interface SituationCivile {
   regimeMatrimonial?: RegimeMatrimonial;
-  contratMariage: boolean;
-  dateContrat?: string;
-  notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;
   ddvOptionMr?: DdvOption;
@@ -180,13 +179,25 @@ export interface DonationInfo {
   date: string;
   montant?: number;
   beneficiaire: string;
-  description?: string;
+  donateur?: AuditPersonRef;
+  donataire?: AuditPersonRef;
+  qualificationRapport?: DonationQualificationRapport;
+  valeurActuelle?: number;
+  avecReserveUsufruit?: boolean;
+  usufruitSuccessif?: boolean;
+  usufruitSuccessifBeneficiaire?: AuditPersonRef;
+  donSommeArgentExonere?: boolean;
 }
 
 export interface TestamentInfo {
   id: string;
   date: string;
   type: 'olographe' | 'authentique' | 'mystique';
+  testateur?: AuditPersonRef;
+  actif?: boolean;
+  dispositionType?: TestamentDispositionType;
+  beneficiaire?: AuditPersonRef;
+  quotePartPct?: number;
   description?: string;
 }
 
@@ -359,7 +370,6 @@ export function createEmptyDossier(): DossierAudit {
       proches: [],
     },
     situationCivile: {
-      contratMariage: false,
       donations: [],
       testaments: [],
     },

@@ -83,6 +83,39 @@ describe('persistence dossier patrimonial', () => {
     });
   });
 
+  it('normalise les anciennes valeurs DDV dans le payload Supabase', () => {
+    const audit = createEmptyDossier();
+    audit.id = 'audit-legacy-ddv';
+    audit.situationFamiliale.mr.prenom = 'Alice';
+    audit.situationFamiliale.mr.nom = 'Martin';
+    audit.situationFamiliale.mr.dateNaissance = '1980-01-01';
+    audit.objectifs = ['developper_patrimoine'];
+    audit.situationCivile.donationDernierVivantMr = true;
+    const dossier = buildDossierPatrimonialFromAudit(audit, {
+      ownerUserId: 'user-1',
+      now: '2026-06-07T10:00:00.000Z',
+    });
+    const row = toDossierPatrimonialUpsertRow(dossier, 'user-1');
+    row.data.regimeMatrimonial = {
+      donationDernierVivantMr: true,
+      donationDernierVivantMme: true,
+      ddvOptionMr: 'quotite_disponible_pp',
+      ddvOptionMme: 'mixte_quart_pp_trois_quarts_us',
+      sourceRefIds: [],
+    } as unknown as typeof row.data.regimeMatrimonial;
+
+    const restored = fromDossierPatrimonialRow({
+      ...row,
+      created_at: '2026-06-07T10:00:00.000Z',
+      updated_at: '2026-06-07T10:01:00.000Z',
+    });
+
+    expect(restored.regimeMatrimonial).toMatchObject({
+      ddvOptionMr: 'pleine_propriete_quotite',
+      ddvOptionMme: 'mixte',
+    });
+  });
+
   it('refuse une ligne Supabase dont la colonne de complétude diverge du modèle', () => {
     const audit = createEmptyDossier();
     audit.id = 'audit-3';

@@ -1,9 +1,11 @@
 import type {
   AuditAvatarAppearance,
   AuditAvatarKind,
+  AuditPersonRef,
   AvantageMatrimonial,
   CaisseRetraite,
   DdvOption,
+  DonationQualificationRapport,
   NatureActivite,
   NiveauScolaire,
   ObjectifClient,
@@ -13,6 +15,7 @@ import type {
   RenonciationPortee,
   StatutConventionnel,
   StatutSocial,
+  TestamentDispositionType,
   TypeAdoption,
 } from '@/domain/audit/types';
 import type { SourceRef } from './types';
@@ -117,9 +120,6 @@ export interface DossierSituationFamiliale {
 
 export interface DossierRegimeMatrimonial {
   regime?: DossierRegimeMatrimonialCode;
-  contratMariage: boolean;
-  dateContrat?: string;
-  notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;
   ddvOptionMr?: DdvOption;
@@ -134,6 +134,26 @@ export interface DossierDonationSynthetique {
   date: string;
   montant?: number;
   beneficiaireLabel: string;
+  donateur?: AuditPersonRef;
+  donataire?: AuditPersonRef;
+  qualificationRapport?: DonationQualificationRapport;
+  valeurActuelle?: number;
+  avecReserveUsufruit?: boolean;
+  usufruitSuccessif?: boolean;
+  usufruitSuccessifBeneficiaire?: AuditPersonRef;
+  donSommeArgentExonere?: boolean;
+  sourceRefIds: string[];
+}
+
+export interface DossierTestamentSynthetique {
+  id: string;
+  date: string;
+  type: 'olographe' | 'authentique' | 'mystique';
+  testateur?: AuditPersonRef;
+  actif?: boolean;
+  dispositionType?: TestamentDispositionType;
+  beneficiaire?: AuditPersonRef;
+  quotePartPct?: number;
   description?: string;
   sourceRefIds: string[];
 }
@@ -179,6 +199,7 @@ export interface DossierPatrimonial {
   situationFamiliale: DossierSituationFamiliale;
   regimeMatrimonial: DossierRegimeMatrimonial | null;
   donationsSynthetiques: DossierDonationSynthetique[];
+  testamentsSynthetiques: DossierTestamentSynthetique[];
   objectifs: DossierObjectif[];
   contraintes: DossierContrainte[];
   operationsPrevues: DossierOperationPrevue[];
@@ -231,6 +252,7 @@ export function createEmptyDossierPatrimonial(
     },
     regimeMatrimonial: null,
     donationsSynthetiques: [],
+    testamentsSynthetiques: [],
     objectifs: [],
     contraintes: [],
     operationsPrevues: [],

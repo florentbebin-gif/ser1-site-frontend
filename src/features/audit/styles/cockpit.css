@@ -73,6 +73,39 @@
   gap: var(--space-2);
 }
 
+.audit-cockpit__back-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--action-primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.audit-cockpit__back-action:hover {
+  border-color: color-mix(in srgb, var(--action-primary) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--action-primary) 7%, var(--surface-card));
+}
+
+.audit-cockpit__back-action:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.audit-cockpit__back-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.audit-cockpit__back-action-icon {
+  transform: rotate(180deg);
+}
+
 .audit-cockpit__primary-action {
   display: inline-flex;
   align-items: center;
@@ -521,6 +554,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+.audit-foyer-filiation {
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+}
+
 .audit-foyer-section-head {
   display: grid;
   gap: var(--space-1);
@@ -694,7 +732,11 @@
 .audit-foyer-filiation__canvas {
   display: grid;
   align-items: center;
-  min-height: 194px;
+  align-self: stretch;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  margin-bottom: var(--space-2);
   padding: var(--space-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -702,7 +744,8 @@
 }
 
 .audit-foyer-filiation .audit-fil {
-  max-height: 182px;
+  height: 100%;
+  max-height: none;
 }
 
 .audit-foyer-filiation .audit-fil__edge {
@@ -716,18 +759,6 @@
 
 .audit-foyer-filiation .audit-fil__edge--precedent {
   stroke: color-mix(in srgb, var(--accent-signature) 58%, var(--border-strong));
-}
-
-.audit-foyer-filiation .audit-fil__common-zone {
-  fill: color-mix(in srgb, var(--surface-active) 8%, transparent);
-  stroke: none;
-}
-
-.audit-foyer-filiation .audit-fil__common-label {
-  fill: var(--text-secondary);
-  font-size: 9px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0;
 }
 
 .audit-cockpit-card:hover .audit-cockpit-card__head-action[data-tone='required'],
@@ -1271,6 +1302,22 @@
   font-size: var(--font-size-xs);
 }
 
+.audit-regime-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 18%);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 74px;
+}
+
+.audit-regime-panel__illustration {
+  justify-self: end;
+  width: min(150px, 100%);
+  color: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  pointer-events: none;
+}
+
 .audit-drawer-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1677,6 +1724,21 @@
   grid-template-columns: minmax(0, 1fr) minmax(160px, 0.34fr);
 }
 
+.audit-related-card__qualification[data-transmission='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr);
+}
+
+.audit-related-card__qualification[data-transmission='true'][data-school='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr) minmax(160px, 0.34fr);
+}
+
+.audit-related-card__qualification[data-compact='true'],
+.audit-related-card__qualification[data-compact='true'][data-school='true'] {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0;
+  border-top: 0;
+}
+
 .audit-related-card__civil {
   display: grid;
   gap: var(--space-2);
@@ -1705,11 +1767,16 @@
   border-top: 1px solid color-mix(in srgb, var(--border-subtle) 60%, transparent);
 }
 
+.audit-related-card__qualification .audit-related-card__succession {
+  padding-top: 0;
+  border-top: 0;
+}
+
 /* Rattachement contextuel d'un proche (enfant rattaché / Client-Conjoint / branche). */
 .audit-related-card__attachment {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 360px;
+  min-width: 0;
 }
 
 /* Hint petit-enfant sans enfant déclaré, calé sur la hauteur d'un select. */
@@ -1741,9 +1808,16 @@
 
 /* Pastilles légères des proches simples (handicap, vivant sous le même toit). */
 .audit-related-card__light-tags {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-related-card__proche-secondary {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-4);
+  align-items: start;
   padding-top: var(--space-3);
   border-top: 1px solid color-mix(in srgb, var(--border-subtle) 76%, transparent);
 }
@@ -1852,10 +1926,51 @@
   justify-content: space-between;
 }
 
+.audit-ddv-card__identity {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.audit-avatar-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--surface-muted) 54%, var(--surface-card));
+}
+
+.audit-avatar-badge svg {
+  width: 32px;
+  height: 32px;
+}
+
 .audit-ddv-card__title {
+  display: block;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+}
+
+.audit-ddv-card__subtitle,
+.audit-ddv-card__empty {
+  display: block;
+  color: var(--data-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.audit-ddv-card__empty {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-muted) 34%, transparent);
 }
 
 .audit-optimisation-grid {
@@ -1884,6 +1999,51 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.audit-ddv-radio-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.audit-ddv-radio {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--data-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+}
+
+.audit-ddv-radio span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-full);
+}
+
+.audit-ddv-radio[data-selected='true'] {
+  border-color: color-mix(in srgb, var(--action-primary) 52%, var(--border-subtle));
+  background: color-mix(in srgb, var(--surface-active) 36%, var(--surface-card));
+  color: var(--action-primary);
+}
+
+.audit-ddv-radio[data-selected='true'] span {
+  background: currentColor;
+}
+
+.audit-ddv-radio:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .audit-chip-field__choice,
@@ -1968,8 +2128,71 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.audit-donation-card__description .sim-field__label {
+.audit-donation-card__legacy,
+.audit-drawer-hint,
+.audit-testament-card__caption {
+  margin: 0;
   color: var(--data-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.audit-disclosure {
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-muted) 26%, transparent);
+}
+
+.audit-disclosure summary {
+  min-height: 34px;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-disclosure__body {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.audit-testament-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.audit-testament-grid[data-columns='2'] {
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+}
+
+.audit-testament-card {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 76%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+
+.audit-testament-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.audit-testament-card__body {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
 /* Bandes « module verrouillé / à venir » — calmes et fines. */
@@ -2122,12 +2345,11 @@
   .audit-related-card__grid[data-row='identity'],
   .audit-related-card__qualification,
   .audit-related-card__qualification[data-school='true'],
-  .audit-related-card__attachment {
+  .audit-related-card__qualification[data-transmission='true'],
+  .audit-related-card__qualification[data-transmission='true'][data-school='true'],
+  .audit-related-card__attachment,
+  .audit-related-card__proche-secondary {
     grid-template-columns: 1fr;
-  }
-
-  .audit-related-card__attachment {
-    max-width: none;
   }
 
   .audit-page-continuation {

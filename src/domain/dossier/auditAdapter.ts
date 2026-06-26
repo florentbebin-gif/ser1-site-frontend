@@ -100,9 +100,6 @@ export function buildDossierPatrimonialFromAudit(
     regimeMatrimonial: hasRegimeBlockData(audit.situationCivile)
       ? {
           regime: audit.situationCivile.regimeMatrimonial,
-          contratMariage: audit.situationCivile.contratMariage,
-          dateContrat: audit.situationCivile.dateContrat,
-          notaire: audit.situationCivile.notaire,
           donationDernierVivantMr: audit.situationCivile.donationDernierVivantMr,
           donationDernierVivantMme: audit.situationCivile.donationDernierVivantMme,
           ddvOptionMr: audit.situationCivile.ddvOptionMr,
@@ -117,7 +114,26 @@ export function buildDossierPatrimonialFromAudit(
       date: donation.date,
       montant: donation.montant,
       beneficiaireLabel: donation.beneficiaire,
-      description: donation.description,
+      donateur: donation.donateur,
+      donataire: donation.donataire,
+      qualificationRapport: donation.qualificationRapport,
+      valeurActuelle: donation.valeurActuelle,
+      avecReserveUsufruit: donation.avecReserveUsufruit,
+      usufruitSuccessif: donation.usufruitSuccessif,
+      usufruitSuccessifBeneficiaire: donation.usufruitSuccessifBeneficiaire,
+      donSommeArgentExonere: donation.donSommeArgentExonere,
+      sourceRefIds,
+    })),
+    testamentsSynthetiques: audit.situationCivile.testaments.map((testament) => ({
+      id: testament.id,
+      date: testament.date,
+      type: testament.type,
+      testateur: testament.testateur,
+      actif: testament.actif,
+      dispositionType: testament.dispositionType,
+      beneficiaire: testament.beneficiaire,
+      quotePartPct: testament.quotePartPct,
+      description: testament.description,
       sourceRefIds,
     })),
     objectifs: audit.objectifs.map((objectif, index) => ({
@@ -183,10 +199,6 @@ export function mergeDossierPatrimonialIntoAuditDraft(
     situationCivile: {
       ...draft.situationCivile,
       regimeMatrimonial: dossier.regimeMatrimonial?.regime,
-      contratMariage:
-        dossier.regimeMatrimonial?.contratMariage ?? draft.situationCivile.contratMariage,
-      dateContrat: dossier.regimeMatrimonial?.dateContrat,
-      notaire: dossier.regimeMatrimonial?.notaire,
       donationDernierVivantMr: dossier.regimeMatrimonial?.donationDernierVivantMr,
       donationDernierVivantMme: dossier.regimeMatrimonial?.donationDernierVivantMme,
       ddvOptionMr: dossier.regimeMatrimonial?.ddvOptionMr,
@@ -198,7 +210,25 @@ export function mergeDossierPatrimonialIntoAuditDraft(
         date: donation.date,
         montant: donation.montant,
         beneficiaire: donation.beneficiaireLabel,
-        description: donation.description,
+        donateur: donation.donateur,
+        donataire: donation.donataire,
+        qualificationRapport: donation.qualificationRapport,
+        valeurActuelle: donation.valeurActuelle,
+        avecReserveUsufruit: donation.avecReserveUsufruit,
+        usufruitSuccessif: donation.usufruitSuccessif,
+        usufruitSuccessifBeneficiaire: donation.usufruitSuccessifBeneficiaire,
+        donSommeArgentExonere: donation.donSommeArgentExonere,
+      })),
+      testaments: dossier.testamentsSynthetiques.map((testament) => ({
+        id: testament.id,
+        date: testament.date,
+        type: testament.type,
+        testateur: testament.testateur,
+        actif: testament.actif,
+        dispositionType: testament.dispositionType,
+        beneficiaire: testament.beneficiaire,
+        quotePartPct: testament.quotePartPct,
+        description: testament.description,
       })),
     },
     objectifs: dossier.objectifs.map((objectif) => objectif.code).filter(isObjectifClient),
@@ -219,6 +249,7 @@ function buildAuditSourceRef(audit: DossierAudit): SourceRef {
       'situationFamiliale',
       'regimeMatrimonial',
       'donationsSynthetiques',
+      'testamentsSynthetiques',
       'objectifs',
       'contraintes',
       'operationsPrevues',
@@ -231,9 +262,6 @@ function buildAuditSourceRef(audit: DossierAudit): SourceRef {
 function hasRegimeBlockData(situationCivile: SituationCivile): boolean {
   return Boolean(
     situationCivile.regimeMatrimonial ||
-    situationCivile.contratMariage ||
-    situationCivile.dateContrat ||
-    situationCivile.notaire ||
     situationCivile.donationDernierVivantMr ||
     situationCivile.donationDernierVivantMme ||
     situationCivile.ddvOptionMr ||

@@ -1,4 +1,4 @@
-import type { RegimeMatrimonial } from '../../engine/succession/civil';
+import type { DonationDernierVivantOption, RegimeMatrimonial } from '../../engine/succession/civil';
 import type { LienParente } from '../../engine/succession';
 import type { SuccessionAssetPocket, SuccessionPersonParty } from './successionPatrimonialModel';
 
@@ -26,11 +26,7 @@ export type SuccessionDispositionTestamentaire =
   | 'legs_universel'
   | 'legs_titre_universel'
   | 'legs_particulier';
-export type SuccessionDonationEntreEpouxOption =
-  | 'usufruit_total'
-  | 'pleine_propriete_quotite'
-  | 'mixte'
-  | 'pleine_propriete_totale';
+export type SuccessionDonationEntreEpouxOption = DonationDernierVivantOption;
 export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null;
 export type SuccessionSocieteAcquetsLiquidationMode = 'quotes' | 'attribution_survivant';
 export type SuccessionPreciputMode = 'global' | 'cible';

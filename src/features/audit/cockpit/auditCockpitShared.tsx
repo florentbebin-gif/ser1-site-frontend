@@ -9,6 +9,7 @@ import {
   type PersonInfo,
   type ProprietaireType,
   type RevenuCategorie,
+  type TestamentInfo,
 } from '@/domain/audit/types';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier';
 import {
@@ -373,6 +374,18 @@ export function createDonation(): DonationInfo {
     type: 'donation_simple',
     date: '',
     beneficiaire: '',
+    qualificationRapport: 'rapportable',
+  };
+}
+
+export function createTestament(testateur: TestamentInfo['testateur']): TestamentInfo {
+  return {
+    id: testateur ? `testament-${testateur.replace(/[^a-z0-9:-]/gi, '-')}` : createId('testament'),
+    type: 'olographe',
+    date: '',
+    testateur,
+    actif: false,
+    quotePartPct: 100,
   };
 }
 

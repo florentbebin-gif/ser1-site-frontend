@@ -18,6 +18,14 @@ function renderDrawer(mutate?: (audit: DossierAudit) => void) {
   return render(<FiliationDrawer open dossier={audit} onClose={vi.fn()} onSave={vi.fn()} />);
 }
 
+function expectTextBefore(first: string, second: string) {
+  const firstElement = screen.getByText(first);
+  const secondElement = screen.getByText(second);
+  expect(
+    firstElement.compareDocumentPosition(secondElement) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+}
+
 describe('FiliationDrawer', () => {
   it('propose deux boutons distincts et un état vide combiné', () => {
     renderDrawer();
@@ -33,6 +41,8 @@ describe('FiliationDrawer', () => {
     // Par défaut un enfant est fiscalement à charge : Scolarité et Garde alternée sont visibles.
     expect(screen.getByText('Scolarité')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Garde alternée' })).toBeVisible();
+    expectTextBefore('Situation civile & fiscale', 'Succession / transmission');
+    expectTextBefore('Succession / transmission', 'Scolarité');
 
     await userEvent.click(screen.getByRole('button', { name: 'Fiscalement à charge' }));
 
@@ -74,10 +84,29 @@ describe('FiliationDrawer', () => {
     renderDrawer();
     await userEvent.click(screen.getByRole('button', { name: 'Ajouter un proche' }));
 
+    expect(screen.getByText('Situation civile & fiscale')).toBeVisible();
     expect(screen.getByRole('button', { name: 'En situation de handicap' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Fiscalement à charge' })).toBeNull();
     expect(screen.queryByText('Scolarité')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Renonçant à la succession' })).toBeNull();
+  });
+
+  it('affiche le tag de cohabitation dans le panneau civil des frères et sœurs', () => {
+    renderDrawer((audit) => {
+      audit.situationFamiliale.proches = [
+        {
+          id: 'proche-frere',
+          lienParente: 'frere_soeur',
+          prenom: 'Marc',
+          nom: 'Martin',
+          dateNaissance: '1978-01-01',
+          rattachement: 'client',
+        },
+      ];
+    });
+
+    expect(screen.getByText('Situation civile & fiscale')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Vivant sous le même toit' })).toBeVisible();
   });
 
   it('désactive le rattachement d’un petit-enfant sans enfant déclaré', () => {

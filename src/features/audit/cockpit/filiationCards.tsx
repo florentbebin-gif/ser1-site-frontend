@@ -101,34 +101,39 @@ export function EnfantCard({
         onDate={(dateNaissance) => onChange({ ...enfant, dateNaissance })}
         onDeceased={(next) => onChange({ ...enfant, decede: next })}
       />
-      <CivilFiscalZone value={enfant} onChange={(civil) => onChange({ ...enfant, ...civil })} />
-      <div className="audit-related-card__succession">
-        <p className="audit-related-card__group-label">Succession / transmission</p>
-        <div className="audit-related-card__tag-row">
-          <QualifierTag
-            label="Renonçant à la succession"
-            tone="impact"
-            active={renoncant}
-            onToggle={(next) =>
-              onChange({
-                ...enfant,
-                renoncantSuccession: next,
-                renonciationPortee: next ? enfant.renonciationPortee : undefined,
-              })
-            }
-          />
-        </div>
-        {renoncant ? (
-          <SegmentedReveal
-            label="Portée de la renonciation"
-            options={renonciationOptionsFor(enfant)}
-            value={enfant.renonciationPortee}
-            onSelect={(portee) =>
-              onChange({ ...enfant, renonciationPortee: portee as RenonciationPortee })
-            }
-          />
-        ) : null}
-      </div>
+      <CivilFiscalZone
+        value={enfant}
+        transmission={
+          <>
+            <p className="audit-related-card__group-label">Succession / transmission</p>
+            <div className="audit-related-card__tag-row">
+              <QualifierTag
+                label="Renonçant à la succession"
+                tone="impact"
+                active={renoncant}
+                onToggle={(next) =>
+                  onChange({
+                    ...enfant,
+                    renoncantSuccession: next,
+                    renonciationPortee: next ? enfant.renonciationPortee : undefined,
+                  })
+                }
+              />
+            </div>
+            {renoncant ? (
+              <SegmentedReveal
+                label="Portée de la renonciation"
+                options={renonciationOptionsFor(enfant)}
+                value={enfant.renonciationPortee}
+                onSelect={(portee) =>
+                  onChange({ ...enfant, renonciationPortee: portee as RenonciationPortee })
+                }
+              />
+            ) : null}
+          </>
+        }
+        onChange={(civil) => onChange({ ...enfant, ...civil })}
+      />
     </RelatedCardShell>
   );
 }
@@ -213,6 +218,15 @@ export function ProcheCard({
   const attachment = (
     <ProcheAttachmentControl proche={proche} enfants={enfants} onChange={onChange} />
   );
+  const civilPanel = (
+    <ProcheCivilPanel
+      showVivantSousMemeToit={layout.showVivantSousMemeToit}
+      handicap={Boolean(proche.handicap)}
+      vivantSousMemeToit={Boolean(proche.vivantSousMemeToit)}
+      onHandicap={(handicap) => onChange({ ...proche, handicap })}
+      onVivantSousMemeToit={(vivantSousMemeToit) => onChange({ ...proche, vivantSousMemeToit })}
+    />
+  );
 
   return (
     <RelatedCardShell
@@ -255,27 +269,57 @@ export function ProcheCard({
         onDate={(dateNaissance) => onChange({ ...proche, dateNaissance })}
         onDeceased={(next) => onChange({ ...proche, decede: next })}
       />
-      {attachment ? <div className="audit-related-card__attachment">{attachment}</div> : null}
       {layout.showFiscal ? (
-        <CivilFiscalZone value={proche} onChange={(civil) => onChange({ ...proche, ...civil })} />
-      ) : (
-        <div className="audit-related-card__light-tags">
-          <QualifierTag
-            label="En situation de handicap"
-            tone="impact"
-            active={Boolean(proche.handicap)}
-            onToggle={(next) => onChange({ ...proche, handicap: next })}
+        <div className="audit-related-card__proche-secondary">
+          {attachment ? <div className="audit-related-card__attachment">{attachment}</div> : null}
+          <CivilFiscalZone
+            value={proche}
+            compact
+            onChange={(civil) => onChange({ ...proche, ...civil })}
           />
-          {layout.showVivantSousMemeToit ? (
-            <QualifierTag
-              label="Vivant sous le même toit"
-              tone="fiscal"
-              active={Boolean(proche.vivantSousMemeToit)}
-              onToggle={(next) => onChange({ ...proche, vivantSousMemeToit: next })}
-            />
-          ) : null}
+        </div>
+      ) : (
+        <div className="audit-related-card__proche-secondary">
+          {attachment ? <div className="audit-related-card__attachment">{attachment}</div> : null}
+          {civilPanel}
         </div>
       )}
     </RelatedCardShell>
+  );
+}
+
+function ProcheCivilPanel({
+  showVivantSousMemeToit,
+  handicap,
+  vivantSousMemeToit,
+  onHandicap,
+  onVivantSousMemeToit,
+}: {
+  showVivantSousMemeToit: boolean;
+  handicap: boolean;
+  vivantSousMemeToit: boolean;
+  onHandicap: (next: boolean) => void;
+  onVivantSousMemeToit: (next: boolean) => void;
+}): ReactElement {
+  return (
+    <div className="audit-related-card__light-tags">
+      <p className="audit-related-card__group-label">Situation civile &amp; fiscale</p>
+      <div className="audit-related-card__tag-row">
+        <QualifierTag
+          label="En situation de handicap"
+          tone="impact"
+          active={handicap}
+          onToggle={onHandicap}
+        />
+        {showVivantSousMemeToit ? (
+          <QualifierTag
+            label="Vivant sous le même toit"
+            tone="fiscal"
+            active={vivantSousMemeToit}
+            onToggle={onVivantSousMemeToit}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
