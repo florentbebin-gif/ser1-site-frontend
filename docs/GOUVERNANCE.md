@@ -588,11 +588,11 @@ Règles icônes :
 
 #### Scroll horizontal dans les accordéons (règle critique)
 
-- Tout tableau accordéon (`CollapsibleTable`) doit utiliser `.pl-table-top-scroll` + `.pl-table-scroll-wrap` pour afficher la scrollbar horizontale premium **au-dessus** des en-têtes de colonnes.
-- La scrollbar du haut est synchronisée avec la scrollbar du bas via deux event listeners JS (`useEffect` dans `CollapsibleTable`).
-- Styles scrollbar webkit : hauteur 4px, couleur C5 (thumb) / C8 (track), radius 2px.
+- Tout tableau accordéon (`SimCollapsibleTable`) doit utiliser `.sim-collapsible-table__top-scroll` + `.sim-collapsible-table__scroll` pour afficher la scrollbar horizontale premium **au-dessus** des en-têtes de colonnes.
+- La scrollbar du haut est synchronisée avec la scrollbar du bas via deux event listeners JS (`useEffect` dans `SimCollapsibleTable`).
+- Styles scrollbar webkit : hauteur 4px, thumb `--data-secondary` / track `--color-c8`, radius `--radius-sm`.
 - **Anti-pattern** : `overflow-x: auto` directement sur un `<table>` ou sur le wrapper sans double scrollbar → scrollbar invisible au chargement, mauvaise UX.
-- Référence : `CollapsibleTable` dans `src/features/placement/components/PlacementTables.tsx`, classes `.pl-table-top-scroll` / `.pl-table-scroll-wrap` dans `src/features/placement/styles/results.css`.
+- Référence : `SimCollapsibleTable` dans `src/components/ui/sim/SimCollapsibleTable.tsx`, classes `.sim-collapsible-table__top-scroll` / `.sim-collapsible-table__scroll` dans `src/styles/sim/tables.css`.
 
 #### Interdit
 
@@ -1184,7 +1184,7 @@ et la justification de chaque règle, suivre le lien vers la section concernée.
 ### Tableaux & accordéons
 
 - ❌ `overflow-x: auto` directement sur un `<table>` → scrollbar invisible,
-  utiliser `pl-table-top-scroll` + `pl-table-scroll-wrap`
+  utiliser `sim-collapsible-table__top-scroll` + `sim-collapsible-table__scroll`
   (voir [§Scroll horizontal](#scroll-horizontal-dans-les-accordéons-règle-critique)).
 - ❌ Accordéon sans `aria-expanded`.
 

@@ -25,6 +25,16 @@ function readThemePaletteNullFixMigration(): string {
   return readFileSync(path.join(migrationsDir, file), 'utf8');
 }
 
+function readThemePaletteSearchPathFixMigration(): string {
+  const file = readdirSync(migrationsDir).find((entry) =>
+    entry.endsWith('_fix_is_theme_palette_search_path.sql'),
+  );
+  if (!file) {
+    throw new Error('Migration fix_is_theme_palette_search_path introuvable');
+  }
+  return readFileSync(path.join(migrationsDir, file), 'utf8');
+}
+
 describe('migration contrat palettes theme', () => {
   it('pre-check les palettes existantes avant toute contrainte', () => {
     const sql = readThemePaletteMigration();
@@ -96,5 +106,21 @@ describe('migration contrat palettes theme', () => {
     expect(sql).toMatch(
       /add\s+constraint\s+ui_settings_my_palette_contract_check[\s\S]*check\s*\(\s*my_palette\s+is\s+null\s+or\s+public\.is_theme_palette\(my_palette\)\s+is\s+true\s*\)/i,
     );
+  });
+});
+
+describe('migration search_path is_theme_palette', () => {
+  it('fige le search_path de is_theme_palette sans changer son contrat', () => {
+    const sql = readThemePaletteSearchPathFixMigration();
+
+    expect(sql).toMatch(/create\s+or\s+replace\s+function\s+public\.is_theme_palette/i);
+    expect(sql).toMatch(/\bimmutable\b/i);
+    expect(sql).toMatch(/set\s+search_path\s*=\s*''/i);
+    // Corps null-safe conservé : aucune régression de contrat.
+    expect(sql).toMatch(
+      /case[\s\S]*jsonb_typeof\(value\)\s+is\s+distinct\s+from\s+'object'[\s\S]*then\s+false/i,
+    );
+    expect(sql).toMatch(/coalesce\([\s\S]*array_agg\(key\s+order\s+by\s+key\)/i);
+    expect(sql).toMatch(/coalesce\([\s\S]*bool_and\(/i);
   });
 });

@@ -242,7 +242,7 @@ Sections (ordre canonique) :
 - Dossier
 - Situation familiale
 - Filiation
-- Régime matrimonial & donations
+- Libéralités & transmission
 - Situation professionnelle
 - Budget & capacité
 - Sociétés / organigramme
@@ -336,25 +336,25 @@ Règle : **aucune surface avec ombre dans une surface avec ombre.**
 
 ## 13. Pages métier prévues
 
-| Page                           | Objectif                                    | Cartes prévues                                    | Drawers prévus                | Données nécessaires            | Dépendance      | État avant moteur                   |
-| ------------------------------ | ------------------------------------------- | ------------------------------------------------- | ----------------------------- | ------------------------------ | --------------- | ----------------------------------- |
-| Situation familiale            | Cadrer foyer et régime                      | Foyer, Régime                                     | Foyer                         | Foyer, régime matrimonial      | F1              | Disponible                          |
-| Filiation                      | Visualiser la filiation                     | Org-chart familial, Liste des personnes           | Personne                      | Membres, liens                 | F1              | Disponible                          |
-| Régime matrimonial & donations | Régime, clauses, donations antérieures      | Régime, Donations                                 | Donation                      | Régime, donations              | F1              | Disponible                          |
-| Situation professionnelle      | Statut et revenus pro par personne          | Statut, Revenus pro                               | Situation pro                 | Membres, revenus               | F1 / F1.1       | Disponible (revenus via F1.1)       |
-| Budget & capacité              | Train de vie et capacité d'épargne          | Revenus, Charges, Capacité d'épargne              | Budget                        | budgetSynthese                 | F1.1            | Synthèse seule ; détail = futur sim |
-| Sociétés                       | Organigramme de détention et détail société | Organigramme, Cohérence                           | Société XL, Lien de détention | Sociétés, liens, bilans        | F5              | « à venir » avant F5                |
-| Patrimoine                     | Vue net et allocation                       | Patrimoine net, Répartition, Allocation           | —                             | Actifs, passifs (F3)           | F3              | « à venir » avant F3                |
-| Actifs                         | Inventaire par classe et détention          | Une carte par classe, Tableau 5 colonnes PP/US/NP | Actif                         | Actifs F3                      | F3              | « à venir » avant F3                |
-| Passifs                        | Emprunts et garanties                       | Une carte par emprunt                             | Passif                        | Passifs F3                     | F3              | « à venir » avant F3                |
-| Fiscalité                      | IR, PS, TMI, pistes                         | IR/PS, TMI, Revenus fonciers, Pistes              | Avis IR / Revenus             | IR + F1.1                      | IR / F1.1       | Disponible (IR existant)            |
-| IFI                            | Qualifier l'assujettissement                | Assiette, Estimation (post-moteur), Leviers       | Biens IFI                     | Immobilier F3 + moteur IFI     | F3 + pilote IFI | « à qualifier / calcul à venir »    |
-| Succession                     | Transmission nette et droits par héritier   | Transmission nette, Droits, Couverture            | Hypothèses (1er/2nd décès)    | Succession + DMTG              | F3 + succession | Partiel selon données               |
-| Prévoyance                     | Besoins vs garanties                        | Besoin en capital, Incapacité/invalidité          | Contrat                       | Prévoyance + revenus + passifs | F3 + V2-10      | Partiel                             |
-| Retraite                       | Revenus retraite vs objectif                | Retraite nette, Taux de remplacement              | Carrière / hypothèses         | Retraite + budgetSynthese      | F1.1 + retraite | « à venir » avant moteur            |
-| Placements                     | Encours par enveloppe                       | Une carte par enveloppe                           | Contrat (ISIN, clause)        | Placements F3                  | F3              | « à venir » avant F3                |
-| Objectifs                      | Hiérarchiser les objectifs                  | Liste hiérarchisée, Badges domaine                | Objectif                      | Objectifs F1                   | F1              | Disponible                          |
-| Synthèse                       | Récapitulatif et top pistes                 | KPI, Complétude, Alertes, Radar miniature         | —                             | Agrégat dossier                | F1→F6           | Progressif                          |
+| Page                       | Objectif                                                   | Cartes prévues                                    | Drawers prévus                | Données nécessaires            | Dépendance      | État avant moteur                   |
+| -------------------------- | ---------------------------------------------------------- | ------------------------------------------------- | ----------------------------- | ------------------------------ | --------------- | ----------------------------------- |
+| Situation familiale        | Cadrer foyer et régime                                     | Foyer, Régime                                     | Foyer                         | Foyer, régime matrimonial      | F1              | Disponible                          |
+| Filiation                  | Visualiser la filiation                                    | Org-chart familial, Liste des personnes           | Personne                      | Membres, liens                 | F1              | Disponible                          |
+| Libéralités & transmission | Régime, DDV, avantages matrimoniaux, testaments, donations | Régime, Donations, Testament                      | Libéralités                   | Régime, DDV, donations         | F1              | Disponible                          |
+| Situation professionnelle  | Statut et revenus pro par personne                         | Statut, Revenus pro                               | Situation pro                 | Membres, revenus               | F1 / F1.1       | Disponible (revenus via F1.1)       |
+| Budget & capacité          | Train de vie et capacité d'épargne                         | Revenus, Charges, Capacité d'épargne              | Budget                        | budgetSynthese                 | F1.1            | Synthèse seule ; détail = futur sim |
+| Sociétés                   | Organigramme de détention et détail société                | Organigramme, Cohérence                           | Société XL, Lien de détention | Sociétés, liens, bilans        | F5              | « à venir » avant F5                |
+| Patrimoine                 | Vue net et allocation                                      | Patrimoine net, Répartition, Allocation           | —                             | Actifs, passifs (F3)           | F3              | « à venir » avant F3                |
+| Actifs                     | Inventaire par classe et détention                         | Une carte par classe, Tableau 5 colonnes PP/US/NP | Actif                         | Actifs F3                      | F3              | « à venir » avant F3                |
+| Passifs                    | Emprunts et garanties                                      | Une carte par emprunt                             | Passif                        | Passifs F3                     | F3              | « à venir » avant F3                |
+| Fiscalité                  | IR, PS, TMI, pistes                                        | IR/PS, TMI, Revenus fonciers, Pistes              | Avis IR / Revenus             | IR + F1.1                      | IR / F1.1       | Disponible (IR existant)            |
+| IFI                        | Qualifier l'assujettissement                               | Assiette, Estimation (post-moteur), Leviers       | Biens IFI                     | Immobilier F3 + moteur IFI     | F3 + pilote IFI | « à qualifier / calcul à venir »    |
+| Succession                 | Transmission nette et droits par héritier                  | Transmission nette, Droits, Couverture            | Hypothèses (1er/2nd décès)    | Succession + DMTG              | F3 + succession | Partiel selon données               |
+| Prévoyance                 | Besoins vs garanties                                       | Besoin en capital, Incapacité/invalidité          | Contrat                       | Prévoyance + revenus + passifs | F3 + V2-10      | Partiel                             |
+| Retraite                   | Revenus retraite vs objectif                               | Retraite nette, Taux de remplacement              | Carrière / hypothèses         | Retraite + budgetSynthese      | F1.1 + retraite | « à venir » avant moteur            |
+| Placements                 | Encours par enveloppe                                      | Une carte par enveloppe                           | Contrat (ISIN, clause)        | Placements F3                  | F3              | « à venir » avant F3                |
+| Objectifs                  | Hiérarchiser les objectifs                                 | Liste hiérarchisée, Badges domaine                | Objectif                      | Objectifs F1                   | F1              | Disponible                          |
+| Synthèse                   | Récapitulatif et top pistes                                | KPI, Complétude, Alertes, Radar miniature         | —                             | Agrégat dossier                | F1→F6           | Progressif                          |
 
 ## 14. Contrats d’implémentation par page /audit
 
@@ -464,8 +464,8 @@ Jalons prospectifs conservés par UX-01 :
 ### Foyer & famille et Objectifs F1
 
 État runtime : UX-03a a remplacé le wizard legacy par une expérience cockpit unique. `Foyer &
-famille` est une page en 4 cartes F1 (situation familiale, filiation, régime matrimonial &
-donations, situation professionnelle) ; `Objectifs` est une page séparée en fin de parcours. Les
+famille` est une page en 4 cartes F1 (situation familiale, filiation, libéralités &
+transmission, situation professionnelle) ; `Objectifs` est une page séparée en fin de parcours. Les
 deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawerXL`, sans navigation
 horizontale d'étapes. UX-03a.5 ajoute le polish visuel commun des pages internes ; UX-03a.6 pose le
 redesign pivot de `Foyer & famille` avec synthèse typographique, filiation sobre, cartes de saisie
@@ -514,6 +514,42 @@ changement du modèle métier.
   précédente). « Situation civile & fiscale » est à gauche de « Scolarité ».
 - La date de décès reste un statut booléen (pas de champ date) tant qu'aucun moteur ne la consomme.
   Aucune scrollbar horizontale : grilles `minmax(0, …)`, pastilles `flex-wrap`, reveals empilés.
+
+#### Drawer « Libéralités & transmission »
+
+- Drawer `RegimeDonationsDrawer` (titre **« Libéralités & transmission »**, sous-titre « Régime,
+  donations et testaments »). Il capture le régime matrimonial, les donations entre époux (DDV), les
+  avantages matrimoniaux, les testaments et les donations ; il **ne recrée pas** de liquidation
+  successorale dans `/audit`.
+- Type DDV **canonique partagé** avec normalisation des anciennes valeurs ; options : totalité en
+  usufruit, quotité disponible en pleine propriété, mixte 1/4 PP + 3/4 US, totalité en pleine
+  propriété.
+- Gating métier : la section « Protection du conjoint survivant » (DDV, avantages matrimoniaux)
+  n'apparaît que pour **marié / PACS** ; un célibataire ne voit ni régime ni protection conjoint.
+- Avantages matrimoniaux (partage inégal, attribution intégrale, **préciput**) restent
+  **déclaratifs**, sans configuration par bien — le préciput par actif dépend de F3 / succession.
+- Donations et testaments : testaments **inactifs par défaut** ; les donataires/bénéficiaires
+  renvoient aux **personnes existantes** du foyer, pas à une saisie libre.
+- Suppression de `notaire` et `contratMariage` du modèle audit/dossier (aucun moteur ne les
+  consomme).
+
+#### Drawer « Situation professionnelle »
+
+- Drawer `ProfessionDrawer`, adossé au helper pur `professionFieldRules` (options, visibilité,
+  normalisation). La saisie s'organise autour du **statut social pivot**, rangé par familles :
+  salarié, dirigeant / indépendant, micro-entrepreneur, et autres situations (chômage, retraite,
+  maladie / invalidité, militaire, sans activité).
+- Caisses **filtrées** et champs conditionnels par caisse/statut ; les valeurs devenues impossibles
+  sont nettoyées avant sauvegarde pour éviter les incohérences persistées.
+- Catégories PLR (Santé / Juridique-judiciaire / Technique et cadre de vie) affichées en **badge
+  automatique** selon les caisses, avec **CIPAV en choix manuel** (elle peut couvrir plusieurs
+  catégories, donc non forcée).
+- Fiche de paie « assimilé salarié » ; suppression du bloc `Modules avancés` redondant.
+- Round-trip via `auditAdapter`. Les champs restent aplatis dans `PersonInfo` / `DossierMembre` ; le
+  regroupement en sous-objet `situationProfessionnelle` et le référentiel Memento associé sont
+  reportés (voir `docs/ROADMAP.md` et les dettes des PR #659).
+- Nettoyage de code mort : suppression de `LockedRow` / `audit-locked-row*`, de l'ancien `csp` /
+  `ProfessionCsp` et de l'input « Avantages en nature divers ».
 
 ### Budget & capacité
 
