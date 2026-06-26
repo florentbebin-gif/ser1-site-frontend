@@ -2,17 +2,19 @@ import type { SourceRef } from './types';
 import { evaluateDossierPatrimonialCompletion } from './patrimonial';
 import type {
   DossierCompletionStatus,
+  DossierContrainte,
+  DossierDonationSynthetique,
   DossierFoyer,
   DossierMembre,
+  DossierObjectif,
+  DossierOperationPrevue,
   DossierPatrimonial,
   DossierPatrimonialStatus,
   DossierRegimeMatrimonial,
   DossierSituationFamiliale,
-  DossierDonationSynthetique,
-  DossierObjectif,
-  DossierContrainte,
-  DossierOperationPrevue,
+  DossierTestamentSynthetique,
 } from './patrimonial';
+import { normalizeDossierRegimeDdvOptions } from './ddvOptionMigration';
 
 export const DOSSIERS_PATRIMONIAUX_TABLE = 'dossiers_patrimoniaux';
 
@@ -22,6 +24,7 @@ export interface DossierPatrimonialPayload {
   situationFamiliale: DossierSituationFamiliale;
   regimeMatrimonial: DossierRegimeMatrimonial | null;
   donationsSynthetiques: DossierDonationSynthetique[];
+  testamentsSynthetiques?: DossierTestamentSynthetique[];
   objectifs: DossierObjectif[];
   contraintes: DossierContrainte[];
   operationsPrevues: DossierOperationPrevue[];
@@ -66,6 +69,7 @@ export function toDossierPatrimonialUpsertRow(
       situationFamiliale: dossier.situationFamiliale,
       regimeMatrimonial: dossier.regimeMatrimonial,
       donationsSynthetiques: dossier.donationsSynthetiques,
+      testamentsSynthetiques: dossier.testamentsSynthetiques,
       objectifs: dossier.objectifs,
       contraintes: dossier.contraintes,
       operationsPrevues: dossier.operationsPrevues,
@@ -90,6 +94,8 @@ export function fromDossierPatrimonialRow(row: DossierPatrimonialRow): DossierPa
     );
   }
 
+  const regimeMatrimonial = normalizeDossierRegimeDdvOptions(row.data.regimeMatrimonial);
+
   return {
     id: row.id,
     ownerUserId: row.user_id,
@@ -97,8 +103,9 @@ export function fromDossierPatrimonialRow(row: DossierPatrimonialRow): DossierPa
     foyer: row.data.foyer,
     membres: row.data.membres,
     situationFamiliale: row.data.situationFamiliale,
-    regimeMatrimonial: row.data.regimeMatrimonial,
+    regimeMatrimonial,
     donationsSynthetiques: row.data.donationsSynthetiques,
+    testamentsSynthetiques: row.data.testamentsSynthetiques ?? [],
     objectifs: row.data.objectifs,
     contraintes: row.data.contraintes,
     operationsPrevues: row.data.operationsPrevues,

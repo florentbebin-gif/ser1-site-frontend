@@ -46,8 +46,6 @@ export interface AuditStatusBarViewModel {
   pointsToComplete: number;
 }
 
-const TAX_COUPLE_STATUTS = new Set(['marie', 'pacse']);
-
 const SECTION_STATUS_LABELS: Record<AuditSectionStatus, string> = {
   vide: 'À compléter',
   partiel: 'Partiel',
@@ -96,11 +94,13 @@ export function buildAuditProgressSections(
     ),
     availableSection(
       'regime-donations',
-      'Régime matrimonial & donations',
+      'Libéralités & transmission',
       'F1',
-      dossier.regimeMatrimonial || dossier.donationsSynthetiques.length > 0
+      dossier.regimeMatrimonial ||
+        dossier.donationsSynthetiques.length > 0 ||
+        dossier.testamentsSynthetiques.length > 0
         ? 'complet'
-        : TAX_COUPLE_STATUTS.has(dossier.situationFamiliale.statut)
+        : dossier.situationFamiliale.statut === 'marie'
           ? 'partiel'
           : 'vide',
     ),

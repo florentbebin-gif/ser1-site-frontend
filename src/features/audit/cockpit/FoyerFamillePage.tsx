@@ -175,13 +175,26 @@ function buildFoyerCards(
     situationFamiliale.mr.profession,
     situationFamiliale.mme?.profession,
   ].filter((profession): profession is string => Boolean(profession?.trim()));
-  const regimeSummary = situationCivile.regimeMatrimonial
-    ? labelForOption(REGIME_OPTIONS, situationCivile.regimeMatrimonial)
-    : situationCivile.donations.length > 0
-      ? `${situationCivile.donations.length} libéralité(s) renseignée(s)`
-      : coupleStatus
-        ? 'Régime à compléter'
-        : 'Libéralités à qualifier';
+  const isMarried = situationFamiliale.situationMatrimoniale === 'marie';
+  const hasTransmissionData =
+    situationCivile.donations.length > 0 || situationCivile.testaments.length > 0;
+  const regimeSummary =
+    isMarried && situationCivile.regimeMatrimonial
+      ? labelForOption(REGIME_OPTIONS, situationCivile.regimeMatrimonial)
+      : hasTransmissionData
+        ? [
+            situationCivile.donations.length > 0
+              ? `${situationCivile.donations.length} donation(s)`
+              : '',
+            situationCivile.testaments.length > 0
+              ? `${situationCivile.testaments.length} testament(s)`
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        : isMarried
+          ? 'Régime à compléter'
+          : 'Libéralités à qualifier';
 
   return [
     {
@@ -249,42 +262,40 @@ function buildFoyerCards(
     },
     {
       id: 'regime-donations',
-      title: 'Régime matrimonial & libéralités',
+      title: 'Libéralités & transmission',
       status:
-        situationCivile.regimeMatrimonial || situationCivile.donations.length > 0
+        (isMarried && situationCivile.regimeMatrimonial) || hasTransmissionData
           ? 'complet'
-          : coupleStatus
+          : isMarried
             ? 'partiel'
             : 'vide',
       summaryLine: regimeSummary,
       known: [
-        situationCivile.regimeMatrimonial
+        isMarried && situationCivile.regimeMatrimonial
           ? labelForOption(REGIME_OPTIONS, situationCivile.regimeMatrimonial)
           : '',
-        situationCivile.contratMariage ? 'Contrat de mariage renseigné' : '',
         situationCivile.donations.length > 0
           ? `${situationCivile.donations.length} donation(s) synthétique(s)`
           : '',
+        situationCivile.testaments.length > 0
+          ? `${situationCivile.testaments.length} testament(s) synthétique(s)`
+          : '',
       ].filter(Boolean),
       missing: [
-        coupleStatus && !situationCivile.regimeMatrimonial ? 'Régime matrimonial' : '',
-        situationCivile.donations.some((donation) => !donation.beneficiaire.trim())
-          ? 'Bénéficiaire donation'
+        isMarried && !situationCivile.regimeMatrimonial ? 'Régime matrimonial' : '',
+        situationCivile.donations.some(
+          (donation) => !donation.donataire && !donation.beneficiaire.trim(),
+        )
+          ? 'Donataire donation'
           : '',
       ].filter(Boolean),
       alert:
-        coupleStatus && !situationCivile.regimeMatrimonial
+        isMarried && !situationCivile.regimeMatrimonial
           ? 'Le régime est requis pour qualifier le foyer.'
           : undefined,
       icon: <IconGift />,
-      ctaLabel:
-        situationCivile.regimeMatrimonial || situationCivile.donations.length > 0
-          ? 'Modifier'
-          : 'Compléter',
-      ctaTone:
-        situationCivile.regimeMatrimonial || situationCivile.donations.length > 0
-          ? undefined
-          : 'required',
+      ctaLabel: situationCivile.regimeMatrimonial || hasTransmissionData ? 'Modifier' : 'Compléter',
+      ctaTone: situationCivile.regimeMatrimonial || hasTransmissionData ? undefined : 'required',
       onAction: () => openDrawer('regime'),
     },
     {

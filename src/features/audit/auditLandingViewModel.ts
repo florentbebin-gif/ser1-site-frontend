@@ -353,7 +353,8 @@ function isFoyerStarted(dossier: DossierPatrimonial): boolean {
     dossier.situationFamiliale.statut !== 'celibataire' ||
     dossier.situationFamiliale.nombreEnfants > 0 ||
     dossier.regimeMatrimonial !== null ||
-    dossier.donationsSynthetiques.length > 0
+    dossier.donationsSynthetiques.length > 0 ||
+    dossier.testamentsSynthetiques.length > 0
   );
 }
 

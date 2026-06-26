@@ -50,6 +50,7 @@ describe('buildDossierPatrimonialFromAudit', () => {
       dureeMariagesPrecedents: 2,
       enfants: [
         {
+          id: 'enfant-lou',
           prenom: 'Lou',
           nom: 'Martin',
           dateNaissance: '2010-03-03',
@@ -76,7 +77,9 @@ describe('buildDossierPatrimonialFromAudit', () => {
       dateContrat: '2005-05-01',
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
-      avantagesMatrimoniaux: ['partage_inegal'],
+      donationDernierVivantMme: true,
+      ddvOptionMme: 'pleine_propriete_quotite',
+      avantagesMatrimoniaux: ['partage_inegal', 'preciput'],
       donations: [
         {
           id: 'donation-1',
@@ -84,9 +87,29 @@ describe('buildDossierPatrimonialFromAudit', () => {
           date: '2020-01-01',
           montant: 15000,
           beneficiaire: 'Lou',
+          donateur: 'client',
+          donataire: 'enfant:enfant-lou',
+          qualificationRapport: 'rapportable',
+          valeurActuelle: 19000,
+          avecReserveUsufruit: true,
+          usufruitSuccessif: true,
+          usufruitSuccessifBeneficiaire: 'conjoint',
+          donSommeArgentExonere: true,
+          description: 'Donation familiale',
         },
       ],
-      testaments: [],
+      testaments: [
+        {
+          id: 'testament-1',
+          date: '2021-02-02',
+          type: 'authentique',
+          actif: true,
+          dispositionType: 'legs_universel',
+          beneficiaire: 'conjoint',
+          quotePartPct: 100,
+          description: 'Testament reçu par notaire',
+        },
+      ],
     };
     audit.objectifs = ['preparer_transmission', 'proteger_conjoint'];
 
@@ -157,7 +180,9 @@ describe('buildDossierPatrimonialFromAudit', () => {
       dateContrat: '2005-05-01',
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
-      avantagesMatrimoniaux: ['partage_inegal'],
+      donationDernierVivantMme: true,
+      ddvOptionMme: 'pleine_propriete_quotite',
+      avantagesMatrimoniaux: ['partage_inegal', 'preciput'],
     });
     expect(dossier.situationFamiliale).toMatchObject({
       dateUnion: '2005-06-01',
@@ -172,6 +197,27 @@ describe('buildDossierPatrimonialFromAudit', () => {
         date: '2020-01-01',
         montant: 15000,
         beneficiaireLabel: 'Lou',
+        donateur: 'client',
+        donataire: 'enfant:enfant-lou',
+        qualificationRapport: 'rapportable',
+        valeurActuelle: 19000,
+        avecReserveUsufruit: true,
+        usufruitSuccessif: true,
+        usufruitSuccessifBeneficiaire: 'conjoint',
+        donSommeArgentExonere: true,
+        description: 'Donation familiale',
+      }),
+    ]);
+    expect(dossier.testamentsSynthetiques).toEqual([
+      expect.objectContaining({
+        id: 'testament-1',
+        date: '2021-02-02',
+        type: 'authentique',
+        actif: true,
+        dispositionType: 'legs_universel',
+        beneficiaire: 'conjoint',
+        quotePartPct: 100,
+        description: 'Testament reçu par notaire',
       }),
     ]);
     expect(dossier.objectifs.map((objectif) => objectif.code)).toEqual([
@@ -209,6 +255,7 @@ describe('buildDossierPatrimonialFromAudit', () => {
     };
     audit.situationFamiliale.enfants = [
       {
+        id: 'enfant-lou',
         prenom: 'Lou',
         nom: 'Martin',
         dateNaissance: '2010-03-03',
@@ -226,6 +273,21 @@ describe('buildDossierPatrimonialFromAudit', () => {
         date: '2020-01-01',
         montant: 15000,
         beneficiaire: 'Lou',
+        donateur: 'client',
+        donataire: 'enfant:enfant-lou',
+        qualificationRapport: 'hors_part',
+        valeurActuelle: 17000,
+      },
+    ];
+    audit.situationCivile.testaments = [
+      {
+        id: 'testament-1',
+        type: 'olographe',
+        date: '2024-01-01',
+        actif: true,
+        dispositionType: 'legs_particulier',
+        beneficiaire: 'enfant:enfant-lou',
+        quotePartPct: 25,
       },
     ];
     audit.objectifs = ['developper_patrimoine'];
@@ -258,6 +320,18 @@ describe('buildDossierPatrimonialFromAudit', () => {
       expect.objectContaining({
         id: 'donation-1',
         beneficiaire: 'Lou',
+        donataire: 'enfant:enfant-lou',
+        qualificationRapport: 'hors_part',
+        valeurActuelle: 17000,
+      }),
+    ]);
+    expect(restored.situationCivile.testaments).toEqual([
+      expect.objectContaining({
+        id: 'testament-1',
+        actif: true,
+        dispositionType: 'legs_particulier',
+        beneficiaire: 'enfant:enfant-lou',
+        quotePartPct: 25,
       }),
     ]);
     expect(restored.objectifs).toEqual(['developper_patrimoine']);

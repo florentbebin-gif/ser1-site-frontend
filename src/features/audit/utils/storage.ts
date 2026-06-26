@@ -6,6 +6,7 @@
  */
 
 import type { DossierAudit } from '@/domain/audit/types';
+import { normalizeAuditDossierDdvOptions } from '@/domain/dossier/ddvOptionMigration';
 import { createTrackedObjectURL } from '@/utils/export/createTrackedObjectURL';
 
 const SESSION_STORAGE_KEY = 'ser1_audit_draft';
@@ -47,7 +48,7 @@ export function importDossierFromFile(file: File): Promise<DossierAudit> {
         // Mise à jour de la date de modification
         data.dateModification = new Date().toISOString();
 
-        resolve(data as DossierAudit);
+        resolve(normalizeAuditDossierDdvOptions(data as DossierAudit));
       } catch {
         reject(
           new Error(
@@ -83,7 +84,7 @@ export function loadDraftFromSession(): DossierAudit | null {
   try {
     const data = sessionStorage.getItem(SESSION_STORAGE_KEY);
     if (data) {
-      return JSON.parse(data) as DossierAudit;
+      return normalizeAuditDossierDdvOptions(JSON.parse(data) as DossierAudit);
     }
   } catch (error) {
     console.warn('Impossible de charger le brouillon:', error);

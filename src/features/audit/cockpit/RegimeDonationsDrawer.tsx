@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 
 import {
   type AvantageMatrimonial,
@@ -7,10 +7,12 @@ import {
   type SituationCivile,
   type SituationFamiliale,
 } from '@/domain/audit/types';
+import { REGIMES_MATRIMONIAUX } from '@/engine/succession/civil';
 import { IconPlus } from '@/icons/ui';
 
+import { FoyerAvatarBadge } from '../components/FoyerAvatarBadge';
 import { AuditDrawerXL } from '../components/AuditDrawerXL';
-import { ChipMultiSelect, TagRow, TagToggle } from './auditDrawerControls';
+import { ChipMultiSelect, TagToggle } from './auditDrawerControls';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
@@ -18,25 +20,33 @@ import {
   DateField,
   DrawerFooter,
   emptyToUndefined,
+  fullName,
   REGIME_OPTIONS,
   SelectField,
-  TextField,
   updateAt,
 } from './auditCockpitShared';
 import { FoyerDonationFields } from './FoyerDonationFields';
+import { TestamentSection } from './TestamentSection';
+import { buildAuditPersonOptions } from './transmissionPersonOptions';
 
-const REGIME_STATUSES: Array<SituationFamiliale['situationMatrimoniale']> = ['marie', 'pacse'];
+const MARRIAGE_STATUS: SituationFamiliale['situationMatrimoniale'] = 'marie';
+const COUPLE_STATUSES = new Set<SituationFamiliale['situationMatrimoniale']>([
+  'marie',
+  'pacse',
+  'concubinage',
+]);
 
 const DDV_OPTIONS = [
   { value: 'usufruit_total', label: 'Totalité en usufruit' },
-  { value: 'quotite_disponible_pp', label: 'Quotité disponible en pleine propriété' },
-  { value: 'mixte_quart_pp_trois_quarts_us', label: 'Mixte 1/4 PP + 3/4 US' },
+  { value: 'pleine_propriete_quotite', label: 'Quotité disponible en pleine propriété' },
+  { value: 'mixte', label: 'Mixte 1/4 PP + 3/4 US' },
   { value: 'pleine_propriete_totale', label: 'Totalité en pleine propriété' },
 ] satisfies Array<{ value: DdvOption; label: string }>;
 
 const AVANTAGE_OPTIONS = [
   { value: 'partage_inegal', label: 'Clause de partage inégal' },
   { value: 'attribution_integrale', label: 'Attribution intégrale des biens communs' },
+  { value: 'preciput', label: 'Clause de préciput' },
 ] satisfies Array<{ value: AvantageMatrimonial; label: string }>;
 
 export function RegimeDonationsDrawer({
@@ -54,23 +64,50 @@ export function RegimeDonationsDrawer({
   useEffect(() => {
     if (open) setForm(dossier.situationCivile);
   }, [dossier.situationCivile, open]);
-  const showRegime = REGIME_STATUSES.includes(dossier.situationFamiliale.situationMatrimoniale);
+  const isMarried = dossier.situationFamiliale.situationMatrimoniale === MARRIAGE_STATUS;
+  const hasCouplePerson =
+    COUPLE_STATUSES.has(dossier.situationFamiliale.situationMatrimoniale) &&
+    Boolean(dossier.situationFamiliale.mme);
+  const personOptions = useMemo(
+    () => buildAuditPersonOptions(dossier.situationFamiliale),
+    [dossier.situationFamiliale],
+  );
 
   return (
     <AuditDrawerXL
       open={open}
-      title={showRegime ? 'Régime & libéralités' : 'Libéralités & transmission'}
-      subtitle={
-        showRegime
-          ? 'Régime et libéralités disponibles dans le socle F1.'
-          : 'Libéralités consignées hors régime matrimonial.'
-      }
+      title="Libéralités & transmission"
+      subtitle="Régime, donations et testaments consignés dans le socle F1."
       onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
+      footer={
+        <DrawerFooter
+          onCancel={onClose}
+          onSave={() => onSave(sanitizeHiddenCivilFields(form, dossier.situationFamiliale))}
+        />
+      }
     >
       <div className="audit-drawer-form">
-        {showRegime ? <RegimeMatrimonialSection form={form} onChange={setForm} /> : null}
-        <OptimisationCivilePanel form={form} onChange={setForm} />
+        {isMarried ? <RegimeMatrimonialSection form={form} onChange={setForm} /> : null}
+        {isMarried ? (
+          <ProtectionConjointPanel
+            form={form}
+            situationFamiliale={dossier.situationFamiliale}
+            onChange={setForm}
+          />
+        ) : null}
+        <TestamentSection
+          form={form}
+          situationFamiliale={dossier.situationFamiliale}
+          personOptions={personOptions}
+          includeConjoint={hasCouplePerson}
+          onChange={setForm}
+        />
+        {personOptions.hasUnreferencableRelatives ? (
+          <p className="audit-drawer-hint">
+            Certaines personnes doivent être complétées dans Filiation &amp; proches avant d’être
+            reliées à une libéralité.
+          </p>
+        ) : null}
         <button
           type="button"
           className="audit-drawer-add"
@@ -98,6 +135,7 @@ export function RegimeDonationsDrawer({
                       donations: updateAt(previous.donations, index, nextDonation),
                     }))
                   }
+                  personOptions={personOptions}
                   onRemove={() =>
                     setForm((previous) => ({
                       ...previous,
@@ -123,7 +161,7 @@ function RegimeMatrimonialSection({
 }): ReactElement {
   return (
     <AuditDrawerSection title="Régime matrimonial">
-      <AuditDrawerFieldGrid columns={3}>
+      <AuditDrawerFieldGrid columns={2}>
         <SelectField
           label="Régime matrimonial"
           value={form.regimeMatrimonial ?? ''}
@@ -145,40 +183,37 @@ function RegimeMatrimonialSection({
             }))
           }
         />
-        <TextField
-          label="Notaire"
-          value={form.notaire ?? ''}
-          onChange={(notaire) =>
-            onChange((previous) => ({ ...previous, notaire: emptyToUndefined(notaire) }))
-          }
-        />
       </AuditDrawerFieldGrid>
-      <TagRow>
-        <TagToggle
-          label="Contrat de mariage"
-          checked={form.contratMariage}
-          onChange={(contratMariage) => onChange((previous) => ({ ...previous, contratMariage }))}
-        />
-      </TagRow>
     </AuditDrawerSection>
   );
 }
 
-function OptimisationCivilePanel({
+function ProtectionConjointPanel({
   form,
+  situationFamiliale,
   onChange,
 }: {
   form: SituationCivile;
+  situationFamiliale: SituationFamiliale;
   onChange: (updater: (previous: SituationCivile) => SituationCivile) => void;
 }): ReactElement {
+  const eligibleAvantages = getEligibleAvantages(form.regimeMatrimonial);
+  const principalName = fullName(situationFamiliale.mr) || 'Client principal';
+  const conjointName = situationFamiliale.mme
+    ? fullName(situationFamiliale.mme) || 'Conjoint'
+    : 'Conjoint';
+
   return (
     <AuditDrawerSection
-      title="Optimisation civile"
-      description="Configuration déclarative des protections civiles, sans calcul successoral runtime."
+      title="Protection du conjoint survivant"
+      description="Protections civiles déclaratives, sans liquidation successorale dans l’audit."
     >
       <div className="audit-optimisation-grid">
         <DdvConfigurator
-          title="DDV client principal"
+          title={principalName}
+          fallbackTitle="Client principal"
+          kind={situationFamiliale.mr.avatarKind ?? 'homme'}
+          appearance={situationFamiliale.mr.avatarAppearance}
           checked={Boolean(form.donationDernierVivantMr)}
           value={form.ddvOptionMr}
           onToggle={(donationDernierVivantMr) =>
@@ -193,7 +228,10 @@ function OptimisationCivilePanel({
           onSelect={(ddvOptionMr) => onChange((previous) => ({ ...previous, ddvOptionMr }))}
         />
         <DdvConfigurator
-          title="DDV conjoint"
+          title={conjointName}
+          fallbackTitle="Conjoint"
+          kind={situationFamiliale.mme?.avatarKind ?? 'femme'}
+          appearance={situationFamiliale.mme?.avatarAppearance}
           checked={Boolean(form.donationDernierVivantMme)}
           value={form.ddvOptionMme}
           onToggle={(donationDernierVivantMme) =>
@@ -208,26 +246,36 @@ function OptimisationCivilePanel({
           onSelect={(ddvOptionMme) => onChange((previous) => ({ ...previous, ddvOptionMme }))}
         />
       </div>
-      <ChipMultiSelect
-        label="Avantages matrimoniaux"
-        options={AVANTAGE_OPTIONS}
-        values={form.avantagesMatrimoniaux ?? []}
-        onChange={(avantagesMatrimoniaux) =>
-          onChange((previous) => ({ ...previous, avantagesMatrimoniaux }))
-        }
-      />
+      {eligibleAvantages.length > 0 ? (
+        <ChipMultiSelect
+          label="Avantages matrimoniaux"
+          options={eligibleAvantages}
+          values={(form.avantagesMatrimoniaux ?? []).filter((value) =>
+            eligibleAvantages.some((option) => option.value === value),
+          )}
+          onChange={(avantagesMatrimoniaux) =>
+            onChange((previous) => ({ ...previous, avantagesMatrimoniaux }))
+          }
+        />
+      ) : null}
     </AuditDrawerSection>
   );
 }
 
 function DdvConfigurator({
   title,
+  fallbackTitle,
+  kind,
+  appearance,
   checked,
   value,
   onToggle,
   onSelect,
 }: {
   title: string;
+  fallbackTitle: string;
+  kind: Parameters<typeof FoyerAvatarBadge>[0]['kind'];
+  appearance: Parameters<typeof FoyerAvatarBadge>[0]['appearance'];
   checked: boolean;
   value: DdvOption | undefined;
   onToggle: (checked: boolean) => void;
@@ -236,28 +284,78 @@ function DdvConfigurator({
   return (
     <section className="audit-ddv-card" aria-label={title}>
       <div className="audit-ddv-card__head">
-        <span className="audit-ddv-card__title">{title}</span>
+        <span className="audit-ddv-card__identity">
+          <FoyerAvatarBadge label={title} kind={kind} appearance={appearance} />
+          <span>
+            <span className="audit-ddv-card__title">{title}</span>
+            <span className="audit-ddv-card__subtitle">{fallbackTitle}</span>
+          </span>
+        </span>
         <TagToggle label="Présence d’une DDV" checked={checked} onChange={onToggle} />
       </div>
       {checked ? (
-        <div className="audit-ddv-card__options">
+        <div className="audit-ddv-radio-list" role="radiogroup" aria-label={`Option DDV ${title}`}>
           {DDV_OPTIONS.map((option) => {
             const selected = value === option.value;
             return (
               <button
                 type="button"
                 key={option.value}
-                className="audit-ddv-card__option"
+                className="audit-ddv-radio"
+                role="radio"
+                aria-checked={selected}
                 data-selected={selected ? 'true' : undefined}
-                aria-pressed={selected}
                 onClick={() => onSelect(option.value)}
               >
+                <span aria-hidden="true" />
                 {option.label}
               </button>
             );
           })}
         </div>
-      ) : null}
+      ) : (
+        <p className="audit-ddv-card__empty">Aucune donation entre époux renseignée.</p>
+      )}
     </section>
   );
+}
+
+function getEligibleAvantages(
+  regimeMatrimonial: SituationCivile['regimeMatrimonial'],
+): typeof AVANTAGE_OPTIONS {
+  if (!regimeMatrimonial) return [];
+  const regime = REGIMES_MATRIMONIAUX[regimeMatrimonial];
+  if (regime.category === 'communautaire') return AVANTAGE_OPTIONS;
+  if (regimeMatrimonial === 'separation_biens_societe_acquets') {
+    return AVANTAGE_OPTIONS.filter((option) => option.value === 'preciput');
+  }
+  return [];
+}
+
+function sanitizeHiddenCivilFields(
+  form: SituationCivile,
+  situationFamiliale: SituationFamiliale,
+): SituationCivile {
+  if (situationFamiliale.situationMatrimoniale !== MARRIAGE_STATUS) {
+    return {
+      ...form,
+      regimeMatrimonial: undefined,
+      contratMariage: false,
+      dateContrat: undefined,
+      notaire: undefined,
+      donationDernierVivantMr: undefined,
+      donationDernierVivantMme: undefined,
+      ddvOptionMr: undefined,
+      ddvOptionMme: undefined,
+      avantagesMatrimoniaux: undefined,
+    };
+  }
+
+  const eligibleAvantages = getEligibleAvantages(form.regimeMatrimonial);
+  return {
+    ...form,
+    avantagesMatrimoniaux: form.avantagesMatrimoniaux?.filter((value) =>
+      eligibleAvantages.some((option) => option.value === value),
+    ),
+  };
 }

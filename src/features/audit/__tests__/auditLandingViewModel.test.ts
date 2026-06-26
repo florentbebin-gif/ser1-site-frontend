@@ -118,7 +118,7 @@ describe('buildAuditLandingViewModel', () => {
       'Dossier',
       'Situation familiale',
       'Filiation',
-      'Régime matrimonial & donations',
+      'Libéralités & transmission',
       'Situation professionnelle',
       'Budget & capacité',
       'Sociétés / organigramme',

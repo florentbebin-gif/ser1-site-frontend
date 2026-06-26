@@ -35,6 +35,7 @@ export type {
   DossierRequiredField,
   DossierSituationFamiliale,
   DossierSituationFamilialeStatut,
+  DossierTestamentSynthetique,
 } from './patrimonial';
 export type {
   DossierPatrimonialListRow,

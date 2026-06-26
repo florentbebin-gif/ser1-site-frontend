@@ -15,6 +15,12 @@ export type RegimeMatrimonial =
 
 export type RegimeCategory = 'communautaire' | 'separatiste';
 
+export type DonationDernierVivantOption =
+  | 'usufruit_total'
+  | 'pleine_propriete_quotite'
+  | 'mixte'
+  | 'pleine_propriete_totale';
+
 export interface RegimeInfo {
   id: RegimeMatrimonial;
   label: string;
