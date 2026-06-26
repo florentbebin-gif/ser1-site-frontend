@@ -521,6 +521,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+.audit-foyer-filiation {
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+}
+
 .audit-foyer-section-head {
   display: grid;
   gap: var(--space-1);
@@ -694,7 +699,9 @@
 .audit-foyer-filiation__canvas {
   display: grid;
   align-items: center;
-  min-height: 194px;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   padding: var(--space-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -702,7 +709,8 @@
 }
 
 .audit-foyer-filiation .audit-fil {
-  max-height: 182px;
+  height: 100%;
+  max-height: none;
 }
 
 .audit-foyer-filiation .audit-fil__edge {

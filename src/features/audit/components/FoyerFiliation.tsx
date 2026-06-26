@@ -10,11 +10,16 @@
 
 import { useId, type ReactElement } from 'react';
 
-import type { AuditAvatarAppearance, ProcheLien } from '@/domain/audit/types';
+import type { ProcheLien } from '@/domain/audit/types';
 
-import type { AuditLandingAvatarKind, AuditLandingMember } from '../auditLandingViewModel';
+import type { AuditLandingMember } from '../auditLandingViewModel';
 
-import { FOYER_AVATAR_ART_RADIUS, FoyerAvatarArt, FoyerAvatarClipDef } from './FoyerAvatarArt';
+import { FoyerAvatarClipDef } from './FoyerAvatarArt';
+import {
+  FiliationPill,
+  type FiliationNode,
+  type FiliationNodeVariant,
+} from './FoyerFiliationParts';
 
 interface FoyerFiliationProps {
   principal: AuditLandingMember | null;
@@ -26,28 +31,10 @@ interface FoyerFiliationProps {
 }
 
 const PILL_HEIGHT = 42;
-const AVATAR_R = 12;
 const Y_PARENTS = 12;
 const BOND_GAP = 20;
 const CHILD_GAP = 12;
 const MARGIN = 8;
-type NodeVariant = 'parent' | 'enfant' | 'proche';
-
-interface LaidOutNode {
-  x: number;
-  label: string;
-  sublabel: string | null;
-  variant: NodeVariant;
-  avatarKind: AuditLandingAvatarKind;
-  avatarAppearance?: AuditAvatarAppearance;
-  memberId: string;
-  localId?: string;
-  estCommun?: boolean;
-  parentPrincipal?: 'client' | 'conjoint';
-  lienParente?: ProcheLien;
-  parentEnfantId?: string;
-  rattachementBranche?: string;
-}
 
 export function FoyerFiliation({
   principal,
@@ -129,7 +116,7 @@ export function FoyerFiliation({
     yParents + pillHeight + MARGIN,
   );
 
-  const ascendantNodes: LaidOutNode[] = [];
+  const ascendantNodes: FiliationNode[] = [];
   const ascendantsStart = (width - ascendantsWidth) / 2;
   ascendants.forEach((member, index) => {
     ascendantNodes.push({
@@ -147,7 +134,7 @@ export function FoyerFiliation({
     });
   });
 
-  const parentNodes: LaidOutNode[] = [];
+  const parentNodes: FiliationNode[] = [];
   const parentsStart = (width - parentsWidth) / 2;
   parents.forEach((member, index) => {
     parentNodes.push({
@@ -162,7 +149,7 @@ export function FoyerFiliation({
     });
   });
 
-  const childNodes: LaidOutNode[] = [];
+  const childNodes: FiliationNode[] = [];
   const centerX = width / 2;
   if (commonMembers.length > 0) {
     const commonStart = centerX - commonWidth / 2;
@@ -198,7 +185,7 @@ export function FoyerFiliation({
   }
 
   function pushChildNodes(
-    nodes: LaidOutNode[],
+    nodes: FiliationNode[],
     members: AuditLandingMember[],
     startX: number,
     nodeWidth: number,
@@ -219,7 +206,7 @@ export function FoyerFiliation({
     });
   }
 
-  const petitEnfantNodes: LaidOutNode[] = [];
+  const petitEnfantNodes: FiliationNode[] = [];
   const petitsEnfantsStart = (width - petitsEnfantsWidth) / 2;
   petitsEnfants.forEach((member, index) => {
     petitEnfantNodes.push({
@@ -387,94 +374,6 @@ export function FoyerFiliation({
   );
 }
 
-interface FiliationPillProps {
-  node: LaidOutNode;
-  y: number;
-  width: number;
-  height: number;
-  clipId: string;
-  compact: boolean;
-}
-
-function FiliationPill({
-  node,
-  y,
-  width,
-  height,
-  clipId,
-  compact,
-}: FiliationPillProps): ReactElement {
-  const avatarCx = compact ? node.x + 22 : node.x + width / 2;
-  const avatarCy = compact ? y + height / 2 : y + AVATAR_R + 4;
-  const textX = compact ? node.x + width / 2 + 12 : node.x + width / 2;
-  return (
-    <g
-      className={`audit-fil__node audit-fil__node--${node.variant} audit-fil__node--${node.avatarKind}`}
-    >
-      <rect x={round(node.x)} y={y} width={round(width)} height={height} rx={height / 2} />
-      <FiliationAvatar
-        kind={node.avatarKind}
-        appearance={node.avatarAppearance}
-        cx={avatarCx}
-        cy={avatarCy}
-        clipId={clipId}
-        compact={compact}
-      />
-      <text
-        className="audit-fil__name"
-        x={round(textX)}
-        y={compact ? y + height / 2 - 5 : y + height - 9}
-        dominantBaseline="central"
-        textAnchor="middle"
-      >
-        {node.label}
-      </text>
-      {compact && node.sublabel ? (
-        <text
-          className="audit-fil__age"
-          x={round(textX)}
-          y={y + height / 2 + 10}
-          dominantBaseline="central"
-          textAnchor="middle"
-        >
-          {node.sublabel}
-        </text>
-      ) : null}
-    </g>
-  );
-}
-
-interface FiliationAvatarProps {
-  kind: AuditLandingAvatarKind;
-  appearance?: AuditAvatarAppearance;
-  cx: number;
-  cy: number;
-  clipId: string;
-  compact: boolean;
-}
-
-function FiliationAvatar({
-  kind,
-  appearance,
-  cx,
-  cy,
-  clipId,
-  compact,
-}: FiliationAvatarProps): ReactElement {
-  const scale = (compact ? 10 : AVATAR_R) / FOYER_AVATAR_ART_RADIUS;
-
-  return (
-    <g
-      className={`audit-fil__avatar audit-fil__avatar--${kind}`}
-      transform={`translate(${round(cx)} ${round(cy)}) scale(${scale})`}
-    >
-      <g className={`audit-fil__avatar-image audit-fil__avatar-image--${kind}`}>
-        <FoyerAvatarArt kind={kind} clipId={clipId} appearance={appearance} />
-      </g>
-    </g>
-  );
-}
-
 function clamp(min: number, value: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -485,7 +384,7 @@ function groupWidth(count: number, pillWidth: number): number {
 
 function labelForMember(
   member: AuditLandingMember,
-  variant: NodeVariant,
+  variant: FiliationNodeVariant,
   compact: boolean,
 ): string {
   if (!compact) return member.prenom;
@@ -514,10 +413,10 @@ function relationLabel(lien: ProcheLien): string {
 }
 
 function targetParentFor(
-  node: LaidOutNode,
-  principal: LaidOutNode | undefined,
-  conjoint: LaidOutNode | undefined,
-): LaidOutNode | undefined {
+  node: FiliationNode,
+  principal: FiliationNode | undefined,
+  conjoint: FiliationNode | undefined,
+): FiliationNode | undefined {
   if (node.parentPrincipal === 'conjoint') return conjoint ?? principal;
   if (node.rattachementBranche?.startsWith('conjoint')) return conjoint ?? principal;
   return principal ?? conjoint;
