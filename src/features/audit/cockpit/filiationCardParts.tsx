@@ -181,14 +181,23 @@ export function SegmentedReveal({
 /** Zone « Situation civile & fiscale » partagée enfant / petit-enfant. */
 export function CivilFiscalZone({
   value,
+  transmission,
+  compact = false,
   onChange,
 }: {
   value: CivilFiscalFields;
+  transmission?: ReactNode;
+  compact?: boolean;
   onChange: (next: CivilFiscalFields) => void;
 }): ReactElement {
   const aCharge = Boolean(value.fiscalementACharge);
   return (
-    <div className="audit-related-card__qualification" data-school={aCharge ? 'true' : undefined}>
+    <div
+      className="audit-related-card__qualification"
+      data-compact={compact ? 'true' : undefined}
+      data-school={aCharge ? 'true' : undefined}
+      data-transmission={transmission ? 'true' : undefined}
+    >
       <div className="audit-related-card__civil">
         <p className="audit-related-card__group-label">Situation civile &amp; fiscale</p>
         <div className="audit-related-card__tag-row">
@@ -230,6 +239,7 @@ export function CivilFiscalZone({
           />
         ) : null}
       </div>
+      {transmission ? <div className="audit-related-card__succession">{transmission}</div> : null}
       {aCharge ? (
         <div className="audit-related-card__school">
           <SelectField

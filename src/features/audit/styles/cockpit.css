@@ -1677,6 +1677,21 @@
   grid-template-columns: minmax(0, 1fr) minmax(160px, 0.34fr);
 }
 
+.audit-related-card__qualification[data-transmission='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr);
+}
+
+.audit-related-card__qualification[data-transmission='true'][data-school='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr) minmax(160px, 0.34fr);
+}
+
+.audit-related-card__qualification[data-compact='true'],
+.audit-related-card__qualification[data-compact='true'][data-school='true'] {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0;
+  border-top: 0;
+}
+
 .audit-related-card__civil {
   display: grid;
   gap: var(--space-2);
@@ -1705,11 +1720,16 @@
   border-top: 1px solid color-mix(in srgb, var(--border-subtle) 60%, transparent);
 }
 
+.audit-related-card__qualification .audit-related-card__succession {
+  padding-top: 0;
+  border-top: 0;
+}
+
 /* Rattachement contextuel d'un proche (enfant rattaché / Client-Conjoint / branche). */
 .audit-related-card__attachment {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 360px;
+  min-width: 0;
 }
 
 /* Hint petit-enfant sans enfant déclaré, calé sur la hauteur d'un select. */
@@ -1741,9 +1761,16 @@
 
 /* Pastilles légères des proches simples (handicap, vivant sous le même toit). */
 .audit-related-card__light-tags {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-related-card__proche-secondary {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-4);
+  align-items: start;
   padding-top: var(--space-3);
   border-top: 1px solid color-mix(in srgb, var(--border-subtle) 76%, transparent);
 }
@@ -2275,12 +2302,11 @@
   .audit-related-card__grid[data-row='identity'],
   .audit-related-card__qualification,
   .audit-related-card__qualification[data-school='true'],
-  .audit-related-card__attachment {
+  .audit-related-card__qualification[data-transmission='true'],
+  .audit-related-card__qualification[data-transmission='true'][data-school='true'],
+  .audit-related-card__attachment,
+  .audit-related-card__proche-secondary {
     grid-template-columns: 1fr;
-  }
-
-  .audit-related-card__attachment {
-    max-width: none;
   }
 
   .audit-page-continuation {
