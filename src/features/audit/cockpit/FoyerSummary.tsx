@@ -18,6 +18,7 @@ import {
   REGIME_OPTIONS,
   SITUATION_OPTIONS,
 } from './auditCockpitShared';
+import { getProfessionalSituationLabel } from './professionFieldRules';
 
 interface FoyerFact {
   label: string;
@@ -147,7 +148,10 @@ function buildFoyerFacts(dossier: DossierAudit): FoyerFactColumns {
   const { situationFamiliale, situationCivile } = dossier;
   const principal = fullName(situationFamiliale.mr);
   const conjoint = situationFamiliale.mme ? fullName(situationFamiliale.mme) : '';
-  const conjointProfession = situationFamiliale.mme?.profession?.trim() ?? '';
+  const principalProfession = getProfessionalSituationLabel(situationFamiliale.mr);
+  const conjointProfession = situationFamiliale.mme
+    ? getProfessionalSituationLabel(situationFamiliale.mme)
+    : '';
   const conjointBirthDate = situationFamiliale.mme?.dateNaissance.trim() ?? '';
   const enfants = situationFamiliale.enfants
     .map((enfant) => enfant.prenom.trim())
@@ -167,7 +171,7 @@ function buildFoyerFacts(dossier: DossierAudit): FoyerFactColumns {
     },
     {
       label: 'Profession',
-      value: situationFamiliale.mr.profession || 'Non renseignée',
+      value: principalProfession || 'Non renseignée',
       icon: <IconBriefcase />,
       column: 'left',
     },

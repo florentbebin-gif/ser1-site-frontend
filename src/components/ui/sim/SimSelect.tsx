@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 export interface SimSelectOption {
   value: string;
   label: string;
+  group?: string;
   description?: string;
   disabled?: boolean;
 }
@@ -50,6 +51,9 @@ export function SimSelect({
   const listboxId = `${triggerId}-listbox`;
 
   const selectedIndex = options.findIndex((option) => option.value === value);
+  const groupHeaderCount = options.filter(
+    (option, index) => option.group && option.group !== options[index - 1]?.group,
+  ).length;
 
   const findEnabledIndex = useCallback(
     (fromIndex: number, direction: 1 | -1) => {
@@ -110,7 +114,10 @@ export function SimSelect({
     const spaceAbove = rect.top - gap - edgeMargin;
     const opensAbove = spaceBelow < 120 && spaceAbove > spaceBelow;
     const availableSpace = opensAbove ? spaceAbove : spaceBelow;
-    const estimatedMenuHeight = Math.min(240, Math.max(40, options.length * 38 + 8));
+    const estimatedMenuHeight = Math.min(
+      280,
+      Math.max(40, options.length * 38 + groupHeaderCount * 24 + 8),
+    );
     const maxHeight = Math.min(estimatedMenuHeight, Math.max(80, availableSpace));
     const top = opensAbove
       ? Math.max(edgeMargin, rect.top - gap - maxHeight)
@@ -126,7 +133,7 @@ export function SimSelect({
       width: rect.width,
       maxHeight,
     });
-  }, [options.length]);
+  }, [groupHeaderCount, options.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -295,34 +302,43 @@ export function SimSelect({
             className="sim-field__dropdown"
             style={dropdownStyle}
           >
-            {options.map((o, index) => (
-              <li
-                id={`${listboxId}-option-${index}`}
-                key={o.value}
-                role="option"
-                aria-selected={o.value === value}
-                aria-disabled={o.disabled || undefined}
-                className={[
-                  'sim-field__option',
-                  o.value === value ? 'is-selected' : '',
-                  index === activeIndex ? 'is-active' : '',
-                  o.disabled ? 'is-disabled' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                onMouseEnter={() => {
-                  if (!o.disabled) setActiveIndex(index);
-                }}
-                onMouseDown={() => {
-                  selectOption(index);
-                }}
-              >
-                {o.label}
-                {o.description && (
-                  <span className="sim-field__option-description">{o.description}</span>
-                )}
-              </li>
-            ))}
+            {options.map((o, index) => {
+              const showGroup = o.group && o.group !== options[index - 1]?.group;
+              return (
+                <React.Fragment key={`${o.group ?? 'option'}-${o.value || index}`}>
+                  {showGroup ? (
+                    <li className="sim-field__option-group" role="presentation">
+                      {o.group}
+                    </li>
+                  ) : null}
+                  <li
+                    id={`${listboxId}-option-${index}`}
+                    role="option"
+                    aria-selected={o.value === value}
+                    aria-disabled={o.disabled || undefined}
+                    className={[
+                      'sim-field__option',
+                      o.value === value ? 'is-selected' : '',
+                      index === activeIndex ? 'is-active' : '',
+                      o.disabled ? 'is-disabled' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onMouseEnter={() => {
+                      if (!o.disabled) setActiveIndex(index);
+                    }}
+                    onMouseDown={() => {
+                      selectOption(index);
+                    }}
+                  >
+                    {o.label}
+                    {o.description && (
+                      <span className="sim-field__option-description">{o.description}</span>
+                    )}
+                  </li>
+                </React.Fragment>
+              );
+            })}
           </ul>,
           document.body,
         )}

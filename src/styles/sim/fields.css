@@ -169,6 +169,14 @@
   transition: background-color var(--transition-base) var(--easing-standard);
 }
 
+.sim-field__option-group {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  text-align: left;
+}
+
 .sim-field__option:hover,
 .sim-field__option.is-active {
   background-color: color-mix(in srgb, var(--color-c3) 15%, var(--surface-card));
