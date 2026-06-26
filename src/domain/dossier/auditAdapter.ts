@@ -100,8 +100,6 @@ export function buildDossierPatrimonialFromAudit(
     regimeMatrimonial: hasRegimeBlockData(audit.situationCivile)
       ? {
           regime: audit.situationCivile.regimeMatrimonial,
-          contratMariage: audit.situationCivile.contratMariage,
-          notaire: audit.situationCivile.notaire,
           donationDernierVivantMr: audit.situationCivile.donationDernierVivantMr,
           donationDernierVivantMme: audit.situationCivile.donationDernierVivantMme,
           ddvOptionMr: audit.situationCivile.ddvOptionMr,
@@ -124,7 +122,6 @@ export function buildDossierPatrimonialFromAudit(
       usufruitSuccessif: donation.usufruitSuccessif,
       usufruitSuccessifBeneficiaire: donation.usufruitSuccessifBeneficiaire,
       donSommeArgentExonere: donation.donSommeArgentExonere,
-      description: donation.description,
       sourceRefIds,
     })),
     testamentsSynthetiques: audit.situationCivile.testaments.map((testament) => ({
@@ -202,9 +199,6 @@ export function mergeDossierPatrimonialIntoAuditDraft(
     situationCivile: {
       ...draft.situationCivile,
       regimeMatrimonial: dossier.regimeMatrimonial?.regime,
-      contratMariage:
-        dossier.regimeMatrimonial?.contratMariage ?? draft.situationCivile.contratMariage,
-      notaire: dossier.regimeMatrimonial?.notaire,
       donationDernierVivantMr: dossier.regimeMatrimonial?.donationDernierVivantMr,
       donationDernierVivantMme: dossier.regimeMatrimonial?.donationDernierVivantMme,
       ddvOptionMr: dossier.regimeMatrimonial?.ddvOptionMr,
@@ -224,7 +218,6 @@ export function mergeDossierPatrimonialIntoAuditDraft(
         usufruitSuccessif: donation.usufruitSuccessif,
         usufruitSuccessifBeneficiaire: donation.usufruitSuccessifBeneficiaire,
         donSommeArgentExonere: donation.donSommeArgentExonere,
-        description: donation.description,
       })),
       testaments: dossier.testamentsSynthetiques.map((testament) => ({
         id: testament.id,
@@ -269,8 +262,6 @@ function buildAuditSourceRef(audit: DossierAudit): SourceRef {
 function hasRegimeBlockData(situationCivile: SituationCivile): boolean {
   return Boolean(
     situationCivile.regimeMatrimonial ||
-    situationCivile.contratMariage ||
-    situationCivile.notaire ||
     situationCivile.donationDernierVivantMr ||
     situationCivile.donationDernierVivantMme ||
     situationCivile.ddvOptionMr ||

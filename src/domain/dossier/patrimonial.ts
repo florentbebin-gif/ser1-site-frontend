@@ -120,8 +120,6 @@ export interface DossierSituationFamiliale {
 
 export interface DossierRegimeMatrimonial {
   regime?: DossierRegimeMatrimonialCode;
-  contratMariage: boolean;
-  notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;
   ddvOptionMr?: DdvOption;
@@ -144,7 +142,6 @@ export interface DossierDonationSynthetique {
   usufruitSuccessif?: boolean;
   usufruitSuccessifBeneficiaire?: AuditPersonRef;
   donSommeArgentExonere?: boolean;
-  description?: string;
   sourceRefIds: string[];
 }
 

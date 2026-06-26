@@ -414,7 +414,7 @@ function toMember(
     role,
     estCommun: membre.estCommun ?? true,
     parentPrincipal: membre.parentPrincipal,
-    avatarKind: membre.avatarKind ?? inferAvatarKind(role, prenom || nom || '', membre.lienParente),
+    avatarKind: membre.avatarKind ?? inferAvatarKind(role, membre.civilite, membre.lienParente),
     avatarAppearance: membre.avatarAppearance,
     lienParente: membre.lienParente,
     localId: membre.localId,

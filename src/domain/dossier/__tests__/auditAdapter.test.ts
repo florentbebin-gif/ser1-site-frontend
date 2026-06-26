@@ -73,7 +73,6 @@ describe('buildDossierPatrimonialFromAudit', () => {
     };
     audit.situationCivile = {
       regimeMatrimonial: 'separation_biens',
-      contratMariage: true,
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
       donationDernierVivantMme: true,
@@ -94,7 +93,6 @@ describe('buildDossierPatrimonialFromAudit', () => {
           usufruitSuccessif: true,
           usufruitSuccessifBeneficiaire: 'conjoint',
           donSommeArgentExonere: true,
-          description: 'Donation familiale',
         },
       ],
       testaments: [
@@ -175,13 +173,14 @@ describe('buildDossierPatrimonialFromAudit', () => {
     ]);
     expect(dossier.regimeMatrimonial).toMatchObject({
       regime: 'separation_biens',
-      contratMariage: true,
       donationDernierVivantMr: true,
       ddvOptionMr: 'usufruit_total',
       donationDernierVivantMme: true,
       ddvOptionMme: 'pleine_propriete_quotite',
       avantagesMatrimoniaux: ['partage_inegal', 'preciput'],
     });
+    expect(dossier.regimeMatrimonial).not.toHaveProperty('contratMariage');
+    expect(dossier.regimeMatrimonial).not.toHaveProperty('notaire');
     expect(dossier.situationFamiliale).toMatchObject({
       dateUnion: '2005-06-01',
       lieuUnion: 'Brest',
@@ -203,9 +202,9 @@ describe('buildDossierPatrimonialFromAudit', () => {
         usufruitSuccessif: true,
         usufruitSuccessifBeneficiaire: 'conjoint',
         donSommeArgentExonere: true,
-        description: 'Donation familiale',
       }),
     ]);
+    expect(dossier.donationsSynthetiques[0]).not.toHaveProperty('description');
     expect(dossier.testamentsSynthetiques).toEqual([
       expect.objectContaining({
         id: 'testament-1',

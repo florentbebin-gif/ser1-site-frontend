@@ -159,21 +159,72 @@ function RegimeMatrimonialSection({
   onChange: (updater: (previous: SituationCivile) => SituationCivile) => void;
 }): ReactElement {
   return (
-    <AuditDrawerSection title="Régime matrimonial">
-      <AuditDrawerFieldGrid>
-        <SelectField
-          label="Régime matrimonial"
-          value={form.regimeMatrimonial ?? ''}
-          options={REGIME_OPTIONS}
-          onChange={(value) =>
-            onChange((previous) => ({
-              ...previous,
-              regimeMatrimonial: emptyToUndefined(value) as SituationCivile['regimeMatrimonial'],
-            }))
-          }
-        />
-      </AuditDrawerFieldGrid>
+    <AuditDrawerSection
+      title="Régime matrimonial"
+      description="Sélectionnez le régime applicable au mariage."
+    >
+      <div className="audit-regime-panel">
+        <AuditDrawerFieldGrid>
+          <SelectField
+            label="Régime applicable"
+            value={form.regimeMatrimonial ?? ''}
+            options={REGIME_OPTIONS}
+            onChange={(value) =>
+              onChange((previous) => ({
+                ...previous,
+                regimeMatrimonial: emptyToUndefined(value) as SituationCivile['regimeMatrimonial'],
+              }))
+            }
+          />
+        </AuditDrawerFieldGrid>
+        <RegimeIllustration />
+      </div>
     </AuditDrawerSection>
+  );
+}
+
+function RegimeIllustration(): ReactElement {
+  return (
+    <svg
+      className="audit-regime-panel__illustration"
+      viewBox="0 0 150 94"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M33 33 H117 V75 H33 Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M45 33 V24 H105 V33"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M54 48 H96 M54 60 H86"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <circle cx="47" cy="20" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="103" cy="20" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M66 78 C72 84 82 84 88 78"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25 80 C35 87 50 88 61 82 M91 82 C103 89 119 88 128 80"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
@@ -329,8 +380,6 @@ function sanitizeHiddenCivilFields(
     return {
       ...form,
       regimeMatrimonial: undefined,
-      contratMariage: false,
-      notaire: undefined,
       donationDernierVivantMr: undefined,
       donationDernierVivantMme: undefined,
       ddvOptionMr: undefined,

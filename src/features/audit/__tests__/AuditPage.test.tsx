@@ -44,7 +44,7 @@ describe('AuditPage', () => {
     expect(screen.queryByRole('heading', { name: 'Situation familiale' })).not.toBeInTheDocument();
   });
 
-  it('ouvre la page Foyer & famille en pivot sans wizard puis revient par le rail', async () => {
+  it('ouvre la page Foyer & famille en pivot sans wizard puis revient au dossier par le header', async () => {
     const { container } = render(<AuditPage />);
 
     await userEvent.click(screen.getByRole('button', { name: /^Commencer par le client/ }));
@@ -78,7 +78,10 @@ describe('AuditPage', () => {
     expect(screen.queryByRole('button', { name: /Précédent/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Suivant/i })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /Dossier/ }));
+    const backButton = screen.getByRole('button', { name: 'Retour au dossier' });
+    expect(backButton).toBeVisible();
+    expect(backButton).not.toHaveTextContent('Dossier');
+    await userEvent.click(backButton);
 
     expect(
       screen.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),

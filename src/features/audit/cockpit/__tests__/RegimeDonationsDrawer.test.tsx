@@ -78,6 +78,9 @@ describe('RegimeDonationsDrawer', () => {
     expect(screen.getByText('Protection du conjoint survivant')).toBeVisible();
     expect(screen.getAllByText('Alice Martin').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Camille Martin').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Régime matrimonial')).toHaveLength(1);
+    expect(screen.getByText('Régime applicable')).toBeVisible();
+    expect(screen.getByText('Sélectionnez le régime applicable au mariage.')).toBeVisible();
     expect(screen.queryByText('Date d’effet')).toBeNull();
     expect(screen.queryByText('Notaire')).toBeNull();
     expect(screen.queryByText('Contrat de mariage')).toBeNull();
@@ -134,5 +137,6 @@ describe('RegimeDonationsDrawer', () => {
     expect(screen.getByText('Donataire')).toBeVisible();
     expect(screen.queryByText('Montant')).toBeNull();
     expect(screen.getAllByText('Valeur à la donation')).toHaveLength(1);
+    expect(screen.queryByRole('textbox', { name: 'Description' })).toBeNull();
   });
 });

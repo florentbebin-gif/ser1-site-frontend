@@ -150,6 +150,7 @@ describe('AuditLanding', () => {
     expect(container).toHaveTextContent('Anne');
     expect(container).toHaveTextContent('Noé');
     expect(container).toHaveTextContent('Paul');
+    expect(container).not.toHaveTextContent('ENFANTS COMMUNS');
     expect(container.querySelector('.audit-fil__avatar-image')).toBeInTheDocument();
     expect(container.querySelector('.audit-fil__avatar-face')).toBeNull();
   });

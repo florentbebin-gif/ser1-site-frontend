@@ -164,8 +164,6 @@ export interface SituationFamiliale {
 // Situation civile
 export interface SituationCivile {
   regimeMatrimonial?: RegimeMatrimonial;
-  contratMariage: boolean;
-  notaire?: string;
   donationDernierVivantMr?: boolean;
   donationDernierVivantMme?: boolean;
   ddvOptionMr?: DdvOption;
@@ -189,7 +187,6 @@ export interface DonationInfo {
   usufruitSuccessif?: boolean;
   usufruitSuccessifBeneficiaire?: AuditPersonRef;
   donSommeArgentExonere?: boolean;
-  description?: string;
 }
 
 export interface TestamentInfo {
@@ -373,7 +370,6 @@ export function createEmptyDossier(): DossierAudit {
       proches: [],
     },
     situationCivile: {
-      contratMariage: false,
       donations: [],
       testaments: [],
     },

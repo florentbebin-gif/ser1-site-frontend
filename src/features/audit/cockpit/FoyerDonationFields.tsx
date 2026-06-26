@@ -11,7 +11,6 @@ import {
   DONATION_TYPE_OPTIONS,
   emptyToUndefined,
   SelectField,
-  TextField,
 } from './auditCockpitShared';
 import {
   labelForAuditPersonRef,
@@ -180,15 +179,6 @@ export function FoyerDonationFields({
           ) : null}
         </div>
       </details>
-      <div className="audit-donation-card__description">
-        <TextField
-          label="Description"
-          value={donation.description ?? ''}
-          onChange={(description) =>
-            onChange({ ...donation, description: emptyToUndefined(description) })
-          }
-        />
-      </div>
     </article>
   );
 }

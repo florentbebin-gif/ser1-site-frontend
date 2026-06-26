@@ -215,7 +215,12 @@ describe('buildAuditLandingViewModel', () => {
       };
       audit.situationFamiliale.situationMatrimoniale = 'marie';
       audit.situationFamiliale.enfants = [
-        { prenom: 'Léa', dateNaissance: '2010-05-01', estCommun: true },
+        {
+          prenom: 'Léa',
+          dateNaissance: '2010-05-01',
+          estCommun: true,
+          civilite: 'madame',
+        },
         { prenom: 'Tom', dateNaissance: '2013-05-01', estCommun: true },
       ];
     });
@@ -273,6 +278,7 @@ describe('buildAuditLandingViewModel', () => {
           nom: 'Martin',
           dateNaissance: '1950-01-01',
           rattachement: 'client',
+          avatarKind: 'femme',
         },
         {
           id: 'proche-petit-enfant',

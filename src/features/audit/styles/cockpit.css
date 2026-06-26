@@ -73,6 +73,39 @@
   gap: var(--space-2);
 }
 
+.audit-cockpit__back-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--action-primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.audit-cockpit__back-action:hover {
+  border-color: color-mix(in srgb, var(--action-primary) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--action-primary) 7%, var(--surface-card));
+}
+
+.audit-cockpit__back-action:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.audit-cockpit__back-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.audit-cockpit__back-action-icon {
+  transform: rotate(180deg);
+}
+
 .audit-cockpit__primary-action {
   display: inline-flex;
   align-items: center;
@@ -699,9 +732,11 @@
 .audit-foyer-filiation__canvas {
   display: grid;
   align-items: center;
-  height: 100%;
+  align-self: stretch;
+  height: auto;
   min-width: 0;
   min-height: 0;
+  margin-bottom: var(--space-2);
   padding: var(--space-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -724,18 +759,6 @@
 
 .audit-foyer-filiation .audit-fil__edge--precedent {
   stroke: color-mix(in srgb, var(--accent-signature) 58%, var(--border-strong));
-}
-
-.audit-foyer-filiation .audit-fil__common-zone {
-  fill: color-mix(in srgb, var(--surface-active) 8%, transparent);
-  stroke: none;
-}
-
-.audit-foyer-filiation .audit-fil__common-label {
-  fill: var(--text-secondary);
-  font-size: 9px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0;
 }
 
 .audit-cockpit-card:hover .audit-cockpit-card__head-action[data-tone='required'],
@@ -1277,6 +1300,22 @@
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
+}
+
+.audit-regime-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 18%);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 74px;
+}
+
+.audit-regime-panel__illustration {
+  justify-self: end;
+  width: min(150px, 100%);
+  color: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  pointer-events: none;
 }
 
 .audit-drawer-grid {
@@ -2087,10 +2126,6 @@
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-}
-
-.audit-donation-card__description .sim-field__label {
-  color: var(--data-secondary);
 }
 
 .audit-donation-card__legacy,

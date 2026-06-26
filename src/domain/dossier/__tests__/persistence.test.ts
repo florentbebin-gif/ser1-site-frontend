@@ -97,7 +97,6 @@ describe('persistence dossier patrimonial', () => {
     });
     const row = toDossierPatrimonialUpsertRow(dossier, 'user-1');
     row.data.regimeMatrimonial = {
-      contratMariage: false,
       donationDernierVivantMr: true,
       donationDernierVivantMme: true,
       ddvOptionMr: 'quotite_disponible_pp',

@@ -45,14 +45,25 @@ export function FoyerFamillePage({
       title="Foyer & famille"
       subtitle="Cartes de synthèse et de saisie du foyer."
       actions={
-        <button
-          type="button"
-          className="audit-cockpit__primary-action"
-          onClick={() => onSelectSection('actifs')}
-        >
-          <span>Continuer l’audit</span>
-          <IconChevronRight />
-        </button>
+        <>
+          <button
+            type="button"
+            className="audit-cockpit__back-action"
+            aria-label="Retour au dossier"
+            title="Retour au dossier"
+            onClick={() => onSelectSection('dossier')}
+          >
+            <IconChevronRight className="audit-cockpit__back-action-icon" />
+          </button>
+          <button
+            type="button"
+            className="audit-cockpit__primary-action"
+            onClick={() => onSelectSection('actifs')}
+          >
+            <span>Continuer l’audit</span>
+            <IconChevronRight />
+          </button>
+        </>
       }
       onSelectSection={onSelectSection}
     >
