@@ -430,6 +430,13 @@ npx supabase db query --linked "select count(*) as documents_without_contract fr
 
 Rollback de cette PR : revert code, l'ancienne table `base_cg_retraite_overrides` est encore présente. La suppression éventuelle de cette table doit faire l'objet d'une migration ultérieure après contrôle distant des counts/hash/orphelins, avec migration inverse locale ou restauration depuis les dumps `.tmp/`.
 
+### Sécurité Supabase — advisors (search_path & leaked password)
+
+Le Security Advisor du projet (Dashboard Supabase → Advisors, ou MCP `get_advisors --type security`) peut remonter deux familles de warnings traitées ainsi :
+
+- **`function_search_path_mutable`** : toute fonction SQL ou `SECURITY DEFINER` doit figer son `search_path` (`set search_path = ''` ou `= public` selon les objets référencés) pour éviter une résolution de schéma détournable. Convention appliquée par migration dédiée, jamais en place : voir `20260322000300_fix_search_path_admin_accounts`, `20260516000200_fix_base_cg_retraite_search_path`, `20260528000400_harden_base_cg_retraite_trigger_functions` et `<ts>_fix_is_theme_palette_search_path` (fonction `public.is_theme_palette`, corps inchangé, `set search_path = ''` car seules des fonctions `pg_catalog` sont appelées). Après push, re-`get_advisors` doit confirmer la disparition du warning.
+- **`auth_leaked_password_protection`** : réglage **Auth hébergé** (vérification HaveIBeenPwned), sans SQL ni migration. À activer dans Dashboard Supabase → Authentication → Password protection → « Prevent use of leaked passwords ». Refléter dans `supabase/config.toml` `[auth]` seulement si l'auth est gérée comme code pour la parité locale.
+
 ---
 
 ## Gouvernance admin — `admin_accounts`
