@@ -99,9 +99,12 @@ describe('AuditPage', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Actifs / passifs' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
-    expect(screen.getByText(/données partielles/)).toBeInTheDocument();
+    expect(screen.getByText(/Données déclaratives/)).toBeInTheDocument();
     expect(screen.queryByText(/patrimoine net/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Passer à Fiscalité/ })).toBeVisible();
+    expect(screen.queryByText(/F3/)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Actifs' })).toBeVisible();
+    expect(screen.getByRole('heading', { level: 2, name: 'Inventaire déclaré' })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
 
     await userEvent.click(screen.getByRole('button', { name: /Fiscalité — Déclaratif/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Fiscalité' })).toBeInTheDocument();

@@ -4,6 +4,71 @@ import { IconCheck, IconChevronRight, IconClock, IconInfo, IconLock } from '@/ic
 
 import type { CardStatus, SummaryCardData } from './auditCockpitShared';
 
+export function AuditPivot({
+  children,
+  className,
+  ariaLabel,
+}: {
+  children: ReactNode;
+  className?: string;
+  ariaLabel?: string;
+}): ReactElement {
+  return (
+    <section
+      className={['audit-pivot', className].filter(Boolean).join(' ')}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function AuditSurfaceCard({
+  children,
+  className,
+  ariaLabel,
+  ariaLabelledby,
+}: {
+  children: ReactNode;
+  className?: string;
+  ariaLabel?: string;
+  ariaLabelledby?: string;
+}): ReactElement {
+  return (
+    <section
+      className={['audit-surface-card', className].filter(Boolean).join(' ')}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function AuditCardHead({
+  icon,
+  title,
+  titleId,
+  action,
+}: {
+  icon: ReactNode;
+  title: ReactNode;
+  titleId?: string;
+  action?: ReactNode;
+}): ReactElement {
+  return (
+    <header className="audit-surface-card-head">
+      <div className="audit-surface-card-head__main">
+        <span className="audit-surface-card-head__icon" aria-hidden="true">
+          {icon}
+        </span>
+        <h2 id={titleId}>{title}</h2>
+      </div>
+      {action}
+    </header>
+  );
+}
+
 export function SummaryCardGrid({
   cards,
   variant,

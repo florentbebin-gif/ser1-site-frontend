@@ -601,12 +601,30 @@ changement du modèle métier.
 
 ### Patrimoine / actifs / passifs
 
-État runtime : UX-03a.2 livre déjà une page cockpit `Actifs / passifs` minimaliste. Elle porte un
-inventaire déclaratif et des états honnêtes (`inventaire saisi`, `données partielles`, `à structurer
-F3`) sans afficher patrimoine net, droits PP/US/NP, droits successoraux ou graphe patrimonial. Le
-polish UX-03a.5 conserve deux montants saisis distincts, sans total consolidé ni ratio trompeur. Le
-contrat ci-dessous reste la cible **F3 réelle** qui remplacera cet inventaire déclaratif quand le
-graphe central sera disponible.
+État runtime : UX-03a.2 a livré une page cockpit `Actifs / passifs` minimaliste, puis le polish l'a
+réalignée sur le langage `Foyer & famille`, recentré sur la **lecture tableau** : pivot compact en
+**deux cartes — Actifs (gauche) et Passifs (droite)** — chacune avec son **total en haut à droite**
+et une **répartition par famille** (lignes typographiques + barre fine mono-ton) ; puis une carte
+unique **« Inventaire déclaré »** où les **actifs** sont en **matrice par détenteur** (colonnes
+Client / Conjoint / Commun avec avatars du foyer, montant rangé et centré dans la colonne du
+détenteur, **total de catégorie isolé à droite**) et les **passifs** en liste simple ; lignes **en
+filets** cliquables ouvrant un drawer par item. La matrice de détenteur n'apparaît **qu'avec au moins
+un actif saisi** : l'état vide reste une invitation simple, sans avatars ni libellés de colonnes. La
+colonne Commun (et Conjoint) **disparaît hors couple** (célibataire / divorcé / veuf). **Un seul
+bouton « Ajouter un passif »** (nature emprunt/dette qualifiée dans le drawer) ; menus
+**Propriétaire** dynamiques (prénom/nom du foyer si renseignés). Les actions « Ajouter » sont
+**discrètes** (ghost). Le statut n'apparaît **que sur anomalie** : pastille « À vérifier » uniquement
+si l'item est incohérent (ex. emprunt dont le CRD dépasse le capital initial), pas de badge sur les
+lignes valides. Actifs/passifs utilise les primitives cockpit génériques (`AuditPivot`,
+`AuditSurfaceCard`, `AuditCardHead`) pendant que `Foyer & famille` conserve ses classes dédiées
+verrouillées visuellement. Wording **métier** côté UI (aucun « F3 »). La page reste
+**déclarative pré-F3** :
+montants saisis, aucun patrimoine net, aucun total consolidé, aucun ratio, aucun droit PP/US/NP,
+aucune colonne « Détention » ni « Provenance » (provenance reportée à F2). La fiche actif détaillée
+(acquisition, financement, revenus/charges, cession/préciput, horizon/risque) reste un lot
+**F3/F2/F1.1/V2-09** séparé, hors de ce polish. Le contrat ci-dessous reste la cible **F3 réelle**
+(tableau PP/US/NP, fiche actif enrichie) qui remplacera cet inventaire déclaratif quand le graphe
+central et les fondations associées seront disponibles.
 
 | Champ                                                 | Contrat                                                                                                                                            |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -7,8 +7,8 @@ import {
   type Passif,
   type PassifEmprunt,
   type PersonInfo,
-  type ProprietaireType,
   type RevenuCategorie,
+  type SituationFamiliale,
   type TestamentInfo,
 } from '@/domain/audit/types';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier';
@@ -22,9 +22,12 @@ import { IconPlus, IconTrash } from '@/icons/ui';
 
 import type { AuditLandingViewModel } from '../auditLandingViewModel';
 export {
+  AuditCardHead,
   AuditPageContinuation,
+  AuditPivot,
   AuditDrawerFieldGrid,
   AuditDrawerSection,
+  AuditSurfaceCard,
   StatusBadge,
   SummaryCardGrid,
 } from './auditCockpitUi';
@@ -93,6 +96,7 @@ export const ACTIF_TYPE_OPTIONS: SimSelectOption[] = [
   { value: 'residence_secondaire', label: 'Résidence secondaire' },
   { value: 'locatif', label: 'Immobilier locatif' },
   { value: 'scpi', label: 'SCPI' },
+  { value: 'autre_immo', label: 'Autre actif immobilier' },
   { value: 'compte_courant', label: 'Compte courant' },
   { value: 'livret', label: 'Livret' },
   { value: 'pea', label: 'PEA' },
@@ -101,16 +105,13 @@ export const ACTIF_TYPE_OPTIONS: SimSelectOption[] = [
   { value: 'per', label: 'PER' },
   { value: 'entreprise', label: 'Entreprise' },
   { value: 'parts_sociales', label: 'Parts sociales' },
+  { value: 'fonds_commerce', label: 'Fonds de commerce' },
   { value: 'vehicule', label: 'Véhicule' },
+  { value: 'mobilier', label: 'Mobilier' },
+  { value: 'oeuvre_art', label: 'Œuvre d’art' },
+  { value: 'bijoux', label: 'Bijoux' },
   { value: 'autre_financier', label: 'Autre actif financier' },
   { value: 'autre', label: 'Autre actif' },
-];
-
-export const PROPRIETAIRE_OPTIONS: SimSelectOption[] = [
-  { value: 'mr', label: 'Client principal' },
-  { value: 'mme', label: 'Conjoint' },
-  { value: 'commun', label: 'Commun' },
-  { value: 'indivision', label: 'Indivision' },
 ];
 
 export const EMPRUNT_TYPE_OPTIONS: SimSelectOption[] = [
@@ -359,8 +360,37 @@ export function labelForOption(options: SimSelectOption[], value: string): strin
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
-export function ownerLabel(value: ProprietaireType): string {
-  return labelForOption(PROPRIETAIRE_OPTIONS, value);
+// Le patrimoine commun n'a de sens qu'en couple (marié / pacsé / concubinage).
+const PATRIMOINE_COUPLE_STATUSES: SituationFamiliale['situationMatrimoniale'][] = [
+  'marie',
+  'pacse',
+  'concubinage',
+];
+
+export function isPatrimoineCouple(statut: SituationFamiliale['situationMatrimoniale']): boolean {
+  return PATRIMOINE_COUPLE_STATUSES.includes(statut);
+}
+
+export const PASSIF_NATURE_OPTIONS: SimSelectOption[] = [
+  { value: 'emprunt', label: 'Emprunt' },
+  { value: 'dette', label: 'Autre dette' },
+];
+
+// Options « Propriétaire » dynamiques : prénom/nom du foyer si renseignés, et
+// conjoint/commun masqués hors couple.
+export function buildProprietaireOptions(famille: SituationFamiliale): SimSelectOption[] {
+  const options: SimSelectOption[] = [
+    { value: 'mr', label: fullName(famille.mr) || 'Client principal' },
+  ];
+  if (isPatrimoineCouple(famille.situationMatrimoniale)) {
+    options.push({
+      value: 'mme',
+      label: (famille.mme && fullName(famille.mme)) || 'Conjoint',
+    });
+    options.push({ value: 'commun', label: 'Commun' });
+    options.push({ value: 'indivision', label: 'Indivision' });
+  }
+  return options;
 }
 
 export function updateAt<T>(items: T[], index: number, item: T): T[] {
