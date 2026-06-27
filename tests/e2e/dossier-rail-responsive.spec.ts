@@ -108,7 +108,10 @@ test.describe('DossierRail responsive', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Synthèse foyer' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    await expectLocatorInsideViewport(page.locator('.audit-foyer-pivot').first(), 390);
+    await expectLocatorInsideViewport(
+      page.locator('.audit-foyer-pivot, .audit-pivot').first(),
+      390,
+    );
     await expectLocatorInsideViewport(page.locator('.audit-cockpit-card').first(), 390);
 
     const situationFamilialeCard = page.locator('.audit-cockpit-card').filter({
@@ -146,7 +149,7 @@ test.describe('DossierRail responsive', () => {
       ).toHaveCount(0);
       await expectNoHorizontalOverflow(page);
       await expectLocatorInsideViewport(
-        page.locator('.audit-cockpit-card, .audit-inventory-panel').first(),
+        page.locator('.audit-cockpit-card, .audit-surface-card').first(),
         390,
       );
       await page.setViewportSize({ width: 1440, height: 900 });
