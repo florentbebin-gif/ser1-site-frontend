@@ -46,7 +46,7 @@ export function FoyerFamillePage({
   return (
     <AuditCockpitShell
       viewModel={viewModel}
-      currentSectionId="situation-familiale"
+      currentSectionId="foyer-famille"
       title="Foyer & famille"
       subtitle="Cartes de synthèse et de saisie du foyer."
       actions={
@@ -63,7 +63,7 @@ export function FoyerFamillePage({
           <button
             type="button"
             className="audit-cockpit__primary-action"
-            onClick={() => onSelectSection('actifs')}
+            onClick={() => onSelectSection('actifs-passifs')}
           >
             <span>Continuer l’audit</span>
             <IconChevronRight />

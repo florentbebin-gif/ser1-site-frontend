@@ -144,10 +144,6 @@
   margin-top: var(--space-4);
 }
 
-.audit-cockpit__cards[data-variant='five'] {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .audit-cockpit__cards[data-variant='rows'] {
   grid-template-columns: 1fr;
   gap: var(--space-2);
@@ -1355,63 +1351,433 @@
   box-shadow: var(--focus-ring);
 }
 
-/* Synthèse fiscalité + bandes de périmètre (Fiscalité / Objectifs / Actifs-passifs). */
-.audit-fiscal-facts h2,
+/* Pivot fiscalité : deux cartes de synthèse déclarative à parts égales. */
+.audit-pivot--fiscalite {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Lignes KPI fiscales (label + valeur, filet discret) dans les cartes de synthèse. */
+.audit-fiscal-lines {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+}
+
+.audit-fiscal-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.audit-fiscal-line__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.audit-fiscal-line__value {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.audit-fiscal-line__value[data-missing='true'] {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Cartes du pivot fiscalité : pression + budget, même densité. */
+.audit-fiscal-pression,
+.audit-fiscal-budget {
+  gap: var(--space-3);
+}
+
+/* Donut catégoriel (composition de l'imposition / emploi des ressources). */
+.audit-donut {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.audit-donut__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.audit-donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.audit-donut__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.audit-donut__label {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.audit-donut-legend {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  list-style: none;
+}
+
+.audit-donut-legend__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-donut-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.audit-donut-legend__label {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-donut-legend__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+/* Carte Pression : donut + légende, bloc TMI, puces. */
+.audit-fiscal-pression__chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.audit-fiscal-pression__none {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.audit-fiscal-tmi {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.audit-fiscal-tmi__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.audit-fiscal-tmi__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.audit-fiscal-tmi__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-tmi__margin {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* Échelle TMI : segments du barème, tranche active mise en relief. */
+.audit-tmi-ladder {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  margin-top: var(--space-1);
+}
+
+.audit-tmi-ladder__segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-muted) 72%, var(--surface-card));
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.audit-tmi-ladder__segment[data-active='true'] {
+  background: color-mix(in srgb, var(--action-primary) 16%, var(--surface-card));
+  color: var(--action-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--action-primary) 38%, transparent);
+}
+
+/* Puces de contributions (CEHR / CDHR) et indicateur IFI. */
+.audit-fiscal-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.audit-fiscal-chip {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-muted) 55%, var(--surface-card));
+}
+
+.audit-fiscal-chip__label {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.audit-fiscal-chip__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-chip__hint {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-fiscal-chip[data-status='due'] {
+  background: color-mix(in srgb, var(--action-primary) 10%, var(--surface-card));
+}
+
+.audit-fiscal-chip[data-status='due'] .audit-fiscal-chip__value {
+  color: var(--action-primary);
+}
+
+.audit-fiscal-chip[data-status='warn'] {
+  background: color-mix(in srgb, var(--state-warning) 12%, var(--surface-card));
+}
+
+.audit-fiscal-chip[data-status='warn'] .audit-fiscal-chip__value {
+  color: var(--state-warning);
+}
+
+/* Total héros de la carte estimation. */
+.audit-fiscal-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+}
+
+.audit-fiscal-total__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-total__value {
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.audit-fiscal-total[data-tone='warning'] .audit-fiscal-total__value {
+  color: var(--state-warning);
+}
+
+/* Carte Budget : barre d'emploi des ressources (charges / impôts / capacité). */
+.audit-budget-bar {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--viz-sequential-1);
+}
+
+.audit-budget-bar__seg {
+  height: 100%;
+}
+
+/* Détail du calcul repliable + hypothèses. */
+.audit-fiscal-detail {
+  margin-top: var(--space-4);
+}
+
+.audit-fiscal-detail__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-detail__toggle:hover {
+  border-color: color-mix(in srgb, var(--action-primary) 30%, var(--border-default));
+}
+
+.audit-fiscal-detail__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.audit-fiscal-detail__toggle svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: transform 160ms ease;
+}
+
+.audit-fiscal-detail__toggle svg[data-open='true'] {
+  transform: rotate(180deg);
+}
+
+.audit-fiscal-detail__panel {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.audit-fiscal-detail__table {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.audit-fiscal-detail__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.audit-fiscal-detail__row:first-child {
+  border-top: 0;
+}
+
+.audit-fiscal-detail__row dt {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.audit-fiscal-detail__row dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.audit-fiscal-detail__row[data-strong='true'] dt,
+.audit-fiscal-detail__row[data-strong='true'] dd {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-detail__hypotheses {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.audit-fiscal-detail__hypotheses-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.audit-fiscal-detail__hypotheses-title svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+
+.audit-fiscal-detail__hypotheses ul {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.audit-fiscal-detail__hypotheses li {
+  margin-top: 2px;
+}
+
+/* Bandes de périmètre (Fiscalité & budget / Objectifs / Actifs-passifs). */
 .audit-objectifs-prereq-band h2 {
   margin: 0;
   color: var(--text-primary);
   font-size: var(--font-size-base);
 }
 
-.audit-fiscal-facts p,
 .audit-objectifs-prereq-band p {
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
 }
 
-.audit-fiscal-facts,
 .audit-cockpit__summary-band {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4);
-}
-
-.audit-fiscal-facts,
-.audit-fiscal-facts dl {
-  margin-top: var(--space-4);
-}
-
-.audit-fiscal-facts dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin-right: 0;
-  margin-bottom: 0;
-  margin-left: 0;
-}
-
-.audit-fiscal-facts dl div {
-  min-width: 0;
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.audit-fiscal-facts dt {
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-}
-
-.audit-fiscal-facts dd {
-  margin: var(--space-1) 0 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.audit-cockpit__summary-band {
   margin-top: var(--space-4);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -2668,7 +3034,6 @@
 }
 
 @media (max-width: 1180px) {
-  .audit-cockpit__cards[data-variant='five'],
   .audit-cockpit__cards[data-variant='tiles'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2676,7 +3041,6 @@
 
 @media (max-width: 960px) {
   .audit-cockpit__cards,
-  .audit-cockpit__cards[data-variant='five'],
   .audit-cockpit__cards[data-variant='tiles'],
   .audit-cockpit__cards[data-variant='rows'] .audit-cockpit-card,
   .audit-foyer-pivot,
@@ -2684,12 +3048,10 @@
     grid-template-columns: 1fr;
   }
 
-  .audit-fiscal-facts,
   .audit-cockpit__summary-band {
     grid-template-columns: 1fr;
   }
 
-  .audit-fiscal-facts dl,
   .audit-drawer-grid,
   .audit-drawer-grid[data-columns='3'],
   .audit-drawer-grid[data-columns='4'],
@@ -2734,6 +3096,17 @@
 
   .audit-cockpit__title {
     font-size: var(--font-size-xl);
+  }
+
+  /* Pression fiscale : donut au-dessus de la légende, puces empilées. */
+  .audit-fiscal-pression__chart {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--space-3);
+  }
+
+  .audit-fiscal-chips {
+    grid-template-columns: 1fr;
   }
 
   .audit-matrix__toolbar {

@@ -14,6 +14,7 @@ const ALLOWED_FILES = new Set(
     'src/domain/base-contrat/rules/fiscalLabels.ts',
     'src/features/succession/successionFiscalContext.ts',
     'src/features/ir/utils/irFiscalSettings.ts',
+    'src/features/audit/cockpit/auditIrAdapter.ts',
     'src/features/per/fiscal/perPotentielFiscalAdapter.ts',
     'src/features/tresorerie-societe/hooks/tresorerieFiscalParams.ts',
   ].map((file) => file.replaceAll('/', path.sep)),

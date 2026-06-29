@@ -24,6 +24,7 @@ export type { AuditPointAConfirmer, AuditPointAConfirmerTone } from './auditLand
 export type {
   AuditFoundation,
   AuditProgressSection,
+  AuditProgressSectionId,
   AuditSectionAvailability,
   AuditSectionStatus,
   AuditStatusBarItem,
@@ -295,12 +296,12 @@ function buildPreviewSlides(): AuditPreviewSlide[] {
     },
     {
       id: 'ir',
-      title: 'Impôt sur le revenu',
-      eyebrow: 'Fiscalité',
-      badgeLabel: 'Verrouillé · IR',
-      status: 'locked',
-      description: 'Disponible après raccordement audit vers IR.',
-      caption: 'IR verrouillé : aucune estimation affichée sans raccordement validé.',
+      title: 'Fiscalité & budget',
+      eyebrow: 'Pression fiscale',
+      badgeLabel: 'Disponible · IR',
+      status: 'soon',
+      description: 'Synthèse IR et budget disponible dans le rail audit.',
+      caption: 'IFI qualifié sans montant tant que le moteur dédié n’est pas livré.',
     },
   ];
 }

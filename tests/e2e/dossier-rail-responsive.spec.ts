@@ -22,6 +22,14 @@ test.describe('DossierRail responsive', () => {
     ).toBeVisible();
     await expect(page.getByTestId('app-shell-dossier-rail')).toHaveCount(0);
     await expect(page.getByTestId('dossier-rail-panel')).toHaveCount(0);
+    await expect(
+      page.locator('.audit-landing__rail').getByRole('button', {
+        name: /Synthèse & projection/,
+      }),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.audit-landing__rail [aria-label="Synthèse & projection — À venir"]'),
+    ).toBeVisible();
 
     const railBox = await page.locator('.audit-landing__rail').boundingBox();
     const dossierBox = await page.getByTestId('dossier-loaded-card').boundingBox();
@@ -49,7 +57,7 @@ test.describe('DossierRail responsive', () => {
     );
     await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toHaveCount(0);
-    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Calculs et projections' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 2, name: 'Masses successorales' })).toHaveCount(
       0,
     );
@@ -83,7 +91,7 @@ test.describe('DossierRail responsive', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'Nouvelle analyse patrimoniale' }),
     ).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Calculs à venir' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Calculs et projections' })).toHaveCount(0);
     const startBox = await page
       .locator('section')
       .filter({
@@ -128,9 +136,9 @@ test.describe('DossierRail responsive', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
 
     const internalPages = [
-      { button: /Situation familiale/, heading: 'Foyer & famille' },
-      { button: /Actifs — Inventaire déclaratif/, heading: 'Actifs / passifs' },
-      { button: /Fiscalité — Déclaratif/, heading: 'Fiscalité' },
+      { button: /Foyer & famille/, heading: 'Foyer & famille' },
+      { button: /Actifs \/ passifs — Inventaire déclaratif/, heading: 'Actifs / passifs' },
+      { button: /Fiscalité & budget — Déclaratif/, heading: 'Fiscalité & budget' },
       { button: /Objectifs/, heading: 'Objectifs' },
     ];
 

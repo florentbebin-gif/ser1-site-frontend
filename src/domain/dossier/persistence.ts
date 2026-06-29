@@ -2,6 +2,7 @@ import type { SourceRef } from './types';
 import { evaluateDossierPatrimonialCompletion } from './patrimonial';
 import type {
   DossierCompletionStatus,
+  DossierBudgetSynthese,
   DossierContrainte,
   DossierDonationSynthetique,
   DossierFoyer,
@@ -28,6 +29,7 @@ export interface DossierPatrimonialPayload {
   objectifs: DossierObjectif[];
   contraintes: DossierContrainte[];
   operationsPrevues: DossierOperationPrevue[];
+  budgetSynthese?: DossierBudgetSynthese | null;
 }
 
 export interface DossierPatrimonialRow {
@@ -73,6 +75,7 @@ export function toDossierPatrimonialUpsertRow(
       objectifs: dossier.objectifs,
       contraintes: dossier.contraintes,
       operationsPrevues: dossier.operationsPrevues,
+      budgetSynthese: dossier.budgetSynthese,
     },
     source_refs: dossier.sourceRefs,
   };
@@ -109,6 +112,7 @@ export function fromDossierPatrimonialRow(row: DossierPatrimonialRow): DossierPa
     objectifs: row.data.objectifs,
     contraintes: row.data.contraintes,
     operationsPrevues: row.data.operationsPrevues,
+    budgetSynthese: row.data.budgetSynthese ?? null,
     sourceRefs: row.source_refs,
     completion,
     createdAt: row.created_at,

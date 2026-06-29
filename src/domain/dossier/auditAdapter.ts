@@ -145,6 +145,13 @@ export function buildDossierPatrimonialFromAudit(
     })),
     contraintes: audit.contraintes ?? [],
     operationsPrevues: audit.operationsPrevues ?? [],
+    budgetSynthese: audit.budget
+      ? {
+          ressourcesAnnuelles: audit.budget.ressourcesAnnuelles,
+          chargesAnnuelles: audit.budget.chargesAnnuelles,
+          sourceRefIds,
+        }
+      : null,
     sourceRefs: [sourceRef],
     completion: {
       scope: 'f1_core',
@@ -234,6 +241,12 @@ export function mergeDossierPatrimonialIntoAuditDraft(
     objectifs: dossier.objectifs.map((objectif) => objectif.code).filter(isObjectifClient),
     contraintes: dossier.contraintes,
     operationsPrevues: dossier.operationsPrevues,
+    budget: dossier.budgetSynthese
+      ? {
+          ressourcesAnnuelles: dossier.budgetSynthese.ressourcesAnnuelles,
+          chargesAnnuelles: dossier.budgetSynthese.chargesAnnuelles,
+        }
+      : undefined,
   };
 }
 
@@ -253,6 +266,7 @@ function buildAuditSourceRef(audit: DossierAudit): SourceRef {
       'objectifs',
       'contraintes',
       'operationsPrevues',
+      'budgetSynthese',
     ],
     createdAt: audit.dateModification,
     reviewStatus: 'validated',

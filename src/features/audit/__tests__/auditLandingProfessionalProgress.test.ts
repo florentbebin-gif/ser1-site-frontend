@@ -24,7 +24,7 @@ describe('progression audit — situation professionnelle', () => {
 
     expect(vm.progress).toContainEqual(
       expect.objectContaining({
-        id: 'situation-professionnelle',
+        id: 'foyer-famille',
         status: 'partiel',
       }),
     );

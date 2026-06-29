@@ -4,7 +4,7 @@ import {
   type DossierRequiredField,
 } from '@/domain/dossier';
 
-import type { AuditLandingDestination } from './auditLandingViewModel';
+import type { AuditLandingDestination, AuditProgressSectionId } from './auditLandingViewModel';
 import type { AuditProgressSection } from './auditLandingProgressViewModel';
 
 export type AuditPointAConfirmerTone = 'warning' | 'danger';
@@ -32,14 +32,10 @@ const REQUIRED_FIELD_POINTS: Record<DossierRequiredField, Omit<AuditPointAConfir
   },
 };
 
-const SECTION_DESTINATIONS: Partial<Record<string, AuditLandingDestination>> = {
+const SECTION_DESTINATIONS: Partial<Record<AuditProgressSectionId, AuditLandingDestination>> = {
   dossier: 'dossier',
-  'situation-familiale': 'dossier',
-  filiation: 'dossier',
-  'regime-donations': 'civil',
-  'situation-professionnelle': 'dossier',
+  'foyer-famille': 'civil',
   objectifs: 'objectifs',
-  synthese: 'dossier',
 };
 
 const REGIME_REQUIRED_STATUTS = new Set(['marie', 'pacse']);

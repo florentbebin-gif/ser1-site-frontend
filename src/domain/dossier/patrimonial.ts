@@ -202,6 +202,12 @@ export interface DossierOperationPrevue {
   sourceRefIds: string[];
 }
 
+export interface DossierBudgetSynthese {
+  ressourcesAnnuelles: number;
+  chargesAnnuelles: number;
+  sourceRefIds: string[];
+}
+
 export interface DossierCompletion {
   scope: 'f1_core';
   status: DossierCompletionStatus;
@@ -222,6 +228,7 @@ export interface DossierPatrimonial {
   objectifs: DossierObjectif[];
   contraintes: DossierContrainte[];
   operationsPrevues: DossierOperationPrevue[];
+  budgetSynthese: DossierBudgetSynthese | null;
   sourceRefs: SourceRef[];
   completion: DossierCompletion;
   createdAt: string | null;
@@ -275,6 +282,7 @@ export function createEmptyDossierPatrimonial(
     objectifs: [],
     contraintes: [],
     operationsPrevues: [],
+    budgetSynthese: null,
     sourceRefs: [],
     completion: {
       scope: 'f1_core',

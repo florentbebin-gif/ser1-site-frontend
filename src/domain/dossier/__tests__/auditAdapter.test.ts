@@ -291,6 +291,7 @@ describe('buildDossierPatrimonialFromAudit', () => {
     ];
     audit.objectifs = ['developper_patrimoine'];
     audit.situationFiscale.revenuFiscalReference = 75000;
+    audit.budget = { ressourcesAnnuelles: 126000, chargesAnnuelles: 72000 };
 
     const dossier = buildDossierPatrimonialFromAudit(audit, {
       ownerUserId: 'user-1',
@@ -299,6 +300,12 @@ describe('buildDossierPatrimonialFromAudit', () => {
     const draft = createEmptyDossier();
     draft.id = 'draft-local';
     draft.situationFiscale.revenuFiscalReference = 42000;
+
+    expect(dossier.budgetSynthese).toMatchObject({
+      ressourcesAnnuelles: 126000,
+      chargesAnnuelles: 72000,
+      sourceRefIds: ['audit-audit-2-manual'],
+    });
 
     const restored = mergeDossierPatrimonialIntoAuditDraft(dossier, draft);
 
@@ -335,6 +342,10 @@ describe('buildDossierPatrimonialFromAudit', () => {
     ]);
     expect(restored.objectifs).toEqual(['developper_patrimoine']);
     expect(restored.situationFiscale.revenuFiscalReference).toBe(42000);
+    expect(restored.budget).toEqual({
+      ressourcesAnnuelles: 126000,
+      chargesAnnuelles: 72000,
+    });
   });
 
   it('isole les proches des compteurs enfants et conserve leurs champs au round-trip', () => {

@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactElement } from 'react';
 
-import type { RevenuCategorie, SituationFiscale } from '@/domain/audit/types';
+import type { BudgetSynthese, RevenuCategorie, SituationFiscale } from '@/domain/audit/types';
 import {
   SimAmountInputEuro,
   SimAmountInputNumeric,
-  SimAmountInputPercent,
+  type SimSelectOption,
 } from '@/components/ui/sim';
 import { IconPlus, IconTrash } from '@/icons/ui';
 
@@ -19,94 +19,233 @@ import {
   SelectField,
   updateAt,
 } from './auditCockpitShared';
+import {
+  ACTIVITE_CATEGORIES,
+  CAPITAL_CATEGORIES,
+  revenusForCategories,
+  type FiscalDrawerId,
+} from './auditFiscaliteModel';
 
-type FiscalDrawer = 'avis' | 'revenus' | 'lecture' | 'impots';
+const ACTIVITE_OPTIONS = REVENU_CATEGORIE_OPTIONS.filter((option) =>
+  (ACTIVITE_CATEGORIES as string[]).includes(option.value),
+);
+const CAPITAL_OPTIONS = REVENU_CATEGORIE_OPTIONS.filter((option) =>
+  (CAPITAL_CATEGORIES as string[]).includes(option.value),
+);
+
+const RCM_OPTION_OPTIONS: SimSelectOption[] = [
+  { value: 'pfu', label: 'PFU (prélèvement forfaitaire unique)' },
+  { value: 'bareme', label: 'Barème de l’IR (abattement 40 %)' },
+];
+
+interface FiscalDrawerContentProps {
+  drawer: FiscalDrawerId | null;
+  situationFiscale: SituationFiscale;
+  budget: BudgetSynthese | undefined;
+  onClose: () => void;
+  onSaveFiscale: (situationFiscale: SituationFiscale) => void;
+  onSaveBudget: (budget: BudgetSynthese) => void;
+}
 
 export function FiscalDrawerContent({
   drawer,
   situationFiscale,
+  budget,
   onClose,
-  onSave,
-}: {
-  drawer: FiscalDrawer | null;
-  situationFiscale: SituationFiscale;
-  onClose: () => void;
-  onSave: (situationFiscale: SituationFiscale) => void;
-}): ReactElement | null {
+  onSaveFiscale,
+  onSaveBudget,
+}: FiscalDrawerContentProps): ReactElement | null {
   if (!drawer) return null;
-  if (drawer === 'avis') {
+  if (drawer === 'budget') {
+    return <BudgetDrawer open budget={budget} onClose={onClose} onSave={onSaveBudget} />;
+  }
+  if (drawer === 'capital') {
     return (
-      <AvisFiscalDrawer
+      <RevenusCapitalDrawer
         open
         situationFiscale={situationFiscale}
         onClose={onClose}
-        onSave={onSave}
+        onSave={onSaveFiscale}
       />
     );
   }
-  if (drawer === 'revenus') {
+  if (drawer === 'charges') {
     return (
-      <RevenusDrawer open situationFiscale={situationFiscale} onClose={onClose} onSave={onSave} />
-    );
-  }
-  if (drawer === 'lecture') {
-    return (
-      <LectureFiscaleDrawer
+      <ChargesDrawer
         open
         situationFiscale={situationFiscale}
         onClose={onClose}
-        onSave={onSave}
+        onSave={onSaveFiscale}
       />
     );
   }
   return (
-    <AutresImpotsDrawer
+    <RevenusActiviteDrawer
       open
       situationFiscale={situationFiscale}
       onClose={onClose}
-      onSave={onSave}
+      onSave={onSaveFiscale}
     />
   );
 }
 
-function AvisFiscalDrawer({
-  open,
-  situationFiscale,
-  onClose,
-  onSave,
-}: FiscalDrawerProps): ReactElement {
+interface FiscalFormDrawerProps {
+  open: boolean;
+  situationFiscale: SituationFiscale;
+  onClose: () => void;
+  onSave: (situationFiscale: SituationFiscale) => void;
+}
+
+function useFiscalForm(open: boolean, situationFiscale: SituationFiscale) {
   const [form, setForm] = useState(situationFiscale);
   useEffect(() => {
     if (open) setForm(situationFiscale);
   }, [open, situationFiscale]);
+  return [form, setForm] as const;
+}
+
+// Remplace le sous-ensemble de revenus d'un groupe sans toucher aux autres groupes.
+function withGroupRevenus(
+  form: SituationFiscale,
+  categories: RevenuCategorie['categorie'][],
+  group: RevenuCategorie[],
+): SituationFiscale {
+  const others = form.revenus.filter((revenu) => !categories.includes(revenu.categorie));
+  return { ...form, revenus: [...others, ...group] };
+}
+
+function RevenusActiviteDrawer({
+  open,
+  situationFiscale,
+  onClose,
+  onSave,
+}: FiscalFormDrawerProps): ReactElement {
+  const [form, setForm] = useFiscalForm(open, situationFiscale);
+  const group = revenusForCategories(form.revenus, ACTIVITE_CATEGORIES);
 
   return (
     <AuditDrawerXL
       open={open}
-      title="Avis d’imposition"
-      subtitle="Valeurs lues ou renseignées depuis l’avis, sans recalcul."
+      title="Revenus d’activité & foyer fiscal"
+      subtitle="Salaires, TNS et pensions du foyer, et données de l’avis."
       onClose={onClose}
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Données de l’avis">
+        <AuditDrawerSection title="Foyer fiscal">
           <AuditDrawerFieldGrid>
             <SimAmountInputNumeric
               label="Année de référence"
               value={form.anneeReference}
               onChange={(anneeReference) => setForm({ ...form, anneeReference })}
             />
+            <SimAmountInputNumeric
+              label="Nombre de parts"
+              value={form.nombreParts}
+              onChange={(nombreParts) => setForm({ ...form, nombreParts })}
+              minimumFractionDigits={0}
+              maximumFractionDigits={2}
+            />
             <SimAmountInputEuro
-              label="Revenu fiscal de référence"
+              label="RFR déclaré sur l’avis"
               value={form.revenuFiscalReference}
               onChange={(revenuFiscalReference) => setForm({ ...form, revenuFiscalReference })}
               onEmpty={() => setForm({ ...form, revenuFiscalReference: 0 })}
             />
             <SimAmountInputEuro
-              label="IR indiqué sur avis"
+              label="IR déclaré sur l’avis"
               value={form.impotRevenu}
               onChange={(impotRevenu) => setForm({ ...form, impotRevenu })}
               onEmpty={() => setForm({ ...form, impotRevenu: 0 })}
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
+
+        <RevenusGroupEditor
+          revenus={group}
+          options={ACTIVITE_OPTIONS}
+          defaultCategorie="salaires"
+          addLabel="Ajouter un revenu d’activité"
+          onChange={(next) => setForm(withGroupRevenus(form, ACTIVITE_CATEGORIES, next))}
+        />
+      </div>
+    </AuditDrawerXL>
+  );
+}
+
+function RevenusCapitalDrawer({
+  open,
+  situationFiscale,
+  onClose,
+  onSave,
+}: FiscalFormDrawerProps): ReactElement {
+  const [form, setForm] = useFiscalForm(open, situationFiscale);
+  const group = revenusForCategories(form.revenus, CAPITAL_CATEGORIES);
+
+  return (
+    <AuditDrawerXL
+      open={open}
+      title="Revenus du capital & patrimoine"
+      subtitle="Capitaux mobiliers, plus-values et revenus fonciers."
+      onClose={onClose}
+      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
+    >
+      <div className="audit-drawer-form">
+        <AuditDrawerSection title="Option d’imposition">
+          <AuditDrawerFieldGrid>
+            <SelectField
+              label="Imposition des capitaux mobiliers"
+              value={form.rcmOption ?? 'pfu'}
+              options={RCM_OPTION_OPTIONS}
+              onChange={(rcmOption) =>
+                setForm({ ...form, rcmOption: rcmOption as SituationFiscale['rcmOption'] })
+              }
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
+
+        <RevenusGroupEditor
+          revenus={group}
+          options={CAPITAL_OPTIONS}
+          defaultCategorie="capitaux_mobiliers"
+          addLabel="Ajouter un revenu du capital"
+          onChange={(next) => setForm(withGroupRevenus(form, CAPITAL_CATEGORIES, next))}
+        />
+      </div>
+    </AuditDrawerXL>
+  );
+}
+
+function ChargesDrawer({
+  open,
+  situationFiscale,
+  onClose,
+  onSave,
+}: FiscalFormDrawerProps): ReactElement {
+  const [form, setForm] = useFiscalForm(open, situationFiscale);
+
+  return (
+    <AuditDrawerXL
+      open={open}
+      title="Charges, déductions & réductions"
+      subtitle="Charges déductibles du revenu et réductions / crédits d’impôt."
+      onClose={onClose}
+      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
+    >
+      <div className="audit-drawer-form">
+        <AuditDrawerSection title="Déductions et réductions">
+          <AuditDrawerFieldGrid>
+            <SimAmountInputEuro
+              label="Charges déductibles du revenu"
+              value={form.chargesDeductibles ?? 0}
+              onChange={(chargesDeductibles) => setForm({ ...form, chargesDeductibles })}
+              onEmpty={() => setForm({ ...form, chargesDeductibles: undefined })}
+            />
+            <SimAmountInputEuro
+              label="Réductions et crédits d’impôt"
+              value={form.reductionsCredits ?? 0}
+              onChange={(reductionsCredits) => setForm({ ...form, reductionsCredits })}
+              onEmpty={() => setForm({ ...form, reductionsCredits: undefined })}
             />
           </AuditDrawerFieldGrid>
         </AuditDrawerSection>
@@ -115,69 +254,105 @@ function AvisFiscalDrawer({
   );
 }
 
-interface FiscalDrawerProps {
-  open: boolean;
-  situationFiscale: SituationFiscale;
-  onClose: () => void;
-  onSave: (situationFiscale: SituationFiscale) => void;
-}
-
-function RevenusDrawer({
+function BudgetDrawer({
   open,
-  situationFiscale,
+  budget,
   onClose,
   onSave,
-}: FiscalDrawerProps): ReactElement {
-  const [revenus, setRevenus] = useState(situationFiscale.revenus);
+}: {
+  open: boolean;
+  budget: BudgetSynthese | undefined;
+  onClose: () => void;
+  onSave: (budget: BudgetSynthese) => void;
+}): ReactElement {
+  const [form, setForm] = useState<BudgetSynthese>(
+    budget ?? { ressourcesAnnuelles: 0, chargesAnnuelles: 0 },
+  );
   useEffect(() => {
-    if (open) setRevenus(situationFiscale.revenus);
-  }, [open, situationFiscale.revenus]);
+    if (open) setForm(budget ?? { ressourcesAnnuelles: 0, chargesAnnuelles: 0 });
+  }, [open, budget]);
 
   return (
     <AuditDrawerXL
       open={open}
-      title="Revenus déclarés"
-      subtitle="Catégories et montants renseignés, sans adapter IR."
+      title="Budget & capacité"
+      subtitle="Ressources et charges annuelles du foyer, hors impôts."
       onClose={onClose}
-      footer={
-        <DrawerFooter onCancel={onClose} onSave={() => onSave({ ...situationFiscale, revenus })} />
-      }
+      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <button
-          type="button"
-          className="audit-drawer-add"
-          onClick={() => setRevenus((previous) => [...previous, createRevenu()])}
-        >
-          <IconPlus />
-          <span>Ajouter une catégorie</span>
-        </button>
-        {revenus.map((revenu, index) => (
+        <AuditDrawerSection title="Train de vie annuel">
+          <AuditDrawerFieldGrid>
+            <SimAmountInputEuro
+              label="Ressources annuelles"
+              value={form.ressourcesAnnuelles}
+              onChange={(ressourcesAnnuelles) => setForm({ ...form, ressourcesAnnuelles })}
+              onEmpty={() => setForm({ ...form, ressourcesAnnuelles: 0 })}
+            />
+            <SimAmountInputEuro
+              label="Charges courantes annuelles"
+              value={form.chargesAnnuelles}
+              onChange={(chargesAnnuelles) => setForm({ ...form, chargesAnnuelles })}
+              onEmpty={() => setForm({ ...form, chargesAnnuelles: 0 })}
+            />
+          </AuditDrawerFieldGrid>
+        </AuditDrawerSection>
+      </div>
+    </AuditDrawerXL>
+  );
+}
+
+// ─── Éditeur de revenus d'un groupe (catégories filtrées) ─────────────────────
+
+function RevenusGroupEditor({
+  revenus,
+  options,
+  defaultCategorie,
+  addLabel,
+  onChange,
+}: {
+  revenus: RevenuCategorie[];
+  options: SimSelectOption[];
+  defaultCategorie: RevenuCategorie['categorie'];
+  addLabel: string;
+  onChange: (revenus: RevenuCategorie[]) => void;
+}): ReactElement {
+  const add = () => onChange([...revenus, { ...createRevenu(), categorie: defaultCategorie }]);
+
+  return (
+    <div className="audit-drawer-form">
+      <button type="button" className="audit-drawer-add" onClick={add}>
+        <IconPlus />
+        <span>{addLabel}</span>
+      </button>
+      {revenus.length === 0 ? (
+        <p className="audit-drawer-empty">Aucun revenu de ce type renseigné.</p>
+      ) : (
+        revenus.map((revenu, index) => (
           <RevenuFields
             key={revenu.id}
             revenu={revenu}
             index={index}
-            onChange={(nextRevenu) =>
-              setRevenus((previous) => updateAt(previous, index, nextRevenu))
-            }
-            onRemove={() =>
-              setRevenus((previous) => previous.filter((item) => item.id !== revenu.id))
-            }
+            options={options}
+            onChange={(next) => onChange(updateAt(revenus, index, next))}
+            onRemove={() => onChange(revenus.filter((item) => item.id !== revenu.id))}
           />
-        ))}
-      </div>
-    </AuditDrawerXL>
+        ))
+      )}
+    </div>
   );
 }
 
 function RevenuFields({
   revenu,
   index,
+  options,
   onChange,
   onRemove,
 }: {
   revenu: RevenuCategorie;
   index: number;
+  options: SimSelectOption[];
   onChange: (revenu: RevenuCategorie) => void;
   onRemove: () => void;
 }): ReactElement {
@@ -187,7 +362,7 @@ function RevenuFields({
         <SelectField
           label="Catégorie"
           value={revenu.categorie}
-          options={REVENU_CATEGORIE_OPTIONS}
+          options={options}
           onChange={(categorie) =>
             onChange({ ...revenu, categorie: categorie as RevenuCategorie['categorie'] })
           }
@@ -206,7 +381,7 @@ function RevenuFields({
           onChange={(montantBrut) => onChange({ ...revenu, montantBrut })}
         />
         <SimAmountInputEuro
-          label="Montant net"
+          label="Montant net imposable"
           value={revenu.montantNet}
           onChange={(montantNet) => onChange({ ...revenu, montantNet })}
         />
@@ -216,94 +391,5 @@ function RevenuFields({
         <span>Retirer</span>
       </button>
     </AuditDrawerSection>
-  );
-}
-
-function LectureFiscaleDrawer({
-  open,
-  situationFiscale,
-  onClose,
-  onSave,
-}: FiscalDrawerProps): ReactElement {
-  const [form, setForm] = useState(situationFiscale);
-  useEffect(() => {
-    if (open) setForm(situationFiscale);
-  }, [open, situationFiscale]);
-
-  return (
-    <AuditDrawerXL
-      open={open}
-      title="Lecture fiscale du foyer"
-      subtitle="Parts et TMI renseignées par l’utilisateur, jamais calculées ici."
-      onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
-    >
-      <div className="audit-drawer-form">
-        <AuditDrawerSection title="Lecture déclarative">
-          <AuditDrawerFieldGrid>
-            <SimAmountInputNumeric
-              label="Nombre de parts renseigné"
-              value={form.nombreParts}
-              onChange={(nombreParts) => setForm({ ...form, nombreParts })}
-              minimumFractionDigits={0}
-              maximumFractionDigits={2}
-            />
-            <SimAmountInputPercent
-              label="TMI renseignée"
-              value={form.tmi}
-              onChange={(tmi) => setForm({ ...form, tmi })}
-              onEmpty={() => setForm({ ...form, tmi: 0 })}
-            />
-          </AuditDrawerFieldGrid>
-        </AuditDrawerSection>
-      </div>
-    </AuditDrawerXL>
-  );
-}
-
-function AutresImpotsDrawer({
-  open,
-  situationFiscale,
-  onClose,
-  onSave,
-}: FiscalDrawerProps): ReactElement {
-  const [form, setForm] = useState(situationFiscale);
-  useEffect(() => {
-    if (open) setForm(situationFiscale);
-  }, [open, situationFiscale]);
-
-  return (
-    <AuditDrawerXL
-      open={open}
-      title="IFI / autres impôts"
-      subtitle="Montants indiqués, sans optimisation ni recommandation."
-      onClose={onClose}
-      footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
-    >
-      <div className="audit-drawer-form">
-        <AuditDrawerSection title="Autres impôts indiqués">
-          <AuditDrawerFieldGrid>
-            <SimAmountInputEuro
-              label="IFI indiqué"
-              value={form.ifi ?? 0}
-              onChange={(ifi) => setForm({ ...form, ifi })}
-              onEmpty={() => setForm({ ...form, ifi: undefined })}
-            />
-            <SimAmountInputEuro
-              label="CEHR indiquée"
-              value={form.cehr ?? 0}
-              onChange={(cehr) => setForm({ ...form, cehr })}
-              onEmpty={() => setForm({ ...form, cehr: undefined })}
-            />
-            <SimAmountInputEuro
-              label="Taxe foncière indiquée"
-              value={form.taxeFonciere ?? 0}
-              onChange={(taxeFonciere) => setForm({ ...form, taxeFonciere })}
-              onEmpty={() => setForm({ ...form, taxeFonciere: undefined })}
-            />
-          </AuditDrawerFieldGrid>
-        </AuditDrawerSection>
-      </div>
-    </AuditDrawerXL>
   );
 }

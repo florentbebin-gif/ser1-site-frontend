@@ -46,7 +46,7 @@ export function ActifsPassifsPage({
   return (
     <AuditCockpitShell
       viewModel={viewModel}
-      currentSectionId="actifs"
+      currentSectionId="actifs-passifs"
       title="Actifs / passifs"
       subtitle="Déclarez les actifs et les passifs du foyer."
       actions={
@@ -56,7 +56,7 @@ export function ActifsPassifsPage({
             className="audit-cockpit__back-action"
             aria-label="Retour au foyer"
             title="Retour au foyer"
-            onClick={() => onSelectSection('situation-familiale')}
+            onClick={() => onSelectSection('foyer-famille')}
           >
             <IconChevronRight className="audit-cockpit__back-action-icon" />
           </button>
