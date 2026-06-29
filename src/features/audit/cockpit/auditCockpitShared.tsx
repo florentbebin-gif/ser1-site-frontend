@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/sim';
 import { IconPlus, IconTrash } from '@/icons/ui';
 
-import type { AuditLandingViewModel } from '../auditLandingViewModel';
+import type { AuditLandingViewModel, AuditProgressSectionId } from '../auditLandingViewModel';
 export {
   AuditCardHead,
   AuditPageContinuation,
@@ -43,7 +43,7 @@ export interface AuditCockpitPageProps {
   dossier: DossierAudit;
   viewModel: AuditLandingViewModel;
   updateDossier: (updater: (previous: DossierAudit) => DossierAudit) => void;
-  onSelectSection: (sectionId: string) => void;
+  onSelectSection: (sectionId: AuditProgressSectionId) => void;
 }
 
 export type CardStatus = 'vide' | 'partiel' | 'complet' | 'a-verifier' | 'a-venir' | 'verrouille';
@@ -345,6 +345,12 @@ export function formatNumber(value: number): string {
 
 export function formatEuroOrMissing(value: number | undefined): string {
   if (!positive(value)) return 'Non renseigné';
+  return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value ?? 0)} €`;
+}
+
+// Format euro brut, sans bascule « Non renseigné » : pour les sorties calculées
+// où 0 € est une valeur légitime.
+export function formatEuro(value: number | undefined): string {
   return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value ?? 0)} €`;
 }
 

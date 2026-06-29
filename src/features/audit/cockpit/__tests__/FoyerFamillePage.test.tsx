@@ -51,8 +51,9 @@ describe('FoyerFamillePage', () => {
       }),
     ).toBeVisible();
     expect(
-      screen.getByRole('button', { name: 'Situation professionnelle — Complet' }),
-    ).toBeVisible();
+      screen.queryByRole('button', { name: 'Situation professionnelle — Complet' }),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: 'Foyer & famille — Partiel' })).toBeVisible();
     expect(screen.queryByText('Professions à compléter')).toBeNull();
   });
 

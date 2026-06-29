@@ -16,11 +16,21 @@ export type AuditSectionStatus =
   | 'alerte'
   | 'masque';
 
+export type AuditProgressSectionId =
+  | 'dossier'
+  | 'foyer-famille'
+  | 'societes-organigramme'
+  | 'actifs-passifs'
+  | 'fiscalite'
+  | 'prevoyance'
+  | 'succession'
+  | 'objectifs'
+  | 'synthese';
 export type AuditSectionAvailability = 'available' | 'gated';
 export type AuditFoundation = 'F1' | 'F1.1' | 'F2' | 'F3' | 'F5' | 'F6';
 
 export interface AuditProgressSection {
-  id: string;
+  id: AuditProgressSectionId;
   label: string;
   foundation: AuditFoundation;
   availability: AuditSectionAvailability;
@@ -69,6 +79,26 @@ export function buildAuditProgressSections(
     Boolean(membre),
   );
 
+  const situationStatus: AuditSectionStatus = !engaged
+    ? 'vide'
+    : synthese.situationLabel
+      ? 'complet'
+      : 'partiel';
+  const filiationStatus: AuditSectionStatus = !synthese.filiationHasData
+    ? 'vide'
+    : principal && synthese.enfants.every((enfant) => enfant.prenom.trim().length > 0)
+      ? 'complet'
+      : 'partiel';
+  const regimeStatus: AuditSectionStatus =
+    dossier.regimeMatrimonial ||
+    dossier.donationsSynthetiques.length > 0 ||
+    dossier.testamentsSynthetiques.length > 0
+      ? 'complet'
+      : dossier.situationFamiliale.statut === 'marie'
+        ? 'partiel'
+        : 'vide';
+  const professionalStatus = statusFromProfessionalData(foyerMembers);
+
   return [
     availableSection(
       'dossier',
@@ -78,63 +108,31 @@ export function buildAuditProgressSections(
       statusLabelFromCompletion(completion.status),
     ),
     availableSection(
-      'situation-familiale',
-      'Situation familiale',
+      'foyer-famille',
+      'Foyer & famille',
       'F1',
-      !engaged ? 'vide' : synthese.situationLabel ? 'complet' : 'partiel',
+      aggregateStatus([situationStatus, filiationStatus, regimeStatus, professionalStatus]),
     ),
-    availableSection(
-      'filiation',
-      'Filiation',
-      'F1',
-      !synthese.filiationHasData
-        ? 'vide'
-        : principal && synthese.enfants.every((enfant) => enfant.prenom.trim().length > 0)
-          ? 'complet'
-          : 'partiel',
-    ),
-    availableSection(
-      'regime-donations',
-      'Libéralités & transmission',
-      'F1',
-      dossier.regimeMatrimonial ||
-        dossier.donationsSynthetiques.length > 0 ||
-        dossier.testamentsSynthetiques.length > 0
-        ? 'complet'
-        : dossier.situationFamiliale.statut === 'marie'
-          ? 'partiel'
-          : 'vide',
-    ),
-    availableSection(
-      'situation-professionnelle',
-      'Situation professionnelle',
-      'F1',
-      statusFromProfessionalData(foyerMembers),
-    ),
-    gatedSection('budget-capacite', 'Budget & capacité', 'F1.1'),
-    gatedSection('societes-organigramme', 'Sociétés / organigramme', 'F5', true),
-    gatedSection('patrimoine', 'Patrimoine', 'F3'),
-    gatedSection('actifs', 'Actifs', 'F3', false, true, 'Inventaire déclaratif'),
-    gatedSection('passifs', 'Passifs', 'F3', false, true, 'Inventaire déclaratif'),
-    gatedSection('fiscalite', 'Fiscalité', 'F1.1', false, true, 'Déclaratif'),
-    gatedSection('ifi-conditionnel', 'IFI conditionnel', 'F3', true),
+    gatedSection('societes-organigramme', 'Sociétés / organigramme', 'F5', {
+      conditional: true,
+    }),
+    gatedSection('actifs-passifs', 'Actifs / passifs', 'F3', {
+      isNavigable: true,
+      statusLabel: 'Inventaire déclaratif',
+    }),
+    gatedSection('fiscalite', 'Fiscalité & budget', 'F1.1', {
+      isNavigable: true,
+      statusLabel: 'Déclaratif',
+    }),
+    gatedSection('prevoyance', 'Prévoyance', 'F3', { conditional: true }),
     gatedSection('succession', 'Succession', 'F3'),
-    gatedSection('prevoyance', 'Prévoyance', 'F3', true),
-    gatedSection('retraite', 'Retraite', 'F1.1', true),
-    gatedSection('placements', 'Placements', 'F3'),
     availableSection(
       'objectifs',
       'Objectifs',
       'F1',
       dossier.objectifs.length > 0 ? 'complet' : 'vide',
     ),
-    availableSection(
-      'synthese',
-      'Synthèse',
-      'F1',
-      statusFromCompletion(completion.status),
-      statusLabelFromCompletion(completion.status),
-    ),
+    gatedSection('synthese', 'Synthèse & projection', 'F6'),
   ];
 }
 
@@ -197,7 +195,7 @@ export function buildStatusBar(
 }
 
 function availableSection(
-  id: string,
+  id: AuditProgressSectionId,
   label: string,
   foundation: AuditFoundation,
   status: AuditSectionStatus,
@@ -216,22 +214,24 @@ function availableSection(
 }
 
 function gatedSection(
-  id: string,
+  id: AuditProgressSectionId,
   label: string,
   foundation: AuditFoundation,
-  conditional = false,
-  isNavigable = false,
-  explicitStatusLabel?: string,
+  options: {
+    conditional?: boolean;
+    isNavigable?: boolean;
+    statusLabel?: string;
+  } = {},
 ): AuditProgressSection {
   return {
     id,
     label,
     foundation,
     availability: 'gated',
-    isNavigable,
+    isNavigable: options.isNavigable ?? false,
     status: null,
-    conditional,
-    statusLabel: explicitStatusLabel ?? 'À venir',
+    conditional: options.conditional ?? false,
+    statusLabel: options.statusLabel ?? 'À venir',
   };
 }
 
@@ -250,6 +250,12 @@ function statusFromProfessionalData(membres: AuditLandingMember[]): AuditSection
   if (membres.length === 0) return 'vide';
   const completeCount = membres.filter(isProfessionalSituationComplete).length;
   if (completeCount === membres.length) return 'complet';
+  return 'partiel';
+}
+
+function aggregateStatus(statuses: AuditSectionStatus[]): AuditSectionStatus {
+  if (statuses.every((status) => status === 'complet')) return 'complet';
+  if (statuses.every((status) => status === 'vide')) return 'vide';
   return 'partiel';
 }
 

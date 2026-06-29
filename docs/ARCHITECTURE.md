@@ -452,15 +452,19 @@ Trajectoire PR V2-14 : le scan documentaire IA doit rester rattaché à l'audit,
 
 F1 ajoute le socle `DossierPatrimonial` dans `src/domain/dossier/` : foyer, membres, situation
 familiale, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues,
-`sourceRefs` minimales et complétude `f1_core`. Cette complétude vérifie seulement le socle central
-minimal ; elle ne signifie pas qu'un simulateur Succession, PER, IR, Placement ou Strategy peut
-lire le dossier sans adapter dédié.
+`budgetSynthese`, `sourceRefs` minimales et complétude `f1_core`. `budgetSynthese` est le mini-jalon
+F1.1 : ressources annuelles, charges annuelles et `sourceRefIds`, sans dérivés stockés. Cette
+complétude vérifie seulement le socle central minimal ; elle ne signifie pas qu'un simulateur
+Succession, PER, IR, Placement ou Strategy peut lire le dossier sans adapter dédié.
 
 La persistance durable passe par la table Supabase `public.dossiers_patrimoniaux` avec `user_id`,
 `data jsonb`, `source_refs jsonb`, statut, complétude, `created_at` et `updated_at`. Les policies RLS
 autorisent le propriétaire ou `public.is_admin()` pour lire et écrire. `/audit` hydrate le brouillon
 depuis le dernier dossier central relu via Supabase quand aucun brouillon de session n'est ouvert,
 puis sauvegarde le modèle central lors du save global via les adapters Audit <-> dossier central.
+Le budget fait partie de ce round-trip : le brouillon audit édite les agrégats annuels, l'adapter les
+projette vers `DossierPatrimonial.budgetSynthese`, puis les réhydrate sans stocker les emprunts,
+l'impôt, la capacité ou le taux d'endettement qui restent des dérivés de lecture.
 La précédence F1 est volontairement local-first : un brouillon local/session en cours garde la
 priorité, et le dossier central sert de source amont seulement quand aucun brouillon local actif
 n'existe. La résolution avancée de conflits entre brouillon local et dossier central est hors
@@ -487,9 +491,9 @@ Contrat produit/design : `docs/AUDIT_COCKPIT.md`. Les contrats d'implémentation
 précisent, pour chaque page `/audit`, la fondation consommée, l'adapter attendu et les états
 `à venir` quand une fondation manque. Règles d'architecture :
 
-- `/audit` **consomme** `DossierPatrimonial`, `SourceRef`, `DossierVersion` et les futures fondations
-  `F1.1` (budgetSynthese), `F2` (evidence), `F3` (graphe actifs/passifs PP/US/NP), `F5`
-  (société/organigramme/bilans) et `F6` (scénarios/recommandations/activation).
+- `/audit` **consomme** `DossierPatrimonial`, `budgetSynthese` (F1.1), `SourceRef`,
+  `DossierVersion` et les futures fondations `F2` (evidence), `F3` (graphe actifs/passifs PP/US/NP),
+  `F5` (société/organigramme/bilans) et `F6` (scénarios/recommandations/activation).
 - `/audit` **ne possède aucune source de vérité propre** : il lit le dossier central via adapters et
   ne duplique pas localement foyer, patrimoine, fiscalité, objectifs ou budget.
 - Un brouillon local/session peut porter un état temporaire d'édition, mais il ne devient jamais une

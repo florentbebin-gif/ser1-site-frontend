@@ -182,7 +182,7 @@ describe('AuditLanding', () => {
     expect(screen.queryByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 2, name: 'Objectifs' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 2, name: 'Stratégie' })).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Calculs à venir' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Calculs et projections' })).toBeNull();
     expect(screen.queryByText('Foyer à renseigner')).toBeNull();
     expect(screen.queryByText('Filiation à renseigner')).toBeNull();
 
@@ -197,7 +197,7 @@ describe('AuditLanding', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Points à confirmer' })).toBeVisible();
     expect(screen.getByRole('heading', { level: 2, name: 'Objectifs' })).toBeVisible();
     expect(screen.getByRole('heading', { level: 2, name: 'Stratégie' })).toBeVisible();
-    expect(screen.getByRole('region', { name: 'Calculs à venir' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Calculs et projections' })).toBeVisible();
   });
 
   it('relie un régime matrimonial manquant à l’étape civile réelle', () => {
@@ -283,11 +283,11 @@ describe('AuditLanding', () => {
   it('rend un carrousel premium avec une seule fiche active accessible', () => {
     renderLanding(withFoyer);
 
-    const carousel = screen.getByRole('region', { name: 'Calculs à venir' });
+    const carousel = screen.getByRole('region', { name: 'Calculs et projections' });
 
     expect(within(carousel).getByRole('heading', { name: 'Masses successorales' })).toBeVisible();
     expect(within(carousel).queryByRole('heading', { name: 'Organigramme société' })).toBeNull();
-    expect(within(carousel).queryByRole('heading', { name: 'Impôt sur le revenu' })).toBeNull();
+    expect(within(carousel).queryByRole('heading', { name: 'Fiscalité & budget' })).toBeNull();
     expect(carousel.querySelectorAll('.audit-carousel__slide[aria-hidden="true"]')).toHaveLength(2);
     expect(carousel.querySelector('[data-slide-position="prev"]')).toHaveAttribute(
       'aria-hidden',
@@ -305,7 +305,7 @@ describe('AuditLanding', () => {
     fireEvent.keyDown(within(carousel).getByRole('button', { name: /suivant/i }), {
       key: 'ArrowRight',
     });
-    expect(within(carousel).getByRole('heading', { name: 'Impôt sur le revenu' })).toBeVisible();
+    expect(within(carousel).getByRole('heading', { name: 'Fiscalité & budget' })).toBeVisible();
 
     fireEvent.keyDown(within(carousel).getByRole('button', { name: /suivant/i }), {
       key: 'ArrowLeft',
@@ -369,8 +369,8 @@ describe('AuditLanding', () => {
     expect(within(dossier).queryByText('Session locale active')).toBeNull();
     expect(within(dossier).queryByText('Métadonnées locales non nominatives')).toBeNull();
     expect(screen.getByRole('heading', { level: 2, name: 'Avancement du dossier' })).toBeVisible();
-    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(9);
-    expect(screen.getAllByText('Inventaire déclaratif')).toHaveLength(2);
+    expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(6);
+    expect(screen.getAllByText('Inventaire déclaratif')).toHaveLength(1);
     expect(screen.getByText('Déclaratif')).toBeInTheDocument();
 
     const text =

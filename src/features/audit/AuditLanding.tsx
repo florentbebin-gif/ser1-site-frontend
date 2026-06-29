@@ -13,6 +13,7 @@ import {
 import type {
   AuditLandingDestination,
   AuditLandingObjectifsCard,
+  AuditProgressSectionId,
   AuditLandingSyntheseCard,
   AuditLandingViewModel,
 } from './auditLandingViewModel';
@@ -28,8 +29,8 @@ export type { AuditLandingDestination } from './auditLandingViewModel';
 interface AuditLandingProps {
   viewModel: AuditLandingViewModel;
   onOpenAudit: (destination: AuditLandingDestination) => void;
-  currentSectionId?: string;
-  onSelectSection?: (sectionId: string) => void;
+  currentSectionId?: AuditProgressSectionId;
+  onSelectSection?: (sectionId: AuditProgressSectionId) => void;
 }
 
 export default function AuditLanding({

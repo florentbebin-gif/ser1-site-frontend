@@ -179,6 +179,11 @@ describe('useDossierPatrimonialPersistence', () => {
       priority: 1,
       sourceRefIds: [],
     });
+    dossier.budgetSynthese = {
+      ressourcesAnnuelles: 132000,
+      chargesAnnuelles: 78000,
+      sourceRefIds: ['manual-budget'],
+    };
     dossier.completion = {
       scope: 'f1_core',
       status: 'complete',
@@ -217,12 +222,18 @@ describe('useDossierPatrimonialPersistence', () => {
         completion: {
           status: 'complete',
         },
+        budgetSynthese: {
+          ressourcesAnnuelles: 132000,
+          chargesAnnuelles: 78000,
+          sourceRefIds: ['manual-budget'],
+        },
         createdAt: '2026-06-07T10:00:00.000Z',
       },
     });
     expect(query.select).toHaveBeenCalledWith('*');
     expect(query.eq).toHaveBeenCalledWith('id', dossier.id);
     expect(result.current.currentDossier?.membres[0]?.prenom).toBe('Alice');
+    expect(result.current.currentDossier?.budgetSynthese?.chargesAnnuelles).toBe(78000);
   });
 
   it('relit le dernier dossier central depuis la table Supabase dédiée', async () => {

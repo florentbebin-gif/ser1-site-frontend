@@ -1,18 +1,18 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import type { AuditLandingViewModel } from '../auditLandingViewModel';
+import type { AuditLandingViewModel, AuditProgressSectionId } from '../auditLandingViewModel';
 import { AuditProgressRail } from './AuditProgressRail';
 import { DossierTravailCard } from './DossierTravailCard';
 
 interface AuditCockpitShellProps {
   viewModel: AuditLandingViewModel;
-  currentSectionId: string;
+  currentSectionId: AuditProgressSectionId;
   eyebrow?: string;
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
-  onSelectSection: (sectionId: string) => void;
+  onSelectSection: (sectionId: AuditProgressSectionId) => void;
 }
 
 export function AuditCockpitShell({

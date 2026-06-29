@@ -2,12 +2,16 @@ import type { ReactElement } from 'react';
 
 import { IconCheck, IconClock, IconInfo, IconLock } from '@/icons/ui';
 
-import type { AuditProgressSection, AuditSectionStatus } from '../auditLandingViewModel';
+import type {
+  AuditProgressSection,
+  AuditProgressSectionId,
+  AuditSectionStatus,
+} from '../auditLandingViewModel';
 
 interface AuditProgressRailProps {
   sections: AuditProgressSection[];
-  currentSectionId?: string;
-  onSelectSection?: (sectionId: string) => void;
+  currentSectionId?: AuditProgressSectionId;
+  onSelectSection?: (sectionId: AuditProgressSectionId) => void;
 }
 
 export function AuditProgressRail({

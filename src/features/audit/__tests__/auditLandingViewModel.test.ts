@@ -102,7 +102,7 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.isNewAnalysisEmpty).toBe(false);
   });
 
-  it('expose les 18 sections canoniques sans fabriquer les fondations non livrées', () => {
+  it('expose les 9 sections métier sans fabriquer les fondations non livrées', () => {
     const vm = vmFromAudit((audit) => {
       audit.situationFamiliale.mr = {
         prenom: 'Jean',
@@ -113,26 +113,17 @@ describe('buildAuditLandingViewModel', () => {
       audit.objectifs = ['proteger_conjoint'];
     });
 
-    expect(vm.progress).toHaveLength(18);
+    expect(vm.progress).toHaveLength(9);
     expect(vm.progress.map((section) => section.label)).toEqual([
       'Dossier',
-      'Situation familiale',
-      'Filiation',
-      'Libéralités & transmission',
-      'Situation professionnelle',
-      'Budget & capacité',
+      'Foyer & famille',
       'Sociétés / organigramme',
-      'Patrimoine',
-      'Actifs',
-      'Passifs',
-      'Fiscalité',
-      'IFI conditionnel',
-      'Succession',
+      'Actifs / passifs',
+      'Fiscalité & budget',
       'Prévoyance',
-      'Retraite',
-      'Placements',
+      'Succession',
       'Objectifs',
-      'Synthèse',
+      'Synthèse & projection',
     ]);
 
     const fiscalite = vm.progress.find((section) => section.id === 'fiscalite');
@@ -142,23 +133,23 @@ describe('buildAuditLandingViewModel', () => {
       status: null,
       statusLabel: 'Déclaratif',
     });
+    const syntheseProjection = vm.progress.find((section) => section.id === 'synthese');
+    expect(syntheseProjection).toMatchObject({
+      foundation: 'F6',
+      availability: 'gated',
+      isNavigable: false,
+      status: null,
+      statusLabel: 'À venir',
+    });
     expect(vm.progress).toContainEqual(
       expect.objectContaining({
-        id: 'actifs',
+        id: 'actifs-passifs',
         availability: 'gated',
         isNavigable: true,
         statusLabel: 'Inventaire déclaratif',
       }),
     );
-    expect(vm.progress).toContainEqual(
-      expect.objectContaining({
-        id: 'passifs',
-        availability: 'gated',
-        isNavigable: true,
-        statusLabel: 'Inventaire déclaratif',
-      }),
-    );
-    expect(vm.progress.filter((section) => section.availability === 'gated')).toHaveLength(11);
+    expect(vm.progress.filter((section) => section.availability === 'gated')).toHaveLength(6);
     expect(vm.progress.filter((section) => section.availability === 'gated')).not.toContainEqual(
       expect.objectContaining({ status: 'complet' }),
     );
@@ -396,7 +387,7 @@ describe('buildAuditLandingViewModel', () => {
 
     expect(vm.statusBar.items.find((item) => item.id === 'points')).toMatchObject({
       label: 'Champs F1 à compléter',
-      value: '7',
+      value: '3',
     });
     expect(vm.pointsAConfirmer.map((point) => point.label)).toEqual([
       'Client principal à compléter',
@@ -446,7 +437,7 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.pointsAConfirmer).toEqual([]);
   });
 
-  it('expose les slides verrouillées sans chiffre métier inventé ni route simulateur', () => {
+  it('expose les slides d’aperçu sans chiffre métier inventé ni route simulateur', () => {
     const vm = vmFromAudit();
     const text = vm.previewSlides
       .map((slide) =>
@@ -458,7 +449,7 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.previewSlides.map((slide) => slide.badgeLabel)).toEqual([
       'À venir · F3',
       'À venir · F5',
-      'Verrouillé · IR',
+      'Disponible · IR',
     ]);
     expect(text).not.toMatch(/\/sim\//);
     expect(text).not.toMatch(/patrimoine net|TMI\s+\d|droits? successoraux|score|radar|€|%/i);

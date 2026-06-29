@@ -8,6 +8,7 @@
 import { useCallback, useState, type ReactElement } from 'react';
 
 import AuditLanding, { type AuditLandingDestination } from './AuditLanding';
+import type { AuditProgressSectionId } from './auditLandingViewModel';
 import { useAuditDossierController } from './hooks/useAuditDossierController';
 import { ActifsPassifsPage } from './cockpit/ActifsPassifsPage';
 import { FiscalitePage } from './cockpit/FiscalitePage';
@@ -24,12 +25,13 @@ function pageFromDestination(destination: AuditLandingDestination): AuditCockpit
   return 'foyer-famille';
 }
 
-function pageFromSection(sectionId: string): AuditCockpitPageId {
-  if (sectionId === 'dossier' || sectionId === 'synthese') return 'landing';
-  if (sectionId === 'actifs' || sectionId === 'passifs') return 'actifs-passifs';
+function pageFromSection(sectionId: AuditProgressSectionId): AuditCockpitPageId | null {
+  if (sectionId === 'dossier') return 'landing';
+  if (sectionId === 'foyer-famille') return 'foyer-famille';
+  if (sectionId === 'actifs-passifs') return 'actifs-passifs';
   if (sectionId === 'fiscalite') return 'fiscalite';
   if (sectionId === 'objectifs') return 'objectifs';
-  return 'foyer-famille';
+  return null;
 }
 
 export default function AuditPage(): ReactElement {
@@ -41,8 +43,9 @@ export default function AuditPage(): ReactElement {
     setPage(pageFromDestination(destination));
   }, []);
 
-  const handleSelectSection = useCallback((sectionId: string) => {
-    setPage(pageFromSection(sectionId));
+  const handleSelectSection = useCallback((sectionId: AuditProgressSectionId) => {
+    const nextPage = pageFromSection(sectionId);
+    if (nextPage) setPage(nextPage);
   }, []);
 
   const cockpitProps = {

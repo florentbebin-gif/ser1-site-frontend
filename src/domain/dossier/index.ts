@@ -18,6 +18,7 @@ export type { DossierChainDirection } from './chainLabels';
 export type {
   DossierCompletion,
   DossierCompletionStatus,
+  DossierBudgetSynthese,
   DossierContrainte,
   DossierContraintePriority,
   DossierDonationSynthetique,

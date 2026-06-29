@@ -392,6 +392,18 @@ export interface SituationFiscale {
   cehr?: number;
   ifi?: number;
   taxeFonciere?: number;
+  // Saisie « 2042 » consommée par l'estimation IR de /audit (optionnels :
+  // rétro-compatibles avec les consommateurs partagés PER / Strategy / exports).
+  chargesDeductibles?: number; // déductions du revenu (PER, pensions alim., CSG)
+  reductionsCredits?: number; // réductions et crédits d'impôt
+  rcmOption?: 'pfu' | 'bareme'; // option d'imposition des capitaux mobiliers
+}
+
+// Synthèse budgétaire déclarative du foyer, capturée depuis la page Fiscalité
+// (pas d'étape dédiée) pour dériver la capacité d'épargne après impôts.
+export interface BudgetSynthese {
+  ressourcesAnnuelles: number; // ressources/train de vie entrant (net perçu)
+  chargesAnnuelles: number; // dépenses courantes hors impôts
 }
 
 export type ObjectifClient =
@@ -431,6 +443,7 @@ export interface DossierAudit {
   actifs: Actif[];
   passif: Passif;
   situationFiscale: SituationFiscale;
+  budget?: BudgetSynthese;
   objectifs: ObjectifClient[];
   contraintes?: DossierContrainte[];
   operationsPrevues?: DossierOperationPrevue[];

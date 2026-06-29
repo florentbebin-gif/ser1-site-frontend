@@ -15,6 +15,7 @@ describe('persistence dossier patrimonial', () => {
     audit.situationFamiliale.mr.nom = 'Martin';
     audit.situationFamiliale.mr.dateNaissance = '1980-01-01';
     audit.objectifs = ['developper_patrimoine'];
+    audit.budget = { ressourcesAnnuelles: 118500, chargesAnnuelles: 84640 };
 
     const dossier = buildDossierPatrimonialFromAudit(audit, {
       ownerUserId: 'user-1',
@@ -49,6 +50,11 @@ describe('persistence dossier patrimonial', () => {
           code: 'developper_patrimoine',
         }),
       ]),
+      budgetSynthese: {
+        ressourcesAnnuelles: 118500,
+        chargesAnnuelles: 84640,
+        sourceRefIds: ['audit-audit-1-manual'],
+      },
     });
     expect(row.data).not.toHaveProperty('completion');
   });
@@ -60,6 +66,7 @@ describe('persistence dossier patrimonial', () => {
     audit.situationFamiliale.mr.nom = 'Martin';
     audit.situationFamiliale.mr.dateNaissance = '1980-01-01';
     audit.objectifs = ['developper_patrimoine'];
+    audit.budget = { ressourcesAnnuelles: 120000, chargesAnnuelles: 70000 };
     const dossier = buildDossierPatrimonialFromAudit(audit, {
       ownerUserId: 'user-1',
       now: '2026-06-07T10:00:00.000Z',
@@ -79,6 +86,11 @@ describe('persistence dossier patrimonial', () => {
       },
       completion: {
         status: 'complete',
+      },
+      budgetSynthese: {
+        ressourcesAnnuelles: 120000,
+        chargesAnnuelles: 70000,
+        sourceRefIds: ['audit-audit-2-manual'],
       },
     });
   });

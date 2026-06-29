@@ -63,14 +63,14 @@ export function AuditPreviewCarousel({ slides }: AuditPreviewCarouselProps): Rea
   return (
     <section
       className="audit-carousel"
-      aria-label="Calculs à venir"
+      aria-label="Calculs et projections"
       aria-roledescription="carrousel"
     >
       <header className="audit-carousel__head">
         <div>
-          <p className="audit-carousel__eyebrow">Calculs à venir</p>
+          <p className="audit-carousel__eyebrow">Calculs et projections</p>
           <p className="audit-carousel__context">
-            Aperçus verrouillés tant que les fondations manquent.
+            Aperçus disponibles selon les fondations du dossier.
           </p>
         </div>
         <span

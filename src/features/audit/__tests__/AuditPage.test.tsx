@@ -26,6 +26,24 @@ vi.mock('@/hooks/useDossierPatrimonialPersistence', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useFiscalContext', async () => {
+  const { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } =
+    await import('@/constants/settingsDefaults');
+  return {
+    useFiscalContext: () => ({
+      fiscalContext: {
+        irScaleCurrent: DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent,
+        ifi: DEFAULT_TAX_SETTINGS.ifi,
+        _raw_tax: DEFAULT_TAX_SETTINGS,
+        _raw_ps: DEFAULT_PS_SETTINGS,
+      },
+      loading: false,
+      error: null,
+      meta: {},
+    }),
+  };
+});
+
 describe('AuditPage', () => {
   beforeEach(() => {
     sessionStorage.clear();
@@ -91,7 +109,7 @@ describe('AuditPage', () => {
   it('rend chaque page cockpit atteignable depuis le rail gauche', async () => {
     render(<AuditPage />);
 
-    await userEvent.click(screen.getByRole('button', { name: /Situation familiale/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Foyer & famille/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.queryByText('Dossier renseigné')).toBeNull();
@@ -106,19 +124,40 @@ describe('AuditPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Inventaire déclaré' })).toBeVisible();
     expect(screen.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
 
-    await userEvent.click(screen.getByRole('button', { name: /Fiscalité — Déclaratif/ }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Fiscalité' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Fiscalité & budget/ }));
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Fiscalité & budget' }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
-    expect(screen.getByText(/sans calcul IR runtime depuis \/audit/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Répartition issue/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Lisez la pression fiscale et la capacité budgétaire du foyer.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Pression fiscale' })).toBeVisible();
+    expect(screen.getAllByRole('heading', { level: 2, name: 'Budget & capacité' })).toHaveLength(2);
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Saisie fiscale et budget' }),
+    ).toBeVisible();
+    expect(screen.queryByRole('link', { name: /Ouvrir le simulateur IR/ })).toBeNull();
     expect(screen.queryByText(/TMI calculée/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Passer à Objectifs/ })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Continuer l.audit/ })).toBeVisible();
 
-    await userEvent.click(screen.getByRole('button', { name: /Passer à Objectifs/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Continuer l.audit/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Objectifs' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.queryByText(/stratégie activable/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Revenir à la synthèse/ })).toBeVisible();
+  });
+
+  it('verrouille Synthèse & projection dans le rail tant que la page dédiée n’existe pas', async () => {
+    render(<AuditPage />);
+
+    expect(screen.queryByRole('button', { name: /Synthèse & projection/ })).toBeNull();
+    expect(screen.getByLabelText('Synthèse & projection — À venir')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Foyer & famille/ }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Synthèse & projection/ })).toBeNull();
+    expect(screen.getByLabelText('Synthèse & projection — À venir')).toBeInTheDocument();
   });
 
   it('ouvre les drawers par clic sur les cartes internes premium', async () => {
