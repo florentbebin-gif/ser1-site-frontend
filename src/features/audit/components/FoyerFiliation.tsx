@@ -2,7 +2,7 @@
  * FoyerFiliation — schéma de filiation premium dérivé du dossier F1.
  *
  * SVG autonome (connecteurs en courbes de Bézier, pastilles de largeur égale,
- * avatars vectoriels {@link FoyerAvatarArt}). Lecture seule : seuls les membres
+ * avatars locaux {@link FoyerAvatarArt}). Lecture seule : seuls les membres
  * réellement présents dans le dossier sont rendus. Le mode compact ajoute un
  * marqueur visuel pour distinguer les enfants communs des enfants d'une union
  * précédente sans introduire de calcul métier.
@@ -72,5 +72,3 @@ export function FoyerFiliation({
     </svg>
   );
 }
-
-export default FoyerFiliation;

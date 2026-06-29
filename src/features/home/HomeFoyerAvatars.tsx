@@ -1,6 +1,6 @@
-import { useId, type ReactElement } from 'react';
+import type { ReactElement } from 'react';
 
-import { FoyerAvatarArt, FoyerAvatarClipDef } from '@/features/audit/shared';
+import { FamilyAvatarImage, resolveFamilyAvatarVariant } from '@/features/audit/shared';
 import type { AuditLandingMember } from '@/features/audit/shared';
 
 import './HomeFoyerAvatars.css';
@@ -19,7 +19,6 @@ export function HomeFoyerAvatars({
   principal,
   conjoint,
 }: HomeFoyerAvatarsProps): ReactElement | null {
-  const clipBase = useId();
   const members = [principal, conjoint].filter((member): member is AuditLandingMember =>
     Boolean(member),
   );
@@ -38,24 +37,15 @@ export function HomeFoyerAvatars({
 
   return (
     <span className="home-foyer-avatars" role="img" aria-label={label} title={label}>
-      {members.map((member) => {
-        const clipId = `${clipBase}-${member.id}`;
-        return (
-          <svg
-            key={member.id}
-            className="home-foyer-avatars__img"
-            viewBox="-120 -120 240 240"
-            aria-hidden="true"
-          >
-            <defs>
-              <FoyerAvatarClipDef clipId={clipId} />
-            </defs>
-            <FoyerAvatarArt kind={member.avatarKind} clipId={clipId} />
-          </svg>
-        );
-      })}
+      {members.map((member) => (
+        <FamilyAvatarImage
+          key={member.id}
+          className="home-foyer-avatars__img"
+          variant={resolveFamilyAvatarVariant(member.avatarKind, member.avatarAppearance)}
+          size={30}
+          decorative
+        />
+      ))}
     </span>
   );
 }
-
-export default HomeFoyerAvatars;

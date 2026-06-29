@@ -2422,23 +2422,23 @@ reverrouillée, aucune fausse donnée pour un effet visuel.
 
 ### Variantes d'avatars de filiation — livré (UX-03)
 
-Statut : **livré**. Les avatars de filiation sont **palette-driven** : `kind` porte la silhouette
+Statut : **livré**. Les avatars de filiation sont **appearance-driven** : `kind` porte le genre
 (`homme | femme | garcon | fille`) et une dimension orthogonale
 `AuditAvatarAppearance = { skinTone: 'clair' | 'fonce'; age: 'adulte' | 'senior' }` (senior limité
-aux adultes) sélectionne la palette, sans dupliquer les tracés ni faire exploser un enum à plat.
+aux adultes) sélectionne la silhouette, sans dupliquer le modèle ni faire exploser un enum à plat.
 
-- Art et palettes (clair/foncé × adulte/senior — peau foncée et senior cheveux/sourcils blancs)
-  dans `src/features/audit/components/FoyerAvatarArt.tsx`, consommés par la filiation `/audit`
-  (`FoyerFiliation.tsx`), les badges foyer (`FoyerAvatarBadge.tsx`) et l'accueil
-  (`HomeFoyerAvatars.tsx`).
+- Art PNG local transparent (adultes, enfants, grand-père, grand-mère)
+  dans `src/features/audit/assets/avatars/`, posé par `FoyerAvatarArt.tsx` sur un fond cercle
+  tokenisé et consommé par la filiation `/audit` (`FoyerFiliation.tsx`), les badges foyer
+  (`FoyerAvatarBadge.tsx`) et l'accueil (`HomeFoyerAvatars.tsx`).
 - Type et persistance par membre : `AuditAvatarAppearance` dans `src/domain/audit/types.ts`, champ
   `avatarAppearance` persisté sur les personnes du dossier (`src/domain/dossier/patrimonial.ts`),
   helpers de normalisation dans `src/features/audit/avatarAppearance.ts`.
 - Sélecteur par membre : `AuditAvatarAppearancePicker` branché dans `SituationFamilialeDrawer.tsx`
   et `filiationCards.tsx` ; choix manuel de l'apparence persisté via le modèle dossier.
-- Garde-fou couleurs : `FoyerAvatarArt.tsx` reste allowlisté dans `tools/ser1-color-policy.mjs`
-  (illustration « scène physique » non thémable) ; toutes les palettes restent dans ce fichier,
-  sans nouvelle exception.
+- Garde-fou couleurs : `FoyerAvatarArt.tsx` n'est plus allowlisté dans
+  `tools/ser1-color-policy.mjs` ; le cercle utilise les tokens SER1 et le trait sombre vit dans
+  les PNG transparents locaux, sans couleur runtime ni nouvelle exception.
 
 PR cible : livré dans la track UX-03 (pages famille / filiation).
 

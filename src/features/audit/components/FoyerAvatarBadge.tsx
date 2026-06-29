@@ -1,8 +1,9 @@
-import { useId, type ReactElement } from 'react';
+import type { ReactElement } from 'react';
 
 import type { AuditAvatarAppearance, AuditAvatarKind } from '@/domain/audit/types';
 
-import { FoyerAvatarArt, FoyerAvatarClipDef } from './FoyerAvatarArt';
+import { FamilyAvatarImage } from './FamilyAvatarImage';
+import { resolveFamilyAvatarVariant } from './familyAvatarAssets';
 
 export function FoyerAvatarBadge({
   label,
@@ -13,16 +14,14 @@ export function FoyerAvatarBadge({
   kind: AuditAvatarKind;
   appearance?: AuditAvatarAppearance;
 }): ReactElement {
-  const clipId = useId();
-
   return (
     <span className="audit-avatar-badge" aria-hidden="true" title={label}>
-      <svg viewBox="-120 -120 240 240">
-        <defs>
-          <FoyerAvatarClipDef clipId={clipId} />
-        </defs>
-        <FoyerAvatarArt kind={kind} clipId={clipId} appearance={appearance} />
-      </svg>
+      <FamilyAvatarImage
+        className="audit-avatar-badge__image"
+        variant={resolveFamilyAvatarVariant(kind, appearance)}
+        size={32}
+        decorative
+      />
     </span>
   );
 }

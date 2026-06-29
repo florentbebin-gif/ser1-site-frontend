@@ -4,11 +4,12 @@ import type { AuditAvatarAppearance, AuditAvatarKind } from '@/domain/audit/type
 import { IconPencil } from '@/icons/ui';
 
 import {
+  appearanceForAvatarChoice,
   normalizeAvatarAppearance,
   normalizeAvatarKind,
   optionsForAvatarSubject,
+  type AuditAvatarChoice,
   type AuditAvatarSubject,
-  type AuditAvatarVariant,
 } from '../avatarAppearance';
 import { FoyerAvatarArt, FoyerAvatarClipDef } from './FoyerAvatarArt';
 
@@ -75,27 +76,28 @@ export function AuditAvatarAppearancePicker({
             <div className="audit-avatar-picker__group" key={group.title}>
               <p>{group.title}</p>
               <div className="audit-avatar-picker__choices">
-                {group.variants.map((variant) => {
-                  const selected = isSelectedAvatar(variant, currentKind, currentAppearance);
-                  const variantClipId = `${clipId}-${variant.id}`;
+                {group.choices.map((choice) => {
+                  const selected = isSelectedAvatar(choice, currentKind, currentAppearance);
+                  const choiceAppearance = appearanceForAvatarChoice(choice, currentAppearance);
+                  const variantClipId = `${clipId}-${choice.id}`;
                   return (
                     <button
                       type="button"
-                      key={variant.id}
+                      key={choice.id}
                       className="audit-avatar-picker__choice"
                       data-selected={selected ? 'true' : undefined}
                       aria-pressed={selected}
-                      aria-label={avatarProfileLabel(variant)}
+                      aria-label={avatarProfileLabel(choice)}
                       onClick={() => {
-                        onChange({ kind: variant.kind, appearance: variant.appearance });
+                        onChange({ kind: choice.kind, appearance: choiceAppearance });
                         setOpen(false);
                       }}
                     >
                       <AvatarPreview
                         className="audit-avatar-picker__choice-art"
                         clipId={variantClipId}
-                        kind={variant.kind}
-                        appearance={variant.appearance}
+                        kind={choice.kind}
+                        appearance={choiceAppearance}
                       />
                     </button>
                   );
@@ -132,22 +134,14 @@ function AvatarPreview({
 
 function avatarGroupsForSubject(subject: AuditAvatarSubject): Array<{
   title: string;
-  variants: AuditAvatarVariant[];
+  choices: AuditAvatarChoice[];
 }> {
-  const variants = optionsForAvatarSubject(subject);
+  const choices = optionsForAvatarSubject(subject);
   if (subject === 'enfant') {
     return [
       {
         title: 'Enfants',
-        variants: variants.filter(
-          (variant) => variant.kind === 'garcon' || variant.kind === 'fille',
-        ),
-      },
-      {
-        title: 'Adultes liés',
-        variants: variants.filter(
-          (variant) => variant.kind === 'homme' || variant.kind === 'femme',
-        ),
+        choices,
       },
     ];
   }
@@ -155,37 +149,23 @@ function avatarGroupsForSubject(subject: AuditAvatarSubject): Array<{
   return [
     {
       title: 'Adultes',
-      variants: variants.filter((variant) => variant.appearance.age === 'adulte'),
+      choices: choices.filter((choice) => choice.age === 'adulte'),
     },
     {
       title: 'Seniors',
-      variants: variants.filter((variant) => variant.appearance.age === 'senior'),
+      choices: choices.filter((choice) => choice.age === 'senior'),
     },
   ];
 }
 
 function isSelectedAvatar(
-  variant: AuditAvatarVariant,
+  choice: AuditAvatarChoice,
   kind: AuditAvatarKind,
   appearance: AuditAvatarAppearance,
 ): boolean {
-  return (
-    variant.kind === kind &&
-    variant.appearance.skinTone === appearance.skinTone &&
-    variant.appearance.age === appearance.age
-  );
+  return choice.kind === kind && choice.age === appearance.age;
 }
 
-function avatarProfileLabel(variant: AuditAvatarVariant): string {
-  const age = variant.appearance.age === 'senior' ? 'senior' : 'adulte';
-  const genre =
-    variant.kind === 'homme'
-      ? 'homme'
-      : variant.kind === 'femme'
-        ? 'femme'
-        : variant.kind === 'garcon'
-          ? 'garçon'
-          : 'fille';
-  const peau = variant.appearance.skinTone === 'fonce' ? 'peau foncée' : 'peau claire';
-  return `Profil ${genre}, ${age}, ${peau}`;
+function avatarProfileLabel(choice: AuditAvatarChoice): string {
+  return `Profil ${choice.label}`;
 }
