@@ -1909,7 +1909,6 @@
   border: 1px solid color-mix(in srgb, var(--action-primary) 18%, var(--border-subtle));
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--surface-card) 88%, var(--surface-active));
-  color: var(--action-primary);
   cursor: pointer;
   box-shadow: 0 6px 20px color-mix(in srgb, var(--shadow-color) 7%, transparent);
   transition:
@@ -1989,7 +1988,7 @@
 
 .audit-avatar-picker__choices {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
   gap: var(--space-2);
 }
 
@@ -2001,7 +2000,6 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--surface-card);
-  color: var(--action-primary);
   cursor: pointer;
   box-shadow: 0 4px 14px color-mix(in srgb, var(--shadow-color) 5%, transparent);
 }
@@ -2691,14 +2689,13 @@
   width: 34px;
   height: 34px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  border: 0;
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--surface-muted) 54%, var(--surface-card));
+  background: transparent;
 }
 
-.audit-avatar-badge svg {
-  width: 32px;
-  height: 32px;
+.audit-avatar-badge__image {
+  flex: 0 0 auto;
 }
 
 .audit-ddv-card__title {

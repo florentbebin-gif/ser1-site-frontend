@@ -2,10 +2,11 @@ import type { AuditAvatarAge, AuditAvatarAppearance, AuditAvatarKind } from '@/d
 
 export type AuditAvatarSubject = 'adulte' | 'enfant';
 
-export interface AuditAvatarVariant {
+export interface AuditAvatarChoice {
   id: string;
   kind: AuditAvatarKind;
-  appearance: AuditAvatarAppearance;
+  age: AuditAvatarAge;
+  label: string;
 }
 
 export const DEFAULT_AUDIT_AVATAR_APPEARANCE: AuditAvatarAppearance = {
@@ -13,26 +14,16 @@ export const DEFAULT_AUDIT_AVATAR_APPEARANCE: AuditAvatarAppearance = {
   age: 'adulte',
 };
 
-const ADULT_VARIANTS: AuditAvatarVariant[] = [
-  avatarVariant('homme', 'clair', 'adulte'),
-  avatarVariant('homme', 'fonce', 'adulte'),
-  avatarVariant('homme', 'clair', 'senior'),
-  avatarVariant('homme', 'fonce', 'senior'),
-  avatarVariant('femme', 'clair', 'adulte'),
-  avatarVariant('femme', 'fonce', 'adulte'),
-  avatarVariant('femme', 'clair', 'senior'),
-  avatarVariant('femme', 'fonce', 'senior'),
+const ADULT_CHOICES: AuditAvatarChoice[] = [
+  avatarChoice('homme', 'adulte', 'Homme'),
+  avatarChoice('femme', 'adulte', 'Femme'),
+  avatarChoice('homme', 'senior', 'Grand-père'),
+  avatarChoice('femme', 'senior', 'Grand-mère'),
 ];
 
-const CHILD_AND_CLOSE_VARIANTS: AuditAvatarVariant[] = [
-  avatarVariant('garcon', 'clair', 'adulte'),
-  avatarVariant('garcon', 'fonce', 'adulte'),
-  avatarVariant('fille', 'clair', 'adulte'),
-  avatarVariant('fille', 'fonce', 'adulte'),
-  avatarVariant('homme', 'clair', 'adulte'),
-  avatarVariant('homme', 'fonce', 'adulte'),
-  avatarVariant('femme', 'clair', 'adulte'),
-  avatarVariant('femme', 'fonce', 'adulte'),
+const CHILD_CHOICES: AuditAvatarChoice[] = [
+  avatarChoice('garcon', 'adulte', 'Garçon', 'garcon'),
+  avatarChoice('fille', 'adulte', 'Fille', 'fille'),
 ];
 
 export function normalizeAvatarAppearance(
@@ -56,19 +47,32 @@ export function normalizeAvatarKind(
   return subject === 'enfant' ? 'fille' : 'homme';
 }
 
-export function optionsForAvatarSubject(subject: AuditAvatarSubject): AuditAvatarVariant[] {
-  return subject === 'adulte' ? ADULT_VARIANTS : CHILD_AND_CLOSE_VARIANTS;
+export function optionsForAvatarSubject(subject: AuditAvatarSubject): AuditAvatarChoice[] {
+  return subject === 'adulte' ? ADULT_CHOICES : CHILD_CHOICES;
 }
 
-function avatarVariant(
-  kind: AuditAvatarKind,
-  skinTone: AuditAvatarAppearance['skinTone'],
-  age: AuditAvatarAge,
-): AuditAvatarVariant {
+export function appearanceForAvatarChoice(
+  choice: AuditAvatarChoice | undefined,
+  currentAppearance: AuditAvatarAppearance | undefined,
+): AuditAvatarAppearance {
+  const normalized = normalizeAvatarAppearance(currentAppearance, 'adulte');
   return {
-    id: `${kind}-${skinTone}-${age}`,
+    skinTone: normalized.skinTone,
+    age: choice?.age ?? DEFAULT_AUDIT_AVATAR_APPEARANCE.age,
+  };
+}
+
+function avatarChoice(
+  kind: AuditAvatarKind,
+  age: AuditAvatarAge,
+  label: string,
+  id = `${kind}-${age}`,
+): AuditAvatarChoice {
+  return {
+    id,
     kind,
-    appearance: { skinTone, age },
+    age,
+    label,
   };
 }
 
