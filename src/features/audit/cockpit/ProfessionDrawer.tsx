@@ -79,6 +79,7 @@ export function ProfessionDrawer({
             fallbackKind="homme"
             person={mr}
             onChange={setMr}
+            first={!mme}
           />
           {mme ? (
             <ProfessionalProfileFields
@@ -99,11 +100,13 @@ function ProfessionalProfileFields({
   fallbackKind,
   person,
   onChange,
+  first,
 }: {
   fallbackTitle: string;
   fallbackKind: Parameters<typeof FoyerAvatarBadge>[0]['kind'];
   person: PersonInfo;
   onChange: (person: PersonInfo) => void;
+  first?: boolean;
 }): ReactElement {
   const [fichePaieOpen, setFichePaieOpen] = useState(false);
   const rules = buildProfessionFieldRules(person);
@@ -126,6 +129,7 @@ function ProfessionalProfileFields({
     <AuditDrawerSection
       className="audit-profession-card"
       density={density}
+      first={first}
       title={
         <span className="audit-ddv-card__identity audit-profession-identity">
           <FoyerAvatarBadge

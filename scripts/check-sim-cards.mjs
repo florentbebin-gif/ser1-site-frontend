@@ -134,11 +134,24 @@ for (const feature of SIM_FEATURES) {
 // élevée (docs/AUDIT_COCKPIT.md §10). On contrôle la définition canonique et
 // les overrides applicatifs : aucune exception locale.
 const FLAT_SURFACE_BASES = ['.sim-band', '.sim-kpi-line', '.sim-tile-flat'];
+// `.audit-related-card` (pile de cartes répétables Filiation) et
+// `.audit-donation-card` (mini-fiches donation dans Libéralités & transmission)
+// suivent la même règle d'absence d'élévation sur leur propre surface, sans
+// adopter la recette `.sim-band` (délimitation par bordure conservée pour une
+// pile ajoutable/supprimable). Contrairement aux bases ci-dessus, elles
+// contiennent des contrôles interactifs légitimes (focus/hover) dans leurs
+// descendants et modificateurs BEM : on ne contrôle donc que le sélecteur
+// racine, jamais `.audit-related-card .x` ni `.audit-donation-card__x`.
+const ROOT_ONLY_FLAT_SURFACES = ['.audit-related-card', '.audit-donation-card'];
 const BOX_SHADOW_DECL = /\bbox-shadow\s*:\s*([^;]+);?/g;
 
 function selectorTargetsFlatSurface(selector) {
-  return FLAT_SURFACE_BASES.some((base) =>
+  const matchesBroadSurface = FLAT_SURFACE_BASES.some((base) =>
     new RegExp(`${base.replace('.', '\\.')}(?:$|[\\s.:#\\[]|--|__)`).test(selector),
+  );
+  if (matchesBroadSurface) return true;
+  return ROOT_ONLY_FLAT_SURFACES.some((base) =>
+    new RegExp(`^${base.replace('.', '\\.')}(?:$|[:\\[])`).test(selector.trim()),
   );
 }
 

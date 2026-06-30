@@ -132,7 +132,7 @@ function RevenusActiviteDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Foyer fiscal">
+        <AuditDrawerSection title="Foyer fiscal" first>
           <AuditDrawerFieldGrid>
             <SimAmountInputNumeric
               label="Année de référence"
@@ -191,7 +191,7 @@ function RevenusCapitalDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Option d’imposition">
+        <AuditDrawerSection title="Option d’imposition" first>
           <AuditDrawerFieldGrid>
             <SelectField
               label="Imposition des capitaux mobiliers"
@@ -233,7 +233,7 @@ function ChargesDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Déductions et réductions">
+        <AuditDrawerSection title="Déductions et réductions" first>
           <AuditDrawerFieldGrid>
             <SimAmountInputEuro
               label="Charges déductibles du revenu"
@@ -281,7 +281,7 @@ function BudgetDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Train de vie annuel">
+        <AuditDrawerSection title="Train de vie annuel" first>
           <AuditDrawerFieldGrid>
             <SimAmountInputEuro
               label="Ressources annuelles"

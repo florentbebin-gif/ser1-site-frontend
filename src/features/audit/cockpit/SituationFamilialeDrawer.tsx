@@ -178,7 +178,7 @@ function PersonFields({
   avatarKind: AuditAvatarKind;
 }): ReactElement {
   return (
-    <AuditDrawerSection title={title}>
+    <AuditDrawerSection title={title} first>
       <PersonIdentityEditor
         label={title}
         person={person}

@@ -100,6 +100,7 @@ export function RegimeDonationsDrawer({
           personOptions={personOptions}
           includeConjoint={hasCouplePerson}
           onChange={setForm}
+          first={!isMarried}
         />
         {personOptions.hasUnreferencableRelatives ? (
           <p className="audit-drawer-hint">
@@ -162,6 +163,7 @@ function RegimeMatrimonialSection({
     <AuditDrawerSection
       title="Régime matrimonial"
       description="Sélectionnez le régime applicable au mariage."
+      first
     >
       <div className="audit-regime-panel">
         <AuditDrawerFieldGrid>

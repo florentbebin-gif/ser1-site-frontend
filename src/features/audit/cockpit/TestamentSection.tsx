@@ -45,12 +45,14 @@ export function TestamentSection({
   personOptions,
   includeConjoint,
   onChange,
+  first,
 }: {
   form: SituationCivile;
   situationFamiliale: SituationFamiliale;
   personOptions: AuditTransmissionPersonOptions;
   includeConjoint: boolean;
   onChange: (updater: (previous: SituationCivile) => SituationCivile) => void;
+  first?: boolean;
 }): ReactElement {
   const heads: AuditPersonOption[] = [
     personOptions.all.find((option) => option.value === 'client'),
@@ -61,6 +63,7 @@ export function TestamentSection({
     <AuditDrawerSection
       title="Testament"
       description="Dispositions déclarées par personne, sans calcul de dévolution dans l’audit."
+      first={first}
     >
       <div className="audit-testament-grid" data-columns={heads.length > 1 ? 2 : 1}>
         {heads.map((head) => (

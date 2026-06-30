@@ -226,16 +226,20 @@ export function AuditDrawerSection({
   children,
   className,
   density,
+  first,
 }: {
   title: ReactNode;
   description?: string;
   children: ReactNode;
   className?: string;
   density?: 'simple' | 'rich';
+  first?: boolean;
 }): ReactElement {
   return (
     <section
-      className={['audit-drawer-section', className].filter(Boolean).join(' ')}
+      className={['audit-drawer-section', 'sim-band', first ? 'sim-band--first' : null, className]
+        .filter(Boolean)
+        .join(' ')}
       data-density={density}
     >
       <header className="audit-drawer-section__header">

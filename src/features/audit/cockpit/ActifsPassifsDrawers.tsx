@@ -66,7 +66,7 @@ export function ActifDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(form)} onDelete={onDelete} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Actif déclaré">
+        <AuditDrawerSection title="Actif déclaré" first>
           <AuditDrawerFieldGrid>
             <TextField
               label="Libellé"
@@ -225,7 +225,7 @@ export function PassifDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={handleSave} onDelete={onDelete} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Passif déclaré">
+        <AuditDrawerSection title="Passif déclaré" first>
           <AuditDrawerFieldGrid>
             {editing ? null : (
               <SelectField
