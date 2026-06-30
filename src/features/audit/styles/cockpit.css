@@ -2075,6 +2075,11 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.audit-drawer-grid[data-columns='3'][data-compact] {
+  grid-template-columns: repeat(3, minmax(0, 220px));
+  justify-content: start;
+}
+
 .audit-drawer-grid[data-columns='4'] {
   grid-template-columns: minmax(180px, 1.2fr) repeat(3, minmax(0, 0.8fr));
 }
@@ -3049,10 +3054,12 @@
 
   .audit-drawer-grid,
   .audit-drawer-grid[data-columns='3'],
+  .audit-drawer-grid[data-columns='3'][data-compact],
   .audit-drawer-grid[data-columns='4'],
   .audit-drawer-grid[data-columns='5'],
   .audit-profession-columns[data-columns='2'] {
     grid-template-columns: 1fr;
+    justify-content: stretch;
   }
 
   .audit-related-card__grid[data-row='identity'],

@@ -254,12 +254,14 @@ export function AuditDrawerSection({
 export function AuditDrawerFieldGrid({
   children,
   columns = 2,
+  compact,
 }: {
   children: ReactNode;
   columns?: 2 | 3 | 4 | 5;
+  compact?: boolean;
 }): ReactElement {
   return (
-    <div className="audit-drawer-grid" data-columns={columns}>
+    <div className="audit-drawer-grid" data-columns={columns} data-compact={compact || undefined}>
       {children}
     </div>
   );

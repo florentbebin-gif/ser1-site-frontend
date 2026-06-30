@@ -212,7 +212,7 @@ function PersonIdentityEditor({
         }
       />
       <div className="audit-person-editor__fields">
-        <AuditDrawerFieldGrid columns={3}>
+        <AuditDrawerFieldGrid columns={3} compact>
           <TextField
             label="Prénom"
             value={person.prenom}
@@ -233,7 +233,7 @@ function PersonIdentityEditor({
             }
           />
         </AuditDrawerFieldGrid>
-        <AuditDrawerFieldGrid columns={3}>
+        <AuditDrawerFieldGrid columns={3} compact>
           <DateField
             label="Date de naissance"
             value={person.dateNaissance}
