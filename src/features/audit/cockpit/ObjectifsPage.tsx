@@ -246,7 +246,7 @@ function ObjectifsSelectionDrawer({
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(selected)} />}
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Priorités client">
+        <AuditDrawerSection title="Priorités client" first>
           <div className="audit-objective-list">
             {(Object.keys(OBJECTIFS_CLIENT_LABELS) as ObjectifClient[]).map((objectif) => {
               const checked = selected.includes(objectif);

@@ -12,6 +12,8 @@ import {
 } from '@/icons/ui';
 
 import {
+  AuditCardHead,
+  AuditSurfaceCard,
   formatDate,
   fullName,
   labelForOption,
@@ -39,22 +41,19 @@ export function FoyerSummary({ dossier }: { dossier: DossierAudit }): ReactEleme
   const hasRightColumn = facts.right.length > 0;
 
   return (
-    <section className="audit-foyer-summary" aria-labelledby="audit-foyer-summary-title">
-      <header className="audit-foyer-card-head">
-        <div className="audit-foyer-card-head__main">
-          <span className="audit-foyer-card-head__icon" aria-hidden="true">
-            <IconHome />
-          </span>
-          <h2 id="audit-foyer-summary-title">Synthèse foyer</h2>
-        </div>
-      </header>
+    <AuditSurfaceCard className="audit-foyer-summary" ariaLabelledby="audit-foyer-summary-title">
+      <AuditCardHead
+        icon={<IconHome />}
+        title="Synthèse foyer"
+        titleId="audit-foyer-summary-title"
+      />
       <dl className="audit-key-value-grid" data-layout={hasRightColumn ? 'split' : 'single'}>
         {[...facts.left, ...facts.right].map((fact) => (
           <FoyerSummaryFact key={fact.label} fact={fact} />
         ))}
       </dl>
       <FoyerSummaryIllustration />
-    </section>
+    </AuditSurfaceCard>
   );
 }
 

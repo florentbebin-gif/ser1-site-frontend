@@ -295,6 +295,33 @@ Taxonomie à 4 niveaux :
 
 Règle : **aucune surface avec ombre dans une surface avec ombre.**
 
+**Primitives React canoniques** (`src/features/audit/cockpit/auditCockpitUi.tsx`, réexportées via
+`auditCockpitShared.tsx`) : `AuditPivot` (grille pivot deux colonnes), `AuditSurfaceCard` +
+`AuditCardHead` (carte élevée avec en-tête icône/titre), `AuditDrawerSection` (bande plate `.sim-band`
+dans un drawer, avec une prop `first` à passer explicitement sur le bloc visuellement premier — ne pas
+dériver ce statut d'un sélecteur CSS `:first-child`, car plusieurs drawers conditionnent l'ordre des
+sections selon la donnée saisie, ex. `RegimeDonationsDrawer` selon l'état civil). Toute nouvelle page
+ou tout nouveau drawer `/audit` réutilise ces primitives avant d'écrire un JSX local équivalent.
+
+Table de décision par archétype de page :
+
+- **Page avec synthèse deux colonnes** (lecture + détail côte à côte) → `AuditPivot` +
+  `AuditSurfaceCard`/`AuditCardHead`. Références : `ActifsPassifsPage.tsx`, `FoyerFamillePage.tsx`.
+- **Page liste/linéaire sans synthèse pivot** → `SummaryCardGrid` + `sim-band` directement, sans
+  `AuditPivot`. Référence : `ObjectifsPage.tsx`, qui suit déjà ce pattern — ce n'est pas une dette,
+  juste un autre archétype de page.
+- **Sections de drawer** → toujours `AuditDrawerSection` (jamais de carte élevée locale).
+- **Cartes répétables/supprimables dans une pile** (ex. enfants/proches dans `FiliationDrawer`,
+  donations dans `RegimeDonationsDrawer`) → un troisième pattern non élevé, distinct des bandes et
+  tuiles : cadre avec bordure conservé (pour délimiter chaque élément ajoutable/supprimable) mais
+  sans ombre. Références : `.audit-related-card` et `.audit-donation-card` dans `cockpit.css`. Ne pas
+  les signaler à tort comme un oubli de la recette `.sim-band` — c'est un pattern volontairement
+  différent. Les deux recettes restent distinctes (densité différente : fiche personne vs mini-ligne
+  de donation) et ne sont pas fusionnées en un composant unique tant qu'un troisième besoin réel ne le
+  justifie pas ; toute nouvelle carte répétable doit réutiliser l'une des deux recettes existantes
+  (jamais une ombre locale) avant d'en écrire une troisième. Garde-fou : `check:sim-cards`
+  (`ROOT_ONLY_FLAT_SURFACES`).
+
 ## 11. Contrat organigramme société
 
 - **V1 = rendu automatique depuis des liens structurés.** Pas de graphe libre drag-and-drop.
@@ -456,7 +483,13 @@ deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawer
 horizontale d'étapes. UX-03a.5 ajoute le polish visuel commun des pages internes ; UX-03a.6 pose le
 redesign pivot de `Foyer & famille` avec synthèse typographique, filiation sobre, cartes de saisie
 compactes et drawers structurés, sans bande `Points prioritaires` sur les pages internes et sans
-changement du modèle métier.
+changement du modèle métier. Un polish de suivi a aligné le JSX de `Foyer & famille` sur les
+primitives `AuditPivot`/`AuditSurfaceCard`/`AuditCardHead` déjà consommées par `Actifs / passifs`,
+plafonné la hauteur du schéma de filiation dans le pivot, aplati les patterns de surface élevée
+imbriquée identifiés dans les drawers (`AuditDrawerSection`, `.audit-related-card` et
+`.audit-donation-card`), corrigé le repli mobile de la grille identité compacte et la pose de `first`
+sur les deux profils côte à côte de `Situation professionnelle`, sans changement de contrat produit ni
+de modèle métier (voir §10).
 
 | Champ                                                 | Contrat                                                                                                                                                        |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |

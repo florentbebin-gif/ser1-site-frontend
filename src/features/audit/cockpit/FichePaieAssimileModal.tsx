@@ -50,7 +50,7 @@ export function FichePaieAssimileModal({
       }
     >
       <div className="audit-drawer-form">
-        <AuditDrawerSection title="Cotisations URSSAF">
+        <AuditDrawerSection title="Cotisations URSSAF" first>
           <AuditDrawerFieldGrid columns={3}>
             <PercentField
               label="Taux d’activité"

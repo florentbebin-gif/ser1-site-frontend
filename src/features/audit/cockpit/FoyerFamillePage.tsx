@@ -11,6 +11,9 @@ import {
 } from '../professionalSituation';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
+  AuditCardHead,
+  AuditPivot,
+  AuditSurfaceCard,
   fullName,
   formatDate,
   hasCompletePerson,
@@ -72,10 +75,10 @@ export function FoyerFamillePage({
       }
       onSelectSection={onSelectSection}
     >
-      <section className="audit-foyer-pivot" aria-label="Synthèse pivot du foyer">
+      <AuditPivot className="audit-foyer-pivot" ariaLabel="Synthèse pivot du foyer">
         <FoyerSummary dossier={dossier} />
         <FoyerMiniFiliation viewModel={viewModel} />
-      </section>
+      </AuditPivot>
       <section className="audit-foyer-sections" aria-labelledby="audit-foyer-sections-title">
         <header className="audit-foyer-section-head">
           <h2 id="audit-foyer-sections-title">Saisie du foyer</h2>
@@ -148,15 +151,15 @@ function FoyerMiniFiliation({
 }): ReactElement {
   const { principal, conjoint, enfants, proches, filiationHasData } = viewModel.synthese;
   return (
-    <section className="audit-foyer-filiation" aria-labelledby="audit-foyer-filiation-title">
-      <header className="audit-foyer-card-head">
-        <div className="audit-foyer-card-head__main">
-          <span className="audit-foyer-card-head__icon" aria-hidden="true">
-            <IconNetwork />
-          </span>
-          <h2 id="audit-foyer-filiation-title">Filiation & proches</h2>
-        </div>
-      </header>
+    <AuditSurfaceCard
+      className="audit-foyer-filiation"
+      ariaLabelledby="audit-foyer-filiation-title"
+    >
+      <AuditCardHead
+        icon={<IconNetwork />}
+        title="Filiation & proches"
+        titleId="audit-foyer-filiation-title"
+      />
       <div className="audit-foyer-filiation__canvas">
         <FoyerFiliation
           principal={principal}
@@ -167,7 +170,7 @@ function FoyerMiniFiliation({
           mode="compact"
         />
       </div>
-    </section>
+    </AuditSurfaceCard>
   );
 }
 
