@@ -111,6 +111,45 @@ describe('FiliationDrawer', () => {
     expect(screen.getByRole('button', { name: 'Vivant sous le même toit' })).toBeVisible();
   });
 
+  it('porte un ton de branche uniquement sur les enfants d’union précédente', () => {
+    renderDrawer((audit) => {
+      audit.situationFamiliale.enfants = [
+        {
+          id: 'enfant-commun',
+          prenom: 'Lou',
+          dateNaissance: '2010-01-01',
+          estCommun: true,
+          lienParente: 'enfant_commun',
+        },
+        {
+          id: 'enfant-client',
+          prenom: 'John',
+          dateNaissance: '2000-01-01',
+          estCommun: false,
+          parentPrincipal: 'mr',
+          lienParente: 'enfant_union_precedente_mr',
+        },
+        {
+          id: 'enfant-conjoint',
+          prenom: 'Rima',
+          dateNaissance: '2005-01-01',
+          estCommun: false,
+          parentPrincipal: 'mme',
+          lienParente: 'enfant_union_precedente_mme',
+        },
+      ];
+    });
+
+    expect(screen.getAllByText('Enfant commun').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Enfant union précédente client').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Enfant union précédente conjoint').length).toBeGreaterThan(0);
+    expect(screen.getByText('Branche client')).toBeVisible();
+    expect(screen.getByText('Branche conjoint')).toBeVisible();
+    expect(document.body.querySelector("[data-relation-tone='common']")).toBeNull();
+    expect(document.body.querySelector("[data-relation-tone='client']")).not.toBeNull();
+    expect(document.body.querySelector("[data-relation-tone='conjoint']")).not.toBeNull();
+  });
+
   it('désactive le rattachement d’un petit-enfant sans enfant déclaré', () => {
     const proche: ProcheInfo = {
       id: 'proche-pe',

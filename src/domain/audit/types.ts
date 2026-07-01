@@ -1,5 +1,22 @@
 import type { DonationDernierVivantOption, RegimeMatrimonial } from '../../engine/succession/civil';
 import type { DossierContrainte, DossierOperationPrevue } from '@/domain/dossier/patrimonial';
+import type { Actif, Passif } from './patrimoineTypes';
+
+export type {
+  Actif,
+  ActifBase,
+  ActifDivers,
+  ActifFinancier,
+  ActifImmobilier,
+  ActifProfessionnel,
+  DelaiRealisation,
+  HorizonPlacement,
+  ModeDetentionActif,
+  Passif,
+  PassifEmprunt,
+  ProfilRisque,
+  ProprietaireType,
+} from './patrimoineTypes';
 
 export type AuditAvatarKind = 'homme' | 'femme' | 'garcon' | 'fille';
 export type AuditAvatarSkinTone = 'clair' | 'fonce';
@@ -297,74 +314,6 @@ export interface TestamentInfo {
   beneficiaire?: AuditPersonRef;
   quotePartPct?: number;
   description?: string;
-}
-
-export type ProprietaireType = 'mr' | 'mme' | 'commun' | 'indivision';
-
-export interface ActifBase {
-  id: string;
-  libelle: string;
-  valeur: number;
-  proprietaire: ProprietaireType;
-  quotiteMr?: number; // % si indivision
-  quotiteMme?: number;
-}
-
-export interface ActifImmobilier extends ActifBase {
-  type: 'residence_principale' | 'residence_secondaire' | 'locatif' | 'scpi' | 'autre_immo';
-  adresse?: string;
-  surfaceM2?: number;
-  dateAcquisition?: string;
-  prixAcquisition?: number;
-  revenus?: number; // Loyers annuels
-}
-
-export interface ActifFinancier extends ActifBase {
-  type: 'compte_courant' | 'livret' | 'pea' | 'cto' | 'assurance_vie' | 'per' | 'autre_financier';
-  etablissement?: string;
-  tauxRendement?: number;
-  clauseBeneficiaire?: string; // Pour AV
-  dateOuverture?: string;
-}
-
-export interface ActifProfessionnel extends ActifBase {
-  type: 'entreprise' | 'parts_sociales' | 'fonds_commerce';
-  formeJuridique?: string;
-  activite?: string;
-  chiffreAffaires?: number;
-}
-
-export interface ActifDivers extends ActifBase {
-  type: 'vehicule' | 'mobilier' | 'oeuvre_art' | 'bijoux' | 'autre';
-}
-
-export type Actif = ActifImmobilier | ActifFinancier | ActifProfessionnel | ActifDivers;
-
-export interface PassifEmprunt {
-  id: string;
-  libelle: string;
-  type: 'immobilier' | 'consommation' | 'professionnel' | 'autre';
-  capitalInitial: number;
-  capitalRestantDu: number;
-  mensualite: number;
-  tauxInteret: number;
-  dateDebut: string;
-  dateFin: string;
-  assuranceEmprunteur?: {
-    quotiteMr: number;
-    quotiteMme: number;
-  };
-  bienFinance?: string; // ID de l'actif
-}
-
-export interface Passif {
-  emprunts: PassifEmprunt[];
-  autresDettes: Array<{
-    id: string;
-    libelle: string;
-    montant: number;
-    description?: string;
-  }>;
 }
 
 export interface RevenuCategorie {

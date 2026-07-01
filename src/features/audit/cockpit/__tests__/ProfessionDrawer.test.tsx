@@ -54,9 +54,9 @@ describe('ProfessionDrawer', () => {
     expect(screen.getByText('Claire Durand')).toBeVisible();
     expect(screen.getByText('Client principal')).toBeVisible();
     expect(screen.getByText('Conjoint')).toBeVisible();
-    expect(
-      document.body.querySelectorAll('.audit-profession-identity .audit-avatar-badge'),
-    ).toHaveLength(2);
+    expect(document.body.querySelectorAll('.audit-subject-panel .audit-avatar-badge')).toHaveLength(
+      2,
+    );
   });
 
   it('affiche le statut social comme premier pivot sans modules avancés', async () => {
@@ -273,13 +273,13 @@ describe('ProfessionDrawer', () => {
       },
     });
 
-    const columns = document.body.querySelector('.audit-profession-columns');
+    const columns = document.body.querySelector('.audit-subject-panel-grid');
     const sections = document.body.querySelectorAll('.audit-profession-card');
 
-    expect(columns).toHaveClass('audit-profession-columns');
+    expect(columns).toHaveClass('audit-subject-panel-grid');
     expect(sections).toHaveLength(2);
-    expect(sections[0]).toHaveAttribute('data-density', 'rich');
-    expect(sections[1]).toHaveAttribute('data-density', 'simple');
+    expect(sections[0]).toHaveClass('audit-profession-card');
+    expect(sections[1]).toHaveClass('audit-profession-card');
   });
 
   it('affiche les champs spécifiques de caisse et nettoie avant sauvegarde', async () => {

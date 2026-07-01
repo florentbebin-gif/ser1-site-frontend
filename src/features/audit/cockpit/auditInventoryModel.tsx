@@ -6,6 +6,7 @@ import type {
   AuditAvatarKind,
   Passif,
   PassifEmprunt,
+  ProprietaireType,
   SituationFamiliale,
 } from '@/domain/audit/types';
 import {
@@ -45,6 +46,7 @@ export interface OwnerColumn {
 export interface FamilyTotal {
   label: string;
   montant: number;
+  referenceMontant?: number;
 }
 
 export interface ActifItem {
@@ -54,6 +56,15 @@ export interface ActifItem {
   typeLabel: string;
   montant: number;
   owner: OwnerKey;
+  modeDetention?: Actif['modeDetention'];
+  horizonPlacement?: Actif['horizonPlacement'];
+  profilRisque?: Actif['profilRisque'];
+  delaiRealisation?: Actif['delaiRealisation'];
+  tauxRevalorisation?: number;
+  tauxRevenu?: number;
+  tauxRendement?: number;
+  revenus?: number;
+  dateReference?: string;
   anomaly: boolean;
   onEdit: () => void;
 }
@@ -71,6 +82,20 @@ export interface PassifItem {
   title: string;
   typeLabel: string;
   montant: number;
+  referenceMontant?: number;
+  owner: OwnerKey;
+  mensualite?: number;
+  tauxInteret?: number;
+  dateDebut?: string;
+  dateFin?: string;
+  assuranceQuotiteMr?: number;
+  assuranceQuotiteMme?: number;
+  assuranceMensuelle?: number;
+  echeanceAssuranceComprise?: number;
+  taeg?: number;
+  coutGlobalCredit?: number;
+  coutGlobalAssurance?: number;
+  taea?: number;
   anomaly: boolean;
   onEdit: () => void;
 }
@@ -150,7 +175,26 @@ function actifTypeLabel(type: Actif['type']): string {
   );
 }
 
-function ownerOfActif(proprietaire: Actif['proprietaire'], isCouple: boolean): OwnerKey {
+function dateReferenceActif(actif: Actif): string | undefined {
+  if ('dateAcquisition' in actif) return actif.dateAcquisition;
+  if ('dateOuverture' in actif) return actif.dateOuverture;
+  return undefined;
+}
+
+function revenusActif(actif: Actif): number | undefined {
+  if ('revenus' in actif) return actif.revenus;
+  return undefined;
+}
+
+function tauxRendementActif(actif: Actif): number | undefined {
+  if ('tauxRendement' in actif) return actif.tauxRendement;
+  return undefined;
+}
+
+function ownerOfProprietaire(
+  proprietaire: ProprietaireType | undefined,
+  isCouple: boolean,
+): OwnerKey {
   if (!isCouple) return 'client';
   if (proprietaire === 'mr') return 'client';
   if (proprietaire === 'mme') return 'conjoint';
@@ -173,27 +217,20 @@ function avatarOf(
   };
 }
 
-export function buildOwnerColumns(
-  famille: SituationFamiliale,
-  actifs: Actif[],
-  isCouple: boolean,
-): OwnerColumn[] {
+export function buildOwnerColumns(famille: SituationFamiliale, isCouple: boolean): OwnerColumn[] {
   const client = avatarOf(famille.mr, 'homme', 'Client');
   const columns: OwnerColumn[] = [{ key: 'client', label: client.label, avatars: [client] }];
   // Hors couple (célibataire / divorcé / veuf) : pas de colonne Conjoint ni Commun.
   if (!isCouple) return columns;
 
-  const hasConjoint = Boolean(famille.mme) || actifs.some((actif) => actif.proprietaire === 'mme');
   const conjoint = famille.mme
     ? avatarOf(famille.mme, 'femme', 'Conjoint')
     : { kind: 'femme' as AuditAvatarKind, label: 'Conjoint' };
-  if (hasConjoint) {
-    columns.push({ key: 'conjoint', label: conjoint.label, avatars: [conjoint] });
-  }
+  columns.push({ key: 'conjoint', label: conjoint.label, avatars: [conjoint] });
   columns.push({
     key: 'commun',
     label: 'Commun',
-    avatars: hasConjoint ? [client, conjoint] : [client],
+    avatars: [client, conjoint],
   });
   return columns;
 }
@@ -215,7 +252,16 @@ export function buildActifGroups(
         title: actif.libelle.trim() || 'Actif à qualifier',
         typeLabel: actifTypeLabel(actif.type),
         montant: actif.valeur,
-        owner: ownerOfActif(actif.proprietaire, isCouple),
+        owner: ownerOfProprietaire(actif.proprietaire, isCouple),
+        modeDetention: actif.modeDetention,
+        horizonPlacement: actif.horizonPlacement,
+        profilRisque: actif.profilRisque,
+        delaiRealisation: actif.delaiRealisation,
+        tauxRevalorisation: actif.tauxRevalorisation,
+        tauxRevenu: actif.tauxRevenu,
+        tauxRendement: tauxRendementActif(actif),
+        revenus: revenusActif(actif),
+        dateReference: dateReferenceActif(actif),
         anomaly: actifAnomaly(actif),
         onEdit: () => onEdit('actif', actif.id),
       })),
@@ -226,6 +272,7 @@ export function buildActifGroups(
 export function buildPassifGroups(
   emprunts: PassifEmprunt[],
   dettes: Passif['autresDettes'],
+  isCouple: boolean,
   onEdit: (kind: InventoryKind, id: string) => void,
 ): PassifGroup[] {
   const groups: PassifGroup[] = [];
@@ -240,6 +287,20 @@ export function buildPassifGroups(
         title: emprunt.libelle.trim() || 'Emprunt à qualifier',
         typeLabel: labelForOption(EMPRUNT_TYPE_OPTIONS, emprunt.type),
         montant: emprunt.capitalRestantDu,
+        referenceMontant: emprunt.capitalInitial,
+        owner: ownerOfProprietaire(emprunt.proprietaire, isCouple),
+        mensualite: emprunt.mensualite,
+        tauxInteret: emprunt.tauxInteret,
+        dateDebut: emprunt.dateDebut,
+        dateFin: emprunt.dateFin,
+        assuranceQuotiteMr: emprunt.assuranceEmprunteur?.quotiteMr,
+        assuranceQuotiteMme: emprunt.assuranceEmprunteur?.quotiteMme,
+        assuranceMensuelle: emprunt.assuranceEmprunteur?.primeMensuelle,
+        echeanceAssuranceComprise: emprunt.echeanceAssuranceComprise,
+        taeg: emprunt.taeg,
+        coutGlobalCredit: emprunt.coutGlobalCredit,
+        coutGlobalAssurance: emprunt.coutGlobalAssurance,
+        taea: emprunt.assuranceEmprunteur?.taea,
         anomaly: empruntAnomaly(emprunt),
         onEdit: () => onEdit('emprunt', emprunt.id),
       })),
@@ -256,6 +317,7 @@ export function buildPassifGroups(
         title: dette.libelle.trim() || 'Dette à qualifier',
         typeLabel: 'Autre dette',
         montant: dette.montant,
+        owner: ownerOfProprietaire(dette.proprietaire, isCouple),
         anomaly: detteAnomaly(dette),
         onEdit: () => onEdit('dette', dette.id),
       })),
@@ -282,9 +344,14 @@ export function passifTypeTotals(
 ): FamilyTotal[] {
   const totals: FamilyTotal[] = [];
   const empruntsTotal = sumPositive(emprunts.map((emprunt) => emprunt.capitalRestantDu));
+  const empruntsInitial = sumPositive(emprunts.map((emprunt) => emprunt.capitalInitial));
   const dettesTotal = sumPositive(dettes.map((dette) => dette.montant));
   if (empruntsTotal > 0)
-    totals.push({ label: FAMILLE_PASSIF_LABEL.emprunts, montant: empruntsTotal });
+    totals.push({
+      label: FAMILLE_PASSIF_LABEL.emprunts,
+      montant: empruntsTotal,
+      referenceMontant: empruntsInitial > 0 ? empruntsInitial : undefined,
+    });
   if (dettesTotal > 0) totals.push({ label: FAMILLE_PASSIF_LABEL.autres, montant: dettesTotal });
   return totals;
 }

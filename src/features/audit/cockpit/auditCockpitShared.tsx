@@ -21,16 +21,27 @@ import {
 import { IconPlus, IconTrash } from '@/icons/ui';
 
 import type { AuditLandingViewModel, AuditProgressSectionId } from '../auditLandingViewModel';
+import { AuditInlineEmptyState } from './auditCockpitUi';
 export {
   AuditCardHead,
-  AuditPageContinuation,
   AuditPivot,
   AuditDrawerFieldGrid,
   AuditDrawerSection,
+  AuditInlineEmptyState,
+  AuditRepeatableCard,
   AuditSurfaceCard,
+  AuditSubjectPanel,
   StatusBadge,
   SummaryCardGrid,
 } from './auditCockpitUi';
+export {
+  ACTIF_TYPE_OPTIONS,
+  DELAI_REALISATION_OPTIONS,
+  EMPRUNT_TYPE_OPTIONS,
+  HORIZON_PLACEMENT_OPTIONS,
+  MODE_DETENTION_OPTIONS,
+  PROFIL_RISQUE_OPTIONS,
+} from './auditPatrimoineOptions';
 
 export type AuditCockpitPageId =
   | 'landing'
@@ -91,36 +102,6 @@ export const DONATION_TYPE_OPTIONS: SimSelectOption[] = [
   { value: 'donation_temporaire_usufruit', label: 'Donation temporaire d’usufruit' },
 ];
 
-export const ACTIF_TYPE_OPTIONS: SimSelectOption[] = [
-  { value: 'residence_principale', label: 'Résidence principale' },
-  { value: 'residence_secondaire', label: 'Résidence secondaire' },
-  { value: 'locatif', label: 'Immobilier locatif' },
-  { value: 'scpi', label: 'SCPI' },
-  { value: 'autre_immo', label: 'Autre actif immobilier' },
-  { value: 'compte_courant', label: 'Compte courant' },
-  { value: 'livret', label: 'Livret' },
-  { value: 'pea', label: 'PEA' },
-  { value: 'cto', label: 'Compte-titres' },
-  { value: 'assurance_vie', label: 'Assurance-vie' },
-  { value: 'per', label: 'PER' },
-  { value: 'entreprise', label: 'Entreprise' },
-  { value: 'parts_sociales', label: 'Parts sociales' },
-  { value: 'fonds_commerce', label: 'Fonds de commerce' },
-  { value: 'vehicule', label: 'Véhicule' },
-  { value: 'mobilier', label: 'Mobilier' },
-  { value: 'oeuvre_art', label: 'Œuvre d’art' },
-  { value: 'bijoux', label: 'Bijoux' },
-  { value: 'autre_financier', label: 'Autre actif financier' },
-  { value: 'autre', label: 'Autre actif' },
-];
-
-export const EMPRUNT_TYPE_OPTIONS: SimSelectOption[] = [
-  { value: 'immobilier', label: 'Immobilier' },
-  { value: 'consommation', label: 'Consommation' },
-  { value: 'professionnel', label: 'Professionnel' },
-  { value: 'autre', label: 'Autre' },
-];
-
 export const REVENU_CATEGORIE_OPTIONS: SimSelectOption[] = [
   { value: 'salaires', label: 'Salaires' },
   { value: 'tns', label: 'TNS' },
@@ -168,7 +149,7 @@ export function EditableList({
         <IconPlus />
         <span>{addLabel}</span>
       </button>
-      {hasChildren ? children : <p className="audit-drawer-empty">{empty}</p>}
+      {hasChildren ? children : <AuditInlineEmptyState title={empty} />}
     </div>
   );
 }
@@ -394,7 +375,6 @@ export function buildProprietaireOptions(famille: SituationFamiliale): SimSelect
       label: (famille.mme && fullName(famille.mme)) || 'Conjoint',
     });
     options.push({ value: 'commun', label: 'Commun' });
-    options.push({ value: 'indivision', label: 'Indivision' });
   }
   return options;
 }
@@ -449,6 +429,7 @@ export function createEmprunt(): PassifEmprunt {
     id: createId('emprunt'),
     libelle: '',
     type: 'immobilier',
+    proprietaire: 'commun',
     capitalInitial: 0,
     capitalRestantDu: 0,
     mensualite: 0,
@@ -462,6 +443,7 @@ export function createDette(): Passif['autresDettes'][number] {
   return {
     id: createId('dette'),
     libelle: '',
+    proprietaire: 'commun',
     montant: 0,
   };
 }

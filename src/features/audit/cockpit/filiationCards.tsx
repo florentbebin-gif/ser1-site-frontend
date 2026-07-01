@@ -15,6 +15,7 @@ import {
   CivilFiscalZone,
   IdentityRow,
   QualifierTag,
+  type RelatedCardRelationTone,
   RelatedCardShell,
   SegmentedReveal,
 } from './filiationCardParts';
@@ -51,10 +52,13 @@ export function EnfantCard({
   const lien = enfantLienValue(enfant);
   const deceased = Boolean(enfant.decede);
   const renoncant = Boolean(enfant.renoncantSuccession);
+  const relationTone = relationToneForChild(lien);
+  const branchLabel = branchLabelForChild(lien);
 
   return (
     <RelatedCardShell
       deceased={deceased}
+      relationTone={relationTone}
       header={
         <CardHeader
           avatar={
@@ -69,6 +73,7 @@ export function EnfantCard({
             />
           }
           label={relationLabel(lien)}
+          branchLabel={branchLabel}
           deceased={deceased}
           removeLabel={`Retirer ${fullName(enfant) || `enfant ${index + 1}`}`}
           onRemove={onRemove}
@@ -136,6 +141,18 @@ export function EnfantCard({
       />
     </RelatedCardShell>
   );
+}
+
+function relationToneForChild(lien: ProcheLien): RelatedCardRelationTone | undefined {
+  if (lien === 'enfant_union_precedente_mr') return 'client';
+  if (lien === 'enfant_union_precedente_mme') return 'conjoint';
+  return undefined;
+}
+
+function branchLabelForChild(lien: ProcheLien): string | undefined {
+  if (lien === 'enfant_union_precedente_mr') return 'Branche client';
+  if (lien === 'enfant_union_precedente_mme') return 'Branche conjoint';
+  return undefined;
 }
 
 // --- Carte proche --------------------------------------------------------

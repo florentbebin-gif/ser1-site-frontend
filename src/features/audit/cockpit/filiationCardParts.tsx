@@ -12,17 +12,25 @@ import {
   toggleCivilFiscal,
 } from './filiationConfig';
 
+export type RelatedCardRelationTone = 'client' | 'conjoint';
+
 export function RelatedCardShell({
   deceased,
   header,
   children,
+  relationTone,
 }: {
   deceased: boolean;
   header: ReactNode;
   children: ReactNode;
+  relationTone?: RelatedCardRelationTone;
 }): ReactElement {
   return (
-    <article className="audit-related-card" data-deceased={deceased ? 'true' : undefined}>
+    <article
+      className="audit-related-card"
+      data-deceased={deceased ? 'true' : undefined}
+      data-relation-tone={relationTone}
+    >
       {header}
       {children}
     </article>
@@ -32,12 +40,14 @@ export function RelatedCardShell({
 export function CardHeader({
   avatar,
   label,
+  branchLabel,
   deceased,
   removeLabel,
   onRemove,
 }: {
   avatar: ReactNode;
   label: string;
+  branchLabel?: string;
   deceased: boolean;
   removeLabel: string;
   onRemove: () => void;
@@ -47,6 +57,9 @@ export function CardHeader({
       <div className="audit-related-card__identity">
         {avatar}
         <span>{label}</span>
+        {branchLabel ? (
+          <span className="audit-related-card__branch-badge">{branchLabel}</span>
+        ) : null}
         {deceased ? <span className="audit-related-card__life-status">Décédé</span> : null}
       </div>
       <button

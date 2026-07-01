@@ -66,7 +66,9 @@
 
 /* Champ temporel (SimTemporalField) : aligné à gauche, picker natif teinté thème. */
 .sim-field__control--temporal {
+  padding-inline: var(--space-2);
   text-align: left;
+  font-variant-numeric: tabular-nums;
   accent-color: var(--action-primary);
 }
 

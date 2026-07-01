@@ -2,13 +2,14 @@ import { useEffect, useState, type ReactElement } from 'react';
 
 import { type DossierAudit, type PersonInfo } from '@/domain/audit/types';
 
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
+import { AuditDrawer } from '../components/AuditDrawer';
 import { FoyerAvatarBadge } from '../components/FoyerAvatarBadge';
 import { FichePaieAssimileModal } from './FichePaieAssimileModal';
 import { PercentField, TagRow, TagToggle } from './auditDrawerControls';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
+  AuditSubjectPanel,
   DrawerFooter,
   emptyToUndefined,
   fullName,
@@ -52,8 +53,9 @@ export function ProfessionDrawer({
   }, [dossier.situationFamiliale.mme, dossier.situationFamiliale.mr, open]);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size={mme ? 'xl' : 'lg'}
       title="Situation professionnelle"
       subtitle="Statut professionnel, affiliation et paramètres d’activité par personne."
       onClose={onClose}
@@ -70,28 +72,26 @@ export function ProfessionDrawer({
       }
     >
       <div className="audit-drawer-form">
-        <div
-          className="audit-profession-columns"
-          data-columns={dossier.situationFamiliale.mme ? 2 : 1}
-        >
-          <ProfessionalProfileFields
-            fallbackTitle="Client principal"
-            fallbackKind="homme"
-            person={mr}
-            onChange={setMr}
-            first={!mme}
-          />
-          {mme ? (
+        <AuditDrawerSection title="Profils professionnels" first>
+          <div className="audit-subject-panel-grid" data-columns={mme ? 2 : 1}>
             <ProfessionalProfileFields
-              fallbackTitle="Conjoint"
-              fallbackKind="femme"
-              person={mme}
-              onChange={setMme}
+              fallbackTitle="Client principal"
+              fallbackKind="homme"
+              person={mr}
+              onChange={setMr}
             />
-          ) : null}
-        </div>
+            {mme ? (
+              <ProfessionalProfileFields
+                fallbackTitle="Conjoint"
+                fallbackKind="femme"
+                person={mme}
+                onChange={setMme}
+              />
+            ) : null}
+          </div>
+        </AuditDrawerSection>
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -100,20 +100,17 @@ function ProfessionalProfileFields({
   fallbackKind,
   person,
   onChange,
-  first,
 }: {
   fallbackTitle: string;
   fallbackKind: Parameters<typeof FoyerAvatarBadge>[0]['kind'];
   person: PersonInfo;
   onChange: (person: PersonInfo) => void;
-  first?: boolean;
 }): ReactElement {
   const [fichePaieOpen, setFichePaieOpen] = useState(false);
   const rules = buildProfessionFieldRules(person);
   const updatePerson = (next: PersonInfo) => onChange(normalizeProfessionProfile(next));
   const profileTitle = fullName(person) || fallbackTitle;
   const avatarKind = person.avatarKind ?? fallbackKind;
-  const density = isSimpleProfessionProfile(rules) ? 'simple' : 'rich';
 
   const openFichePaie = () => {
     updatePerson({
@@ -126,22 +123,16 @@ function ProfessionalProfileFields({
   };
 
   return (
-    <AuditDrawerSection
+    <AuditSubjectPanel
       className="audit-profession-card"
-      density={density}
-      first={first}
-      title={
-        <span className="audit-ddv-card__identity audit-profession-identity">
-          <FoyerAvatarBadge
-            label={profileTitle}
-            kind={avatarKind}
-            appearance={person.avatarAppearance}
-          />
-          <span>
-            <span className="audit-ddv-card__title">{profileTitle}</span>
-            <span className="audit-ddv-card__subtitle">{fallbackTitle}</span>
-          </span>
-        </span>
+      title={profileTitle}
+      subtitle={fallbackTitle}
+      avatar={
+        <FoyerAvatarBadge
+          label={profileTitle}
+          kind={avatarKind}
+          appearance={person.avatarAppearance}
+        />
       }
     >
       <AuditDrawerFieldGrid columns={2}>
@@ -424,24 +415,6 @@ function ProfessionalProfileFields({
           onClose={() => setFichePaieOpen(false)}
         />
       ) : null}
-    </AuditDrawerSection>
-  );
-}
-
-function isSimpleProfessionProfile(rules: ReturnType<typeof buildProfessionFieldRules>): boolean {
-  return !(
-    rules.showModeExercice ||
-    rules.showRemunerationMandatPct ||
-    rules.showCaisseRetraite ||
-    rules.showStatutConventionnel ||
-    rules.showTauxPriseEnChargeCpam ||
-    rules.showClassePrevoyance ||
-    rules.showClasseRetraite ||
-    rules.showBiologisteConventionne ||
-    rules.showAncienneteCnbf ||
-    rules.showCrnFields ||
-    rules.showCommissionsBrutes ||
-    rules.showAtexa ||
-    rules.showFichePaieButton
+    </AuditSubjectPanel>
   );
 }

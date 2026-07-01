@@ -1,8 +1,10 @@
 import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 
-import { IconCheck, IconChevronRight, IconClock, IconInfo, IconLock } from '@/icons/ui';
+import { IconCheck, IconChevronRight, IconClock, IconInfo, IconLock, IconTrash } from '@/icons/ui';
 
 import type { CardStatus, SummaryCardData } from './auditCockpitShared';
+
+type SummaryCardVariant = 'five' | 'rows' | 'tiles' | 'decision';
 
 export function AuditPivot({
   children,
@@ -74,7 +76,7 @@ export function SummaryCardGrid({
   variant,
 }: {
   cards: SummaryCardData[];
-  variant?: 'five' | 'rows' | 'tiles';
+  variant?: SummaryCardVariant;
 }): ReactElement {
   return (
     <section className="audit-cockpit__cards" data-variant={variant} aria-label="Cartes audit">
@@ -90,10 +92,11 @@ function SummaryCard({
   variant,
 }: {
   card: SummaryCardData;
-  variant?: 'five' | 'rows' | 'tiles';
+  variant?: SummaryCardVariant;
 }): ReactElement {
   const status = statusLabel(card.status, card.badgeLabel);
   const compact = variant === 'tiles';
+  const decision = variant === 'decision';
   const actionTone = card.ctaTone ?? (card.ctaLabel === 'Compléter' ? 'required' : undefined);
   const ariaLabel = [card.title, card.summaryLine, status, card.ctaLabel]
     .filter(Boolean)
@@ -153,7 +156,8 @@ function SummaryCard({
           </>
         )}
       </header>
-      {!compact ? (
+      {!compact && decision ? <DecisionCardFacts card={card} /> : null}
+      {!compact && !decision ? (
         <>
           <CardFacts label="Données connues" values={card.known} empty="Aucune donnée renseignée" />
           <CardFacts label="Manques" values={card.missing} empty="Aucun manque identifié" />
@@ -164,6 +168,31 @@ function SummaryCard({
           <IconInfo className="audit-cockpit-card__alert-icon" />
           {card.alert}
         </p>
+      ) : null}
+    </div>
+  );
+}
+
+function DecisionCardFacts({ card }: { card: SummaryCardData }): ReactElement {
+  const missingLabel = card.status === 'vide' ? 'À renseigner' : 'À qualifier';
+
+  return (
+    <div className="audit-cockpit-card__decision">
+      {card.known.length > 0 ? (
+        <ul className="audit-cockpit-card__decision-list">
+          {card.known.map((value) => (
+            <li key={value}>{value}</li>
+          ))}
+        </ul>
+      ) : null}
+      {card.missing.length > 0 ? (
+        <p className="audit-cockpit-card__decision-missing">
+          <span>{missingLabel}</span>
+          {card.missing.join(' · ')}
+        </p>
+      ) : null}
+      {card.known.length === 0 && card.missing.length === 0 ? (
+        <p className="audit-cockpit-card__empty">Aucun point bloquant identifié</p>
       ) : null}
     </div>
   );
@@ -267,27 +296,84 @@ export function AuditDrawerFieldGrid({
   );
 }
 
-export function AuditPageContinuation({
-  label,
-  detail,
-  onClick,
+export function AuditRepeatableCard({
+  title,
+  children,
+  onRemove,
+  removeLabel,
+  className,
 }: {
-  label: string;
-  detail: string;
-  onClick: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  onRemove: () => void;
+  removeLabel: string;
+  className?: string;
 }): ReactElement {
   return (
-    <section className="audit-page-continuation" aria-label="Continuer le parcours audit">
-      <div>
-        <p className="audit-page-continuation__eyebrow">Continuer l’audit</p>
-        <h2>{label}</h2>
-        <p>{detail}</p>
-      </div>
-      <button type="button" className="audit-page-continuation__button" onClick={onClick}>
-        <span>{label}</span>
-        <IconChevronRight />
-      </button>
+    <article className={['audit-repeatable-card', className].filter(Boolean).join(' ')}>
+      <header className="audit-repeatable-card__head">
+        <span className="audit-repeatable-card__title">{title}</span>
+        <button
+          type="button"
+          className="audit-drawer-remove audit-repeatable-card__remove"
+          aria-label={removeLabel}
+          onClick={onRemove}
+        >
+          <IconTrash />
+          <span>Retirer</span>
+        </button>
+      </header>
+      <div className="audit-repeatable-card__body">{children}</div>
+    </article>
+  );
+}
+
+export function AuditSubjectPanel({
+  title,
+  subtitle,
+  avatar,
+  children,
+  className,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  avatar: ReactNode;
+  children: ReactNode;
+  className?: string;
+}): ReactElement {
+  const ariaLabel = typeof title === 'string' ? title : undefined;
+
+  return (
+    <section
+      className={['audit-subject-panel', className].filter(Boolean).join(' ')}
+      aria-label={ariaLabel}
+    >
+      <header className="audit-subject-panel__head">
+        <span className="audit-subject-panel__avatar" aria-hidden="true">
+          {avatar}
+        </span>
+        <span className="audit-subject-panel__identity">
+          <span className="audit-subject-panel__title">{title}</span>
+          {subtitle ? <span className="audit-subject-panel__subtitle">{subtitle}</span> : null}
+        </span>
+      </header>
+      <div className="audit-subject-panel__body">{children}</div>
     </section>
+  );
+}
+
+export function AuditInlineEmptyState({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}): ReactElement {
+  return (
+    <div className="audit-inline-empty-state">
+      <p className="audit-inline-empty-state__title">{title}</p>
+      {description ? <p className="audit-inline-empty-state__description">{description}</p> : null}
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import type { SituationFiscale } from '@/domain/audit/types';
 
 import AuditPage from '../AuditPage';
 import { FiscaliteBudgetCard } from '../cockpit/FiscaliteBudgetCard';
@@ -15,6 +16,7 @@ import type {
   AuditIrEstimate,
   AuditIrResult,
 } from '../cockpit/auditIrAdapter';
+import { buildFiscaliteTiles } from '../cockpit/auditFiscaliteModel';
 import { AuditDonut } from '../cockpit/auditFiscaliteViz';
 
 vi.mock('@/settings/ThemeProvider', () => ({
@@ -172,18 +174,7 @@ describe('FiscalitePage', () => {
 
 describe('FiscalitePressionCard', () => {
   it('affiche le donut, l’échelle TMI active et l’indicateur IFI', () => {
-    const budget: AuditBudgetSynthese = {
-      ressources: 120000,
-      charges: 70000,
-      empruntsAnnuels: 18000,
-      impots: 12513,
-      capacite: 37487,
-      tauxEndettement: 15,
-      hasBudget: true,
-    };
-    const { container } = render(
-      <FiscalitePressionCard estimate={estimate()} ifi={ifi} budget={budget} />,
-    );
+    const { container } = render(<FiscalitePressionCard estimate={estimate()} ifi={ifi} />);
 
     expect(screen.getByRole('heading', { level: 2, name: 'Pression fiscale' })).toBeVisible();
     expect(screen.getByRole('img', { name: /Imposition totale estimée/ })).toBeVisible();
@@ -193,12 +184,60 @@ describe('FiscalitePressionCard', () => {
     expect(screen.getByText('Tranche marginale d’imposition')).toBeVisible();
     expect(screen.getByText(/Il reste/)).toBeVisible();
     expect(screen.getByText('Proche du seuil')).toBeVisible();
-    expect(screen.getByText('Capacité budget')).toBeVisible();
+    expect(screen.queryByText('Capacité budget')).toBeNull();
     expect(screen.queryByRole('button')).toBeNull();
 
     const active = container.querySelector('.audit-tmi-ladder__segment[data-active="true"]');
     expect(active).not.toBeNull();
     expect(active).toHaveTextContent('30 %');
+  });
+});
+
+describe('buildFiscaliteTiles', () => {
+  it('marque les tuiles renseignées comme complètes', () => {
+    const situationFiscale: SituationFiscale = {
+      anneeReference: 2025,
+      revenus: [
+        {
+          id: 'revenu-salaires',
+          categorie: 'salaires',
+          montantBrut: 50000,
+          montantNet: 50000,
+          beneficiaire: 'foyer',
+        },
+        {
+          id: 'revenu-fonciers',
+          categorie: 'fonciers',
+          montantBrut: 10000,
+          montantNet: 10000,
+          beneficiaire: 'foyer',
+        },
+      ],
+      revenuFiscalReference: 60000,
+      nombreParts: 2,
+      impotRevenu: 10000,
+      tmi: 30,
+      chargesDeductibles: 2000,
+      reductionsCredits: 500,
+    };
+    const budget: AuditBudgetSynthese = {
+      ressources: 120000,
+      charges: 70000,
+      empruntsAnnuels: 18000,
+      impots: 12513,
+      capacite: 37487,
+      tauxEndettement: 15,
+      hasBudget: true,
+    };
+
+    const tiles = buildFiscaliteTiles(situationFiscale, budget, vi.fn());
+
+    expect(tiles.map((tile) => [tile.id, tile.status, tile.ctaLabel])).toEqual([
+      ['activite', 'complet', 'Modifier'],
+      ['capital', 'complet', 'Modifier'],
+      ['charges', 'complet', 'Modifier'],
+      ['budget', 'complet', 'Modifier'],
+    ]);
   });
 });
 

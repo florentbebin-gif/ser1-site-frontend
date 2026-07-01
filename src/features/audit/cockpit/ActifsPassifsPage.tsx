@@ -129,6 +129,7 @@ export function ActifsPassifsPage({
             ? dossier.passif.autresDettes.find((item) => item.id === drawer.id)
             : undefined
         }
+        proprietaireOptions={proprietaireOptions}
         onClose={() => setDrawer(null)}
         onSave={(result) => {
           updateDossier((previous) =>

@@ -1,3 +1,5 @@
+import type { ThemeColors } from '@/settings/theme';
+
 const HEX_COLOR_RE = /^#([0-9a-f]{6})$/i;
 
 function normalizeHex(hex: string): string {
@@ -15,6 +17,23 @@ function hexToRgb(hex: string): [number, number, number] {
     Number.parseInt(normalized.slice(2, 4), 16),
     Number.parseInt(normalized.slice(4, 6), 16),
   ];
+}
+
+function rgbToHex([red, green, blue]: [number, number, number]): string {
+  return `#${[red, green, blue]
+    .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
+}
+
+function mixHex(firstHex: string, firstWeight: number, secondHex: string): string {
+  const first = hexToRgb(firstHex);
+  const second = hexToRgb(secondHex);
+  return rgbToHex([
+    first[0] * firstWeight + second[0] * (1 - firstWeight),
+    first[1] * firstWeight + second[1] * (1 - firstWeight),
+    first[2] * firstWeight + second[2] * (1 - firstWeight),
+  ]);
 }
 
 function linearize(channel: number): number {
@@ -44,4 +63,23 @@ export function formatContrastRatio(ratio: number): string {
 
 export function getContrastRating(ratio: number): 'AA' | 'À vérifier' {
   return ratio >= 4.5 ? 'AA' : 'À vérifier';
+}
+
+export interface AuditFamilyContrastReport {
+  avatarRingOnSurface: number;
+  clientBranchOnAvatarSurface: number;
+  conjointBranchOnAvatarSurface: number;
+}
+
+export function getAuditFamilyContrastReport(colors: ThemeColors): AuditFamilyContrastReport {
+  const avatarSurface = mixHex(colors.c7, 0.76, colors.c4);
+  const avatarRing = mixHex(colors.c2, 0.64, colors.c3);
+  const clientBranch = mixHex(colors.c3, 0.76, colors.c1);
+  const conjointBranch = mixHex(colors.c6, 0.66, colors.c1);
+
+  return {
+    avatarRingOnSurface: getContrastRatio(avatarRing, avatarSurface),
+    clientBranchOnAvatarSurface: getContrastRatio(clientBranch, avatarSurface),
+    conjointBranchOnAvatarSurface: getContrastRatio(conjointBranch, avatarSurface),
+  };
 }

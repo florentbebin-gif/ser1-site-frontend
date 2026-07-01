@@ -3,26 +3,30 @@ import { createPortal } from 'react-dom';
 
 import { IconClose } from '@/icons/ui';
 
-interface AuditDrawerXLProps {
+export type AuditDrawerSize = 'md' | 'lg' | 'xl';
+
+interface AuditDrawerProps {
   open: boolean;
   title: string;
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
+  size?: AuditDrawerSize;
   onClose: () => void;
 }
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-export function AuditDrawerXL({
+export function AuditDrawer({
   open,
   title,
   subtitle,
   children,
   footer,
+  size = 'xl',
   onClose,
-}: AuditDrawerXLProps): ReactElement | null {
+}: AuditDrawerProps): ReactElement | null {
   const drawerRef = useRef<HTMLElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -94,7 +98,7 @@ export function AuditDrawerXL({
     <div className="sim-drawer-overlay" role="presentation">
       <aside
         ref={drawerRef}
-        className="sim-drawer sim-drawer--xl"
+        className={`sim-drawer sim-drawer--${size}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
