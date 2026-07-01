@@ -70,7 +70,7 @@ export function ObjectifsPage({
           className="audit-cockpit__primary-action"
           onClick={() => onSelectSection('dossier')}
         >
-          <span>Revenir à la synthèse</span>
+          <span>Revenir au dossier</span>
           <IconChevronRight />
         </button>
       }
@@ -83,7 +83,7 @@ export function ObjectifsPage({
       >
         <IconInfo className="audit-cockpit__summary-icon" />
         <div>
-          <h2>Pré-requis stratégie</h2>
+          <h2>Prérequis stratégie</h2>
           <ul className="audit-objectifs-prereqs">
             {viewModel.pilotage.prerequis.map((prerequis) => (
               <li key={prerequis.id} data-status={prerequis.status}>
@@ -168,7 +168,7 @@ function buildObjectifsCards(
     },
     {
       id: 'deblocage',
-      title: 'Résumé de déblocage',
+      title: 'Prérequis stratégie',
       status: 'verrouille',
       badgeLabel: 'Verrouillé',
       known: dossier.objectifs.length > 0 ? ['Objectifs utilisables comme contexte futur'] : [],
@@ -253,7 +253,7 @@ function ObjectifsSelectionDrawer({
       open={open}
       size="md"
       title="Objectifs prioritaires"
-      subtitle="Ordre de priorité tel qu’exprimé par le client."
+      subtitle="Sélectionnez les priorités exprimées par le client."
       onClose={onClose}
       footer={<DrawerFooter onCancel={onClose} onSave={() => onSave(selected)} />}
     >

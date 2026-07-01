@@ -200,9 +200,7 @@ function PreviewVisual({ slideId }: { slideId: AuditPreviewSlideId }): ReactElem
   if (slideId === 'ir') {
     return (
       <div className="audit-preview-visual audit-preview-visual--ir" aria-hidden="true">
-        <span className="audit-preview-visual__paper">
-          <IconLock className="audit-preview-visual__lock" />
-        </span>
+        <span className="audit-preview-visual__paper" />
         <span className="audit-preview-visual__line audit-preview-visual__line--wide" />
         <span className="audit-preview-visual__line" />
         <span className="audit-preview-visual__line audit-preview-visual__line--short" />

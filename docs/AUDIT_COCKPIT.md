@@ -437,13 +437,13 @@ Règles générales :
 | Objectif CGP                                          | Voir rapidement le niveau de complétude F1, les objectifs connus et les zones stratégiques encore non calculables.                                                                                 |
 | Dépendances fondations                                | `F1` + `UX-00b`. Livrable après `UX-00b`; les données stratégiques restent `à venir` tant que F6 manque.                                                                                           |
 | Source de vérité                                      | `DossierPatrimonial` F1, complétude F1, objectifs, contraintes et opérations prévues disponibles.                                                                                                  |
-| View model attendu                                    | `auditLandingViewModel` ou équivalent : état dossier, objectifs, TMI `à venir`, stratégie verrouillée, aucun radar réel.                                                                           |
+| View model attendu                                    | `auditLandingViewModel` ou équivalent : état dossier, objectifs, repère `IR disponible` sans taux sur la landing, stratégie verrouillée, aucun radar réel.                                         |
 | Données lues                                          | Foyer, situation familiale, régime matrimonial, donations synthétiques, objectifs, contraintes, opérations prévues, complétude F1.                                                                 |
 | Données éditables                                     | Aucune édition directe sur la landing ; édition via pages/drawers dédiés.                                                                                                                          |
 | Écriture dossier                                      | Aucune écriture depuis les cartes, hors navigation vers un drawer ou une page d'édition F1.                                                                                                        |
 | Drawers                                               | Aucun drawer obligatoire ; liens possibles vers drawers F1 existants après UX-03.                                                                                                                  |
 | SourceRefs / preuves                                  | Badges de provenance F1 si disponibles ; sinon état `source inconnue` sans confiance numérique.                                                                                                    |
-| États vide / partiel / complet / à vérifier / à venir | `vide`, `partiel`, `complet F1`, TMI `à venir`, masses/société/versioning `à venir`, stratégie verrouillée.                                                                                        |
+| États vide / partiel / complet / à vérifier / à venir | `vide`, `partiel`, `complet F1`, IR `disponible`, patrimoine/masses/société/versioning `à venir`, stratégie verrouillée.                                                                           |
 | CTA primaires                                         | Ouvrir/compléter le dossier F1 ; reprendre l'audit.                                                                                                                                                |
 | CTA secondaires                                       | Voir objectifs ; voir manques ; afficher ce qui reste à livrer.                                                                                                                                    |
 | Simulateurs à auditer / réutiliser                    | Aucun branchement simulateur. Lire seulement les patterns de cartes de synthèse des simulateurs actifs si utiles.                                                                                  |
@@ -455,13 +455,13 @@ Règles générales :
 
 Jalons prospectifs conservés par UX-01 :
 
-| Élément visible                         | Fichier / preuve UX-01                                                                               | Contrat d'honnêteté                                                           | PR cible / jalon |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------- |
-| TMI                                     | `src/features/audit/auditLandingViewModel.ts` expose seulement `tmiLabel: 'à venir'`                 | Ne pas afficher de taux réel tant que la fiscalité IR/TMI n'est pas raccordée | UX-06a           |
-| Masses successorales / patrimoine       | `src/features/audit/AuditLanding.tsx` rend un aperçu verrouillé `Masses successorales`               | Pas de droits, patrimoine net, IFI ou calcul successoral affiché en UX-01     | F3 puis UX-05    |
-| Organigramme société                    | `src/features/audit/AuditLanding.tsx` rend un aperçu `Organigramme société`                          | Nœuds génériques uniquement ; aucun lien de détention réel avant F5           | F5 puis UX-04    |
-| Versions & sauvegardes                  | `src/features/audit/AuditLanding.tsx` rend `Versions & sauvegardes` avec sauvegarde distante à venir | Pas de restauration/version active/scénario activable avant le versioning F6  | F6 puis UX-07    |
-| Stratégie, recommandations et scénarios | `src/features/audit/AuditLanding.tsx` rend `Stratégie` avec libellé `Verrouillé`                     | Non cliquable, pas de radar réel, pas de score, pas de scénario activable     | F6 puis UX-07    |
+| Élément visible                         | Fichier / preuve UX-01                                                                                                         | Contrat d'honnêteté                                                                                          | PR cible / jalon |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ---------------- |
+| IR disponible / TMI non synthétisée     | `src/features/audit/auditLandingViewModel.ts` expose `tmiLabel: 'IR disponible'` et la barre d'état sépare `IR` / `Patrimoine` | Ne pas afficher de taux réel sur la landing ; renvoyer vers la page Fiscalité & budget pour le détail IR/TMI | UX-06a           |
+| Masses successorales / patrimoine       | `src/features/audit/AuditLanding.tsx` rend un aperçu verrouillé `Masses successorales`                                         | Pas de droits, patrimoine net, IFI ou calcul successoral affiché en UX-01                                    | F3 puis UX-05    |
+| Organigramme société                    | `src/features/audit/AuditLanding.tsx` rend un aperçu `Organigramme société`                                                    | Nœuds génériques uniquement ; aucun lien de détention réel avant F5                                          | F5 puis UX-04    |
+| Versions & sauvegardes                  | `src/features/audit/AuditLanding.tsx` rend `Versions & sauvegardes` avec sauvegarde distante à venir                           | Pas de restauration/version active/scénario activable avant le versioning F6                                 | F6 puis UX-07    |
+| Stratégie, recommandations et scénarios | `src/features/audit/AuditLanding.tsx` rend `Stratégie` avec libellé `Verrouillé`                                               | Non cliquable, pas de radar réel, pas de score, pas de scénario activable                                    | F6 puis UX-07    |
 
 ### Rail dynamique /audit
 
@@ -703,6 +703,9 @@ vers le simulateur :
   ouvrant les drawers. Les cartes hautes ne lancent aucune saisie.
 - **« Détail du calcul »** et **« Hypothèses et limites »** restent dans la page audit. Le bloc
   « Aller plus loin » et le lien `/sim/ir` ne font plus partie du contrat `/audit`.
+- **« Cohérence avis fiscal »** confronte les parts foyer indicatives, les parts saisies dans l'avis,
+  l'IR déclaré sur l'avis, l'IR estimé et l'écart. La page n'écrase pas automatiquement les parts
+  saisies : elle affiche un état à vérifier quand les parts ou l'IR divergent.
 
 Hypothèses assumées par l'estimation `/audit` (affichées dans l'UI, `auditIrAdapter`) : montants pris
 nets imposables tels que saisis ; nombre de parts saisi (quotient familial non re-dérivé de la
@@ -712,27 +715,27 @@ reste qualifié sans montant estimé** tant que le pilote IFI / UX-06b n'est pas
 calculé, aucun hardcode fiscal, aucun wording « F3 » côté UI. Le contrat ci-dessous reste la cible
 exhaustive.
 
-| Champ                                                 | Contrat                                                                                                                                                        |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page / section rail                                   | Fiscalité & budget, avec IFI qualifié sans page rail dédiée.                                                                                                   |
-| Objectif CGP                                          | Lire la pression fiscale, la capacité budgétaire et qualifier l'IFI sans estimation avant moteur.                                                              |
-| Dépendances fondations                                | `UX-06a` : IR existant + F1.1 budgetSynthese. `UX-06b` : pilote IFI livré.                                                                                     |
-| Source de vérité                                      | `DossierPatrimonial`, `budgetSynthese`, settings fiscaux via chaîne fiscale, outputs moteurs.                                                                  |
-| View model attendu                                    | États IR calculable/non calculable, pression fiscale, budget/capacité, IFI à qualifier avant moteur, IFI calculé seulement après pilote IFI.                   |
-| Données lues                                          | Situation familiale, revenus, parts, charges/crédits, budgetSynthese, passifs, outputs IR/PS/TMI, actifs/passifs pour qualification IFI, settings centralisés. |
-| Données éditables                                     | Revenus, données d'avis, charges/crédits et budget via drawers bas ; aucune règle fiscale ni settings fiscaux.                                                 |
-| Écriture dossier                                      | Écritures métier via dossier central/adapters ; les settings fiscaux restent dans la chaîne fiscale.                                                           |
-| Drawers                                               | Revenus d'activité & foyer fiscal ; Revenus du capital & patrimoine ; Charges/déductions/réductions ; Budget & capacité.                                       |
-| SourceRefs / preuves                                  | Sources de revenus/avis IR si F2 disponible ; aucune confiance numérique sur saisie manuelle.                                                                  |
-| États vide / partiel / complet / à vérifier / à venir | IR disponible si données suffisantes ; IFI `à qualifier` avant moteur ; IFI calculé seulement après pilote.                                                    |
-| CTA primaires                                         | Compléter les tuiles basses et ouvrir les drawers.                                                                                                             |
-| CTA secondaires                                       | Voir limites et détail du calcul dans la page ; aucun lien `/sim/ir` depuis `/audit`.                                                                          |
-| Simulateurs à auditer / réutiliser                    | `/sim/ir` comme référence de patterns et de moteur ; futur pilote IFI.                                                                                         |
-| Patterns UI à reprendre                               | Warnings fiscaux, format montants/taux, exposition des hypothèses et limites moteur.                                                                           |
-| Interdits spécifiques                                 | Aucun hardcode fiscal, aucune estimation IFI avant moteur, aucun `IFI estimé` sans calcul réel, aucun pont simulateur dans la page audit.                      |
-| Tests attendus                                        | Absence hardcodes, états vides, consommation outputs moteur, drawers 2042, budget, indicateur IFI sans montant, absence de lien `/sim/ir`.                     |
-| Hors-scope                                            | Création moteur IFI, modification settings fiscaux, duplication règles fiscales dans l'UI.                                                                     |
-| PR cible d'implémentation                             | `UX-06a`, puis `UX-06b` après pilote IFI.                                                                                                                      |
+| Champ                                                 | Contrat                                                                                                                                                                              |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page / section rail                                   | Fiscalité & budget, avec IFI qualifié sans page rail dédiée.                                                                                                                         |
+| Objectif CGP                                          | Lire la pression fiscale, la capacité budgétaire et qualifier l'IFI sans estimation avant moteur.                                                                                    |
+| Dépendances fondations                                | `UX-06a` : IR existant + F1.1 budgetSynthese. `UX-06b` : pilote IFI livré.                                                                                                           |
+| Source de vérité                                      | `DossierPatrimonial`, `budgetSynthese`, settings fiscaux via chaîne fiscale, outputs moteurs.                                                                                        |
+| View model attendu                                    | États IR calculable/non calculable, pression fiscale, cohérence avis fiscal vs estimation, budget/capacité, IFI à qualifier avant moteur, IFI calculé seulement après pilote IFI.    |
+| Données lues                                          | Situation familiale, revenus, parts, charges/crédits, budgetSynthese, passifs, outputs IR/PS/TMI, actifs/passifs pour qualification IFI, settings centralisés.                       |
+| Données éditables                                     | Revenus, données d'avis, charges/crédits et budget via drawers bas ; aucune règle fiscale ni settings fiscaux.                                                                       |
+| Écriture dossier                                      | Écritures métier via dossier central/adapters ; les settings fiscaux restent dans la chaîne fiscale.                                                                                 |
+| Drawers                                               | Revenus d'activité & foyer fiscal ; Revenus du capital & patrimoine ; Charges/déductions/réductions ; Budget & capacité.                                                             |
+| SourceRefs / preuves                                  | Sources de revenus/avis IR si F2 disponible ; aucune confiance numérique sur saisie manuelle.                                                                                        |
+| États vide / partiel / complet / à vérifier / à venir | IR disponible si données suffisantes ; IFI `à qualifier` avant moteur ; IFI calculé seulement après pilote.                                                                          |
+| CTA primaires                                         | Compléter les tuiles basses et ouvrir les drawers.                                                                                                                                   |
+| CTA secondaires                                       | Voir limites et détail du calcul dans la page ; aucun lien `/sim/ir` depuis `/audit`.                                                                                                |
+| Simulateurs à auditer / réutiliser                    | `/sim/ir` comme référence de patterns et de moteur ; futur pilote IFI.                                                                                                               |
+| Patterns UI à reprendre                               | Warnings fiscaux, format montants/taux, exposition des hypothèses et limites moteur.                                                                                                 |
+| Interdits spécifiques                                 | Aucun hardcode fiscal, aucune estimation IFI avant moteur, aucun `IFI estimé` sans calcul réel, aucun pont simulateur dans la page audit.                                            |
+| Tests attendus                                        | Absence hardcodes, états vides, consommation outputs moteur, réconciliation avis fiscal vs estimation, drawers 2042, budget, indicateur IFI sans montant, absence de lien `/sim/ir`. |
+| Hors-scope                                            | Création moteur IFI, modification settings fiscaux, duplication règles fiscales dans l'UI.                                                                                           |
+| PR cible d'implémentation                             | `UX-06a`, puis `UX-06b` après pilote IFI.                                                                                                                                            |
 
 ### Prévoyance
 

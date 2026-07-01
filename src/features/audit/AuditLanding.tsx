@@ -246,7 +246,7 @@ function EtatCivil({ card }: { card: AuditLandingSyntheseCard }): ReactElement {
         <p className="audit-ec__fiscal">
           <strong>{formatParts(partsFiscales)} parts</strong>
           <span className="audit-ec__sep"> · </span>
-          TMI <span className="audit-ec__soon">{tmiLabel}</span>
+          <span className="audit-ec__soon">{tmiLabel}</span>
         </p>
       )}
     </div>

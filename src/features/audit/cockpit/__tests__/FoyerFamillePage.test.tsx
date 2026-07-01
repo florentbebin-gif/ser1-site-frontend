@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createEmptyDossier, type DossierAudit } from '@/domain/audit/types';
@@ -70,5 +70,29 @@ describe('FoyerFamillePage', () => {
         name: /Situation professionnelle — Situation professionnelle à compléter — À compléter — Compléter/,
       }),
     ).toBeVisible();
+  });
+
+  it('affiche la légende compacte des branches familiales', () => {
+    renderPage((audit) => {
+      audit.situationFamiliale.mr.prenom = 'Bernard';
+      audit.situationFamiliale.mr.nom = 'Dupont';
+      audit.situationFamiliale.mme = {
+        prenom: 'Tati',
+        nom: 'Dupont',
+        dateNaissance: '1974-01-01',
+      };
+      audit.situationFamiliale.situationMatrimoniale = 'marie';
+      audit.situationFamiliale.enfants = [
+        { prenom: 'Lucie', dateNaissance: '2011-01-01', estCommun: true },
+        { prenom: 'John', dateNaissance: '2002-01-01', estCommun: false, parentPrincipal: 'mr' },
+        { prenom: 'Rima', dateNaissance: '2005-01-01', estCommun: false, parentPrincipal: 'mme' },
+      ];
+    });
+
+    const legend = screen.getByRole('list', { name: 'Légende des branches familiales' });
+    expect(legend).toBeVisible();
+    expect(within(legend).getByText('Commun')).toBeVisible();
+    expect(within(legend).getByText('Branche client')).toBeVisible();
+    expect(within(legend).getByText('Branche conjoint')).toBeVisible();
   });
 });

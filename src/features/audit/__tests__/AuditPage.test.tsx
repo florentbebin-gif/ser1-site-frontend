@@ -112,7 +112,7 @@ describe('AuditPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /Foyer & famille/ }));
     expect(screen.getByRole('heading', { level: 1, name: 'Foyer & famille' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
-    expect(screen.queryByText('Dossier renseigné')).toBeNull();
+    expect(screen.queryByText('Sections F1 renseignées')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: /Continuer l.audit/ }));
 
     expect(screen.getByRole('heading', { level: 1, name: 'Actifs / passifs' })).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('AuditPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Objectifs' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2, name: 'Points prioritaires' })).toBeNull();
     expect(screen.queryByText(/stratégie activable/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Revenir à la synthèse/ })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Revenir au dossier/ })).toBeVisible();
   });
 
   it('verrouille Synthèse & projection dans le rail tant que la page dédiée n’existe pas', async () => {

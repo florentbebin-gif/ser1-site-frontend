@@ -170,7 +170,27 @@ function FoyerMiniFiliation({
           mode="compact"
         />
       </div>
+      {filiationHasData ? <FiliationBranchLegend /> : null}
     </AuditSurfaceCard>
+  );
+}
+
+function FiliationBranchLegend(): ReactElement {
+  return (
+    <ul className="audit-foyer-filiation__legend" aria-label="Légende des branches familiales">
+      <li data-branch="common">
+        <span aria-hidden="true" />
+        Commun
+      </li>
+      <li data-branch="client">
+        <span aria-hidden="true" />
+        Branche client
+      </li>
+      <li data-branch="conjoint">
+        <span aria-hidden="true" />
+        Branche conjoint
+      </li>
+    </ul>
   );
 }
 

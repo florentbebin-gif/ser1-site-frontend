@@ -46,7 +46,7 @@ interface BuildHomeDossierStateOptions {
   hasScenarioInProgress?: boolean;
 }
 
-const STRUCTURATION_LABEL = 'Structuration du dossier';
+const STRUCTURATION_LABEL = 'Identité foyer';
 
 const PRIMARY_ACTION_COPY: Record<HomePrimaryActionState, HomeActionCopy> = {
   'new-analysis': {

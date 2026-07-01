@@ -42,9 +42,23 @@ describe('ObjectifsPage', () => {
     expect(screen.queryByText('Manques')).toBeNull();
     expect(screen.getAllByText('À renseigner').length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Revenir à la synthèse' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Revenir au dossier' }));
 
     expect(onSelectSection).toHaveBeenCalledWith('dossier');
+  });
+
+  it('clarifie les prérequis stratégie et le drawer de sélection', async () => {
+    renderPage();
+
+    expect(
+      screen.getAllByRole('heading', { level: 2, name: 'Prérequis stratégie' }).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText('Résumé de déblocage')).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: /^Objectifs prioritaires/ }));
+
+    expect(screen.getByText('Sélectionnez les priorités exprimées par le client.')).toBeVisible();
+    expect(screen.queryByText('Ordre de priorité tel qu’exprimé par le client.')).toBeNull();
   });
 
   it('ouvre les trois drawers Objectifs avec les tailles canoniques attendues', async () => {

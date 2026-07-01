@@ -37,6 +37,10 @@ export function AuditProgressRail({
       </h2>
       <ol className="audit-progress-rail__list">
         {sections.map((section) => {
+          const sectionTitle =
+            section.availability === 'gated'
+              ? `${section.label} — ${section.statusLabel}`
+              : undefined;
           const content = (
             <>
               <span className="audit-progress-rail__glyph" aria-hidden="true">
@@ -62,6 +66,7 @@ export function AuditProgressRail({
                   type="button"
                   className="audit-progress-rail__button"
                   aria-label={`${section.label} — ${section.statusLabel}`}
+                  title={sectionTitle}
                   onClick={() => onSelectSection(section.id)}
                 >
                   {content}
@@ -70,6 +75,7 @@ export function AuditProgressRail({
                 <span
                   className="audit-progress-rail__content"
                   aria-label={`${section.label} — ${section.statusLabel}`}
+                  title={sectionTitle}
                 >
                   {content}
                 </span>

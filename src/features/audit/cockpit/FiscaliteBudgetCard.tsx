@@ -3,9 +3,15 @@ import type { CSSProperties, ReactElement } from 'react';
 import { IconBriefcase } from '@/icons/ui';
 
 import { AuditCardHead, AuditSurfaceCard, formatEuro, formatPercent } from './auditCockpitShared';
-import type { AuditBudgetSynthese } from './auditIrAdapter';
+import type { AuditBudgetSynthese, AuditFiscalCoherence } from './auditIrAdapter';
 
-export function FiscaliteBudgetCard({ budget }: { budget: AuditBudgetSynthese }): ReactElement {
+export function FiscaliteBudgetCard({
+  budget,
+  coherence,
+}: {
+  budget: AuditBudgetSynthese;
+  coherence?: AuditFiscalCoherence;
+}): ReactElement {
   return (
     <AuditSurfaceCard className="audit-fiscal-budget" ariaLabelledby="audit-fiscal-budget-title">
       <AuditCardHead
@@ -13,7 +19,7 @@ export function FiscaliteBudgetCard({ budget }: { budget: AuditBudgetSynthese })
         title="Budget & capacité"
         titleId="audit-fiscal-budget-title"
       />
-      {budget.hasBudget ? <BudgetBody budget={budget} /> : <BudgetEmpty />}
+      {budget.hasBudget ? <BudgetBody budget={budget} coherence={coherence} /> : <BudgetEmpty />}
     </AuditSurfaceCard>
   );
 }
@@ -30,8 +36,15 @@ function BudgetEmpty(): ReactElement {
   );
 }
 
-function BudgetBody({ budget }: { budget: AuditBudgetSynthese }): ReactElement {
+function BudgetBody({
+  budget,
+  coherence,
+}: {
+  budget: AuditBudgetSynthese;
+  coherence?: AuditFiscalCoherence;
+}): ReactElement {
   const positiveCapacite = budget.capacite >= 0;
+  const showReviewNotice = !positiveCapacite && coherence?.requiresReview;
 
   return (
     <>
@@ -57,6 +70,13 @@ function BudgetBody({ budget }: { budget: AuditBudgetSynthese }): ReactElement {
           {formatEuro(Math.abs(budget.capacite))}
         </strong>
       </div>
+
+      {showReviewNotice ? (
+        <p className="audit-fiscal-budget__notice">
+          Solde à vérifier : il intègre l’imposition estimée avant réconciliation avec l’avis
+          fiscal.
+        </p>
+      ) : null}
     </>
   );
 }

@@ -111,7 +111,7 @@ La Home est une surface d'orientation, pas un catalogue. Le premier écran canon
 - un rail gauche léger avec `Dossier de travail` et `Mode utilisateur` ;
 - un en-tête d'accueil `Bonjour,` avec icône, titre et sous-texte d'orientation ;
 - deux cartes d'entrée : action dossier dominante à libellé dynamique (`Nouvelle analyse patrimoniale`, `Continuer le dossier`, `Reprendre la stratégie`, puis `Continuer le scénario` quand un signal fiable existe) et action scan secondaire contextualisée ;
-- si un dossier est actif, une demi-jauge `Structuration du dossier` est visuellement attachée à la carte scan ; à vide, aucune jauge ni `0 %` n'est affiché ;
+- si un dossier est actif, une demi-jauge `Identité foyer` est visuellement attachée à la carte scan ; à vide, aucune jauge ni `0 %` n'est affiché ;
 - un séparateur discret, puis `SIMULATEURS` sans sous-texte d'accompagnement ;
 - deux espaces fermés par défaut : `Foyer & patrimoine privé` et `Société & dirigeant`, chacun avec une accroche unique.
 

@@ -29,6 +29,9 @@ function expectTextBefore(first: string, second: string) {
 describe('FiliationDrawer', () => {
   it('propose deux boutons distincts et un état vide combiné', () => {
     renderDrawer();
+    expect(screen.getByRole('dialog', { name: 'Filiation & proches' })).toHaveClass(
+      'sim-drawer--lg',
+    );
     expect(screen.getByText('Enfants et autres proches rattachés au foyer.')).toBeVisible();
     expect(screen.queryByText('Enfants et autres proches rattachés au foyer F1.')).toBeNull();
     expect(screen.getByRole('button', { name: 'Ajouter un enfant' })).toBeVisible();

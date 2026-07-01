@@ -30,7 +30,7 @@ test.describe('Audit Patrimonial', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'Avancement du dossier' }),
     ).toBeVisible();
-    await expect(page.getByText('Dossier renseigné')).toBeVisible();
+    await expect(page.getByText('Sections F1 renseignées')).toBeVisible();
 
     if (
       (await page
@@ -44,7 +44,7 @@ test.describe('Audit Patrimonial', () => {
       await expect(page.getByRole('heading', { level: 2, name: 'Points à confirmer' })).toHaveCount(
         0,
       );
-      await expect(page.getByRole('region', { name: 'Calculs à venir' })).toHaveCount(0);
+      await expect(page.getByRole('region', { name: 'Calculs et projections' })).toHaveCount(0);
       await expect(page.getByRole('heading', { level: 2, name: 'Objectifs' })).toHaveCount(0);
       await expect(page.getByRole('heading', { level: 2, name: 'Stratégie' })).toHaveCount(0);
     } else {
@@ -52,7 +52,7 @@ test.describe('Audit Patrimonial', () => {
       await expect(
         page.getByRole('heading', { level: 2, name: 'Points à confirmer' }),
       ).toBeVisible();
-      await expect(page.getByRole('region', { name: 'Calculs à venir' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Calculs et projections' })).toBeVisible();
       await expect(
         page.getByRole('heading', { level: 2, name: 'Masses successorales' }),
       ).toBeVisible();
@@ -90,7 +90,7 @@ test.describe('Audit Patrimonial', () => {
       await expect(strategie.getByRole('button')).toHaveCount(0);
       await expect(strategie.getByText(/radar|\/\s*100|score|scénario activable/i)).toHaveCount(0);
 
-      const carousel = page.getByRole('region', { name: 'Calculs à venir' });
+      const carousel = page.getByRole('region', { name: 'Calculs et projections' });
       await expect(carousel.getByRole('heading', { name: 'Masses successorales' })).toBeVisible();
       await expect(carousel.getByRole('heading', { name: 'Organigramme société' })).toHaveCount(0);
       await expect(page.locator('.audit-carousel__slide[aria-hidden="true"]')).toHaveCount(2);
@@ -101,7 +101,7 @@ test.describe('Audit Patrimonial', () => {
       await carousel.getByRole('button', { name: /suivant/i }).click();
       await expect(carousel.getByRole('heading', { name: 'Organigramme société' })).toBeVisible();
       await page.keyboard.press('ArrowRight');
-      await expect(carousel.getByRole('heading', { name: 'Impôt sur le revenu' })).toBeVisible();
+      await expect(carousel.getByRole('heading', { name: 'Fiscalité & budget' })).toBeVisible();
       await expect(carousel.getByRole('link')).toHaveCount(0);
     }
 

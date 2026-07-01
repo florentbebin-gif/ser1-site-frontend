@@ -74,7 +74,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.getByTestId('home-dossier-gauge')).toBeVisible();
     await expect(page.getByTestId('home-dossier-gauge')).toHaveAttribute(
       'aria-label',
-      /Structuration du dossier : \d+ %/,
+      /Identité foyer : \d+ %/,
     );
     await expect(page.getByTestId('home-primary-action-strategy')).toContainText(
       'Continuer le dossier',

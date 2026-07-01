@@ -8,12 +8,17 @@ interface DossierTravailCardProps {
   dossierClientLabel: string | null;
 }
 
-const UNSAVED_LABEL = 'Non sauvegardé';
+const NO_LOCAL_FILE_LABEL = 'Aucun fichier local';
+const UNSAVED_SINCE_LOAD_LABEL = 'Non enregistré depuis le chargement';
 
 export function DossierTravailCard({ dossierClientLabel }: DossierTravailCardProps): ReactElement {
   const { currentFilename, lastSavedFilename, history } = useLocalSaveHistory();
-  const filename = currentFilename ?? lastSavedFilename ?? UNSAVED_LABEL;
-  const lastSavedLabel = lastSavedFilename ?? UNSAVED_LABEL;
+  const filename = currentFilename ?? lastSavedFilename ?? NO_LOCAL_FILE_LABEL;
+  const lastSavedLabel = lastSavedFilename
+    ? 'Enregistré localement'
+    : currentFilename
+      ? UNSAVED_SINCE_LOAD_LABEL
+      : 'Non enregistré';
 
   return (
     <section
@@ -46,18 +51,21 @@ export function DossierTravailCard({ dossierClientLabel }: DossierTravailCardPro
         <div className="dossier-travail__fact">
           <dt>
             <IconHardDrive className="dossier-travail__fact-icon" />
-            Fichier courant
+            Fichier local
           </dt>
-          <dd data-testid="dossier-loaded-filename" data-state={saveValueState(filename)}>
+          <dd data-testid="dossier-loaded-filename" data-state={saveValueState(filename, 'file')}>
             {filename}
           </dd>
         </div>
         <div className="dossier-travail__fact">
           <dt>
             <IconSave className="dossier-travail__fact-icon" />
-            Dernière sauvegarde
+            État local
           </dt>
-          <dd data-testid="dossier-loaded-disclaimer" data-state={saveValueState(lastSavedLabel)}>
+          <dd
+            data-testid="dossier-loaded-disclaimer"
+            data-state={saveValueState(lastSavedLabel, 'save')}
+          >
             {lastSavedLabel}
           </dd>
         </div>
@@ -80,8 +88,9 @@ export function DossierTravailCard({ dossierClientLabel }: DossierTravailCardPro
   );
 }
 
-function saveValueState(value: string): 'unsaved' | undefined {
-  return value === UNSAVED_LABEL ? 'unsaved' : undefined;
+function saveValueState(value: string, kind: 'file' | 'save'): 'unsaved' | undefined {
+  if (kind === 'file') return value === NO_LOCAL_FILE_LABEL ? 'unsaved' : undefined;
+  return value === 'Non enregistré' || value === UNSAVED_SINCE_LOAD_LABEL ? 'unsaved' : undefined;
 }
 
 function formatHistoryDate(value: string): string {
