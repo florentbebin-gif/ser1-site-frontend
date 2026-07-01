@@ -6,12 +6,14 @@ import {
   SimAmountInputNumeric,
   type SimSelectOption,
 } from '@/components/ui/sim';
-import { IconPlus, IconTrash } from '@/icons/ui';
+import { IconPlus } from '@/icons/ui';
 
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
+import { AuditDrawer } from '../components/AuditDrawer';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
+  AuditInlineEmptyState,
+  AuditRepeatableCard,
   BENEFICIAIRE_OPTIONS,
   createRevenu,
   DrawerFooter,
@@ -124,8 +126,9 @@ function RevenusActiviteDrawer({
   const group = revenusForCategories(form.revenus, ACTIVITE_CATEGORIES);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="xl"
       title="Revenus d’activité & foyer fiscal"
       subtitle="Salaires, TNS et pensions du foyer, et données de l’avis."
       onClose={onClose}
@@ -169,7 +172,7 @@ function RevenusActiviteDrawer({
           onChange={(next) => setForm(withGroupRevenus(form, ACTIVITE_CATEGORIES, next))}
         />
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -183,8 +186,9 @@ function RevenusCapitalDrawer({
   const group = revenusForCategories(form.revenus, CAPITAL_CATEGORIES);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="xl"
       title="Revenus du capital & patrimoine"
       subtitle="Capitaux mobiliers, plus-values et revenus fonciers."
       onClose={onClose}
@@ -212,7 +216,7 @@ function RevenusCapitalDrawer({
           onChange={(next) => setForm(withGroupRevenus(form, CAPITAL_CATEGORIES, next))}
         />
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -225,8 +229,9 @@ function ChargesDrawer({
   const [form, setForm] = useFiscalForm(open, situationFiscale);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="md"
       title="Charges, déductions & réductions"
       subtitle="Charges déductibles du revenu et réductions / crédits d’impôt."
       onClose={onClose}
@@ -250,7 +255,7 @@ function ChargesDrawer({
           </AuditDrawerFieldGrid>
         </AuditDrawerSection>
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -273,8 +278,9 @@ function BudgetDrawer({
   }, [open, budget]);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="md"
       title="Budget & capacité"
       subtitle="Ressources et charges annuelles du foyer, hors impôts."
       onClose={onClose}
@@ -298,7 +304,7 @@ function BudgetDrawer({
           </AuditDrawerFieldGrid>
         </AuditDrawerSection>
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -326,7 +332,10 @@ function RevenusGroupEditor({
         <span>{addLabel}</span>
       </button>
       {revenus.length === 0 ? (
-        <p className="audit-drawer-empty">Aucun revenu de ce type renseigné.</p>
+        <AuditInlineEmptyState
+          title="Aucun revenu de ce type renseigné."
+          description="Ajoutez une ligne si un revenu doit alimenter la fiscalité."
+        />
       ) : (
         revenus.map((revenu, index) => (
           <RevenuFields
@@ -357,7 +366,11 @@ function RevenuFields({
   onRemove: () => void;
 }): ReactElement {
   return (
-    <AuditDrawerSection title={`Revenu ${index + 1}`}>
+    <AuditRepeatableCard
+      title={`Revenu ${index + 1}`}
+      removeLabel={`Retirer le revenu ${index + 1}`}
+      onRemove={onRemove}
+    >
       <AuditDrawerFieldGrid>
         <SelectField
           label="Catégorie"
@@ -386,10 +399,6 @@ function RevenuFields({
           onChange={(montantNet) => onChange({ ...revenu, montantNet })}
         />
       </AuditDrawerFieldGrid>
-      <button type="button" className="audit-drawer-remove" onClick={onRemove}>
-        <IconTrash />
-        <span>Retirer</span>
-      </button>
-    </AuditDrawerSection>
+    </AuditRepeatableCard>
   );
 }

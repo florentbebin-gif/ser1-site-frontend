@@ -292,7 +292,7 @@ largeurs) decrite dans `GOUVERNANCE.md` §16d. Points non negociables :
 Le contrat complet du cockpit `/audit` vit dans `docs/AUDIT_COCKPIT.md`. UX-00a a figé le contrat ;
 **UX-00b a verrouillé** les fondations design system ci-dessous (tokens, showroom, checks), sans coder
 les pages métier. Démo runtime : `/settings/design-system` (sections « Surfaces cockpit »,
-« Data-viz cockpit », « Modales » → drawer XL).
+« Data-viz cockpit », « Modales » → drawer /audit).
 
 ### Data-viz & statuts
 
@@ -307,6 +307,14 @@ les pages métier. Démo runtime : `/settings/design-system` (sections « Surfac
   interdit le cuivre dans les séries du radar.
 - Une extension C11-C14 n'est envisagée que si la dérivation accessible depuis C1-C10 est prouvée
   insuffisante, par PR dédiée verrouillée par docs + showroom + checks.
+- Les branches familiales de `/audit` ne créent pas de nouveaux slots C11-C14 : elles passent par
+  `--audit-family-branch-common`, `--audit-family-branch-client` et
+  `--audit-family-branch-conjoint`, alias locaux dérivés des tokens existants. Usage autorisé :
+  connecteurs, liserés et anneaux légers. Interdit : fond de carte coloré, état UI ou information
+  portée par la couleur seule.
+- Les avatars de filiation passent par `--audit-avatar-surface`, `--audit-avatar-ring` et
+  `--audit-avatar-ink`. Ces alias corrigent le contraste avatar/capsule sans créer de palette
+  persistée : la branche client/conjoint peut seulement remplacer l'anneau ou le liseré.
 
 ### Surfaces — taxonomie à 4 niveaux
 
@@ -322,13 +330,14 @@ Classes canoniques dans `src/styles/sim/surfaces.css` :
 - Règle : aucune surface avec ombre dans une surface avec ombre. Garde-fou : `check:sim-cards`
   interdit `box-shadow` sur les classes plates.
 
-### Drawer XL
+### Drawer /audit
 
-- Famille canonique `sim-drawer` dans `src/styles/sim/modals.css` : drawer XL ancré à droite,
+- Famille canonique `sim-drawer` dans `src/styles/sim/modals.css` : drawer ancré à droite,
   **variante de l'anatomie modale** (réutilise `sim-modal__header` / `__footer` / `__close` et la nav
   latérale `sim-modal-layout--with-nav`). Anatomie : header, menu interne gauche optionnel, corps,
   panneau sources optionnel (`sim-drawer__sources`), footer stable Annuler/Enregistrer. Largeurs
-  `sim-drawer` / `sim-drawer--xl` uniquement.
+  canoniques uniquement via `sim-drawer--md`, `sim-drawer--lg` et `sim-drawer--xl`, choisies selon la
+  densité du contenu.
 - Aucune largeur locale ; `check:modal-canon` bloque toute largeur de drawer racine hors fichier
   canonique. Le focus trap, `Escape` et le retour focus restent portés par le futur composant shell
   (UX-03).

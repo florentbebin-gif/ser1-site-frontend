@@ -4,7 +4,6 @@ import { IconPieChart } from '@/icons/ui';
 
 import { AuditCardHead, AuditSurfaceCard, formatEuro, formatPercent } from './auditCockpitShared';
 import type {
-  AuditBudgetSynthese,
   AuditIfiIndicator,
   AuditIrEstimate,
   AuditIrResult,
@@ -23,11 +22,9 @@ const COMPOSITION_TOKENS = {
 export function FiscalitePressionCard({
   estimate,
   ifi,
-  budget,
 }: {
   estimate: AuditIrEstimate;
   ifi: AuditIfiIndicator;
-  budget: AuditBudgetSynthese;
 }): ReactElement {
   const { result } = estimate;
 
@@ -41,11 +38,7 @@ export function FiscalitePressionCard({
         title="Pression fiscale"
         titleId="audit-fiscal-pression-title"
       />
-      {result ? (
-        <PressionBody estimate={estimate} result={result} ifi={ifi} budget={budget} />
-      ) : (
-        <PressionEmpty />
-      )}
+      {result ? <PressionBody estimate={estimate} result={result} ifi={ifi} /> : <PressionEmpty />}
     </AuditSurfaceCard>
   );
 }
@@ -66,12 +59,10 @@ function PressionBody({
   estimate,
   result,
   ifi,
-  budget,
 }: {
   estimate: AuditIrEstimate;
   result: AuditIrResult;
   ifi: AuditIfiIndicator;
-  budget: AuditBudgetSynthese;
 }): ReactElement {
   const segments: DonutSegment[] = [
     { label: 'Impôt sur le revenu', value: result.irNet, token: COMPOSITION_TOKENS.ir },
@@ -135,7 +126,6 @@ function PressionBody({
         <ContributionChip label="CEHR" amount={result.cehr} />
         <ContributionChip label="CDHR" amount={result.cdhr} />
         <IfiChip ifi={ifi} />
-        <BudgetChip budget={budget} />
       </div>
     </>
   );
@@ -170,24 +160,6 @@ function IfiChip({ ifi }: { ifi: AuditIfiIndicator }): ReactElement {
           ? `Patrimoine immo net ${formatEuro(ifi.assietteImmoNette)}`
           : 'Renseignez les actifs immobiliers'}
       </span>
-    </div>
-  );
-}
-
-function BudgetChip({ budget }: { budget: AuditBudgetSynthese }): ReactElement {
-  const hasPositiveCapacity = budget.hasBudget && budget.capacite >= 0;
-  const hasNegativeCapacity = budget.hasBudget && budget.capacite < 0;
-
-  return (
-    <div
-      className="audit-fiscal-chip"
-      data-status={hasNegativeCapacity ? 'warn' : hasPositiveCapacity ? 'none' : 'warn'}
-    >
-      <span className="audit-fiscal-chip__label">Capacité budget</span>
-      <strong className="audit-fiscal-chip__value">
-        {budget.hasBudget ? formatEuro(budget.capacite) : 'À renseigner'}
-      </strong>
-      <span className="audit-fiscal-chip__hint">Après impôts et emprunts</span>
     </div>
   );
 }

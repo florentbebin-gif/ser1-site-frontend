@@ -120,9 +120,9 @@ Principes : épuré, lisible, respirant.
 Contrat complet : `docs/AUDIT_COCKPIT.md`. UX-00b a **verrouillé** les fondations suivantes (tokens,
 showroom `/settings/design-system`, checks), sans coder les pages métier `/audit` :
 
-- **Drawer XL canonique** : famille `sim-drawer` (`src/styles/sim/modals.css`), variante de
+- **Drawer /audit canonique** : famille `sim-drawer` (`src/styles/sim/modals.css`), variante de
   l'anatomie modale (réutilise `sim-modal__header`/`__footer`/`__close` et la nav latérale). Largeurs
-  `sim-drawer` / `sim-drawer--xl` uniquement ; aucune largeur ni CSS de drawer locale. Garde-fou :
+  `sim-drawer--md`, `sim-drawer--lg` et `sim-drawer--xl` uniquement ; aucune largeur ni CSS de drawer locale. Garde-fou :
   `check:modal-canon` (interdit toute largeur de drawer racine hors fichier canonique).
 - **Tokens data-viz** : `--viz-1`…`--viz-8`, `--viz-current`/`--viz-scenario`,
   `--viz-sequential-1`…`-5` dans `src/styles/index.css`, tous dérivés de C1-C10 sans hex runtime.
@@ -1038,6 +1038,9 @@ page le justifie, `SimPageStepper`, afin d’éviter les règles divergentes d�
 - Les alias semantiques sont la cible de consommation UI. `var(--color-c4)`,
   `var(--color-c5)` et `var(--color-c6)` directs sont interdits dans le runtime :
   utiliser `--surface-active`, `--data-secondary`, `--accent-signature` ou `--state-warning`.
+- Les avatars et branches familiales `/audit` utilisent exclusivement les alias dédiés
+  `--audit-avatar-*` et `--audit-family-branch-*`, dérivés de C1-C10. La branche doit rester portée
+  aussi par un texte ou un badge, jamais par la couleur seule.
 - Les `var(--color-c1)`, `var(--color-c2)`, `var(--color-c3)`, `var(--color-c7)`,
   `var(--color-c8)`, `var(--color-c9)` et `var(--color-c10)` directs restent toleres
   aujourd'hui, mais doivent migrer vers les alias au fil des modifications. C'est cette migration

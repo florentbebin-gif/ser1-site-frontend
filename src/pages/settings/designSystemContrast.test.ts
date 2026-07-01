@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatContrastRatio, getContrastRating, getContrastRatio } from './designSystemContrast';
+
+import { PRESET_THEMES } from '@/settings/presets';
+
+import {
+  formatContrastRatio,
+  getAuditFamilyContrastReport,
+  getContrastRating,
+  getContrastRatio,
+} from './designSystemContrast';
 
 describe('designSystemContrast', () => {
   it('calcule le ratio WCAG entre deux couleurs hex', () => {
@@ -11,5 +19,15 @@ describe('designSystemContrast', () => {
     expect(getContrastRating(4.5)).toBe('AA');
     expect(getContrastRating(3.2)).toBe('À vérifier');
     expect(formatContrastRatio(4.481)).toBe('4.48:1');
+  });
+
+  it('garde les avatars et branches audit lisibles sur les thèmes prédéfinis', () => {
+    PRESET_THEMES.forEach(({ colors }) => {
+      const report = getAuditFamilyContrastReport(colors);
+
+      expect(report.avatarRingOnSurface).toBeGreaterThanOrEqual(3);
+      expect(report.clientBranchOnAvatarSurface).toBeGreaterThanOrEqual(3);
+      expect(report.conjointBranchOnAvatarSurface).toBeGreaterThanOrEqual(3);
+    });
   });
 });

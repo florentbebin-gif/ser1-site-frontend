@@ -3,8 +3,8 @@ import { useEffect, useState, type ReactElement } from 'react';
 import type { DossierAudit, EnfantInfo, ProcheInfo } from '@/domain/audit/types';
 import { IconPlus } from '@/icons/ui';
 
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
-import { DrawerFooter, updateAt } from './auditCockpitShared';
+import { AuditDrawer } from '../components/AuditDrawer';
+import { AuditInlineEmptyState, DrawerFooter, updateAt } from './auditCockpitShared';
 import { EnfantCard, ProcheCard } from './filiationCards';
 import { createEnfant, createProche, ensureEnfantId } from './filiationConfig';
 
@@ -32,8 +32,9 @@ export function FiliationDrawer({
   const showGroupLabels = enfants.length > 0 && proches.length > 0;
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="xl"
       title="Filiation & proches"
       subtitle="Enfants et autres proches rattachés au foyer."
       onClose={onClose}
@@ -59,7 +60,12 @@ export function FiliationDrawer({
           </button>
         </div>
 
-        {isEmpty ? <p className="audit-drawer-empty">Aucun enfant ni proche renseigné.</p> : null}
+        {isEmpty ? (
+          <AuditInlineEmptyState
+            title="Aucun enfant ni proche renseigné."
+            description="Ajoutez un enfant ou un proche pour qualifier la filiation."
+          />
+        ) : null}
 
         {enfants.length > 0 ? (
           <section className="audit-related-group" aria-label="Enfants">
@@ -100,6 +106,6 @@ export function FiliationDrawer({
           </section>
         ) : null}
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }

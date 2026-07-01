@@ -28,10 +28,16 @@ export function FoyerAvatarClipDef({ clipId }: FoyerAvatarClipDefProps): ReactEl
 export function FoyerAvatarArt({ kind, clipId, appearance }: FoyerAvatarArtProps): ReactElement {
   const variant = resolveFamilyAvatarVariant(kind, appearance);
   const diameter = FOYER_AVATAR_ART_RADIUS * 2;
+  const ringRadius = FOYER_AVATAR_ART_RADIUS - 7;
 
   return (
     <>
-      <circle cx={0} cy={0} r={FOYER_AVATAR_ART_RADIUS} fill="var(--surface-active)" />
+      <circle
+        cx={0}
+        cy={0}
+        r={FOYER_AVATAR_ART_RADIUS}
+        fill="var(--audit-avatar-surface, var(--surface-card))"
+      />
       <image
         data-avatar-variant={variant}
         href={FAMILY_AVATAR_ASSETS[variant]}
@@ -41,6 +47,14 @@ export function FoyerAvatarArt({ kind, clipId, appearance }: FoyerAvatarArtProps
         height={diameter}
         preserveAspectRatio="xMidYMid meet"
         clipPath={`url(#${clipId})`}
+      />
+      <circle
+        cx={0}
+        cy={0}
+        r={ringRadius}
+        fill="none"
+        stroke="var(--audit-avatar-ring, var(--border-strong))"
+        strokeWidth={14}
       />
     </>
   );

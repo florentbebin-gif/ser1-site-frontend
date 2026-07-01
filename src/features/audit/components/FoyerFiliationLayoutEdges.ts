@@ -74,11 +74,14 @@ export function buildFiliationEdges({
       const startY = yCouple + pillHeight;
       const c1 = startY + (yChildren - startY) * 0.45;
       const c2 = yChildren - (yChildren - startY) * 0.45;
+      const relationClass = node.estCommun
+        ? 'audit-fil__edge--commun'
+        : node.parentPrincipal === 'conjoint'
+          ? 'audit-fil__edge--precedent-conjoint'
+          : 'audit-fil__edge--precedent-client';
       edges.push({
         key: `child-${node.memberId}`,
-        className: `audit-fil__edge ${
-          node.estCommun ? 'audit-fil__edge--commun' : 'audit-fil__edge--precedent'
-        }`,
+        className: `audit-fil__edge ${relationClass}`,
         fromId: sourceId,
         toId: node.memberId,
         d: `M ${round(startX)} ${round(startY)} C ${round(startX)} ${round(c1)} ${round(

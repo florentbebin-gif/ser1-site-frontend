@@ -145,9 +145,40 @@ describe('buildFiliationLayout', () => {
       (id) => layout.nodes.find((node) => node.memberId === id)!,
     );
     const commonLeft = Math.min(...commonChildren.map((node) => node.x));
+    const limaEdge = layout.edges.find((edge) => edge.key === 'child-enfant-lima')!;
 
     expect(lima.x + layout.pillWidth).toBeLessThanOrEqual(commonLeft - 16);
     expect(lima.y).toBe(commonChildren[0]!.y);
+    expect(limaEdge.fromId).toBe('client');
+    expect(limaEdge.className).toContain('audit-fil__edge--precedent-client');
+  });
+
+  it('distingue les arêtes des enfants d’union précédente client et conjoint', () => {
+    const layout = buildFiliationLayout({
+      principal: member('client', 'Jean', 'principal'),
+      conjoint: member('conjoint', 'Tati', 'conjoint'),
+      enfants: [
+        member('enfant-client', 'Lima', 'enfant', {
+          estCommun: false,
+          parentPrincipal: 'client',
+        }),
+        member('enfant-conjoint', 'Rita', 'enfant', {
+          estCommun: false,
+          parentPrincipal: 'conjoint',
+        }),
+      ],
+      proches: [],
+      mode: 'compact',
+    });
+
+    expect(layout.edges.find((edge) => edge.key === 'child-enfant-client')).toMatchObject({
+      fromId: 'client',
+      className: expect.stringContaining('audit-fil__edge--precedent-client'),
+    });
+    expect(layout.edges.find((edge) => edge.key === 'child-enfant-conjoint')).toMatchObject({
+      fromId: 'conjoint',
+      className: expect.stringContaining('audit-fil__edge--precedent-conjoint'),
+    });
   });
 
   it('raccorde chaque enfant commun par une ramification dédiée', () => {

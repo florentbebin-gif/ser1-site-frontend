@@ -13,6 +13,7 @@ import { TagToggle } from './auditDrawerControls';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
+  AuditInlineEmptyState,
   createTestament,
   DateField,
   emptyToUndefined,
@@ -196,7 +197,7 @@ function TestamentCard({
           ) : null}
         </div>
       ) : (
-        <p className="audit-ddv-card__empty">Aucun testament déclaré pour cette personne.</p>
+        <AuditInlineEmptyState title="Aucun testament déclaré pour cette personne." />
       )}
     </article>
   );

@@ -11,15 +11,21 @@ import type {
   DossierOperationPrevue,
   DossierOperationStatus,
 } from '@/domain/dossier';
-import { IconClipboardCheck, IconFileText, IconInfo, IconNetwork, IconTrash } from '@/icons/ui';
+import {
+  IconChevronRight,
+  IconClipboardCheck,
+  IconFileText,
+  IconInfo,
+  IconNetwork,
+} from '@/icons/ui';
 
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
+import { AuditDrawer } from '../components/AuditDrawer';
 import type { AuditCockpitPageProps, SummaryCardData } from './auditCockpitShared';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
-  AuditPageContinuation,
+  AuditRepeatableCard,
   CONTRAINTE_PRIORITY_OPTIONS,
   createContrainte,
   createOperation,
@@ -58,9 +64,19 @@ export function ObjectifsPage({
       eyebrow="Fin de l’analyse"
       title="Objectifs"
       subtitle="Priorités, contraintes et opérations prévues qui débloquent la stratégie lorsque les fondations métier seront disponibles."
+      actions={
+        <button
+          type="button"
+          className="audit-cockpit__primary-action"
+          onClick={() => onSelectSection('dossier')}
+        >
+          <span>Revenir à la synthèse</span>
+          <IconChevronRight />
+        </button>
+      }
       onSelectSection={onSelectSection}
     >
-      <SummaryCardGrid cards={cards} />
+      <SummaryCardGrid cards={cards} variant="decision" />
       <section
         className="audit-cockpit__summary-band audit-objectifs-prereq-band sim-band"
         aria-label="Prérequis stratégie"
@@ -79,11 +95,6 @@ export function ObjectifsPage({
           <p>Stratégie verrouillée, scénarios à venir après finalisation des contraintes.</p>
         </div>
       </section>
-      <AuditPageContinuation
-        label="Revenir à la synthèse"
-        detail="Retourner au cockpit global pour relire le dossier et les blocages."
-        onClick={() => onSelectSection('dossier')}
-      />
       <ObjectifsDrawerContent
         drawer={drawer}
         objectifs={dossier.objectifs}
@@ -238,8 +249,9 @@ function ObjectifsSelectionDrawer({
   }, [objectifs, open]);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="md"
       title="Objectifs prioritaires"
       subtitle="Ordre de priorité tel qu’exprimé par le client."
       onClose={onClose}
@@ -270,7 +282,7 @@ function ObjectifsSelectionDrawer({
           </div>
         </AuditDrawerSection>
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -291,8 +303,9 @@ function ContraintesDrawer({
   }, [contraintes, open]);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="lg"
       title="Contraintes"
       subtitle="Contraintes déclarées pour contextualiser les objectifs."
       onClose={onClose}
@@ -304,7 +317,14 @@ function ContraintesDrawer({
         onAdd={() => setItems((previous) => [...previous, createContrainte()])}
       >
         {items.map((contrainte, index) => (
-          <AuditDrawerSection title={`Contrainte ${index + 1}`} key={contrainte.id}>
+          <AuditRepeatableCard
+            key={contrainte.id}
+            title={`Contrainte ${index + 1}`}
+            removeLabel={`Retirer la contrainte ${index + 1}`}
+            onRemove={() =>
+              setItems((previous) => previous.filter((item) => item.id !== contrainte.id))
+            }
+          >
             <AuditDrawerFieldGrid>
               <TextField
                 label="Libellé"
@@ -339,20 +359,10 @@ function ContraintesDrawer({
                 }
               />
             </AuditDrawerFieldGrid>
-            <button
-              type="button"
-              className="audit-drawer-remove"
-              onClick={() =>
-                setItems((previous) => previous.filter((item) => item.id !== contrainte.id))
-              }
-            >
-              <IconTrash />
-              <span>Retirer</span>
-            </button>
-          </AuditDrawerSection>
+          </AuditRepeatableCard>
         ))}
       </EditableList>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 
@@ -373,8 +383,9 @@ function OperationsDrawer({
   }, [operationsPrevues, open]);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="lg"
       title="Opérations prévues"
       subtitle="Opérations connues, sans activation stratégique."
       onClose={onClose}
@@ -386,7 +397,14 @@ function OperationsDrawer({
         onAdd={() => setItems((previous) => [...previous, createOperation()])}
       >
         {items.map((operation, index) => (
-          <AuditDrawerSection title={`Opération ${index + 1}`} key={operation.id}>
+          <AuditRepeatableCard
+            key={operation.id}
+            title={`Opération ${index + 1}`}
+            removeLabel={`Retirer l’opération ${index + 1}`}
+            onRemove={() =>
+              setItems((previous) => previous.filter((item) => item.id !== operation.id))
+            }
+          >
             <AuditDrawerFieldGrid>
               <TextField
                 label="Libellé"
@@ -430,19 +448,9 @@ function OperationsDrawer({
                 }
               />
             </AuditDrawerFieldGrid>
-            <button
-              type="button"
-              className="audit-drawer-remove"
-              onClick={() =>
-                setItems((previous) => previous.filter((item) => item.id !== operation.id))
-              }
-            >
-              <IconTrash />
-              <span>Retirer</span>
-            </button>
-          </AuditDrawerSection>
+          </AuditRepeatableCard>
         ))}
       </EditableList>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }

@@ -8,7 +8,7 @@
   height: var(--family-avatar-size);
   overflow: hidden;
   border-radius: var(--radius-full);
-  background: var(--family-avatar-background, var(--surface-active));
+  background: var(--family-avatar-background, var(--audit-avatar-surface, var(--surface-active)));
   font-size: 0;
   line-height: 0;
 }

@@ -23,5 +23,9 @@ describe('DesignSystemVizPreview', () => {
     expect(screen.getByText('Alerte distincte de la signature')).toBeInTheDocument();
     expect(screen.getByText('--state-warning')).toBeInTheDocument();
     expect(screen.getByText('--accent-signature')).toBeInTheDocument();
+
+    expect(screen.getByText('Branches familiales audit')).toBeInTheDocument();
+    expect(screen.getByText('--audit-family-branch-client')).toBeInTheDocument();
+    expect(screen.getByText('--audit-family-branch-conjoint')).toBeInTheDocument();
   });
 });

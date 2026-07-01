@@ -83,7 +83,7 @@ export function buildFiscaliteTiles(
   ): SummaryCardData => ({
     id,
     title,
-    status: filled ? 'partiel' : 'vide',
+    status: filled ? 'complet' : 'vide',
     badgeLabel: 'Déclaratif',
     summaryLine,
     known,

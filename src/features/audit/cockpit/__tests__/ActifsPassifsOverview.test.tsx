@@ -53,11 +53,18 @@ describe('ActifsPassifsOverview', () => {
     });
 
     const actifs = screen.getByRole('region', { name: 'Actifs' });
-    expect(within(actifs).getByText('Immobilier')).toBeInTheDocument();
-    expect(within(actifs).getByText('Financier')).toBeInTheDocument();
+    const immobilierRow = within(actifs).getByText('Immobilier').closest('.audit-breakdown__row');
+    const financierRow = within(actifs).getByText('Financier').closest('.audit-breakdown__row');
+    expect(immobilierRow).toHaveClass('audit-breakdown__row--tone-1');
+    expect(financierRow).toHaveClass('audit-breakdown__row--tone-2');
 
     // Emprunt incohérent → pastille « à vérifier » dans la carte Passifs.
     const passifs = screen.getByRole('region', { name: 'Passifs' });
+    expect(within(passifs).getByText('Emprunts').closest('.audit-breakdown__row')).toHaveClass(
+      'audit-breakdown__row--liability',
+    );
+    expect(within(passifs).getByText(/CRD\s150\s000\s€/)).toHaveClass('audit-breakdown__montant');
+    expect(within(passifs).getByText(/Initial\s100\s000\s€/)).toHaveClass('audit-breakdown__hint');
     expect(within(passifs).getByText(/à vérifier/)).toBeInTheDocument();
     expect(screen.queryByText(/patrimoine net/i)).not.toBeInTheDocument();
   });

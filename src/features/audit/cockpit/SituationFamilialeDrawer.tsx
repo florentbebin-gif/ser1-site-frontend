@@ -8,7 +8,7 @@ import {
 } from '@/domain/audit/types';
 
 import { AuditAvatarAppearancePicker } from '../components/AuditAvatarAppearancePicker';
-import { AuditDrawerXL } from '../components/AuditDrawerXL';
+import { AuditDrawer } from '../components/AuditDrawer';
 import {
   AuditDrawerFieldGrid,
   AuditDrawerSection,
@@ -51,8 +51,9 @@ export function SituationFamilialeDrawer({
   const showUnionDetails = UNION_DETAIL_STATUSES.includes(form.situationMatrimoniale);
 
   return (
-    <AuditDrawerXL
+    <AuditDrawer
       open={open}
+      size="xl"
       title="Situation familiale"
       subtitle="Client principal, conjoint éventuel et statut du foyer."
       onClose={onClose}
@@ -129,7 +130,7 @@ export function SituationFamilialeDrawer({
           </AuditDrawerSection>
         ) : null}
       </div>
-    </AuditDrawerXL>
+    </AuditDrawer>
   );
 }
 

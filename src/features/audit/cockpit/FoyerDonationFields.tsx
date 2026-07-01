@@ -2,11 +2,11 @@ import type { ReactElement } from 'react';
 
 import type { AuditPersonRef, DonationInfo } from '@/domain/audit/types';
 import { SimAmountInputEuro } from '@/components/ui/sim';
-import { IconTrash } from '@/icons/ui';
 
 import { TagRow, TagToggle } from './auditDrawerControls';
 import {
   AuditDrawerFieldGrid,
+  AuditRepeatableCard,
   DateField,
   DONATION_TYPE_OPTIONS,
   emptyToUndefined,
@@ -45,14 +45,11 @@ export function FoyerDonationFields({
     !donation.donataire && donation.beneficiaire.trim() ? donation.beneficiaire.trim() : '';
 
   return (
-    <article className="audit-donation-card">
-      <header className="audit-donation-card__head">
-        <span className="audit-donation-card__title">Donation {index + 1}</span>
-        <button type="button" className="audit-drawer-remove" onClick={onRemove}>
-          <IconTrash />
-          <span>Retirer</span>
-        </button>
-      </header>
+    <AuditRepeatableCard
+      title={`Donation ${index + 1}`}
+      removeLabel={`Retirer la donation ${index + 1}`}
+      onRemove={onRemove}
+    >
       <AuditDrawerFieldGrid columns={4}>
         <SelectField
           label="Type"
@@ -86,7 +83,7 @@ export function FoyerDonationFields({
         />
       </AuditDrawerFieldGrid>
       {legacyBeneficiaire ? (
-        <p className="audit-donation-card__legacy">
+        <p className="audit-repeatable-card__legacy">
           Bénéficiaire historique à relier : {legacyBeneficiaire}
         </p>
       ) : null}
@@ -179,7 +176,7 @@ export function FoyerDonationFields({
           ) : null}
         </div>
       </details>
-    </article>
+    </AuditRepeatableCard>
   );
 }
 

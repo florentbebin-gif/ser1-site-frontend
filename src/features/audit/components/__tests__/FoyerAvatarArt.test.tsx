@@ -33,7 +33,12 @@ describe('FoyerAvatarArt', () => {
     const image = container.querySelector('image');
     expect(container.querySelector('[data-avatar-variant="grandfather"]')).not.toBeNull();
     expect(image?.getAttribute('href')).toMatch(/avatar-grandfather-outline\.png/);
-    expect(container.innerHTML).toContain('fill="var(--surface-active)"');
+    expect(container.innerHTML).toContain(
+      'fill="var(--audit-avatar-surface, var(--surface-card))"',
+    );
+    expect(container.innerHTML).toContain(
+      'stroke="var(--audit-avatar-ring, var(--border-strong))"',
+    );
     expect(container.innerHTML).not.toMatch(/#[0-9a-f]{3,8}|rgb\(|hsl\(/i);
   });
 });

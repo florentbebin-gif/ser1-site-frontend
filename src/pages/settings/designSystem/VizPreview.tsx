@@ -33,6 +33,11 @@ const statusTokens = [
   { token: '--state-warning', label: 'Attention — alerte' },
 ];
 
+const familyBranchTokens = [
+  { token: '--audit-family-branch-client', label: 'Branche client' },
+  { token: '--audit-family-branch-conjoint', label: 'Branche conjoint' },
+];
+
 function VizSwatch({ token, label }: { token: string; label?: string }) {
   return (
     <div className="settings-design-system__viz-swatch">
@@ -43,6 +48,36 @@ function VizSwatch({ token, label }: { token: string; label?: string }) {
       />
       <code>{token}</code>
       {label ? <span className="settings-design-system__note">{label}</span> : null}
+    </div>
+  );
+}
+
+function FamilyBranchPreview() {
+  return (
+    <div className="settings-design-system__family-preview" aria-label="Aperçu branches famille">
+      <div className="settings-design-system__family-card">
+        <span
+          className="settings-design-system__family-avatar"
+          data-tone="neutral"
+          aria-hidden="true"
+        />
+        <span>Enfant commun</span>
+      </div>
+      {familyBranchTokens.map(({ token, label }) => (
+        <div
+          className="settings-design-system__family-card"
+          key={token}
+          style={{ '--settings-family-branch': `var(${token})` } as CSSProperties}
+        >
+          <span
+            className="settings-design-system__family-avatar"
+            data-tone="branch"
+            aria-hidden="true"
+          />
+          <span>{label}</span>
+          <code>{token}</code>
+        </div>
+      ))}
     </div>
   );
 }
@@ -103,6 +138,15 @@ export function DesignSystemVizPreview() {
               <VizSwatch key={token} token={token} label={label} />
             ))}
           </div>
+        </article>
+
+        <article className="settings-design-system__ui-card">
+          <h3>Branches familiales audit</h3>
+          <p className="settings-design-system__note">
+            Les familles recomposées utilisent des aliases dérivés de C1-C10. Les couleurs restent
+            sur les traits, liserés, anneaux et badges texte, jamais comme fond de carte.
+          </p>
+          <FamilyBranchPreview />
         </article>
       </div>
     </div>

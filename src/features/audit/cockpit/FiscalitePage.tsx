@@ -69,7 +69,7 @@ export function FiscalitePage({
         className="audit-pivot--fiscalite"
         ariaLabel="Pression fiscale et budget du foyer"
       >
-        <FiscalitePressionCard estimate={estimate} ifi={ifi} budget={budget} />
+        <FiscalitePressionCard estimate={estimate} ifi={ifi} />
         <FiscaliteBudgetCard budget={budget} />
       </AuditPivot>
 

@@ -370,7 +370,7 @@
   }
 }
 
-/* ─── Drawer XL canonique /audit (docs/AUDIT_COCKPIT.md §9) ───────────────────
+/* ─── Drawer canonique /audit (docs/AUDIT_COCKPIT.md §9) ──────────────────────
  * VARIANTE de l'anatomie modale, pas une famille parallèle : le drawer réutilise
  * .sim-modal__header / __footer / __close, la nav latérale
  * .sim-modal-layout--with-nav et les boutons .sim-modal-btn--*. Il n'ajoute que
@@ -400,7 +400,15 @@
   box-shadow: -24px 0 60px color-mix(in srgb, var(--shadow-color) 22%, transparent);
 }
 
-/* XL : seul palier élargi, pour un détail dense (table, breakdown, sources). */
+/* Drawers audit : paliers canoniques, choisis par contenu plutôt que par CSS local. */
+.sim-drawer.sim-drawer--md {
+  max-width: 760px;
+}
+
+.sim-drawer.sim-drawer--lg {
+  max-width: 920px;
+}
+
 .sim-drawer.sim-drawer--xl {
   max-width: 1120px;
 }
@@ -442,6 +450,8 @@
 @media (max-width: 900px) {
   /* Le drawer occupe toute la largeur ≤900px : la largeur canonique est neutralisée. */
   .sim-drawer,
+  .sim-drawer.sim-drawer--md,
+  .sim-drawer.sim-drawer--lg,
   .sim-drawer.sim-drawer--xl {
     max-width: none;
   }

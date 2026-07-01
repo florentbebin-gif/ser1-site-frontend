@@ -11,7 +11,7 @@ Ce document n'est **pas** une roadmap concurrente. Le **séquencement des PR** v
 
 Statut : **UX-00a fige le contrat documentaire.** UX-00a-bis ajoute les contrats d'implémentation
 page par page. **UX-00b a verrouillé** les fondations design system de ce contrat — tokens `--viz-*`,
-découplage `--state-warning` / `--accent-signature`, taxonomie des surfaces, drawer XL canonique —
+découplage `--state-warning` / `--accent-signature`, taxonomie des surfaces, drawer /audit canonique —
 avec leur preuve runtime dans `/settings/design-system` et les checks `css-colors` / `modal-canon` /
 `sim-cards` étendus, sans coder les pages métier `/audit`. **UX-01 a livré** l'entrée `/audit` en
 landing cockpit : Dossier patrimonial (complétude F1, données connues et manques), Objectifs,
@@ -46,8 +46,8 @@ Précisions de périmètre :
 3. **Le manque est une donnée de premier rang.** « Inconnu » s'affiche aussi fort qu'une valeur.
 4. **Jamais de fausse donnée.** États « à compléter », « à vérifier », « à venir » assumés ; aucun
    chiffre ni score fabriqué.
-5. **Le détail vit en drawer XL.** Les pages restent des tableaux de bord ; l'édition fine s'ouvre en
-   drawer.
+5. **Le détail vit en drawer /audit.** Les pages restent des tableaux de bord ; l'édition fine s'ouvre
+   en drawer droit `md`/`lg`/`xl`.
 6. **Tout score affiche sa calculabilité et sa confiance.** Pas de note sans indicateur de
    complétude des données qui la fondent.
 7. **Le radar montre des arbitrages, pas une note.** Sa fonction est de rendre visible le coût d'une
@@ -61,19 +61,19 @@ Précisions de périmètre :
 
 ## 3. Décisions UX validées
 
-| Décision                                           | Justification                                                       | Risque                                              | Garde-fou                                                                      | Impact roadmap                           |
-| -------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------- |
-| Radar honnête, sans score global                   | Un radar « note » ment au CGP et promet un calcul indisponible      | Radar souvent grisé en début de dossier             | État grisé designé ; test : axe sans bloquante → `données insuffisantes`       | Radar réel = F6 ; placeholder avant      |
-| « Pistes à vérifier » déterministes                | Règles `if` traçables, pas de reco engine ni d'IA                   | Glissement vers « conseil automatisé » (AI Act)     | Wording neutre ; aucune piste sans donnée fondatrice ; module testé            | V1 livrable en lecture seule avant F6    |
-| Activation scénario en 3 niveaux                   | Empêche de figer une version sur du vide                            | Matrice de bloquants trop stricte ou trop laxiste   | Bloquants = minimum métier ; reste = avertissement tracé                       | Dépend de F6 + champs F3/F5              |
-| IFI sans estimation avant moteur                   | AGENTS + roadmap : pas de calcul indisponible                       | Axe Fiscalité faussé par un IFI non calculé         | L'axe Fiscalité n'utilise pas l'IFI tant qu'il n'est pas calculé               | Indicateur IFI dans Fiscalité & budget   |
-| Organigramme auto depuis données structurées       | Réutilise le layout existant ; évite le mini-Figma                  | Généralisation du layout non triviale               | Modèle société/liens en F5 ; org-chart = rendu, jamais source                  | UX-04 gated par F5                       |
-| SourceRef manuel = statut, pas confiance           | Un « 100 % fiable » sur saisie manuelle est un faux signal          | Confusion statut de revue vs confiance d'extraction | `confidence` affichée seulement si `kind ∈ {scan, import}`                     | Statuts = F2 ; confiance = scan          |
-| Vue client hors scope                              | Aucun écran client en face ; flag de visibilité = dette spéculative | Wording UI non présentable                          | Principe « wording présentable » ; pas de champ `clientVisible` maintenant     | Aucun ; note METIER                      |
-| AuditDrawerXL canonique à créer                    | Le détail vit en drawer ; éviter le CSS libre                       | Largeurs/CSS locales                                | Variante d'anatomie modale ; classes canoniques + `check:modal-canon` (UX-00b) | UX-00b ouvre puis reverrouille           |
-| Budget & capacité dans `/audit` via F1.1           | Donnée centrale qui alimente radar/retraite/prévoyance/placement    | Dérivés budgétaires stockés par erreur              | Source de vérité = **synthèse** annuelle ; dérivés calculés à la lecture       | Mini-jalon F1.1 livré                    |
-| Pas de C11-C14 maintenant                          | C1-C10 = palette utilisateur ; data-viz = sémantique dérivée        | Dérive (chaque graphe sa couleur)                   | Tokens `--viz-*` dérivés du thème ; checks couleurs (UX-00b)                   | UX-00b ; réouverture seulement si prouvé |
-| Surfaces : carte / bande / ligne KPI / tuile plate | Permet des surfaces premium riches sans empilement d'ombres         | « Poupées russes » d'ombres                         | Aucune surface élevée dans une surface élevée ; `check:sim-cards` (UX-00b)     | UX-00b                                   |
+| Décision                                           | Justification                                                       | Risque                                              | Garde-fou                                                                  | Impact roadmap                           |
+| -------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
+| Radar honnête, sans score global                   | Un radar « note » ment au CGP et promet un calcul indisponible      | Radar souvent grisé en début de dossier             | État grisé designé ; test : axe sans bloquante → `données insuffisantes`   | Radar réel = F6 ; placeholder avant      |
+| « Pistes à vérifier » déterministes                | Règles `if` traçables, pas de reco engine ni d'IA                   | Glissement vers « conseil automatisé » (AI Act)     | Wording neutre ; aucune piste sans donnée fondatrice ; module testé        | V1 livrable en lecture seule avant F6    |
+| Activation scénario en 3 niveaux                   | Empêche de figer une version sur du vide                            | Matrice de bloquants trop stricte ou trop laxiste   | Bloquants = minimum métier ; reste = avertissement tracé                   | Dépend de F6 + champs F3/F5              |
+| IFI sans estimation avant moteur                   | AGENTS + roadmap : pas de calcul indisponible                       | Axe Fiscalité faussé par un IFI non calculé         | L'axe Fiscalité n'utilise pas l'IFI tant qu'il n'est pas calculé           | Indicateur IFI dans Fiscalité & budget   |
+| Organigramme auto depuis données structurées       | Réutilise le layout existant ; évite le mini-Figma                  | Généralisation du layout non triviale               | Modèle société/liens en F5 ; org-chart = rendu, jamais source              | UX-04 gated par F5                       |
+| SourceRef manuel = statut, pas confiance           | Un « 100 % fiable » sur saisie manuelle est un faux signal          | Confusion statut de revue vs confiance d'extraction | `confidence` affichée seulement si `kind ∈ {scan, import}`                 | Statuts = F2 ; confiance = scan          |
+| Vue client hors scope                              | Aucun écran client en face ; flag de visibilité = dette spéculative | Wording UI non présentable                          | Principe « wording présentable » ; pas de champ `clientVisible` maintenant | Aucun ; note METIER                      |
+| AuditDrawer canonique multi-taille                 | Le détail vit en drawer ; éviter le CSS libre                       | Largeurs/CSS locales                                | Variante d'anatomie modale ; classes canoniques + `check:modal-canon`      | UX-00b ouvre puis reverrouille           |
+| Budget & capacité dans `/audit` via F1.1           | Donnée centrale qui alimente radar/retraite/prévoyance/placement    | Dérivés budgétaires stockés par erreur              | Source de vérité = **synthèse** annuelle ; dérivés calculés à la lecture   | Mini-jalon F1.1 livré                    |
+| Pas de C11-C14 maintenant                          | C1-C10 = palette utilisateur ; data-viz = sémantique dérivée        | Dérive (chaque graphe sa couleur)                   | Tokens `--viz-*` dérivés du thème ; checks couleurs (UX-00b)               | UX-00b ; réouverture seulement si prouvé |
+| Surfaces : carte / bande / ligne KPI / tuile plate | Permet des surfaces premium riches sans empilement d'ombres         | « Poupées russes » d'ombres                         | Aucune surface élevée dans une surface élevée ; `check:sim-cards` (UX-00b) | UX-00b                                   |
 
 ## 4. Décisions tokens et design
 
@@ -88,7 +88,15 @@ Précisions de périmètre :
   qui sert aussi de cuivre premium ; le mélange tue la saillance des alertes. UX-00b découple les
   deux.
 - **`--accent-signature`** reste un accent de **marque / version active / KPI héros**, jamais un
-  statut d'alerte.
+  statut d'alerte ni une couleur de branche familiale.
+- **Branches familiales `/audit`** : pas de C11-C14. Les recompositions utilisent des alias locaux
+  `--audit-family-branch-common`, `--audit-family-branch-client` et
+  `--audit-family-branch-conjoint`, dérivés de `--viz-*` / tokens existants. Ces alias servent aux
+  connecteurs, liserés et anneaux d'avatar ; la couleur n'est jamais le seul signal, le libellé
+  texte reste obligatoire.
+- **Avatars foyer/filiation** : `--audit-avatar-surface`, `--audit-avatar-ring` et
+  `--audit-avatar-ink` sont les seuls alias autorisés pour corriger le contraste avatar/capsule.
+  Ne pas utiliser `--surface-active` directement comme fond d'avatar dans l'arbre ou les drawers.
 - **Pas de couleur locale, pas de hex/rgb/hsl runtime.** Toute couleur de graphe passe par
   `--viz-*` ou `--state-*`.
 - Si, en UX-00b, il est **prouvé** que C1-C10 + dérivation sémantique ne permettent pas une data-viz
@@ -268,10 +276,12 @@ Règles :
 - Le rail **signale** les fondations manquantes sans bloquer les pages déclaratives disponibles ;
   les jalons strictement futurs restent non navigables.
 
-## 9. Contrat AuditDrawerXL
+## 9. Contrat AuditDrawer
 
-- Drawer **XL ancré à droite**.
+- Drawer ancré à droite, via la primitive React `AuditDrawer`.
 - **Variante canonique de l'anatomie modale SER1**, pas une nouvelle famille CSS.
+- Tailles canoniques : `md`, `lg`, `xl`, mappées uniquement vers `sim-drawer--md/lg/xl`
+  (`src/styles/sim/modals.css`). Le défaut reste `xl` pour les drawers denses.
 - Header clair.
 - Menu interne gauche **optionnel** (rubriques).
 - Corps central.
@@ -279,6 +289,9 @@ Règles :
 - Footer stable : `Annuler` (ghost) + `Enregistrer` (primary), destructif à gauche.
 - Accessibilité : focus trap, `Escape`, retour focus, `role="dialog"`, `aria-modal`, titre accessible.
 - **Aucune largeur locale.**
+- Les dates/mois utilisent `SimTemporalField` (`input type="date|month"` natif) pour préserver
+  accessibilité, saisie clavier et maintenance. Le polish se limite aux métriques CSS communes, pas
+  à un datepicker local par drawer.
 - UX-00b a créé les classes canoniques (famille `sim-drawer` dans `src/styles/sim/modals.css`) et
   étendu `check:modal-canon` pour en faire la seule source de largeurs de drawer.
 
@@ -300,8 +313,10 @@ Règle : **aucune surface avec ombre dans une surface avec ombre.**
 `AuditCardHead` (carte élevée avec en-tête icône/titre), `AuditDrawerSection` (bande plate `.sim-band`
 dans un drawer, avec une prop `first` à passer explicitement sur le bloc visuellement premier — ne pas
 dériver ce statut d'un sélecteur CSS `:first-child`, car plusieurs drawers conditionnent l'ordre des
-sections selon la donnée saisie, ex. `RegimeDonationsDrawer` selon l'état civil). Toute nouvelle page
-ou tout nouveau drawer `/audit` réutilise ces primitives avant d'écrire un JSX local équivalent.
+sections selon la donnée saisie, ex. `RegimeDonationsDrawer` selon l'état civil), `AuditRepeatableCard`
+(répétable compact), `AuditSubjectPanel` (panneau sujet non élevé) et `AuditInlineEmptyState` (état
+vide plat de drawer). Toute nouvelle page ou tout nouveau drawer `/audit` réutilise ces primitives
+avant d'écrire un JSX local équivalent.
 
 Table de décision par archétype de page :
 
@@ -311,16 +326,14 @@ Table de décision par archétype de page :
   `AuditPivot`. Référence : `ObjectifsPage.tsx`, qui suit déjà ce pattern — ce n'est pas une dette,
   juste un autre archétype de page.
 - **Sections de drawer** → toujours `AuditDrawerSection` (jamais de carte élevée locale).
-- **Cartes répétables/supprimables dans une pile** (ex. enfants/proches dans `FiliationDrawer`,
-  donations dans `RegimeDonationsDrawer`) → un troisième pattern non élevé, distinct des bandes et
-  tuiles : cadre avec bordure conservé (pour délimiter chaque élément ajoutable/supprimable) mais
-  sans ombre. Références : `.audit-related-card` et `.audit-donation-card` dans `cockpit.css`. Ne pas
-  les signaler à tort comme un oubli de la recette `.sim-band` — c'est un pattern volontairement
-  différent. Les deux recettes restent distinctes (densité différente : fiche personne vs mini-ligne
-  de donation) et ne sont pas fusionnées en un composant unique tant qu'un troisième besoin réel ne le
-  justifie pas ; toute nouvelle carte répétable doit réutiliser l'une des deux recettes existantes
-  (jamais une ombre locale) avant d'en écrire une troisième. Garde-fou : `check:sim-cards`
-  (`ROOT_ONLY_FLAT_SURFACES`).
+- **Cartes répétables/supprimables dans une pile** → deux familles officielles, toutes deux sans
+  ombre :
+  - fiche personne riche : `.audit-related-card`, réservée à `FiliationDrawer` (enfants/proches,
+    avatar, relation, qualifications) ;
+  - répétable compact : `AuditRepeatableCard` / `.audit-repeatable-card`, pour donations, revenus,
+    contraintes et opérations.
+    Ne pas les signaler à tort comme un oubli de la recette `.sim-band` : ce sont des patterns
+    volontairement différents, gardés par `check:sim-cards` (`ROOT_ONLY_FLAT_SURFACES`).
 
 ## 11. Contrat organigramme société
 
@@ -331,7 +344,7 @@ Table de décision par archétype de page :
 - Liens : `% capital`, `% droits de vote`, démembrement `PP/US/NP`.
 - Validation automatique : capital = 100 % ; droits de vote = 100 % si renseignés ; `NP + US = PP`
   cohérent ; personnes physiques / morales explicites.
-- Clic sur une société → **drawer XL** (identité, associés, liens, dirigeant, statut TNS/assimilé,
+- Clic sur une société → **drawer audit adapté à la densité** (identité, associés, liens, dirigeant, statut TNS/assimilé,
   rémunération, dividendes, bilan, capitaux propres, réserves, résultat distribuable, immobilisations,
   immobilier détenu, emprunts, prévoyance/Madelin, documents sources).
 - Le **modèle société/liens vit en F5** ; l'org-chart est un **rendu**, jamais une source parallèle.
@@ -479,17 +492,18 @@ Jalons prospectifs conservés par UX-01 :
 État runtime : UX-03a a remplacé le wizard legacy par une expérience cockpit unique. `Foyer &
 famille` est une page en 4 cartes F1 (situation familiale, filiation, libéralités &
 transmission, situation professionnelle) ; `Objectifs` est une page séparée en fin de parcours. Les
-deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawerXL`, sans navigation
+deux pages utilisent le rail gauche, la topbar, la barre d'état et `AuditDrawer`, sans navigation
 horizontale d'étapes. UX-03a.5 ajoute le polish visuel commun des pages internes ; UX-03a.6 pose le
 redesign pivot de `Foyer & famille` avec synthèse typographique, filiation sobre, cartes de saisie
 compactes et drawers structurés, sans bande `Points prioritaires` sur les pages internes et sans
 changement du modèle métier. Un polish de suivi a aligné le JSX de `Foyer & famille` sur les
 primitives `AuditPivot`/`AuditSurfaceCard`/`AuditCardHead` déjà consommées par `Actifs / passifs`,
 plafonné la hauteur du schéma de filiation dans le pivot, aplati les patterns de surface élevée
-imbriquée identifiés dans les drawers (`AuditDrawerSection`, `.audit-related-card` et
-`.audit-donation-card`), corrigé le repli mobile de la grille identité compacte et la pose de `first`
-sur les deux profils côte à côte de `Situation professionnelle`, sans changement de contrat produit ni
-de modèle métier (voir §10).
+imbriquée identifiés dans les drawers (`AuditDrawerSection`, `.audit-related-card`,
+`.audit-repeatable-card` et `.audit-subject-panel`), corrigé le repli mobile de la grille identité
+compacte, structuré `Situation professionnelle` en panneaux sujet, ajouté une variante décisionnelle
+à `Objectifs` et sorti les branches familiales du cuivre, sans changement de contrat produit ni de
+modèle métier (voir §10).
 
 | Champ                                                 | Contrat                                                                                                                                                        |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |

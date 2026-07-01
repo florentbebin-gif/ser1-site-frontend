@@ -7,6 +7,7 @@ import type { AuditLandingAvatarKind } from '../auditLandingViewModel';
 import { FOYER_AVATAR_ART_RADIUS, FoyerAvatarArt } from './FoyerAvatarArt';
 
 export type FiliationNodeVariant = 'parent' | 'enfant' | 'proche';
+type FiliationBranchTone = 'common' | 'client' | 'conjoint';
 
 export interface FiliationNode {
   x: number;
@@ -42,10 +43,18 @@ export function FiliationPill({
   const avatarCx = compact ? node.x + 22 : node.x + width / 2;
   const avatarCy = compact ? y + height / 2 : y + 16;
   const textX = compact ? node.x + width / 2 + 12 : node.x + width / 2;
+  const branchTone = branchToneForNode(node);
+  const className = [
+    'audit-fil__node',
+    `audit-fil__node--${node.variant}`,
+    `audit-fil__node--${node.avatarKind}`,
+    branchTone ? `audit-fil__node--branch-${branchTone}` : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <g
-      className={`audit-fil__node audit-fil__node--${node.variant} audit-fil__node--${node.avatarKind}`}
-    >
+    <g className={className} data-branch-tone={branchTone || undefined}>
       <rect x={round(node.x)} y={y} width={round(width)} height={height} rx={height / 2} />
       <FiliationAvatar
         kind={node.avatarKind}
@@ -77,6 +86,12 @@ export function FiliationPill({
       ) : null}
     </g>
   );
+}
+
+function branchToneForNode(node: FiliationNode): FiliationBranchTone | null {
+  if (node.variant !== 'enfant') return null;
+  if (node.estCommun) return 'common';
+  return node.parentPrincipal === 'conjoint' ? 'conjoint' : 'client';
 }
 
 function FiliationAvatar({
