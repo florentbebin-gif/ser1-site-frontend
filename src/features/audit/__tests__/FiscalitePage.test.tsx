@@ -9,6 +9,7 @@ import type { SituationFiscale } from '@/domain/audit/types';
 
 import AuditPage from '../AuditPage';
 import { FiscaliteBudgetCard } from '../cockpit/FiscaliteBudgetCard';
+import { FiscaliteCoherenceCard } from '../cockpit/FiscaliteCoherenceCard';
 import { FiscalitePressionCard } from '../cockpit/FiscalitePressionCard';
 import type {
   AuditBudgetSynthese,
@@ -16,6 +17,7 @@ import type {
   AuditIrEstimate,
   AuditIrResult,
 } from '../cockpit/auditIrAdapter';
+import { buildFiscalCoherence } from '../cockpit/auditIrAdapter';
 import { buildFiscaliteTiles } from '../cockpit/auditFiscaliteModel';
 import { AuditDonut } from '../cockpit/auditFiscaliteViz';
 
@@ -125,6 +127,9 @@ describe('FiscalitePage', () => {
     expect(
       within(pivot).getByRole('heading', { level: 2, name: 'Budget & capacité' }),
     ).toBeVisible();
+    expect(
+      within(pivot).getByRole('heading', { level: 2, name: 'Cohérence avis fiscal' }),
+    ).toBeVisible();
 
     expect(within(pivot).getByText('Pression fiscale en attente')).toBeVisible();
     expect(within(pivot).getByText('Budget à renseigner')).toBeVisible();
@@ -190,6 +195,39 @@ describe('FiscalitePressionCard', () => {
     const active = container.querySelector('.audit-tmi-ladder__segment[data-active="true"]');
     expect(active).not.toBeNull();
     expect(active).toHaveTextContent('30 %');
+  });
+});
+
+describe('buildFiscalCoherence', () => {
+  it('signale les parts divergentes et l’écart IR avis vs estimation', () => {
+    const coherence = buildFiscalCoherence(estimate(result({ totalTax: 22750 })), 4);
+
+    expect(coherence).toMatchObject({
+      indicativeParts: 4,
+      enteredParts: 2,
+      partsMismatch: true,
+      declaredIr: 10000,
+      estimatedIr: 22750,
+      irDelta: 12750,
+      hasIrDelta: true,
+      requiresReview: true,
+    });
+  });
+});
+
+describe('FiscaliteCoherenceCard', () => {
+  it('affiche les parts, l’IR déclaré, l’IR estimé et le delta à vérifier', () => {
+    const coherence = buildFiscalCoherence(estimate(result({ totalTax: 22750 })), 4);
+
+    render(<FiscaliteCoherenceCard coherence={coherence} />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Cohérence avis fiscal' })).toBeVisible();
+    expect(screen.getByText('Parts foyer indicatives')).toBeVisible();
+    expect(screen.getByText('Parts saisies avis')).toBeVisible();
+    expect(screen.getByText('IR déclaré')).toBeVisible();
+    expect(screen.getByText('IR estimé')).toBeVisible();
+    expect(screen.getByText(/\+\s12\s750\s€/)).toBeVisible();
+    expect(screen.getByText('Écart à vérifier avec les données de l’avis.')).toBeVisible();
   });
 });
 
@@ -260,6 +298,28 @@ describe('FiscaliteBudgetCard', () => {
     expect(screen.getByText('Solde budgétaire')).toBeVisible();
     expect(screen.getByText('Taux d’endettement indicatif')).toBeVisible();
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('explique un solde négatif dépendant d’une imposition non réconciliée', () => {
+    const budget: AuditBudgetSynthese = {
+      ressources: 50000,
+      charges: 30000,
+      empruntsAnnuels: 10400,
+      impots: 22750,
+      capacite: -13150,
+      tauxEndettement: 20.8,
+      hasBudget: true,
+    };
+    const coherence = buildFiscalCoherence(estimate(result({ totalTax: 22750 })), 4);
+
+    render(<FiscaliteBudgetCard budget={budget} coherence={coherence} />);
+
+    expect(screen.getByText('Solde budgétaire')).toBeVisible();
+    expect(
+      screen.getByText(
+        'Solde à vérifier : il intègre l’imposition estimée avant réconciliation avec l’avis fiscal.',
+      ),
+    ).toBeVisible();
   });
 });
 

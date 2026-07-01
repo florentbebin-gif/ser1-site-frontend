@@ -291,6 +291,32 @@
   color: var(--text-secondary);
 }
 
+.audit-progress-rail__button,
+.audit-progress-rail__content {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.audit-progress-rail__button {
+  cursor: pointer;
+}
+
+.audit-progress-rail__button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .audit-progress-rail__item[aria-current='step'] {
   color: var(--text-primary);
 }
@@ -319,15 +345,12 @@
 }
 
 .audit-progress-rail__status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
   overflow: hidden;
-  padding: 0;
-  border: 0;
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: var(--font-weight-semibold);
+  text-overflow: ellipsis;
   white-space: nowrap;
-  clip-path: inset(50%);
 }
 
 .audit-progress-rail__item[data-status='complet'] .audit-progress-rail__glyph {
@@ -607,6 +630,12 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
+}
+
+.audit-preview-badge[data-status='available'] {
+  border-color: color-mix(in srgb, var(--state-success) 34%, var(--border-subtle));
+  background: color-mix(in srgb, var(--state-success) 10%, var(--surface-card));
+  color: var(--state-success);
 }
 
 .audit-card__divider {

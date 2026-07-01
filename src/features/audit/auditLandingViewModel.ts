@@ -18,6 +18,7 @@ import {
   type AuditStatusBarViewModel,
 } from './auditLandingProgressViewModel';
 import { computeAge, inferAvatarKind } from './auditLandingMemberUtils';
+import { formatProfessionLabel } from './professionalSituation';
 
 export type { AuditPointAConfirmer, AuditPointAConfirmerTone } from './auditLandingPointsViewModel';
 
@@ -84,7 +85,7 @@ export interface AuditLandingSyntheseCard {
   situationLabel: string | null;
   /** Parts de quotient familial dérivées de F1 (hypothèse enfants à charge). */
   partsFiscales: number | null;
-  /** La TMI dépend des revenus, absents de F1. */
+  /** Repère fiscal affiché sans taux tant que la landing ne synthétise pas la TMI. */
   tmiLabel: string;
   filiationHasData: boolean;
   etatCivilCompletion: AuditLandingCompletionHint;
@@ -110,7 +111,7 @@ export interface AuditLandingObjectifsCard {
 }
 
 export type AuditPreviewSlideId = 'masses' | 'societe' | 'ir';
-export type AuditPreviewSlideStatus = 'soon' | 'locked';
+export type AuditPreviewSlideStatus = 'available' | 'soon' | 'locked';
 
 export interface AuditPreviewSlide {
   id: AuditPreviewSlideId;
@@ -227,7 +228,7 @@ function buildSyntheseCard(
     proches,
     situationLabel,
     partsFiscales,
-    tmiLabel: 'à venir',
+    tmiLabel: 'IR disponible',
     filiationHasData: Boolean(principal) || enfants.length > 0 || proches.length > 0,
     etatCivilCompletion: buildEtatCivilCompletion({
       principal,
@@ -299,9 +300,9 @@ function buildPreviewSlides(): AuditPreviewSlide[] {
       title: 'Fiscalité & budget',
       eyebrow: 'Pression fiscale',
       badgeLabel: 'Disponible · IR',
-      status: 'soon',
+      status: 'available',
       description: 'Synthèse IR et budget disponible dans le rail audit.',
-      caption: 'IFI qualifié sans montant tant que le moteur dédié n’est pas livré.',
+      caption: 'IFI et patrimoine restent à qualifier tant que le moteur dédié n’est pas livré.',
     },
   ];
 }
@@ -412,7 +413,7 @@ function toMember(
     prenom: prenom || nom || '—',
     nom,
     age: computeAge(membre.dateNaissance, now),
-    profession: membre.profession?.trim() || null,
+    profession: formatProfessionLabel(membre.profession),
     statutSocial: membre.statutSocial ?? null,
     role,
     estCommun: membre.estCommun ?? true,

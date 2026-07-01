@@ -22,6 +22,19 @@ export interface AuditIrEstimate {
   declaredRfr: number;
 }
 
+export interface AuditFiscalCoherence {
+  indicativeParts: number | null;
+  enteredParts: number;
+  partsMismatch: boolean;
+  declaredIr: number;
+  estimatedIr: number;
+  irDelta: number;
+  hasDeclaredIr: boolean;
+  hasEstimate: boolean;
+  hasIrDelta: boolean;
+  requiresReview: boolean;
+}
+
 interface EngineDeclarant {
   salaries: number;
   associes62: number;
@@ -158,6 +171,36 @@ export function buildAuditIrEstimate(
     declaredRfr: positive(situationFiscale.revenuFiscalReference)
       ? situationFiscale.revenuFiscalReference
       : 0,
+  };
+}
+
+export function buildFiscalCoherence(
+  estimate: AuditIrEstimate,
+  indicativeParts: number | null | undefined,
+): AuditFiscalCoherence {
+  const enteredParts = estimate.parts;
+  const normalizedIndicativeParts =
+    typeof indicativeParts === 'number' && indicativeParts > 0 ? indicativeParts : null;
+  const estimatedIr = estimate.result?.totalTax ?? 0;
+  const declaredIr = estimate.declaredIr;
+  const irDelta = estimatedIr - declaredIr;
+  const hasDeclaredIr = declaredIr > 0;
+  const hasEstimate = estimate.result != null;
+  const hasIrDelta = hasDeclaredIr && hasEstimate && Math.abs(irDelta) > 0;
+  const partsMismatch =
+    normalizedIndicativeParts != null && Math.abs(normalizedIndicativeParts - enteredParts) >= 0.01;
+
+  return {
+    indicativeParts: normalizedIndicativeParts,
+    enteredParts,
+    partsMismatch,
+    declaredIr,
+    estimatedIr,
+    irDelta,
+    hasDeclaredIr,
+    hasEstimate,
+    hasIrDelta,
+    requiresReview: partsMismatch || hasIrDelta,
   };
 }
 

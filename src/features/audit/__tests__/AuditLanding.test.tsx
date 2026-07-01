@@ -80,10 +80,12 @@ describe('AuditLanding', () => {
   it('affiche la barre d’état compacte sans données métier inventées', () => {
     const { container } = renderLanding(withFoyer);
 
-    expect(screen.getByText('Dossier renseigné')).toBeVisible();
+    expect(screen.getByText('Sections F1 renseignées')).toBeVisible();
     expect(screen.getByText('Champs F1 à compléter')).toBeVisible();
     expect(screen.getByText('Parts fiscales indicatives')).toBeVisible();
-    expect(screen.getByText('IR · Patrimoine')).toBeVisible();
+    expect(screen.getByText('IR')).toBeVisible();
+    expect(screen.getByText('Disponible')).toBeVisible();
+    expect(screen.getByText('Patrimoine')).toBeVisible();
     expect(screen.getAllByText('À venir').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Stratégie').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Verrouillée')).toBeVisible();
@@ -105,7 +107,7 @@ describe('AuditLanding', () => {
     expect(synthese.getByText(/Marie Martin/)).toBeInTheDocument();
     expect(synthese.getByText(/parts/)).toBeInTheDocument();
     expect(synthese.getByLabelText(/Données état civil renseignées/)).toBeInTheDocument();
-    expect(synthese.getByText('à venir')).toBeInTheDocument();
+    expect(synthese.getByText('IR disponible')).toBeInTheDocument();
     expect(syntheseSection.textContent ?? '').not.toMatch(/TMI\s+\d/i);
     expect(syntheseSection.textContent ?? '').not.toMatch(/TMI[^%]*%/i);
   });
@@ -388,14 +390,14 @@ describe('AuditLanding', () => {
     const dossier = screen.getByTestId('dossier-loaded-card');
     expect(within(dossier).getByTestId('dossier-client-label')).toHaveTextContent('Famille Martin');
     expect(within(dossier).getByTestId('dossier-loaded-filename')).toHaveTextContent(
-      'Non sauvegardé',
+      'Aucun fichier local',
     );
     expect(within(dossier).getByTestId('dossier-loaded-filename')).toHaveAttribute(
       'data-state',
       'unsaved',
     );
     expect(within(dossier).getByTestId('dossier-loaded-disclaimer')).toHaveTextContent(
-      'Non sauvegardé',
+      'Non enregistré',
     );
     expect(within(dossier).getByTestId('dossier-loaded-disclaimer')).toHaveAttribute(
       'data-state',

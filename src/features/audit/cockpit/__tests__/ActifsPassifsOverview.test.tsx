@@ -55,8 +55,8 @@ describe('ActifsPassifsOverview', () => {
     const actifs = screen.getByRole('region', { name: 'Actifs' });
     const immobilierRow = within(actifs).getByText('Immobilier').closest('.audit-breakdown__row');
     const financierRow = within(actifs).getByText('Financier').closest('.audit-breakdown__row');
-    expect(immobilierRow).toHaveClass('audit-breakdown__row--tone-1');
-    expect(financierRow).toHaveClass('audit-breakdown__row--tone-2');
+    expect(immobilierRow).toHaveClass('audit-breakdown__row--asset');
+    expect(financierRow).toHaveClass('audit-breakdown__row--asset');
 
     // Emprunt incohérent → pastille « à vérifier » dans la carte Passifs.
     const passifs = screen.getByRole('region', { name: 'Passifs' });

@@ -53,8 +53,8 @@ describe('buildHomeDossierState', () => {
     expect(vm.hasDossier).toBe(true);
     const state = buildHomeDossierState(vm);
 
-    expect(state.progress?.label).toBe('Structuration du dossier');
-    expect(state.progress?.ariaLabel).toMatch(/^Structuration du dossier : \d+ %$/);
+    expect(state.progress?.label).toBe('Identité foyer');
+    expect(state.progress?.ariaLabel).toMatch(/^Identité foyer : \d+ %$/);
     expect(state.primaryAction).toMatchObject({
       state: 'continue-dossier',
       title: 'Continuer le dossier',

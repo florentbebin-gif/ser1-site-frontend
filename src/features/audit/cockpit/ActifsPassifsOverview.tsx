@@ -24,9 +24,9 @@ function plural(count: number, singular: string): string {
 
 type BreakdownTone = 'asset' | 'liability';
 
-function breakdownTone(index: number, tone: BreakdownTone): string {
+function breakdownTone(_index: number, tone: BreakdownTone): string {
   if (tone === 'liability') return 'audit-breakdown__row--liability';
-  return `audit-breakdown__row--tone-${(index % 5) + 1}`;
+  return 'audit-breakdown__row--asset';
 }
 
 function Breakdown({

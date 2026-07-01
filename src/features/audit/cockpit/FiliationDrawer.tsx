@@ -34,7 +34,7 @@ export function FiliationDrawer({
   return (
     <AuditDrawer
       open={open}
-      size="xl"
+      size="lg"
       title="Filiation & proches"
       subtitle="Enfants et autres proches rattachés au foyer."
       onClose={onClose}

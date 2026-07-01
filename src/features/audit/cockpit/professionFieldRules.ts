@@ -11,7 +11,7 @@ import type {
   StatutConventionnel,
   StatutSocial,
 } from '@/domain/audit/types';
-import { shouldShowProfessionForStatut } from '../professionalSituation';
+import { formatProfessionLabel, shouldShowProfessionForStatut } from '../professionalSituation';
 
 import {
   AFFILIATION_CAVEC_OPTIONS,
@@ -259,7 +259,7 @@ export function normalizeFichePaieAssimileSalarie(
 
 export function getProfessionalSituationLabel(person: PersonInfo): string {
   const normalizedPerson = normalizeProfessionProfile(person);
-  const profession = normalizedPerson.profession?.trim();
+  const profession = formatProfessionLabel(normalizedPerson.profession);
   if (profession) return profession;
   return getStatutSocialLabel(normalizedPerson.statutSocial);
 }

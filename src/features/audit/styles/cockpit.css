@@ -626,6 +626,41 @@
   align-content: stretch;
 }
 
+.audit-foyer-filiation__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  list-style: none;
+}
+
+.audit-foyer-filiation__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.audit-foyer-filiation__legend span {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full);
+}
+
+.audit-foyer-filiation__legend li[data-branch='common'] span {
+  background: var(--audit-family-branch-common);
+}
+
+.audit-foyer-filiation__legend li[data-branch='client'] span {
+  background: var(--audit-family-branch-client);
+}
+
+.audit-foyer-filiation__legend li[data-branch='conjoint'] span {
+  background: var(--audit-family-branch-conjoint);
+}
+
 .audit-foyer-section-head,
 .audit-cockpit-section-head {
   display: grid;
@@ -1376,24 +1411,8 @@
   min-width: 0;
 }
 
-.audit-breakdown__row--tone-1 {
-  --audit-breakdown-tone: var(--viz-1);
-}
-
-.audit-breakdown__row--tone-2 {
-  --audit-breakdown-tone: var(--viz-2);
-}
-
-.audit-breakdown__row--tone-3 {
-  --audit-breakdown-tone: var(--viz-3);
-}
-
-.audit-breakdown__row--tone-4 {
-  --audit-breakdown-tone: var(--viz-4);
-}
-
-.audit-breakdown__row--tone-5 {
-  --audit-breakdown-tone: var(--viz-5);
+.audit-breakdown__row--asset {
+  --audit-breakdown-tone: var(--viz-sequential-4);
 }
 
 .audit-breakdown__row--liability {
@@ -1748,9 +1767,9 @@
   box-shadow: var(--focus-ring);
 }
 
-/* Pivot fiscalité : deux cartes de synthèse déclarative à parts égales. */
+/* Pivot fiscalité : cartes de synthèse déclarative à parts égales. */
 .audit-pivot--fiscalite {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Lignes KPI fiscales (label + valeur, filet discret) dans les cartes de synthèse. */
@@ -1788,9 +1807,15 @@
   font-weight: var(--font-weight-medium);
 }
 
-/* Cartes du pivot fiscalité : pression + budget, même densité. */
+.audit-fiscal-line[data-warning='true'] .audit-fiscal-line__label,
+.audit-fiscal-line[data-warning='true'] .audit-fiscal-line__value {
+  color: var(--state-warning);
+}
+
+/* Cartes du pivot fiscalité : pression, budget, cohérence, même densité. */
 .audit-fiscal-pression,
-.audit-fiscal-budget {
+.audit-fiscal-budget,
+.audit-fiscal-coherence {
   gap: var(--space-3);
 }
 
@@ -2019,6 +2044,21 @@
 
 .audit-fiscal-total[data-tone='warning'] .audit-fiscal-total__value {
   color: var(--state-warning);
+}
+
+.audit-fiscal-coherence__notice,
+.audit-fiscal-budget__notice {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--state-warning) 10%, var(--surface-card));
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+.audit-fiscal-coherence__notice[data-tone='ok'] {
+  background: color-mix(in srgb, var(--state-success) 10%, var(--surface-card));
 }
 
 /* Carte Budget : barre d'emploi des ressources (charges / impôts / capacité). */
@@ -2760,6 +2800,7 @@
   border-color: color-mix(in srgb, var(--border-subtle) 86%, transparent);
   color: var(--text-primary);
   font-weight: var(--font-weight-semibold);
+  text-align: left;
   box-shadow: none;
 }
 
@@ -3462,6 +3503,14 @@
 @media (max-width: 1180px) {
   .audit-cockpit__cards[data-variant='tiles'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .audit-pivot--fiscalite {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .audit-fiscal-coherence {
+    grid-column: 1 / -1;
   }
 }
 

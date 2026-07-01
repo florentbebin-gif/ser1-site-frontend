@@ -6,7 +6,13 @@ import { IconChevronRight } from '@/icons/ui';
 import { AuditCockpitShell } from '../components/AuditCockpitShell';
 import { AuditPivot, SummaryCardGrid, type AuditCockpitPageProps } from './auditCockpitShared';
 import { buildFiscaliteTiles, type FiscalDrawerId } from './auditFiscaliteModel';
-import { buildAuditIrEstimate, buildBudgetSynthese, buildIfiIndicator } from './auditIrAdapter';
+import {
+  buildAuditIrEstimate,
+  buildBudgetSynthese,
+  buildFiscalCoherence,
+  buildIfiIndicator,
+} from './auditIrAdapter';
+import { FiscaliteCoherenceCard } from './FiscaliteCoherenceCard';
 import { FiscalitePressionCard } from './FiscalitePressionCard';
 import { FiscaliteBudgetCard } from './FiscaliteBudgetCard';
 import { FiscaliteDetail } from './FiscaliteDetail';
@@ -27,6 +33,10 @@ export function FiscalitePage({
     [dossier, fiscalContext],
   );
   const ifi = useMemo(() => buildIfiIndicator(dossier, fiscalContext), [dossier, fiscalContext]);
+  const coherence = useMemo(
+    () => buildFiscalCoherence(estimate, viewModel.synthese.partsFiscales),
+    [estimate, viewModel.synthese.partsFiscales],
+  );
   const budget = useMemo(
     () => buildBudgetSynthese(dossier, estimate.result?.totalTax ?? 0),
     [dossier, estimate.result],
@@ -70,7 +80,8 @@ export function FiscalitePage({
         ariaLabel="Pression fiscale et budget du foyer"
       >
         <FiscalitePressionCard estimate={estimate} ifi={ifi} />
-        <FiscaliteBudgetCard budget={budget} />
+        <FiscaliteBudgetCard budget={budget} coherence={coherence} />
+        <FiscaliteCoherenceCard coherence={coherence} />
       </AuditPivot>
 
       <section className="audit-foyer-sections" aria-labelledby="audit-fiscal-saisie-title">

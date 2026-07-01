@@ -63,7 +63,7 @@ describe('buildAuditLandingViewModel', () => {
     expect(vm.dossierClientLabel).toBe('Jean Martin');
     expect(vm.synthese.situationLabel).toBe('Célibataire');
     expect(vm.synthese.partsFiscales).toBe(1);
-    expect(vm.synthese.tmiLabel).toBe('à venir');
+    expect(vm.synthese.tmiLabel).toBe('IR disponible');
     expect(vm.synthese.etatCivilCompletion.label).toMatch(/^Données état civil renseignées/);
   });
 
@@ -170,7 +170,8 @@ describe('buildAuditLandingViewModel', () => {
     );
     const f1Metric = vm.statusBar.items.find((item) => item.id === 'f1');
     const pointsMetric = vm.statusBar.items.find((item) => item.id === 'points');
-    const calculsMetric = vm.statusBar.items.find((item) => item.id === 'calculs');
+    const irMetric = vm.statusBar.items.find((item) => item.id === 'ir');
+    const patrimoineMetric = vm.statusBar.items.find((item) => item.id === 'patrimoine');
     const strategieMetric = vm.statusBar.items.find((item) => item.id === 'strategie');
 
     expect(vm.statusBar.f1Total).toBe(f1Sections.length);
@@ -178,14 +179,15 @@ describe('buildAuditLandingViewModel', () => {
       f1Sections.filter((section) => section.status === 'complet').length,
     );
     expect(f1Metric).toMatchObject({
-      label: 'Dossier renseigné',
+      label: 'Sections F1 renseignées',
       value: `${vm.statusBar.f1Completed}/${vm.statusBar.f1Total}`,
     });
     expect(pointsMetric).toMatchObject({
       label: 'Champs F1 à compléter',
       value: String(vm.statusBar.pointsToComplete),
     });
-    expect(calculsMetric).toMatchObject({ value: 'À venir' });
+    expect(irMetric).toMatchObject({ label: 'IR', value: 'Disponible' });
+    expect(patrimoineMetric).toMatchObject({ label: 'Patrimoine', value: 'À venir' });
     expect(strategieMetric).toMatchObject({ value: 'Verrouillée' });
     expect(vm.statusBar.items.map((item) => item.value).join(' ')).not.toMatch(/12\s*\/\s*18/);
   });
@@ -451,6 +453,9 @@ describe('buildAuditLandingViewModel', () => {
       'À venir · F5',
       'Disponible · IR',
     ]);
+    expect(vm.previewSlides.find((slide) => slide.id === 'ir')).toMatchObject({
+      status: 'available',
+    });
     expect(text).not.toMatch(/\/sim\//);
     expect(text).not.toMatch(/patrimoine net|TMI\s+\d|droits? successoraux|score|radar|€|%/i);
   });

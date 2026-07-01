@@ -95,8 +95,9 @@ export default function Home(): React.ReactElement {
                   )}
                   <button
                     type="button"
-                    className="home-action home-action--secondary"
+                    className="home-action home-action--secondary home-action--disabled"
                     aria-disabled="true"
+                    disabled
                     title={action.disabledReason}
                     data-testid="home-primary-action-scan"
                   >
@@ -107,6 +108,7 @@ export default function Home(): React.ReactElement {
                       <span className="home-action__title">{scanAction.title}</span>
                     </span>
                     <span className="home-action__subtitle">{scanAction.subtitle}</span>
+                    <span className="home-action__availability">Bientôt disponible</span>
                     <span className="home-action__cta">
                       {scanAction.cta}
                       <IconUpload className="home-action__cta-icon" />

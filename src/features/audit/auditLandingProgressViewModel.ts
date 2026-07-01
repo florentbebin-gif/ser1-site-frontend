@@ -40,7 +40,7 @@ export interface AuditProgressSection {
   statusLabel: string;
 }
 
-export type AuditStatusBarItemId = 'f1' | 'points' | 'parts' | 'calculs' | 'strategie';
+export type AuditStatusBarItemId = 'f1' | 'points' | 'parts' | 'ir' | 'patrimoine' | 'strategie';
 export type AuditStatusBarTone = 'neutral' | 'success' | 'warning' | 'muted';
 
 export interface AuditStatusBarItem {
@@ -61,10 +61,14 @@ const SECTION_STATUS_LABELS: Record<AuditSectionStatus, string> = {
   vide: 'À compléter',
   partiel: 'Partiel',
   complet: 'Complet',
-  'a-verifier': 'À vérifier',
-  alerte: 'Alerte',
-  masque: 'Masqué',
+  'a-verifier': 'Partiel',
+  alerte: 'Partiel',
+  masque: 'À venir',
 };
+
+export function visibleAuditSectionStatusLabel(status: AuditSectionStatus): string {
+  return SECTION_STATUS_LABELS[status];
+}
 
 export function buildAuditProgressSections(
   dossier: DossierPatrimonial,
@@ -159,7 +163,7 @@ export function buildStatusBar(
     items: [
       {
         id: 'f1',
-        label: 'Dossier renseigné',
+        label: 'Sections F1 renseignées',
         value: f1Completed == null || f1Total == null ? 'À compléter' : `${f1Completed}/${f1Total}`,
         tone: pointsToComplete === 0 ? 'success' : 'neutral',
       },
@@ -179,8 +183,14 @@ export function buildStatusBar(
         tone: synthese.partsFiscales == null ? 'muted' : 'neutral',
       },
       {
-        id: 'calculs',
-        label: 'IR · Patrimoine',
+        id: 'ir',
+        label: 'IR',
+        value: 'Disponible',
+        tone: 'success',
+      },
+      {
+        id: 'patrimoine',
+        label: 'Patrimoine',
         value: 'À venir',
         tone: 'muted',
       },
@@ -209,7 +219,7 @@ function availableSection(
     isNavigable: true,
     status,
     conditional: false,
-    statusLabel: explicitStatusLabel ?? SECTION_STATUS_LABELS[status],
+    statusLabel: explicitStatusLabel ?? visibleAuditSectionStatusLabel(status),
   };
 }
 
