@@ -96,6 +96,7 @@ export default function Home(): React.ReactElement {
                   <button
                     type="button"
                     className="home-action home-action--secondary home-action--disabled"
+                    aria-disabled="true"
                     disabled
                     title={action.disabledReason}
                     data-testid="home-primary-action-scan"
